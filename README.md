@@ -49,14 +49,14 @@ coming soon!
 
 ## Usage
 ###### Synthetic data: 
-  1. test all functions 
+  1. test all functions<br \>
     ./icbench -a1.0 -m0 -x8 -n100000000
 
     - zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)
     - number of integers = 100000000
     - integer range from 0 to 255 (integer size = 0 to 8 bits)
   
-  2. individual function test (ex. copy TurboPack TurboPack Direct access)
+  2. individual function test (ex. copy TurboPack TurboPack Direct access)<br \>
     ./icbench -a1.0 -m0 -x8 -ecopy/turbopack/turbopack,da -n100000000
 
 ###### Data files: 
