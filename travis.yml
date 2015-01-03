@@ -6,6 +6,6 @@ branches:
   only:
     - master   
 script:
-  make
+    - make
 os:
   - linux
