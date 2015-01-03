@@ -5,5 +5,7 @@ compiler:
 branches:
   only:
     - master   
+script:
+  make
 os:
   - linux
