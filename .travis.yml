@@ -1,0 +1,11 @@
+language: c
+compiler: gcc
+
+install: make get-deps
+branches:
+  only:
+    - master   
+script:
+    - make
+os:
+  - linux
