@@ -1,7 +1,7 @@
 language: c
-compiler:
-  - gcc
+compiler: gcc
 
+install: make get-deps
 branches:
   only:
     - master   
