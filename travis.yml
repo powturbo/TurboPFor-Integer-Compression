@@ -1,0 +1,9 @@
+language: c
+compiler:
+  - gcc
+
+branches:
+  only:
+    - master   
+os:
+  - linux
