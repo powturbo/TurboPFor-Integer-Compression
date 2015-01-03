@@ -1,4 +1,4 @@
-TurboPFor: Fastest Integer Compression
+TurboPFor: Fastest Integer Compression https://travis-ci.org/powturbo/TurboPFor.svg?branch=master
 ======================================
 
 - 100% C, without inline assembly
