@@ -1,7 +1,7 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
 
-- 100% C/C++, without inline assembly
+- 100% C (C++ compatible headers), without inline assembly
 <p>
 - Fastest **"Variable Byte"** implementation
 <p>
