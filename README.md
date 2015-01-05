@@ -72,7 +72,7 @@ coming soon!
 ###### Data files: 
   - Data file Benchmark (file format as in FastPFOR)
 
-    *./icbench gov2.sorted*
+    *./icbench -c1 gov2.sorted*
 
 ###### Benchmarking intersections
   - Download "gov2.sorted" (or clueweb09) + query file "aol.txt" 
