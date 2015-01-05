@@ -97,23 +97,23 @@ coming soon!
 ## Function usage:
 In general compression/decompression functions are of the form:
 
-   char *endptr = compress( unsigned *in, int n, char *out) 
-   endptr : set by compress to the next character in "out" after the compressed buffer
-   in     : input integer array 
-   n      : number of elements
-   out    : pointer to output buffer
+   *char *endptr = compress( unsigned *in, int n, char *out)*<br />
+   endptr : set by compress to the next character in "out" after the compressed buffer<br />
+   in     : input integer array<br />
+   n      : number of elements<br />
+   out    : pointer to output buffer<br />
    
-   char *endptr = decompress( char *in, int n, unsigned *out) 
-   endptr : set by decompress to the next character in "in" after the decompressed buffer
-   in     : pointer to input buffer
-   n      : number of elements
-   out    : output integer array
+   *char *endptr = decompress( char *in, int n, unsigned *out)*<br />
+   endptr : set by decompress to the next character in "in" after the decompressed buffer<br />
+   in     : pointer to input buffer<br />
+   n      : number of elements<br />
+   out    : output integer array<br />
 
-header files with documentation :
-  vint.h     - variable byte
-  vsimple.h  - variable simple
-  vp4dc.h,vp4dd.h - TurboPFor
-  bitpack.h,bitunpack.h - Bit Packing
+header files with documentation :<br />
+  vint.h     - variable byte<br />
+  vsimple.h  - variable simple<br />
+  vp4dc.h,vp4dd.h - TurboPFor<br />
+  bitpack.h,bitunpack.h - Bit Packing<br />
   
 
 ## Reference:
