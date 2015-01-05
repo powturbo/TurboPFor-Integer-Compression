@@ -75,14 +75,15 @@ coming soon!
   - Download "gov2.sorted" (or clueweb09) + query file "aol.txt" 
     from "http://lemire.me/data/integercompression2014.html"
 
-  - Create index file gov2.sorted.i<br />
-    ./idxcr gov2.sorted .<br />
+  - Create index file gov2.sorted.i
+
+    *./idxcr gov2.sorted .*
 
     create inverted index file "gov2.sorted.i" in the current directory
 
-  - Benchmarking intersections<br />
+  - Benchmarking intersections
 
-    ./idxqry gov2.sorted.i aol.txt<br />
+    *./idxqry gov2.sorted.i aol.txt*
 
     run queries in file "aol.txt" over the index of gov2 file
 
