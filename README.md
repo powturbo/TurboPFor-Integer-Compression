@@ -36,7 +36,8 @@ coming soon!
 
 #### data files
  - clueweb09.sorted from FastPFor (http://lemire.me/data/integercompression2014.html)<br />
-   ./icbench -n10000000000 clueweb09.sorted
+
+   *./icbench -c1 -n10000000000 clueweb09.sorted*
 
 <table>
 <tr><th>Size</th><th>Ratio in %</th><th>Bits/Integer</th><th>C Time MB/s</th><th>D Time MB/s</th><th>Function</th></tr>
