@@ -113,5 +113,5 @@ header files with documentation :
  - Sorted integer datasets from http://lemire.me/data/integercompression2014.html
  - OptP4 and Simple-16 from http://jinruhe.com/ 
 
-#----------------------------------------------------------------------------------
+#------------------------------------------------
 
