@@ -16,12 +16,12 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    bitpack64_.h - "Integer Compression" binary packing 
+    bitpack64_.h - "Integer Compression" bit packing include file
 **/
 
 #define BITBLK32_1(ip, i, op, parm) { ; register uint32_t w;;\

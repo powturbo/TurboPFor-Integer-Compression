@@ -16,12 +16,12 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    bitunpack64_.c - "Integer Compression" binary packing 
+    bitunpack64_.c - "Integer Compression" scalar bit packing
 **/
 
 #define BITUNBLK32_0(ip, i, op, parm) { \
@@ -141,7 +141,7 @@
   BITUNBLK64_2(ip, 0, op, parm);  DSTI(op); ip += 2*4/sizeof(ip[0]);\
 }
 
-#define BITUNBLK64_3(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*3+0)*8/sizeof(ip[0]));register uint32_t w1 = *(uint32_t *)(ip+(i*3+1)*8/sizeof(ip[0]));\
+#define BITUNBLK64_3(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*3+0)*8/sizeof(ip[0]));\
   DST(op,i*64+ 0, (w0 ) & 0x7, parm);\
   DST(op,i*64+ 1, (w0 >>  3) & 0x7, parm);\
   DST(op,i*64+ 2, (w0 >>  6) & 0x7, parm);\
@@ -162,7 +162,7 @@
   DST(op,i*64+17, (w0 >> 51) & 0x7, parm);\
   DST(op,i*64+18, (w0 >> 54) & 0x7, parm);\
   DST(op,i*64+19, (w0 >> 57) & 0x7, parm);\
-  DST(op,i*64+20, (w0 >> 60) & 0x7, parm);  \
+  DST(op,i*64+20, (w0 >> 60) & 0x7, parm);  register uint32_t w1 = *(uint32_t *)(ip+(i*3+1)*8/sizeof(ip[0]));\
 \
   DST(op,i*64+21, (w0 >> 63) | (w1 <<  1) & 0x7, parm);\
   DST(op,i*64+22, (w1 >>  2) & 0x7, parm);\
@@ -181,28 +181,28 @@
   BITUNBLK64_3(ip, 0, op, parm);  DSTI(op); ip += 3*4/sizeof(ip[0]);\
 }
 
-#define BITUNBLK64_4(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip/*+(i*1+0)*8/sizeof(ip[0])*/);ip += 8/sizeof(ip[0]);\
-  DST(op,i*16+ 0, (w0 ) & 0xf, parm);\
-  DST(op,i*16+ 1, (w0 >>  4) & 0xf, parm);\
-  DST(op,i*16+ 2, (w0 >>  8) & 0xf, parm);\
-  DST(op,i*16+ 3, (w0 >> 12) & 0xf, parm);\
-  DST(op,i*16+ 4, (w0 >> 16) & 0xf, parm);\
-  DST(op,i*16+ 5, (w0 >> 20) & 0xf, parm);\
-  DST(op,i*16+ 6, (w0 >> 24) & 0xf, parm);\
-  DST(op,i*16+ 7, (w0 >> 28) & 0xf, parm);\
-  DST(op,i*16+ 8, (w0 >> 32) & 0xf, parm);\
-  DST(op,i*16+ 9, (w0 >> 36) & 0xf, parm);\
-  DST(op,i*16+10, (w0 >> 40) & 0xf, parm);\
-  DST(op,i*16+11, (w0 >> 44) & 0xf, parm);\
-  DST(op,i*16+12, (w0 >> 48) & 0xf, parm);\
-  DST(op,i*16+13, (w0 >> 52) & 0xf, parm);\
-  DST(op,i*16+14, (w0 >> 56) & 0xf, parm);\
-  DST(op,i*16+15, (w0 >> 60), parm);;\
+#define BITUNBLK64_4(ip, i, op, parm) { register uint64_t w0 = *(uint64_t *)(ip+(i*1+0)*8/sizeof(ip[0]));\
+  DST(op,i*16+ 0, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 1, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 2, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 3, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 0, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 1, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 2, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 3, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 0, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 1, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 2, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 3, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 0, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 1, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
+  DST(op,i*16+ 2, (unsigned char)w0 & 0xf, parm);\
+  DST(op,i*16+ 3, (unsigned char)w0 >> 4, parm); w0 >>= 8;\
 }
 
 #define BITUNPACK64_4(ip,  op, parm) { \
   BITUNBLK64_4(ip, 0, op, parm);\
-  BITUNBLK64_4(ip, 1, op, parm);  DSTI(op); /*ip += 4*4/sizeof(ip[0]);*/\
+  BITUNBLK64_4(ip, 1, op, parm);  DSTI(op); ip += 4*4/sizeof(ip[0]);\
 }
 
 #define BITUNBLK64_5(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*5+0)*8/sizeof(ip[0]));\
@@ -330,14 +330,14 @@
 }
 
 #define BITUNBLK64_8(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*1+0)*8/sizeof(ip[0]));\
-  DST(op,i*8+ 0, (w0 ) & 0xff, parm);\
-  DST(op,i*8+ 1, (w0 >>  8) & 0xff, parm);\
-  DST(op,i*8+ 2, (w0 >> 16) & 0xff, parm);\
-  DST(op,i*8+ 3, (w0 >> 24) & 0xff, parm);\
-  DST(op,i*8+ 4, (w0 >> 32) & 0xff, parm);\
-  DST(op,i*8+ 5, (w0 >> 40) & 0xff, parm);\
-  DST(op,i*8+ 6, (w0 >> 48) & 0xff, parm);\
-  DST(op,i*8+ 7, (w0 >> 56) , parm);;\
+  DST(op,i*8+ 0, (unsigned char)(w0 ),      parm);\
+  DST(op,i*8+ 1, (unsigned char)(w0 >>  8), parm);\
+  DST(op,i*8+ 2, (unsigned char)(w0 >> 16), parm);\
+  DST(op,i*8+ 3, (unsigned char)(w0 >> 24), parm);\
+  DST(op,i*8+ 4, (unsigned char)(w0 >> 32), parm);\
+  DST(op,i*8+ 5, (unsigned char)(w0 >> 40), parm);\
+  DST(op,i*8+ 6, (unsigned char)(w0 >> 48), parm);\
+  DST(op,i*8+ 7, (unsigned char)(w0 >> 56), parm);;\
 }
 
 #define BITUNPACK64_8(ip,  op, parm) { \

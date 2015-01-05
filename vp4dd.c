@@ -16,7 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
@@ -24,17 +24,20 @@
     vp4dd.c - "Integer Compression" Turbo PforDelta 
 **/
 
+#include <stdint.h>
 #include "conf.h"
 #include "bitunpack.h"
 #include "vp4dd.h"
-
+ 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
-#include <stdint.h>
+
 #define USIZE 32
 #include "vp4dd_.h"
+#undef USIZE
 
-//#define USIZE 16
-//#include "vp4dd_.h"
+#define USIZE 16
+#include "vp4dd_.h"
+#undef USIZE
 
 
 

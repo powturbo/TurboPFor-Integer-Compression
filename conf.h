@@ -16,19 +16,20 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
     conf.h - "Integer Compression" config & common 
 **/
-
+#ifndef CONF_H
+#define CONF_H
 
   #if defined(__GNUC__)
 #define ALIGNED(t,v,n)  __attribute__ ((aligned (n))) t v
-#define ALWAYS_INLINE   __attribute__((always_inline))
-#define _PACKED 	__attribute__ ((packed))
+#define ALWAYS_INLINE   inline __attribute__((always_inline))
+#define _PACKED 		__attribute__ ((packed))
 #define likely(x)     	__builtin_expect((x),1)
 #define unlikely(x)   	__builtin_expect((x),0)
 
@@ -46,6 +47,11 @@ static inline int bsr32(int x) {
   int b = -1;
   asm("bsrl %1,%0" : "+r" (b): "rm" (x) );
   return b + 1;
+}
+
+static inline int __bsr32(int x) {
+  asm("bsr %1,%0" : "=r" (x) : "rm" (x) );
+  return x;
 }
 
 static inline int bsr64(unsigned long long x) {
@@ -66,5 +72,25 @@ static inline int bsr64(unsigned long long x) {
   #else
 #error "only gcc support in this version"
   #endif
+//---------------------------------------------------------------------------------------------------
+#define ctou8(__cp)  (*(unsigned char *)(__cp))
+#define ctou16(__cp) (*(unsigned short *)(__cp))
+#define ctou24(__cp) ((*(unsigned *)(__cp)) & 0xffffff)
+#define ctou32(__cp) (*(unsigned *)(__cp))
+#define ctou64(__cp) (*(unsigned long long *)(__cp))
+#define ctou48(__cp) ((*(unsigned long long *)(__cp)) & 0xffffffffffff)
+#define ctou(__cp_t, __cp)  (*(__cp_t *)(__cp))
+  #ifndef min
+#define min(x,y) (((x)<(y)) ? (x) : (y))
+#define max(x,y) (((x)>(y)) ? (x) : (y))
+  #endif
 
+  #ifdef NDEBUG
+#define AS(expr, fmt,args...)
+  #else
+#include <stdio.h>
+#define AS(expr, fmt,args...) if(!(expr)) { fflush(stdout);fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); abort(); }
+  #endif
+#define die(fmt,args...) do { fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); exit(-1); } while(0)
 
+#endif

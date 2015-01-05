@@ -16,7 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
@@ -29,6 +29,6 @@
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
-unsigned char *bitpack32(unsigned       *__restrict__ in, int n, int nb, unsigned char *__restrict__ out) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; } 
-unsigned char *bitpack16(unsigned short *__restrict__ in, int n, int nb, unsigned char *__restrict__ out) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; }
+unsigned char *bitpack32(unsigned       *__restrict in, int n, int nb, unsigned char *__restrict out) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; } 
+unsigned char *bitpack16(unsigned short *__restrict in, int n, int nb, unsigned char *__restrict out) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; }
 

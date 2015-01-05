@@ -16,33 +16,43 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
     vp4dd.h - "Integer Compression" Turbo PforDelta 
 **/
-unsigned char *p4ddec32( unsigned char *__restrict__ in, int n, unsigned *__restrict__ out);
-unsigned char *p4ddecx32(unsigned char *__restrict__ in, int n, unsigned *__restrict__ out);
 
-//-----------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define P4DSIZE 128 //64 //
+#define P4DN 	(P4DSIZE/64)
+
+//---------------- Bulk decompress of TurboPFor compressed integer array -------------------------------------------------------
+// decompress a previously (with p4denc32) 32 bits packed array. Return value = end of packed buffer in 
+unsigned char *p4ddec32( unsigned char *__restrict in, int n, unsigned *__restrict out);
+
+//---------------- Direct Access functions to compressed TurboPFor array -------------------------------------------------------
 #define P4D_PAD8(__x) 		( (((__x)+8-1)/8) )
 #define P4D_XB(__x) 		((__x & 1)?(__x >> 8):0)
 #define P4D_B(__x)  		((__x >> 1) & 0x3f)
-#define P4D_ININC(__in, __x) 	__in += 1+(__x & 1)
+#define P4D_ININC(__in, __x) __in += 1+(__x & 1)
 
-static inline unsigned vp4dbits(unsigned char *__restrict__ in, int *xb) { unsigned i = *(unsigned short *)in; *xb = P4D_XB(i); return P4D_B(i); }
+static inline unsigned vp4dbits(unsigned char *__restrict in, int *xb) { unsigned i = *(unsigned short *)in; *xb = P4D_XB(i); return P4D_B(i); }
 
 struct p4d {
   unsigned long long *xmap;
   unsigned char *ex;
-  unsigned i,xb,cum[2];
+  unsigned i,xb,cum[P4DN+1];
   int oval,idx;
 };
 
-static inline void p4dini(struct p4d *p4d, unsigned char **__restrict__ pin, int n, unsigned *b) { unsigned char *in = *pin;
-  static unsigned long long xmap[2] = { 0 };
+// prepare direct access usage
+static inline void p4dini(struct p4d *p4d, unsigned char *__restrict *pin, int n, unsigned *b) { unsigned char *in = *pin;
+  static unsigned long long xmap[P4DN+1] = { 0 };
 
   unsigned i  = *(unsigned short *)in;
   p4d->i      = i;
@@ -52,22 +62,33 @@ static inline void p4dini(struct p4d *p4d, unsigned char **__restrict__ pin, int
   *pin = in;
  
   p4d->ex     = in + P4D_PAD8(n*(*b));
-  p4d->xmap   = (i&1)?p4d->ex:xmap;
-  p4d->ex    += (i&1)?16:0;
+  p4d->xmap   = (i&1)?(unsigned long long *)p4d->ex:xmap;
+  p4d->ex    += (i&1)?8*P4DN:0;
   p4d->cum[0] = 0;
-  p4d->cum[1] = popcnt64(p4d->xmap[0]);  
+  for(i=1; i < P4DN; i++) p4d->cum[i] = p4d->cum[i-1] + popcnt64(p4d->xmap[i-1]);  
   p4d->oval   = p4d->idx  = -1;
 }
 
-static ALWAYS_INLINE unsigned vp4dget32(struct p4d p4d, unsigned char *__restrict__ in, unsigned b, unsigned idx) { unsigned bi, cl, u = _bitgetx32(in, b, idx*b);																
-  if(unlikely(p4d.xmap[bi = idx>>6] & (1ull<<(cl = idx & 0x3f)))) u |= _bitgetx32(p4d.ex, p4d.xb, (p4d.cum[bi] + popcnt64(p4d.xmap[bi] & ~((~0ull)<<cl)))*p4d.xb ) << b;
+// Get a single value with index "idx" from a p4denc32 packed array
+static ALWAYS_INLINE unsigned vp4dget32(struct p4d p4d, unsigned char *__restrict in, unsigned b, unsigned idx) { unsigned bi, cl, u = _bitgetx32(in, b, idx*b);																
+  if(unlikely(p4d.xmap[bi = idx>>6] & (1ull<<(cl = (idx & 0x3f))))) u |= _bitgetx32(p4d.ex, p4d.xb, (p4d.cum[bi] + popcnt64(p4d.xmap[bi] & ~((~0ull)<<cl)))*p4d.xb ) << b;
   return u;
 }
 
-static ALWAYS_INLINE unsigned vp4dget16(struct p4d p4d, unsigned char *__restrict__ in, unsigned b, unsigned idx) { unsigned bi, cl, u = _bitgetx16(in, b, idx*b);
-  if(unlikely(p4d.xmap[bi = idx>>6] & (1ull<<(cl = idx & 0x3f)))) u |= _bitgetx32(p4d.ex, p4d.xb, (p4d.cum[bi] + popcnt64(p4d.xmap[bi] & ~((~0ull)<<cl)))*p4d.xb ) << b;
+// like vp4dget32 but for 16 bits packed array (with p4denc16)	
+static ALWAYS_INLINE unsigned vp4dget16(struct p4d p4d, unsigned char *__restrict in, unsigned b, unsigned idx) { unsigned bi, cl, u = _bitgetx16(in, b, idx*b);
+  if(unlikely(p4d.xmap[bi = idx>>6] & (1ull<<(cl = (idx & 0x3f))))) u |= _bitgetx32(p4d.ex, p4d.xb, (p4d.cum[bi] + popcnt64(p4d.xmap[bi] & ~((~0ull)<<cl)))*p4d.xb ) << b;
   return u;
 }
 
-static ALWAYS_INLINE int vp4dgeq(struct p4d *p4d, unsigned char *__restrict__ in, unsigned b, int val) { do p4d->oval += vp4dget(*p4d, in, b, ++p4d->idx)+1; while(p4d->oval < val); return p4d->oval; }
+// Get the next single value greater of equal to val
+static ALWAYS_INLINE int vp4dgeq(struct p4d *p4d, unsigned char *__restrict in, unsigned b, int val) { do p4d->oval += vp4dget(*p4d, in, b, ++p4d->idx)+1; while(p4d->oval < val); return p4d->oval; }
 
+/* like p4ddec32 but using direct access. This is only a demo showing direct access usage. Use p4ddec32 for instead for decompressing entire blocks */
+unsigned char *p4ddecx32(unsigned char  *__restrict in, int n, unsigned *__restrict out);
+unsigned char *p4dfdecx32(unsigned char *__restrict in, int n, unsigned start, unsigned *__restrict out);
+unsigned char *p4df0decx32(unsigned char *__restrict in, int n, unsigned start, unsigned *__restrict out);
+
+#ifdef __cplusplus
+}
+#endif

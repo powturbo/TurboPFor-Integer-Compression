@@ -16,27 +16,33 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    vsimple.h - "Integer Compression" variable simple 
+    vsimple.h - "Integer Compression" variable simple "SimpleV"
+	this belongs to the integer compression known as "simple family", like simple-9,simple-16
+	or simple-8b. SimpleV is compressing integers in groups into variable word size 32, 40 and 64 bits + RLE (run length encoding) 
+	SimpleV is faster than simple-16 and compress better than simple-16 or simple-8b.	
 **/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned char *vsenc32(unsigned       *__restrict__ in, int n, unsigned char  *__restrict__ out);
-unsigned char *vsdec32(unsigned char  *__restrict__ in, int n, unsigned       *__restrict__ out);
+// compress array with n unsigned (32 bits in[n]) values to the buffer out. Return value = end of compressed buffer out
+unsigned char *vsenc32(unsigned       *__restrict in, int n, unsigned char  *__restrict out);
 
-unsigned char *vsenc16(unsigned short *__restrict__ in, int n, unsigned char  *__restrict__ out);
-unsigned char *vsdec16(unsigned char  *__restrict__ in, int n, unsigned short *__restrict__ out);
+// decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
+unsigned char *vsdec32(unsigned char  *__restrict in, int n, unsigned       *__restrict out);
+
+// like vsenc32 but for 16 bits values
+unsigned char *vsenc16(unsigned short *__restrict in, int n, unsigned char  *__restrict out);
+
+// like vsdec32 but for 16 bits values
+unsigned char *vsdec16(unsigned char  *__restrict in, int n, unsigned short *__restrict out);
 
 #ifdef __cplusplus
 }
 #endif
-
-
-

@@ -16,36 +16,63 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    bitunpack.h - "Integer Compression" binary packing 
+    bitunpack.h - "Integer Compression" Binary Packing 
 **/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// BP
-static inline unsigned  bitgetx32(unsigned *__restrict__ in, unsigned b, unsigned  idx) { unsigned bidx = b*idx; return ((*(unsigned long long *)(in+(bidx>>5))) >> (bidx&0x1f)) & ((1ull<<b)-1); }
-static inline unsigned _bitgetx32(unsigned *__restrict__ in, unsigned b, unsigned bidx) {                        return ((*(unsigned long long *)(in+(bidx>>5))) >> (bidx&0x1f)) & ((1ull<<b)-1); }
+// ---------------- Unpack a bit packed integer array --------------------------------------------------------------------------------------
+// unpack a bitpacked integer array. Return value = end of packed buffer in 
+unsigned char *bitunpack32(unsigned char *__restrict in, unsigned n, unsigned b, unsigned       *__restrict out);
 
-static inline unsigned  bitgetx16(unsigned *__restrict__ in, unsigned b, unsigned  idx) { unsigned bidx = b*idx; return ((*(unsigned           *)(in+(bidx>>4))) >> (bidx& 0xf)) & ((1   <<b)-1); }
-static inline unsigned _bitgetx16(unsigned *__restrict__ in, unsigned b, unsigned bidx) {                        return ((*(unsigned           *)(in+(bidx>>4))) >> (bidx& 0xf)) & ((1   <<b)-1); }
+// like bitunpack32 but for 16 bits integer array
+unsigned char *bitunpack16(unsigned char *__restrict in, unsigned n, unsigned b, unsigned short *__restrict out);
 
-unsigned char *bitunpack32(unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned       *__restrict__ out);
-unsigned char *bitunpack16(unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned short *__restrict__ out);
+// ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------------
+  #ifdef __AVX2__
+#include <x86intrin.h>
+  #else
+#define _bzhi_u64(__u, __b) ((__u) & ((1ull<<__b)-1))
+#define _bzhi_u32(__u, __b) ((__u) & ((1u  <<__b)-1))
+  #endif
 
-unsigned char * bitunpackx32(unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned *__restrict__ out);
-unsigned char *_bitunpackx32(unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned *__restrict__ out);
+// Get a single 32 bits value with index "idx" (or bit index b*idx) from packed integer array
+static ALWAYS_INLINE unsigned  bitgetx32(unsigned char *__restrict in, unsigned b, unsigned  idx) { unsigned bidx = b*idx; return _bzhi_u64( (*(unsigned long long *)((unsigned *)in+(bidx>>5))) >> (bidx&0x1f), b ); }
+static ALWAYS_INLINE unsigned _bitgetx32(unsigned char *__restrict in, unsigned b, unsigned bidx) {                        return _bzhi_u64( (*(unsigned long long *)((unsigned *)in+(bidx>>5))) >> (bidx&0x1f), b ); }
+	
+// like  bitgetx32 but for 16 bits integer array
+static ALWAYS_INLINE unsigned  bitgetx16(unsigned char *__restrict in, unsigned b, unsigned  idx) { unsigned bidx = b*idx; return _bzhi_u32( (*(unsigned           *)((unsigned *)in+(bidx>>4))) >> (bidx& 0xf), b ); }
+static ALWAYS_INLINE unsigned _bitgetx16(unsigned char *__restrict in, unsigned b, unsigned bidx) {                        return _bzhi_u32( (*(unsigned           *)((unsigned *)in+(bidx>>4))) >> (bidx& 0xf), b ); }
 
-// DFOR
-unsigned char *bitdunpack16( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned short *__restrict__ out);
-unsigned char *bitdunpack32( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out);
-unsigned char *bitdunpackb32(unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out);
+// Set a single value with index "idx" 
+static ALWAYS_INLINE void      bitsetx32(unsigned char *__restrict in, unsigned b, unsigned  idx, unsigned v) { unsigned bidx = b*idx;  unsigned long long *p = (unsigned long long *)((unsigned *)in+(bidx>>5)); *p = ( *p & ~(((1ull<<b)-1) << (bidx&0x1f)) ) | (unsigned long long)v<<(bidx&0x1f);}
+static ALWAYS_INLINE void      bitsetx16(unsigned char *__restrict in, unsigned b, unsigned  idx, unsigned v) { unsigned bidx = b*idx;  unsigned           *p = (unsigned           *)             in+(bidx>>4) ; *p = ( *p & ~(((1u  <<b)-1) << (bidx& 0xf)) ) |                     v<<(bidx& 0xf);}
 
-// FOR+
-unsigned char *bitfunpack16( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned short *__restrict__ out);
-unsigned char *bitfunpack32( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out);
-unsigned char *bitfunpackb32(unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out);
+// ---------------- DFOR : integrated bitpacking, for delta packed SORTED array (Ex. DocId in inverted index) -------------------------------
+// out[0] = start + in[0] + 1;  out[1] = out[0] + in[1] + 1; ... ;  out[i] = out[i-1] + in[i] +  1
+unsigned char *bitdunpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
+unsigned char *bitdunpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
 
-//static inline int bitgeq(unsigned char *__restrict__ in, unsigned n, unsigned b, int *oidx, int oval, int val) { unsigned idx=*oidx; while(++idx < n) { oval += bitgetb(in, b, idx)+1; if(oval >= val) { *oidx=idx; return oval; } }  return INT_MAX; }
+// out[0] = start + in[0];  out[1] = out[0] + in[1]; ... ;  out[i] = out[i-1] + in[i]
+unsigned char *bitd0unpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
+unsigned char *bitd0unpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+
+// ---------------- DaFor : Direct Access for packed SORTED array (Ex. DocId in inverted index) --------------------------------------------
+// out[i] = start + in[i] + i + 1
+unsigned char *bitfunpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
+unsigned char *bitfunpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+
+// out[i] = start + in[i] + i 
+unsigned char *bitf0unpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
+unsigned char *bitf0unpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+
+#ifdef __cplusplus
+}
+#endif
 

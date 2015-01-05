@@ -16,23 +16,22 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
     bitunpack_.h - "Integer Compression" binary packing 
 **/
-
 #include <stdint.h>
-#define DST( __op,__x, __w, __parm) *__op++ = BPI(__w,__parm)  	//__op[__x] = BPI(__w,__parm) // 
+#define DST( __op,__x, __w, __parm) *__op++ = BPI(__w, __op, __parm)  	//__op[__x] = BPI(__w,__parm) // 
 #define DSTI(__op) 						//__op += 32 // 
 
 #define USE_BITUNPACK 64
 
   #if USE_BITUNPACK == 64
 #include "bitunpack64_.h"
-#define BITUNPACK32(__ip, __n, __nbits, __op, __parm) { typeof(__op[0]) *__ope = __op + __n;/*((__n+31)&0xffffffe0u)*/;\
+#define BITUNPACK32(__ip, __n, __nbits, __op, __parm) { typeof(__op[0]) *__ope = __op + __n,*_op=__op;\
   switch(__nbits) {\
     case  0: do BITUNPACK64_0( __ip, __op, __parm) while(__op<__ope); break;\
     case  1: do BITUNPACK64_1( __ip, __op, __parm) while(__op<__ope); break;\
@@ -70,8 +69,8 @@
   }\
 } 
   #elif USE_BITUNPACK == 32
-#include "bitunpack32_.h"
-#define BITUNPACK32(__ip, __n, __nbits, __op, __parm) { typeof(__op[0]) *__ope = __op + __n;/*((__n+31)&0xffffffe0u)*/;\
+#include "bitunpack32_.h" // Not included in the github package
+#define BITUNPACK32(__ip, __n, __nbits, __op, __parm) { typeof(__op[0]) *__ope = __op + __n;\
   switch(__nbits) {\
     case  0: do BITUNPACK32_0( __ip, __op, __parm) while(__op<__ope); break;\
     case  1: do BITUNPACK32_1( __ip, __op, __parm) while(__op<__ope); break;\
@@ -106,7 +105,7 @@
     case 30: do BITUNPACK32_30(__ip, __op, __parm) while(__op<__ope); break;\
     case 31: do BITUNPACK32_31(__ip, __op, __parm) while(__op<__ope); break;\
     case 32: do BITUNPACK32_32(__ip, __op, __parm) while(__op<__ope); break;\
-  } /*printf("n=%d,%d,%d ", __n, __op, __parm - sd, __op, __parme - __op);*/\
+  }\
 } 
 #endif
 

@@ -1,22 +1,30 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
 
-- 100% C, without inline assembly
+- 100% C/C++, without inline assembly
 <p>
 - Fastest **"Variable Byte"** implementation
 <p>
 - Novel **"Variable Simple"** faster than simple16 and more compact than simple64
 <p>
-- Scalar **"Binary Packing"** with bulk decoding as fast as SIMD FastPFor in realistic (No "pure cache") scenarios
-- Binary Packing with **Direct/Random Access** without decompressing entire blocks
-- Access any single binary packed entry with **zero decompression**
+- Scalar **"Bit Packing"** with bulk decoding as fast as SIMD FastPFor in realistic and practical (No "pure cache") scenarios
+- Bit Packing with **Direct/Random Access** without decompressing entire blocks
+- Access any single bit packed entry with **zero decompression**
+- Reducing **Cache Pollution**
 <p>
-- Novel **"TurboPFor"** (Patched Frame-of-Reference) scheme with direct access or bulk decoding
+- Novel **"TurboPFor"** (Patched Frame-of-Reference) scheme with direct access or bulk decoding.
+  Outstanding compression
 <p>
 - Several times faster than other libraries
-- Usage as easy as memcpy
-- Instant access to compressed *frequency* and *position* data in inverted index with zero decoding
- 
+- Usage in C/C++ as easy as memcpy
+- Most functions optimized for speed and others for high compression ratio
+- **New:** Include more functions
+<p>
+- Instant access to compressed *frequency* and *position* data in inverted index with zero decompression
+- **New:** Inverted Index Demo + Benchmarks: Intersection of lists of sorted integers.
+- more than **1000 queries per second** on gov2 (25 millions documents) on a **SINGLE** core.
+- Decompress only the minimum necessary blocks.
+
 # Benchmark:
 i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10.
 - Single thread
@@ -47,23 +55,63 @@ coming soon!
 ## Compile:
   make
 
-## Usage
+## Benchmark
 ###### Synthetic data: 
-  1. test all functions<br \>
+  1. test all functions 
     ./icbench -a1.0 -m0 -x8 -n100000000
 
     - zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)
     - number of integers = 100000000
     - integer range from 0 to 255 (integer size = 0 to 8 bits)
   
-  2. individual function test (ex. copy TurboPack TurboPack Direct access)<br \>
-    ./icbench -a1.0 -m0 -x8 -ecopy/turbopack/turbopack,da -n100000000
+  2. individual function test (ex. copy TurboPack TurboPack Direct access)
+    ./icbench -a1.0 -m0 -x8 -ecopy/turbopack/turbopackda -n100000000
 
 ###### Data files: 
-  - Data file Benchmark (file format as in FastPFOR)<br \>
-    ./icbench -n10000000000 clueweb09.sorted
+  - Data file Benchmark (file format as in FastPFOR)
+    ./icbench gov2.sorted
+
+###### Benchmarking intersections
+  - Download "gov2.sorted" (or clueweb09) + query file "aol.txt" 
+    from "http://lemire.me/data/integercompression2014.html"
+
+  - Create index file gov2.sorted.i
+    ./idxcr gov2.sorted .
+    create inverted index file "gov2.sorted.i" in the current directory
+
+  - Benchmarking intersections
+    ./idxqry gov2.sorted.i aol.txt
+    run queries in file "aol.txt" over the index of gov2 file
+
+   8GB Minimum of RAM required (16GB recommended for benchmarking "clueweb09" files).
+
+
+## Function usage:
+In general compression/decompression functions are of the form:
+
+   char *endptr = compress( unsigned *in, int n, char *out) 
+   endptr : set by compress to the next character in "out" after the compressed buffer
+   in     : input integer array 
+   n      : number of elements
+   out    : pointer to output buffer
+   
+   char *endptr = decompress( char *in, int n, unsigned *out) 
+   endptr : set by decompress to the next character in "in" after the decompressed buffer
+   in     : pointer to input buffer
+   n      : number of elements
+   out    : output integer array
+
+header files with documentation :
+  vint.h     - variable byte
+  vsimple.h  - variable simple
+  vp4dc.h,vp4dd.h - TurboPFor
+  bitpack.h,bitunpack.h - Bit Packing
+  
 
 ## Reference:
- - "SIMD-BitPack FPF" from FastPFor https://github.com/lemire/simdcomp 
+ - "SIMD-BitPack FPF" from FastPFor https://github.com/lemire/simdcomp
+ - Sorted integer datasets from http://lemire.me/data/integercompression2014.html
  - OptP4 and Simple-16 from http://jinruhe.com/ 
+
+#----------------------------------------------------------------------------------
 

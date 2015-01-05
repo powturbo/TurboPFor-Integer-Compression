@@ -16,7 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
@@ -24,15 +24,23 @@
     vp4dc_.c - "Integer Compression" Turbo PforDelta 
 **/
 #define uint_t TEMPLATE3(uint, USIZE, _t)
+#define P4DN 	(P4DSIZE/64)
 
-unsigned char *TEMPLATE2(p4denc, USIZE)(uint_t *__restrict__ in, int n, unsigned char *__restrict__ out) { 
-  int i; unsigned cnt[USIZE+1] = {0}; uint_t b = 0; 
-  for(i = 0; i < n; i++) b |= in[i], ++cnt[TEMPLATE2(bsr, USIZE)(in[i])]; 
+unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict out) {  unsigned char *op = out;
+  int i,b=0; unsigned cnt[USIZE+1] = {0}; uint_t *ip; 
+  
+  for(ip = in; ip < in+(n&~3); ) { 
+    ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
+    ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
+    ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
+    ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++; 
+  }
+  while(ip < in+n) b |= *ip, ++cnt[TEMPLATE2(bsr, USIZE)(*ip++)];
   b = TEMPLATE2(bsr, USIZE)(b); 
 
-  unsigned xb=b, ml = PAD8(n*b)+1,x = cnt[b];
+  unsigned xb = b, ml = PAD8(n*b)+1,x = cnt[b];
   for(i = b-1; i >= 0; i--) { 
-    unsigned l = PAD8(n*i) + (x?(2+16+PAD8(x*(xb-i))):1); 
+    unsigned l = PAD8(n*i) + 2+P4DN*8+PAD8(x*(xb-i)); 
     if(l < ml) b = i, ml = l; 
     x += cnt[i]; /*if(x >= 64) break;*/ 
   }
@@ -40,9 +48,10 @@ unsigned char *TEMPLATE2(p4denc, USIZE)(uint_t *__restrict__ in, int n, unsigned
     *out++ = b << 1; 
     return TEMPLATE2(bitpack, USIZE)(in,  n,  b, out); 
   }
-  xb-=b;
-  uint_t _in[0x100], inx[0x100]; unsigned miss[0x100];
-  unsigned long long xmap[2]; xmap[0] = xmap[1] = 0; unsigned xn, msk = (1ull<<b)-1;
+  xb -= b;
+  uint_t _in[P4DSIZE], inx[P4DSIZE*2]; 
+  unsigned miss[P4DSIZE],xn, msk = (1ull<<b)-1;
+  unsigned long long xmap[P4DN+1];  for(i = 0; i < P4DN; i++) xmap[i] = 0;
   for(xn = i = 0; i < n; i++) {
     _in[i]    = in[i] & msk; 
     miss[xn]  = i; 
@@ -51,12 +60,10 @@ unsigned char *TEMPLATE2(p4denc, USIZE)(uint_t *__restrict__ in, int n, unsigned
   for(i = 0; i < xn; i++) { 
     unsigned c = miss[i]; 
     inx[i] = in[c] >> b; 
-    xmap[c>>6] |= (1ull<<(c&0x3f)); 
+    xmap[c>>6] |= (1ull << (c&0x3f)); 
   }
-  *(unsigned short *)out = xb << 8 | b << 1 | 1; out += 2; out = TEMPLATE2(bitpack, USIZE)(_in,  n,  b, out);					
-  *(unsigned long long *)out = xmap[0]; 	 out += 8; 
-  *(unsigned long long *)out = xmap[1]; 	 out += 8; 
-  memset(&inx[xn],0,128); 
-  return TEMPLATE2(bitpack, USIZE)(inx, xn, xb, out);
+  *(unsigned short *)out = xb << 8 | b << 1 | 1; out += 2; out = TEMPLATE2(bitpack, USIZE)(_in,  n,  b, out);	
+  for(i=0;i < P4DN; i++) { *(unsigned long long *)out = xmap[i]; out += 8; }   //memset(&inx[xn],0,P4DSIZE); 
+  return TEMPLATE2(bitpack, USIZE)(inx, xn, xb, out);  //if(op-out >= PAD8(n*b)+1) { printf("Fatal error b=%d,xb=%d\n", b, xb); exit(0); }  return out;
 }
 

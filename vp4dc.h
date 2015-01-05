@@ -16,12 +16,21 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    vp4dc.h - "Integer Compression" Turbo PforDelta 
+    vp4dc.h - "Integer Compression" TurboPfor  (see vp4dd.h for decompression) 
 **/
-unsigned char *p4denc32(unsigned       *__restrict__ in, int n, unsigned char *__restrict__ out);
-unsigned char *p4denc16(unsigned short *__restrict__ in, int n, unsigned char *__restrict__ out);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// compress integer array with n values to the buffer out. Return value = end of compressed buffer out
+unsigned char *p4denc32(unsigned       *__restrict in, int n, unsigned char *__restrict out);
+unsigned char *p4denc16(unsigned short *__restrict in, int n, unsigned char *__restrict out);
+
+#ifdef __cplusplus
+}
+#endif

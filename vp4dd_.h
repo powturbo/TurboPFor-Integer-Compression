@@ -16,14 +16,15 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
     vp4dd_.h - "Integer Compression" Turbo PforDelta 
 **/
-  #ifdef __AVX2__
+
+  #ifdef USE__AVX2__  // disabled per default.
 #include <immintrin.h>
 
 static ALIGNED(unsigned char, shuffles[256][8], 32) = {
@@ -291,23 +292,43 @@ static ALIGNED(unsigned char, shuffles[256][8], 32) = {
 
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
-unsigned char *TEMPLATE2(p4ddec, USIZE)(unsigned char *__restrict__ in, int n, uint_t *__restrict__ out) { 
-  uint_t ex[0x100+8]; unsigned i = *(unsigned short *)in; uint_t b = P4D_B(i); unsigned xb = P4D_XB(i); 
+unsigned char *TEMPLATE2(p4ddec, USIZE)(unsigned char *__restrict in, int n, uint_t *__restrict out) { 
+  uint_t ex[0x100+8]; 
+  unsigned i = *(unsigned short *)in; 
+  uint_t b = P4D_B(i); 
+  unsigned xb = P4D_XB(i); 
   P4D_ININC(in,i); 
-  in = TEMPLATE2(bitunpack, USIZE)(in, n, b, out); 																															
-  if(i & 1) { 
-    unsigned long long b0 = *(unsigned long long *)in; in += 8; unsigned long long b1 = *(unsigned long long *)in; in += 8;    		
-    in = TEMPLATE2(bitunpack, USIZE)(in, popcnt64(b0) + popcnt64(b1), xb, ex); 								
-      #ifdef __AVX2__
-    unsigned *op,*pex = ex;
-    for(op = out;    b0; b0 >>= 8,op += 8) { const unsigned m = (unsigned char)b0, mc=popcnt32(m), s = pex[mc]; pex[mc]=0;		
-      _mm256_storeu_si256((__m256i *)op, _mm256_add_epi32(_mm256_loadu_si256((const __m256i*)op), _mm256_permutevar8x32_epi32(_mm256_slli_epi32(_mm256_load_si256((const __m256i*)pex), b), _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)shuffles[m])) )) ); pex += mc; *pex=s;
-    } 
-    for(op = out+64; b1; b1 >>= 8,op += 8) { const unsigned m = (unsigned char)b1, mc=popcnt32(m), s = pex[mc]; pex[mc]=0;		
-      _mm256_storeu_si256((__m256i *)op, _mm256_add_epi32(_mm256_loadu_si256((const __m256i*)op), _mm256_permutevar8x32_epi32(_mm256_slli_epi32(_mm256_load_si256((const __m256i*)pex), b), _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)shuffles[m])) )) ); pex += mc; *pex=s;
-    } 
-      #elif defined(__SSE4_1__)
+  in = TEMPLATE2(bitunpack, USIZE)(in, n, b, out);
 
+  if(i & 1) { 
+      #if P4DN == 2
+	unsigned long long bb[P4DN]; unsigned num=0; 
+    bb[0] = *(unsigned long long *)in; in += 8; 
+    bb[1] = *(unsigned long long *)in; in += 8;  
+    in = TEMPLATE2(bitunpack, USIZE)(in, popcnt64(bb[0]) + popcnt64(bb[1]), xb, ex); 								
+	  #else
+	unsigned long long bb[P4DN]; unsigned num=0; 
+	for(i = 0; i < P4DN; i++) { bb[i] = *(unsigned long long *)in; in += 8; num += popcnt64(bb[i]); }  
+    in = TEMPLATE2(bitunpack, USIZE)(in, num, xb, ex); 		
+	  #endif
+	  
+      #if 0 //def __AVX2__
+    uint_t *op,*pex = ex;
+      #if 0 //P4DN == 2
+    for(op = out;    b0; b0 >>= 8,op += 8) { unsigned m = (unsigned char)b0, mc=popcnt32(m), s = pex[mc]; pex[mc]=0;		
+      _mm256_storeu_si256((__m256i *)op, _mm256_add_epi32(_mm256_loadu_si256((const __m256i*)op), _mm256_permutevar8x32_epi32(_mm256_slli_epi32(_mm256_load_si256((const __m256i*)pex), b), _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)shuffles[m])) )) ); pex += mc; *pex=s;
+    } 
+    for(op = out+64; b1; b1 >>= 8,op += 8) { unsigned m = (unsigned char)b1, mc=popcnt32(m), s = pex[mc]; pex[mc]=0;		
+      _mm256_storeu_si256((__m256i *)op, _mm256_add_epi32(_mm256_loadu_si256((const __m256i*)op), _mm256_permutevar8x32_epi32(_mm256_slli_epi32(_mm256_load_si256((const __m256i*)pex), b), _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)shuffles[m])) )) ); pex += mc; *pex=s;
+    } 
+	  #else
+	for(i = 0; i < P4DN; i++) {
+    for(op = out;    bb[i]; bb[i] >>= 8,op += 8) { unsigned m = (unsigned char)bb[i], mc=popcnt32(m), s = pex[mc]; pex[mc]=0;		
+      _mm256_storeu_si256((__m256i *)op, _mm256_add_epi32(_mm256_loadu_si256((const __m256i*)op), _mm256_permutevar8x32_epi32(_mm256_slli_epi32(_mm256_load_si256((const __m256i*)pex), b), _mm256_cvtepu8_epi32(_mm_loadl_epi64((const __m128i *)shuffles[m])) )) ); pex += mc; *pex=s;
+    } out += 64; 
+	}
+	  #endif
+      #elif defined(__SSE4_1__)
   static ALIGNED(char, shuffles[16][16], 16) = {
   #define _ 0x80
         { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
@@ -328,23 +349,38 @@ unsigned char *TEMPLATE2(p4ddec, USIZE)(unsigned char *__restrict__ in, int n, u
         { 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15 }, 
   #undef _
     };                                        
-    unsigned *op,*pex = ex; 
-    for(op = out; b0; b0 >>= 4,op+=4) { const unsigned m = b0&0xf; 
+    uint_t *op,*pex = ex; 
+	
+        #if P4DN == 2
+    for(op = out;  bb[0]; bb[0] >>= 4,op+=4) { const unsigned m = bb[0]&0xf; 
       _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
     } 
-    for(op=out+64; b1; b1 >>= 4,op+=4) { const unsigned m = b1&0xf; 
+    for(op=out+64; bb[1]; bb[1] >>= 4,op+=4) { const unsigned m = bb[1]&0xf; 
       _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
     }
+	    #else
+    for(i = 0; i < P4DN; i++) { // Loop unrolling
+      for(op = out;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf; 
+        _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+      } out+=64; 
+	}
+	    #endif
       #else
     unsigned k = 0;
-    while(b0) { unsigned x = ctzll(b0); out[x] += ex[k++]<<b; b0 ^= (1ull<<x); } out += 64;
-    while(b1) { unsigned x = ctzll(b1); out[x] += ex[k++]<<b; b1 ^= (1ull<<x); }       				
+        #if P4DN == 2
+    while(bb[0]) { unsigned x = ctzll(bb[0]); out[x] += ex[k++]<<b; bb[0] ^= (1ull<<x); } out += 64;
+    while(bb[1]) { unsigned x = ctzll(bb[1]); out[x] += ex[k++]<<b; bb[1] ^= (1ull<<x); }    
+        #else
+    for(i = 0; i < P4DN; i++) {
+	  while(bb[i]) { unsigned x = ctzll(b0); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
+	}
+        #endif	  
       #endif
   }
   return in;
 }
 
-unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict__ in, int n, uint_t *__restrict__ out) { 
+unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict in, int n, uint_t *__restrict out) { 
   unsigned b,i; 
   struct p4d p4d; 
   p4dini(&p4d, &in, n, &b);
@@ -352,18 +388,41 @@ unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict__ in, int n, 
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
       out[i] = TEMPLATE2(vp4dget, USIZE)(p4d, in, b, i);  
-    return p4d.ex + PAD8((p4d.cum[1] + popcnt64(p4d.xmap[1]))*p4d.xb);
+    return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.xb);
   } else {
     for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b); 
     return p4d.ex; 
   }
 }
 
-  #if 0
-int rwes;
-unsigned char *p4ddecx0(unsigned char *__restrict__ in, int n, unsigned *__restrict__ out) { unsigned b; struct p4d p4d;p4dini(&p4d, &in, n, &b); 
-  int i=0,val=-1; while(p4d.idx < n-1) /*out[i++]=*/val=vp4dgeq(&p4d, in, b, val+1);rwes+=val;
-  in = p4d.xmap; if(unlikely(p4d.i & 1)) { int xn = popcnt64(p4d.xmap[0])+popcnt64(p4d.xmap[1]); in += 16+PAD8(xn*p4d.xb); }
-  return in;																						//  printf("#%d", p4d.idx);fflush(stdout);return in + (p4d->i&1)?(p4d->xmap+2):p4d->in+ PAD8(n*xb);
+unsigned char *TEMPLATE2(p4dfdecx, USIZE)(unsigned char *__restrict in, int n, unsigned start, uint_t *__restrict out) {
+  unsigned b,i; 
+  struct p4d p4d; 
+  p4dini(&p4d, &in, n, &b);
+
+  if(unlikely(p4d.i & 1)) {
+    for(i = 0; i < n; i++) 
+      out[i] = TEMPLATE2(vp4dget, USIZE)(p4d, in, b, i)+start+i+1;  
+    return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.xb);
+  } else {
+    for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start+i+1;
+    return p4d.ex; 
+  }
 }
-  #endif
+
+unsigned char *TEMPLATE2(p4df0decx, USIZE)(unsigned char *__restrict in, int n, unsigned start, uint_t *__restrict out) {
+  unsigned b,i; 
+  struct p4d p4d; 
+  p4dini(&p4d, &in, n, &b);
+
+  if(unlikely(p4d.i & 1)) {
+    for(i = 0; i < n; i++) 
+      out[i] = TEMPLATE2(vp4dget, USIZE)(p4d, in, b, i)+start;  
+    return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.xb);
+  } else {
+    for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start;
+    return p4d.ex; 
+  }
+}
+
+

@@ -16,41 +16,50 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    bitunpack_.h - "Integer Compression" binary packing 
+    bitunpack_.h - "Integer Compression" Binary Packing 
 **/
-
+#include "conf.h"
 #include "bitunpack.h"
-
 #define PAD8(__x) (((__x)+7)/8)
-unsigned char * bitunpackx32(unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned *__restrict__ out) { unsigned i; 	   for(i=0; i < n; i++      ) out[i] =  bitgetx32(in, b, i); return in + PAD8(n*b); }
-unsigned char *_bitunpackx32(unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned *__restrict__ out) { unsigned i,k=0; for(i=0; i < n; i++,k+=b ) *out++ = _bitgetx32(in, b, k); return in + PAD8(n*b); }
 
-#define BPI(__w,__parm) __w
+//-----------------------------------------------------------------------------------------------------------------
+#define BPI(__w, __op, __parm) __w
 #include "bitunpack_.h"
-unsigned char *bitunpack32( unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned       *__restrict__ out) { unsigned char *pin = in+PAD8(n*b); BITUNPACK32(in, n, b, out, 0); return pin; }
-unsigned char *bitunpack16( unsigned char *__restrict__ in, unsigned n, unsigned b, unsigned short *__restrict__ out) { unsigned char *pin = in+PAD8(n*b); BITUNPACK32(in, n, b, out, 0); return pin; }
+unsigned char *bitunpack32( unsigned char *__restrict in, unsigned n, unsigned b,             unsigned       *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
+unsigned char *bitunpack16( unsigned char *__restrict in, unsigned n, unsigned b,             unsigned short *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
+#undef BPI
+
+//-----------------------------------------------------------------------------------------------------------------
+#define BPI(__w, __op, __parm) (__parm += (__w) + 1)
+#include "bitunpack_.h"
+unsigned char *bitdunpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitdunpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 #undef BPI
 
 //------------------------------------------------------------------------------------------
-#define BPI(__w,__parm) (__parm += (__w) + 1)
+#define BPI(__w, __op, __parm) (__parm += (__w))
 #include "bitunpack_.h"
-
-unsigned char *bitdunpack32( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out) { unsigned char *pin=in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return pin; }
-unsigned char *bitdunpackx32(unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out) { int i; for(i = 0; i < n; i++) out[i] = (start += bitgetx32(in, b, i)+1); return in + PAD8(n*b); }
-unsigned char *bitdunpack16( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned short *__restrict__ out) { unsigned char *pin=in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return pin; }
+unsigned char *bitd0unpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitd0unpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 #undef BPI
 
 //------------------------------------------------------------------------------------------
-#define BPI(__w,__parm) (__parm + (__w) + 1)
+#define BPI(__w, __op, __parm) (__parm + (__op+1-_op))//#define BPI(__w, __op, __parm) (__parm + (__w) + 1)
+#include "bitunpack_.h"
+unsigned char *bitfunpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitfunpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+#undef BPI
+
+//------------------------------------------------------------------------------------------
+#define BPI(__w, __op, __parm) (__parm + (__op-_op))
 #include "bitunpack_.h"
 
-unsigned char *bitfunpack32( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out) { unsigned char *pin=in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return pin; }
-unsigned char *bitfunpackx32(unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned       *__restrict__ out) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start+1; return in + PAD8(n*b); }
-unsigned char *bitfunpack16( unsigned char *__restrict__ in, unsigned n, unsigned b, int start, unsigned short *__restrict__ out) { unsigned char *pin=in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return pin; }
+unsigned char *bitf0unpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitf0unpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 #undef BPI
 

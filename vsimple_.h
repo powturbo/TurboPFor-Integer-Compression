@@ -16,29 +16,38 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
     vsimple_.h - "Integer Compression" variable simple
 **/
-
+#include <stdio.h>
+#include <stdlib.h>
+#include "conf.h"
 #include "vint.h"
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
-unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict__ in, int n, unsigned char *__restrict__ op) {
-  unsigned xm,m,r; 
+unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict op) {
+  unsigned xm,m,r,x; 
   uint_t *e = in+n,*ip;
   for(ip = in; ip < e; ) {
       #ifdef USE_RLE 
-    if(ip < e-4 && *ip == *(ip+1)) { uint_t *q = ip+1; while(q < e-1 && *(q+1) == *ip) q++; r = q - ip; 
-      if(r*TEMPLATE2(bsr, USIZE)(*ip) > 16 || !*ip && r>4) { m = (*ip)?33:0; goto a; }     
+    if(ip+4 < e && *ip == *(ip+1)) { 
+      uint_t *q = ip+1; 
+      while(q+1 < e && *(q+1) == *ip) q++; 
+      r = q - ip; 
+      if(r*TEMPLATE2(bsr, USIZE)(*ip) > 16 || !*ip && r>4) { 
+        m = (*ip)?33:0; 
+        goto a; 
+      }
     } else 
       #endif
-    r = 0; unsigned x = m = bsr32(*ip); 
-    while((r+1)*(xm = x > m?x:m) <= s_lim[xm]) { m = xm; x = TEMPLATE2(bsr, USIZE)(*(ip+(++r))); }											
-    if(/*xm != 32 &&*/ m) while(r < s_itm[m]) m++;
+      r = 0;
+    for(m = x = TEMPLATE2(bsr, USIZE)(*ip);(r+1)*(xm = x > m?x:m) <= s_lim[xm] && ip+r<e;) m = xm, x = TEMPLATE2(bsr, USIZE)(*(ip+(++r))); 
+    while(r < s_itm[m]) m++;	
+			
     a:; 
     switch(m) {
       case 0: ip += r; 
@@ -204,7 +213,7 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict__ in, int n, unsigned 
       case 29:
       case 30:
         *(uint64_t *)op =   13 |
-        (unsigned)ip[ 0] <<  4 | 
+        (uint64_t)ip[ 0] <<  4 | 
         (uint64_t)ip[ 1] << 34; 	ip += 2; op += 8;
         break;
       case 31:
@@ -232,11 +241,13 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict__ in, int n, unsigned 
 #define OP(__x) op[__x] // *op++ //
 #define OPI(__x) op+=__x// //
 
-unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, uint_t *__restrict__ op) { unsigned *op_=op+n;
-  while(op < op_) { register uint64_t w=*(uint64_t *)ip;
-    switch(w & 15) {  
+unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint_t *__restrict op) { 
+  uint_t *op_ = op+n;
+  while(op < op_) { 
+    register uint64_t w = *(uint64_t *)ip;
+    switch(w & 15) {
       case 0: { 
-        int r = (w>>4)&0xf; ip++; 
+        unsigned r = (w>>4)&0xf; ip++; 
         if(unlikely(r == 0xf)) { 
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
@@ -247,7 +258,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
       } break; 
       case 1:                                     
         OP( 0) = (w >>  4) & 1;      
-	OP( 1) = (w >>  5) & 1;      
+		OP( 1) = (w >>  5) & 1;      
         OP( 2) = (w >>  6) & 1;      
         OP( 3) = (w >>  7) & 1;      
         OP( 4) = (w >>  8) & 1;      
@@ -273,7 +284,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
         OP(24) = (w >> 28) & 1;      
         OP(25) = (w >> 29) & 1;      
         OP(26) = (w >> 30) & 1;      
-        OP(27) = (w >> 31) & 1; 		OPI( 28); ip+=4; 
+        OP(27) = (w >> 31) & 1; 			OPI( 28); ip+=4; 
         break;                                        
       case 2:                                     
         OP( 0) = (w >>  4) & 3;      
@@ -289,7 +300,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
         OP(10) = (w >> 24) & 3;      
         OP(11) = (w >> 26) & 3;      
         OP(12) = (w >> 28) & 3;      
-        OP(13) = (w >> 30) & 3;  		OPI( 14);  ip+=4;
+        OP(13) = (w >> 30) & 3;  			OPI( 14);  ip+=4;
         break;                                        
       case 3:                                   
         OP( 0) = (w >>  4) & 7;      
@@ -300,7 +311,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
         OP( 5) = (w >> 19) & 7;      
         OP( 6) = (w >> 22) & 7;      
         OP( 7) = (w >> 25) & 7;      
-        OP( 8) = (w >> 28) & 7;    		OPI( 9); ip+=4;
+        OP( 8) = (w >> 28) & 7;    			OPI( 9); ip+=4;
         break;                                        
       case 4:                                    
         OP( 0) = (w >>  4) & 0xf;      
@@ -326,7 +337,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
         OP(2) = (w >> 16) & 0x3f;      
         OP(3) = (w >> 22) & 0x3f;      
         OP(4) = (w >> 28) & 0x3f;      
-        OP(5) = (w >> 34) & 0x3f; 		OPI(  6); ip+=5;
+        OP(5) = (w >> 34) & 0x3f; 			OPI(  6); ip+=5;
         break;       
                                  
       case 7:                                  
@@ -353,7 +364,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
         OP(0) = (w >>  4) & 0x1ff;      
         OP(1) = (w >> 13) & 0x1ff;      
         OP(2) = (w >> 22) & 0x1ff;      
-        OP(3) = (w >> 31) & 0x1ff;     		OPI( 4); ip+=5;             
+        OP(3) = (w >> 31) & 0x1ff;      	OPI( 4); ip+=5;             
         break;   
                                      
       case 10:                                      
@@ -362,32 +373,32 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict__ ip, int n, ui
         OP(2) = (w >> 24) & 0x3ff;      
         OP(3) = (w >> 34) & 0x3ff;      
         OP(4) = (w >> 44) & 0x3ff;      
-        OP(5) = (w >> 54) & 0x3ff; 		OPI( 6); ip+=8;             
+        OP(5) = (w >> 54) & 0x3ff; 			OPI( 6); ip+=8;             
         break;                                        
       case 12:                                      
-        OP(0) = (w >>  4) & 0xfff;      
-        OP(1) = (w >> 16) & 0xfff;      
-        OP(2) = (w >> 28) & 0xfff;      
-        OP(3) = (w >> 40) & 0xfff;      
-        OP(4) = (w >> 52) & 0xfff; 		OPI( 5); ip+=8;              
+        OP(0) = (w >>  4) & 0xfffu;      
+        OP(1) = (w >> 16) & 0xfffu;      
+        OP(2) = (w >> 28) & 0xfffu;      
+        OP(3) = (w >> 40) & 0xfffu;      
+        OP(4) = (w >> 52) & 0xfffu; 			OPI( 5); ip+=8;              
         break;                                        
       case 15:                                     
-        OP(0) = (w >>  4) & 0x7fff;      
-        OP(1) = (w >> 19) & 0x7fff;      
-        OP(2) = (w >> 34) & 0x7fff;      
-        OP(3) = (w >> 49) & 0x7fff; 		OPI( 4); ip+=8;              
+        OP(0) = (w >>  4) & 0x7fffu;      
+        OP(1) = (w >> 19) & 0x7fffu;      
+        OP(2) = (w >> 34) & 0x7fffu;      
+        OP(3) = (w >> 49) & 0x7fffu; 		OPI( 4); ip+=8;              
         break;                                        
       case 11:                                      
-        OP(0) = (w >>  4) & 0xfffff; // 20      
-        OP(1) = (w >> 24) & 0xfffff;      
-        OP(2) = (w >> 44) & 0xfffff; 		OPI( 3); ip+=8;             
+        OP(0) = (w >>  4) & 0xfffffu; // 20      
+        OP(1) = (w >> 24) & 0xfffffu;      
+        OP(2) = (w >> 44) & 0xfffffu; 		OPI( 3); ip+=8;             
         break;                                        
       case 13:                                      
-        OP(0) = (w >>  4) & ((1<<30)-1);      
-        OP(1) = (w >> 34) & ((1<<30)-1);	OPI( 2); ip+=8;
-         break;                                        
+        OP(0) = (w >>  4) & 0x3fffffffu;      
+        OP(1) = (w >> 34) & 0x3fffffffu;	OPI( 2); ip+=8;
+        break;                                        
       case 14:                                     
-        OP(0) = (w >> 4) & ((1ull<<32)-1);	OPI( 1); ip+=5;              
+        OP(0) = (w >> 4) & 0xffffffffu;	OPI( 1); ip+=5;              
         break;                                        
     }
   }

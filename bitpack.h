@@ -16,15 +16,17 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo@gmail.com
+    - email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    bitpack.c - "Integer Compression" binary packing 
+    bitpack.c - "Integer Compression" Binary Packing 
 **/
 
-unsigned char *bitpack16( unsigned short *__restrict__ in, int n, int nbits, unsigned char *__restrict__ out);
-unsigned char *bitpack32( unsigned       *__restrict__ in, int n, int nbits, unsigned char *__restrict__ out);
+// Pack array with n unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
+unsigned char *bitpack32( unsigned       *__restrict in, int n, int nbits, unsigned char *__restrict out);
 
+// like bitpack32 but for 16 bits arrays
+unsigned char *bitpack16( unsigned short *__restrict in, int n, int nbits, unsigned char *__restrict out);
 
