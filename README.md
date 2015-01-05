@@ -75,12 +75,15 @@ coming soon!
   - Download "gov2.sorted" (or clueweb09) + query file "aol.txt" 
     from "http://lemire.me/data/integercompression2014.html"
 
-  - Create index file gov2.sorted.i
-    ./idxcr gov2.sorted .
+  - Create index file gov2.sorted.i<br />
+    ./idxcr gov2.sorted .<br />
+
     create inverted index file "gov2.sorted.i" in the current directory
 
-  - Benchmarking intersections
-    ./idxqry gov2.sorted.i aol.txt
+  - Benchmarking intersections<br />
+
+    ./idxqry gov2.sorted.i aol.txt<br />
+
     run queries in file "aol.txt" over the index of gov2 file
 
    8GB Minimum of RAM required (16GB recommended for benchmarking "clueweb09" files).
