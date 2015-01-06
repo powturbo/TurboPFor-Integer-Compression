@@ -24,7 +24,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 - Instant access to compressed *frequency* and *position* data in inverted index with zero decompression
 - **New:** Inverted Index Demo + Benchmarks: Intersection of lists of sorted integers.
 - more than **1000 queries per second** on gov2 (25 millions documents) on a **SINGLE** core.
-- Decompress only the minimum necessary blocks (Ex. 10-15% for 1MQT/AOL on GOV2).
+- Decompress only the minimum necessary blocks (Ex. 10-15%).
 
 # Benchmark:
 CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 4.9, ubuntu 14.10, Single thread.
@@ -125,7 +125,6 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 4.9, ubuntu 14.10, Single thread.
     run queries in file "1mq.txt" over the index of gov2 file
 
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
-   Results on a single core Sandy-bridge CPU
 
 ## Function usage:
 In general compression/decompression functions are of the form:
