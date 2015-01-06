@@ -68,7 +68,7 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 <tr><th> 3820190182</th><th>15.97</th><th>5.11</th><th>118.81</th><th> 650.21</th><th>Simple16</th></tr>
 <tr><th> 4521326518</th><th>18.90</th><th>6.05</th><th>209.17</th><th> 824.26</th><th>Simple-8b</th></tr>
 <tr><th> 4953768342</th><th>20.71</th><th>6.63</th><th>647.75</th><th>1501.24</th><th>TurboPack</th></tr>
-<tr><th> 5203353057</th><th>21.75</th><th>6.96</th><th>1560.34</th><th>1806.60</th><th>SIMDPackFPF D1</th></tr>
+<tr><th> 5203353057</th><th>21.75</th><th>6.96</th><th>1560.34</th><th>1806.60</th><th>SIMDPackFPFD1</th></tr>
 <tr><th> 6699519000</th><th>28.01</th><th>8.96</th><th>502.86</th><th> 624.12</th><th>TurboVbyte</th></tr>
 <tr><th> 6699519000</th><th>28.01</th><th>8.96</th><th>472.01</th><th> 495.12</th><th>VbyteFPF</th></tr>
 <tr><th> 7622896878</th><th>31.87</th><th>10.20</th><th>208.73</th><th>1197.74</th><th>VarintG8IU</th></tr>
