@@ -2,7 +2,7 @@
 // 64 bits version from: Vo Ngoc Anh, Alistair Moffat: Index compression using 64-bit words.
 // Softw., Pract. Exper. 40(2): 131-147 (2010)
 // http://ww2.cs.mu.oz.au/~alistair/coders-64bit/
-
+#include "simple8b.h"
   #if defined(__x86_64__) || defined(__x86_32__)
 static inline int bsr32(int x) {
   int b = -1;
@@ -50,7 +50,7 @@ BIT_2_SEL
                        
 unsigned char *vs8benc(unsigned *__restrict in, int n, unsigned char *__restrict out) { 
   unsigned long long __bw; unsigned __br = 0; 
-  unsigned char bits[0x1000];                          
+  unsigned char bits[SIMPLE8BMAX];                          
   int elems;       
   int i,j;
   for (i = 0; i < n; i++) 

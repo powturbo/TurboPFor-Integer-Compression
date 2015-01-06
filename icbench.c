@@ -36,11 +36,11 @@
 #include <sys/stat.h>
 #include <x86intrin.h>
 
-// simple-8b simple16 optpfd don't work with all interger lists.
+// simple-8b simple16 and optpfd don't work with all interger lists.
 // Enable if you to want to test
-//#define USE_SIMPLE_8B  // crashs on some lists 
-//#define USE_SIMPLE16   // limited to 28 bits
-//#define USE_OPTPFD     // compression too slow and limited to 28 bits. crashs on some lists
+#define USE_SIMPLE_8B  // crashs on some lists 
+#define USE_SIMPLE16   // limited to 28 bits
+#define USE_OPTPFD     // compression too slow and limited to 28 bits. crashs on some lists
 #define STATS
 //---------------------------------------- Platform ------------------------
   #ifdef _WIN32
@@ -73,21 +73,28 @@ unsigned char *u32enc(unsigned *__restrict in, int n, unsigned *__restrict out) 
 unsigned char *u32dec(unsigned *__restrict in, int n, unsigned *__restrict out) { unsigned *out_  = out+n; while(out < out_) *out++ = *in++; return (unsigned char *)in; }
 
 #define PAD8(__x) (((__x)+7)/8)
-unsigned char *_bitunpackx32(unsigned char *__restrict in, unsigned n, unsigned b, unsigned *__restrict out) { unsigned i,k=0; for(i=0; i < n; i++,k+=b ) *out++ = _bitgetx32(in, b, k); return in + PAD8(n*b); }
+unsigned char *_bitunpackx32( unsigned char *__restrict in, unsigned n, unsigned b,            unsigned *__restrict out) { unsigned i,k=0; for(i=0; i < n; i++,k+=b ) *out++ = _bitgetx32(in, b, k); return in + PAD8(n*b); }
 
-unsigned char *bitdunpackx32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = (start += bitgetx32(in, b, i)+1); return in + PAD8(n*b); }
-unsigned char *bitd0unpackx32(unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = (start += bitgetx32(in, b, i)+1); return in + PAD8(n*b); }
-unsigned char *bitfunpackx32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start+i+1; return in + PAD8(n*b); }
-unsigned char *bitf0unpackx32(unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start; return in + PAD8(n*b); }
+unsigned char *bitdunpackx32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = (start += bitgetx32(in, b, i)+1); return in + PAD8(n*b); }
+unsigned char *bitd0unpackx32(unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = (start += bitgetx32(in, b, i)+1); return in + PAD8(n*b); }
+unsigned char *bitfunpackx32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start+i+1; return in + PAD8(n*b); }
+unsigned char *bitf0unpackx32(unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned *__restrict out) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start; return in + PAD8(n*b); }
 //-------------------------------------- External functions for comparison ------------------------------------------------------------------------
-#include "ext/vas16c.h"
-#include "ext/vas16d.h"
-#include "ext/OPT_PFD/opt_p4.h"
 #include "ext/vabyte.h"
-#include "ext/simple8b.h"
 #include "ext/varintg8iu.h"
 #include "ext/varintg8iu.h"
 #include "ext/simdcomp/include/simdbitpacking.h"
+
+  #ifdef USE_SIMPLE16
+#include "ext/vas16c.h"
+#include "ext/vas16d.h"
+  #endif
+  #ifdef USE_OPTPFD
+#include "ext/OPT_PFD/opt_p4.h"
+  #endif
+  #ifdef USE_SIMPLE_8B
+#include "ext/simple8b.h"
+  #endif
 
 unsigned char *simdpackwn(uint32_t *in, uint32_t n, uint32_t b, uint32_t *out) {//checkifdivisibleby(n, 128); const uint32_t * const initout(out);  //while(needPaddingTo128Bits(out)) *out++ = 123456;
   uint32_t *in_;
@@ -246,7 +253,14 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
   }
 } 
 
-#define UNDELTA(__out, __n, __mode) { unsigned _x,_v; for(_x = __out[0],_v=1;_v<__n;_v++) __out[_v] = (_x += __out[_v] + __mode); }
+#define UNDELTA(__out, __n, __mode) { unsigned _x,_v;\
+  for(_x = __out[0],_v=1;_v<__n;_v+=4) {\
+    __out[_v  ] = (_x += __out[_v  ] + __mode);\
+    __out[_v+1] = (_x += __out[_v+1] + __mode);\
+    __out[_v+2] = (_x += __out[_v+2] + __mode);\
+    __out[_v+3] = (_x += __out[_v+3] + __mode);\
+  }\
+}
 
 unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mode) { unsigned b,x,v;
   switch(id) {
@@ -331,7 +345,7 @@ struct libss libss[] = {
   // -------------- Simple family ---------------------------------- 
   { P_SV,    "SimpleV",  0 	},
     #ifdef USE_SIMPLE_8B
-  { P_S64,   "Simple-8b",0 	},  //crash on 32 bits?
+  { P_S64,   "Simple-8b",SIMPLE8BMAX 	},  //crash on 32 bits?
     #endif
     #ifdef USE_SIMPLE16
   { P_S16,   "Simple16", 0 	},  //max. 28 bits
@@ -384,7 +398,7 @@ void stprint() {
   unsigned long long t=0; 
   for(m = 0; m < 33; m++) 
     t += xbits[m];
-  printf("\ndistribution:"); 
+  printf("\nbit size histogramm:"); 
   for(m = 0; m < 33; m++) 
     if(xbits[m]) printf("%d:%.2f%% ", m, (double)xbits[m]*100/t); printf("\n");
 }
@@ -464,13 +478,13 @@ void usage() {
   fprintf(stderr, "<options>\n");
   fprintf(stderr, " -bNm    N = blocksize (default 128) m=k kilobyte ex. -b64k\n");
   fprintf(stderr, " -cN     N = format ordered(0:delta+0,1:delta+1),2=convert text to integer format\n");
-  fprintf(stderr, " -eS     N = encoder scheme (default all)\n");
+  fprintf(stderr, " -eS     S = encoder schemes sparated by / (default all)\n");
   fprintf(stderr, " -tN     N = time in seconds per interation\n");
   fprintf(stderr, " -TN     N = Iterations (default 3)\n");
   fprintf(stderr, " -vN     N = verbosity 1..3\n");
   fprintf(stderr, "----- file specified --------------\n");
   fprintf(stderr, " -rN     N = max. file size to read\n");
-  fprintf(stderr, "Ex. ./icbench -c1 gov2.sorted\n");
+  fprintf(stderr, "Ex. ./icbench -c1 gov2.sorted -eturbopack/turbopfor\n");
   fprintf(stderr, "----- file not specified --------------\n");
   fprintf(stderr, " -aF     F = zipfian distribution alpha ex. -a1.0 uniform -a1.5 skewed\n");
   fprintf(stderr, " -mN     N = minimum integer generated in bits\n");
@@ -567,7 +581,7 @@ int main(int argc, char *argv[]) { int r;
         print(totlen, s, NULL);
       }
     } else { 			// Benchmark w. generated data
-      printf("zipf alpha=%3.1f range[%u..%u].\nbit size histogramm: ", a, rm, rx); 
+      printf("zipf alpha=%3.1f range[%u..%u].\n ", a, rm, rx); 
       *in = n; 
       zipfgen(in+1, a, rm, rx, n);   							for(i = 1; i <= n; i++) xbits[bsr32(in[i])]++; stprint();
       if(mode>=0) { unsigned *ip=in+1; int v; for(v = 1; v < n; v++) { ip[v] += ip[v-1] + mode; if(ip[v]>(1u<<28)) die("overflow generating sorted array\n" );  } }

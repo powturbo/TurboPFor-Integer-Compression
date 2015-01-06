@@ -8,13 +8,13 @@ bitunpack.o: $(BIT)bitunpack.c $(BIT)bitunpack_.h $(BIT)bitunpack.h $(BIT)bitunp
 	gcc -O3 $(CFLAGS) -c $(BIT)bitunpack.c
 
 bitpack.o: $(BIT)bitpack.c $(BIT)bitpack_.h $(BIT)bitpack.h $(BIT)bitpack64_.h
-	gcc -O2 $(CFLAGS2) -c $(BIT)bitpack.c
+	gcc -O2 $(CFLAGS) -c $(BIT)bitpack.c
 
 vp4dc.o: $(BIT)vp4dc.c
-	gcc -O3 $(CFLAGS2) -funroll-loops -c $(BIT)vp4dc.c
+	gcc -O3 $(CFLAGS) -funroll-loops -c $(BIT)vp4dc.c
 
 vp4dd.o: $(BIT)vp4dd.c
-	gcc -O3 $(CFLAGS2) -funroll-loops -c $(BIT)vp4dd.c
+	gcc -O3 $(CFLAGS) -funroll-loops -c $(BIT)vp4dd.c
 
 SIMDCOMPD=ext/simdcomp/
 SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIMDCOMPD)src/simdcomputil.o $(SIMDCOMPD)src/simdbitpacking.o

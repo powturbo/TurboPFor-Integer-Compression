@@ -233,7 +233,7 @@ int postcmp(post_t *a, post_t *b) {
 
 int intersec_max;
 
-unsigned idxsearch(idxrd_t *idx, qry_t *q) {
+unsigned qrysearch(qry_t *q, idxrd_t *idx) {
   int f_t = 0, i;
   post_t   *p, *pe, post[TERMNUM]; 
   unsigned did, elim, dids[TERMNUM][BLK_DIDNUM+31];
@@ -300,7 +300,7 @@ unsigned long long   qrybatch(idxrd_t *idx, char *fqname, int *qid) {
     }																								 														
     if(qry.terms >= temin && qry.terms <= temax) {  									//int j; for(j=0;j < qry.terms;j++) { if(j) printf(" "); printf("%u", qry.term[j]); }  printf(" %d \n", qry.terms);
       qry.id  = ++id;																	tex = max(qry.terms,tex);
-      f_t += idxsearch(idx, &qry); 														if(id >= qmax) break;
+      f_t += qrysearch(&qry, idx); 														if(id >= qmax) break;
     }
   }
   fclose(fq);
