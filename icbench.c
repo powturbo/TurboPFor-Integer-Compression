@@ -38,9 +38,9 @@
 
 // simple-8b simple16 and optpfd don't work with all interger lists.
 // Enable if you to want to test
-#define USE_SIMPLE_8B  // crashs on some lists 
-#define USE_SIMPLE16   // limited to 28 bits
-#define USE_OPTPFD     // compression too slow and limited to 28 bits. crashs on some lists
+//#define USE_SIMPLE_8B  // crashs on some lists 
+//#define USE_SIMPLE16   // limited to 28 bits
+//#define USE_OPTPFD     // compression too slow and limited to 28 bits. crashs on some lists
 #define STATS
 //---------------------------------------- Platform ------------------------
   #ifdef _WIN32
