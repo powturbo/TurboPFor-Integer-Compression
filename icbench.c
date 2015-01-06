@@ -85,16 +85,10 @@ unsigned char *bitf0unpackx32(unsigned char *__restrict in, unsigned n, unsigned
 #include "ext/varintg8iu.h"
 #include "ext/simdcomp/include/simdbitpacking.h"
 
-  #ifdef USE_SIMPLE16
 #include "ext/vas16c.h"
 #include "ext/vas16d.h"
-  #endif
-  #ifdef USE_OPTPFD
 #include "ext/OPT_PFD/opt_p4.h"
-  #endif
-  #ifdef USE_SIMPLE_8B
 #include "ext/simple8b.h"
-  #endif
 
 unsigned char *simdpackwn(uint32_t *in, uint32_t n, uint32_t b, uint32_t *out) {//checkifdivisibleby(n, 128); const uint32_t * const initout(out);  //while(needPaddingTo128Bits(out)) *out++ = 123456;
   uint32_t *in_;
