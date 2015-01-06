@@ -32,6 +32,7 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 - No PURE cache benchmark
 
 #### Synthetic data: 
+ - Generate and test skewed distribution</ br>
 
     *./icbench -a1.5 -m0 -M8 -n100000000*
 
