@@ -32,7 +32,7 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 - No PURE cache benchmark
 
 #### Synthetic data: 
- - Generate and test skewed distribution
+ - Generate and test skewed distribution.
 
     *./icbench -a1.5 -m0 -M8 -n100000000*
 
@@ -119,28 +119,32 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 ## Function usage:
 In general compression/decompression functions are of the form:
 
-   *char *endptr = compress( unsigned *in, int n, char *out)*<br />
+   **char *endptr = compress( unsigned *in, int n, [int b,], char *out)**<br />
    endptr : set by compress to the next character in "out" after the compressed buffer<br />
    in     : input integer array<br />
    n      : number of elements<br />
    out    : pointer to output buffer<br />
-   
-   *char *endptr = decompress( char *in, int n, unsigned *out)*<br />
+   b      : number of bits. Only for bit packing functions
+
+   **char *endptr = decompress( char *in, int n, [int b,] unsigned *out)**<br />
    endptr : set by decompress to the next character in "in" after the decompressed buffer<br />
    in     : pointer to input buffer<br />
    n      : number of elements<br />
    out    : output integer array<br />
+   b      : number of bits. Only for bit unpacking functions
 
-header files with documentation :<br />
-  vint.h     - variable byte<br />
-  vsimple.h  - variable simple<br />
-  vp4dc.h,vp4dd.h - TurboPFor<br />
-  bitpack.h,bitunpack.h - Bit Packing<br />
+header files to use with documentation :<br />
+<table>
+<tr><th>vint.h</th><th>Variable byte</th></tr>
+<tr><th>vsimple.h</th><th>Variable simple</th></tr>
+<tr><th>vp4dc.h, vp4dd.h</th><th>TurboPFor</th></tr>
+<tr><th>bitpack.h bitunpack.h</th><th>Bit Packing</th></tr>
+</table>
   
 
 ## Reference:
  - "SIMD-BitPack FPF" from FastPFor https://github.com/lemire/simdcomp
  - Sorted integer datasets from http://lemire.me/data/integercompression2014.html
- - OptP4 and Simple-16 from http://jinruhe.com/ 
+ - OptPFD (OptP4) and Simple-16 from http://jinruhe.com/ 
 
 #------------------------------------------------
