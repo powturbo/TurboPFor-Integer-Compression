@@ -24,10 +24,10 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 - Instant access to compressed *frequency* and *position* data in inverted index with zero decompression
 - **New:** Inverted Index Demo + Benchmarks: Intersection of lists of sorted integers.
 - more than **1000 queries per second** on gov2 (25 millions documents) on a **SINGLE** core.
-- Decompress only the minimum necessary blocks.
+- Decompress only the minimum necessary blocks (Ex. 10-15% for 1MQT/AOL on GOV2).
 
 # Benchmark:
-i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
+CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 4.9, ubuntu 14.10, Single thread.
 - Realistic and practical benchmark with large integer arrays.
 - No PURE cache benchmark
 
@@ -53,7 +53,7 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 <tr><th>400000000</th><th>100.00</th><th>32.00</th><th> 1470.87</th><th> 1477.93</th><th>Copy</th></tr>
 </table>
 
-#### data files
+#### Data files
  - gov2.sorted (from http://lemire.me/data/integercompression2014.html) Blocksize=128<br />
     (+ SimpleV 64k). Benchmark repeated several times.
 
@@ -75,6 +75,17 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 <tr><th>23918861764</th><th>100.00</th><th>32.00</th><th>1391.82</th><th>1420.03</th><th>Copy</th></tr>
 </table>
 
+#### Compressed Inverted Index Intersections with GOV2<br />
+   GOV2: 426GB, 25 Millions documents, average doc. size=18k.
+
+   - Aol: **1100** queries per second<br />
+     18000 queries in 16.31s [1103.9 q/s] [0.906 ms/q]<br />
+     Ratio = 14.37% Decoded/Total Integers.
+
+   - TREC Million Query Track (1MQT): **950** queries per second<br /> 
+     20000 queries in 21.03s, [951.0 q/s] [1.052 ms/q]<br />
+     Ratio = 11.59% Decoded/Total Integers.
+   
 ## Compile:
   *make*
 
@@ -98,7 +109,7 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
     *./icbench -c1 gov2.sorted*
 
 ###### Benchmarking intersections
-  - Download gov2 (or clueweb09) + query file "aol.txt" 
+  - Download gov2 (or clueweb09) + query file (Ex. "1mq.txt")<br />
     from "http://lemire.me/data/integercompression2014.html"
 
   - Create index file
@@ -109,12 +120,12 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 
   - Benchmarking intersections
 
-    *./idxqry gov2.sorted.i aol.txt*
+    *./idxqry gov2.sorted.i 1mq.txt*
 
-    run queries in file "aol.txt" over the index of gov2 file
+    run queries in file "1mq.txt" over the index of gov2 file
 
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
-
+   Results on a single core Sandy-bridge CPU
 
 ## Function usage:
 In general compression/decompression functions are of the form:
