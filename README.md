@@ -53,6 +53,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 4.9, ubuntu 14.10, Single thread.
 <tr><th>400000000</th><th>100.00</th><th>32.00</th><th> 1470.87</th><th> 1477.93</th><th>Copy</th></tr>
 </table>
 
+####----------------------------------------------------
 #### Data files
  - gov2.sorted (from http://lemire.me/data/integercompression2014.html) Blocksize=128<br />
     (+ SimpleV 64k). Benchmark repeated several times.
@@ -75,6 +76,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 4.9, ubuntu 14.10, Single thread.
 <tr><th>23918861764</th><th>100.00</th><th>32.00</th><th>1391.82</th><th>1420.03</th><th>Copy</th></tr>
 </table>
 
+####-------------------------------------------------------
 #### Compressed Inverted Index Intersections with GOV2<br />
    GOV2: 426GB, 25 Millions documents, average doc. size=18k.
 
