@@ -119,7 +119,7 @@ i7-2600k at 3.4GHz, gcc 4.9, ubuntu 14.10, Single thread.
 ## Function usage:
 In general compression/decompression functions are of the form:
 
-   **char *endptr = compress( unsigned *in, int n, [int b,], char *out)**<br />
+   **char *endptr = compress( unsigned *in, int n, [int b,] char *out)**<br />
    endptr : set by compress to the next character in "out" after the compressed buffer<br />
    in     : input integer array<br />
    n      : number of elements<br />
