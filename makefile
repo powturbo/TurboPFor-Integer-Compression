@@ -1,47 +1,69 @@
-# powturbo  (c) Copyright 2007-2015
-CFLAGS=-ffast-math -DNDEBUG -fstrict-aliasing -m64 -march=native
+# powturbo  (c) Copyright 2013-2015
+ 
+CFLAGS=-DNDEBUG -fstrict-aliasing -m64 -march=native
+
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+LIBTHREAD=-lpthread
+LIBRT=-lrt
+para: CFLAGS += -DTHREADMAX=32	
+para: idxqry
+endif
 
 BIT=./
-all: icbench idxcr idxqry
+all: icbench idxcr idxqry idxseg
 
-bitunpack.o: $(BIT)bitunpack.c $(BIT)bitunpack_.h $(BIT)bitunpack.h $(BIT)bitunpack64_.h
-	gcc -O3 $(CFLAGS) -c $(BIT)bitunpack.c
-
-bitpack.o: $(BIT)bitpack.c $(BIT)bitpack_.h $(BIT)bitpack.h $(BIT)bitpack64_.h
+bitpack.o: $(BIT)bitpack.c $(BIT)bitpack.h $(BIT)bitpack64_.h
 	gcc -O2 $(CFLAGS) -c $(BIT)bitpack.c
 
+bitpackv.o: $(BIT)bitpackv.c $(BIT)bitpack.h $(BIT)bitpackv32_.h
+	gcc -O2 $(CFLAGS) -c $(BIT)bitpackv.c
+	
 vp4dc.o: $(BIT)vp4dc.c
 	gcc -O3 $(CFLAGS) -funroll-loops -c $(BIT)vp4dc.c
 
 vp4dd.o: $(BIT)vp4dd.c
 	gcc -O3 $(CFLAGS) -funroll-loops -c $(BIT)vp4dd.c
 
+varintg8iu.o: $(BIT)ext/varintg8iu.c $(BIT)ext/varintg8iu.h 
+	gcc -O2 $(CFLAGS) -c -funroll-loops -std=c99 $(BIT)ext/varintg8iu.c
+
+idxqryp.o: $(BIT)idxqry.c
+	gcc -O3 $(CFLAGS) -c $(BIT)idxqry.c -o idxqryp.o
+
 SIMDCOMPD=ext/simdcomp/
 SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIMDCOMPD)src/simdcomputil.o $(SIMDCOMPD)src/simdbitpacking.o
 
-varintg8iu.o: $(BIT)ext/varintg8iu.c $(BIT)ext/varintg8iu.h
-	gcc -O2 $(CFLAGS) -c -funroll-loops -std=c99 $(BIT)ext/varintg8iu.c
+#LZT=../lz/lz8c0.o ../lz/lz8d.o
+LZ4=ext/lz4.o 
+MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 
-icbench:    icbench.o bitpack.o bitunpack.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o ext/simple8b.o $(SIMDCOMP) 
-	gcc -O3 icbench.o bitpack.o bitunpack.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o ext/simple8b.o $(SIMDCOMP) -lm -o icbench $(LFLAGS)
+OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o transpose.o ext/simple8b.o $(SIMDCOMP) $(MVB) $(LZT) $(LZ4)
 
-idxcr:   idxcr.o bitpack.o $(SIMDCOMP) vp4dc.o vsimple.o
-	gcc -O3 idxcr.o bitpack.o $(SIMDCOMP) vp4dc.o vsimple.o -o idxcr $(LFLAGS)
+icbench: $(OBJS)
+	gcc $(OBJS) -lm -o icbench $(LFLAGS)
 
-idxqry:   idxqry.o bitunpack.o $(SIMDCOMP) vp4dd.o
-	gcc -O3 idxqry.o bitunpack.o $(SIMDCOMP) vp4dd.o -o idxqry $(LFLAGS)
+idxseg:   idxseg.o
+	gcc idxseg.o -o idxseg
+
+idxcr:   idxcr.o bitpack.o vp4dc.o bitutil.o
+	gcc idxcr.o bitpack.o bitpackv.o vp4dc.o bitutil.o -o idxcr $(LFLAGS)
+
+idxqry:   idxqry.o bitunpack.o vp4dd.o bitunpackv.o bitutil.o
+	gcc idxqry.o bitunpack.o bitunpackv.o vp4dd.o bitutil.o $(LIBTHREAD) $(LIBRT) -o idxqry $(LFLAGS)
 
 .c.o:
 	gcc -O3 $(CFLAGS) $< -c -o $@
 
+.cc.o:
+	g++ -O3 -DNDEBUG -std=c++11 $< -c -o $@
+
+.cpp.o:
+	g++ -O3 -DNDEBUG -std=c++11 $< -c -o $@
+	
 clean:
-	rm  *.o
-	rm ext/*.o
-	rm ext/simdcomp/*.o
-	rm ext/simdcomp/src/*.o
+	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete
 
 cleanw:
-	del .\*.o
-	del ext\*.o
-	del ext\simdcomp\*.o
-	del ext\simdcomp\src\*.o
+	del /S ..\*.o
+	del /S ..\*~
