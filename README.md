@@ -5,7 +5,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - No other "Integer Compression" compress or decompress faster with better compression
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
- - **New:** Integrated differential encoding/decoding for sorted integer lists
+ - :new: Integrated differential encoding/decoding for sorted integer lists
 <p>
 + **Features**
  - Fastest **"Variable Byte"** implementation
@@ -15,12 +15,12 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - Bit Packing with **Direct/Random Access** without decompressing entire blocks
  - Access any single bit packed entry with **zero decompression**
- - **New:** **Direct Update** of individual bit packed entries
+ - :new: **Direct Update** of individual bit packed entries
  - Reducing **Cache Pollution**
 <p>
- - **New**: Fastest and most efficient **"SIMD Bit Packing"**
+ - :new:: Fastest and most efficient **"SIMD Bit Packing"**
 <p>
- - **New**: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
+ - :new:: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
 <p>
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference) scheme with **direct access** or bulk decoding.<br>
   Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
@@ -31,7 +31,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - **Novel** Implicit skips with zero extra overhead
  - **Novel** Efficient Bidirectional Inverted Index Architecture (forward/backwards traversal).
  - more than **2000 queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - **New:** Parallel Query Processing on Multicores w/ more than **7000 queries/sec** on a quad core PC.<br>
+ - :new: Parallel Query Processing on Multicores w/ more than **7000 queries/sec** on a quad core PC.<br>
    ...forget ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
