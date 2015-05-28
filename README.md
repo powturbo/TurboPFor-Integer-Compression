@@ -18,9 +18,9 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :new: **Direct Update** of individual bit packed entries
  - Reducing **Cache Pollution**
 <p>
- - :new:: Fastest and most efficient **"SIMD Bit Packing"**
+ - :new: Fastest and most efficient **"SIMD Bit Packing"**
 <p>
- - :new:: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
+ - :new: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
 <p>
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference) scheme with **direct access** or bulk decoding.<br>
   Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
