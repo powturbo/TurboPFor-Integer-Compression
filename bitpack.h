@@ -1,7 +1,7 @@
 /**
-    Copyright (C) powturbo 2013-2014
+    Copyright (C) powturbo 2013-2015
     GPL v2 License
-
+  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -16,17 +16,35 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo [AT] gmail.com
-    - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
+    - github   : https://github.com/powturbo
     - twitter  : https://twitter.com/powturbo
-
-    bitpack.c - "Integer Compression" Binary Packing 
+    - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
+//     bitpack.h - "Integer Compression" Binary Packing header file
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Pack array with n unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
-unsigned char *bitpack32( unsigned       *__restrict in, int n, int nbits, unsigned char *__restrict out);
+unsigned char *bitpack32(  unsigned       *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+
+unsigned char *bitdpack32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
 // like bitpack32 but for 16 bits arrays
-unsigned char *bitpack16( unsigned short *__restrict in, int n, int nbits, unsigned char *__restrict out);
+unsigned char *bitpack16( unsigned short  *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
 
+//-------------------------------------- SIMD ------------------------------------------------------------------------------------------
+// Pack array with n unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
+unsigned char *bitpackv32(  unsigned      *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+unsigned char *bitdpackv32( unsigned      *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1packv32(unsigned      *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+
+// like bitpack32 but for 16 bits arrays
+unsigned char *bitpackv16( unsigned short *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+
+#ifdef __cplusplus
+}
+#endif
