@@ -1,7 +1,7 @@
 /**
-    Copyright (C) powturbo 2013-2014
+    Copyright (C) powturbo 2013-2015
     GPL v2 License
-
+  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -16,13 +16,13 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo [AT] gmail.com
-    - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
+    - github   : https://github.com/powturbo
     - twitter  : https://twitter.com/powturbo
-
-    conf.h - "Integer Compression" config & common 
+    - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
+
+//	    conf.h - "Integer Compression" config & common 
 #ifndef CONF_H
 #define CONF_H
 
@@ -72,13 +72,15 @@ static inline int bsr64(unsigned long long x) {
   #else
 #error "only gcc support in this version"
   #endif
+  
+#define SIZE_ROUNDUP(__n, __a) (((size_t)(__n) + (size_t)((__a) - 1)) & ~(size_t)((__a) - 1))
 //---------------------------------------------------------------------------------------------------
 #define ctou8(__cp)  (*(unsigned char *)(__cp))
 #define ctou16(__cp) (*(unsigned short *)(__cp))
 #define ctou24(__cp) ((*(unsigned *)(__cp)) & 0xffffff)
 #define ctou32(__cp) (*(unsigned *)(__cp))
 #define ctou64(__cp) (*(unsigned long long *)(__cp))
-#define ctou48(__cp) ((*(unsigned long long *)(__cp)) & 0xffffffffffff)
+#define ctou48(__cp) ((*(unsigned long long *)(__cp)) & 0xffffffffffffull)
 #define ctou(__cp_t, __cp)  (*(__cp_t *)(__cp))
   #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
@@ -91,6 +93,7 @@ static inline int bsr64(unsigned long long x) {
 #include <stdio.h>
 #define AS(expr, fmt,args...) if(!(expr)) { fflush(stdout);fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); abort(); }
   #endif
+#define AC(expr, fmt,args...) if(!(expr)) { fflush(stdout);fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); abort(); }
 #define die(fmt,args...) do { fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); exit(-1); } while(0)
 
 #endif
