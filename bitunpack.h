@@ -1,7 +1,7 @@
 /**
-    Copyright (C) powturbo 2013-2014
+    Copyright (C) powturbo 2013-2015
     GPL v2 License
-
+  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -16,23 +16,25 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo [AT] gmail.com
-    - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
+    - github   : https://github.com/powturbo
     - twitter  : https://twitter.com/powturbo
-
-    bitunpack.h - "Integer Compression" Binary Packing 
+    - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
+//    bitunpack.h - "Integer Compression" Binary Packing 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "conf.h"
+
 // ---------------- Unpack a bit packed integer array --------------------------------------------------------------------------------------
 // unpack a bitpacked integer array. Return value = end of packed buffer in 
-unsigned char *bitunpack32(unsigned char *__restrict in, unsigned n, unsigned b, unsigned       *__restrict out);
+unsigned char *bitunpack32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b);
 
 // like bitunpack32 but for 16 bits integer array
-unsigned char *bitunpack16(unsigned char *__restrict in, unsigned n, unsigned b, unsigned short *__restrict out);
+unsigned char *bitunpack16(unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b);
 
 // ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------------
   #ifdef __AVX2__
@@ -55,24 +57,31 @@ static ALWAYS_INLINE void      bitsetx32(unsigned char *__restrict in, unsigned 
 static ALWAYS_INLINE void      bitsetx16(unsigned char *__restrict in, unsigned b, unsigned  idx, unsigned v) { unsigned bidx = b*idx;  unsigned           *p = (unsigned           *)             in+(bidx>>4) ; *p = ( *p & ~(((1u  <<b)-1) << (bidx& 0xf)) ) |                     v<<(bidx& 0xf);}
 
 // ---------------- DFOR : integrated bitpacking, for delta packed SORTED array (Ex. DocId in inverted index) -------------------------------
+// start < out[0] < out[1] < ... < out[n-2] < out[n-1] < (1<<N)-1,    N=32,16
 // out[0] = start + in[0] + 1;  out[1] = out[0] + in[1] + 1; ... ;  out[i] = out[i-1] + in[i] +  1
-unsigned char *bitdunpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
-unsigned char *bitdunpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+unsigned char *bitd1unpack32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1unpack16(  unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
 
+// start <= out[0] <= out[1] <= ... <= out[n-2] <= out[n-1] <= (1<<N)-1  N=32,16
 // out[0] = start + in[0];  out[1] = out[0] + in[1]; ... ;  out[i] = out[i-1] + in[i]
-unsigned char *bitd0unpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
-unsigned char *bitd0unpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+unsigned char *bitdunpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack16( unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
 
 // ---------------- DaFor : Direct Access for packed SORTED array (Ex. DocId in inverted index) --------------------------------------------
 // out[i] = start + in[i] + i + 1
-unsigned char *bitfunpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
-unsigned char *bitfunpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+unsigned char *bitf1unpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+unsigned char *bitf1unpack16( unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
 
 // out[i] = start + in[i] + i 
-unsigned char *bitf0unpack32( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned       *__restrict out);
-unsigned char *bitf0unpack16( unsigned char *__restrict in, unsigned n, unsigned b, int start, unsigned short *__restrict out);
+unsigned char *bitfunpack32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+unsigned char *bitfunpack16(  unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
+
+// ---------------- SIMD : unpack a bit packed integer array -------------------------------------------------------------------------------
+// SIMD unpack a bitpacked integer array. Return value = end of packed buffer in
+unsigned char *bitunpackv32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out				  , unsigned b);
+unsigned char *bitdunpackv32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1unpackv32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 
 #ifdef __cplusplus
 }
 #endif
-
