@@ -1,7 +1,7 @@
 /**
-    Copyright (C) powturbo 2013-2014
+    Copyright (C) powturbo 2013-2015
     GPL v2 License
-
+  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -16,14 +16,12 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    - email    : powturbo [AT] gmail.com
-    - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
+    - github   : https://github.com/powturbo
     - twitter  : https://twitter.com/powturbo
-
-    bitpack64_.h - "Integer Compression" bit packing include file
+    - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-
+//    bitpack64_.h - "Integer Compression" bit packing include file
 #define BITBLK32_1(ip, i, op, parm) { ; register uint32_t w;;\
   IPPB(ip, i*32+ 0, parm); w  = (uint32_t)SRC(ip, i*32+ 0)      ;\
   IPPB(ip, i*32+ 1, parm); w |= (uint32_t)SRC(ip, i*32+ 1) <<  1;\
