@@ -1,162 +1,229 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
-
-- 100% C (C++ compatible headers), without inline assembly
++ **TurboPFor**
+ - 100% C (C++ compatible headers), w/o inline assembly
+ - No other "Integer Compression" compress or decompress faster with better compression
+ - Direct Access is several times faster than other libraries
+ - Usage in C/C++ as easy as memcpy
+ - **New:** Integrated differential encoding/decoding for sorted integer lists
 <p>
-- Fastest **"Variable Byte"** implementation
++ **Features**
+ - Fastest **"Variable Byte"** implementation
 <p>
-- Novel **"Variable Simple"** faster than simple16 and more compact than simple8-b
+ - **Novel** **"Variable Simple"** faster than simple16 and more compact than simple8-b
 <p>
-- Scalar **"Bit Packing"** with bulk decoding as fast as SIMD FastPFor in realistic and practical (No "pure cache") scenarios
-- Bit Packing with **Direct/Random Access** without decompressing entire blocks
-- Access any single bit packed entry with **zero decompression**
-- **New:** **Direct Update** of individual bit packed entries
-- Reducing **Cache Pollution**
+ - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+ - Bit Packing with **Direct/Random Access** without decompressing entire blocks
+ - Access any single bit packed entry with **zero decompression**
+ - **New:** **Direct Update** of individual bit packed entries
+ - Reducing **Cache Pollution**
 <p>
-- Novel **"TurboPFor"** (Patched Frame-of-Reference) scheme with direct access or bulk decoding.
-  Outstanding compression
+ - **New**: Fastest and most efficient **"SIMD Bit Packing"**
 <p>
-- Several times faster than other libraries
-- Usage in C/C++ as easy as memcpy
-- Most functions optimized for speed and others for high compression ratio
-- **New:** Include more functions
+ - **New**: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
 <p>
-- Instant access to compressed *frequency* and *position* data in inverted index with zero decompression
-- **New:** Inverted Index Demo + Benchmarks: Intersection of lists of sorted integers.
-- more than **1000 queries per second** on gov2 (25 millions documents) on a **SINGLE** core.
-- Decompress only the minimum necessary blocks (Ex. 10-15%).
-
-# Benchmark:
-CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 4.9, ubuntu 14.10, Single thread.
+ - **Novel** **"TurboPFor"** (Patched Frame-of-Reference) scheme with **direct access** or bulk decoding.<br>
+  Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
+<p>
++ **Inverted Index ...do less, go fast!**
+ - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
+ - **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
+ - **Novel** Implicit skips with zero extra overhead
+ - **Novel** Efficient Bidirectional Inverted Index Architecture (forward/backwards traversal).
+ - more than **2000 queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
+ - **New:** Parallel Query Processing on Multicores w/ more than **7000 queries/sec** on a quad core PC.<br>
+   ...forget ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
+   
+### Benchmark:
+CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 - Realistic and practical benchmark with large integer arrays.
 - No PURE cache benchmark
 
-#### Synthetic data: 
- - Generate and test skewed distribution.
+##### - Synthetic data: 
+ - Generate and test skewed distribution (100.000.000 integers, Block size=128).
 
-    *./icbench -a1.5 -m0 -M8 -n100000000*
+    >*./icbench -a1.5 -m0 -M255 -n100m*
+	
+|Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
+|--------:|-----:|----:|-------:|-------:|---------|
+| 63.392.801| 15.85| 5.07|**382.22**|**1368.25**|**TurboPFor**|
+| 63.392.801| 15.85| 5.07|  362.50| 242.36|**TurboPForDA**|
+| 65.359.916| 16.34| 5.23|    7.09| 638.96|OptPFD|
+| 72.364.024| 18.09| 5.79|   85.31| 762.00|Simple16|
+| 78.514.276| 19.63| 6.28|  249.17|809.74|**SimpleV**|
+| 95.915.096| 23.98| 7.67|  221.46|1049.70|Simple-8b|
+| 99.910.930| 24.98| 7.99|**2603.47**|**1948.65**|**TurboPackV**|
+| 99.910.930| 24.98| 7.99| 2524.50|1943.41|SIMDPackFPF|
+| 99.910.930| 24.98| 7.99| 1298.28|1898.11|**TurboPack**|
+| 99.910.930| 24.98| 7.99| 1297.83| 924.86|**TurboPackDA**|
+|102.074.663| 25.52| 8.17| 1545.38|1694.64|**TurboVbyte**|
+|102.074.663|	25.52| 8.17| 1210.12|1679.52|MaskedVByte|
+|102.074.663| 25.52| 8.17| 1178.72| 949.59|VbyteFPF|
+|112.500.000| 28.12| 9.00|  305.85|1899.15|VarintG8IU|
+|400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
+|         |      |     |   N/A  | N/A   |**EliasFano**|
+MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
+**#BOLD** = pareto frontier
 
-<table>
-<tr><th>Size</th><th>Ratio in %</th><th>Bits/Integer</th><th>C Time MB/s</th><th>D Time MB/s</th><th>Function</th></tr>
-<tr><th> 63392801</th><th>15.85</th><th> 5.07</th><th>  316.96</th><th>  893.67</th><th>TurboPFor</th></tr>
-<tr><th> 63392801</th><th>15.85</th><th> 5.07</th><th>  315.59</th><th>  227.15</th><th>TurboPForDA</th></tr>
-<tr><th> 65359916</th><th>16.34</th><th> 5.23</th><th>    7.09</th><th>  638.96</th><th>OptPFD</th></tr>
-<tr><th> 72364024</th><th>18.09</th><th> 5.79</th><th>   85.31</th><th>  762.00</th><th>Simple16</th></tr>
-<tr><th> 78514276</th><th>19.63</th><th> 6.28</th><th>  229.21</th><th>  748.32</th><th>SimpleV</th></tr>
-<tr><th> 95915096</th><th>23.98</th><th> 7.67</th><th>  221.46</th><th> 1049.70</th><th>Simple-8b</th></tr>
-<tr><th> 99910930</th><th>24.98</th><th> 7.99</th><th> 1553.92</th><th> 1904.21</th><th>SIMDPackFPF</th></tr>
-<tr><th> 99910930</th><th>24.98</th><th> 7.99</th><th>  953.29</th><th> 1872.02</th><th>TurboPack</th></tr>
-<tr><th> 99910930</th><th>24.98</th><th> 7.99</th><th>  953.13</th><th>  869.84</th><th>TurboPackDA</th></tr>
-<tr><th>102074663</th><th>25.52</th><th> 8.17</th><th> 1131.47</th><th> 1184.68</th><th>TurboVbyte</th></tr>
-<tr><th>102074663</th><th>25.52</th><th> 8.17</th><th> 1110.75</th><th>  897.86</th><th>VbyteFPF</th></tr>
-<tr><th>112500000</th><th>28.12</th><th> 9.00</th><th>  305.85</th><th> 1899.15</th><th>VarintG8IU</th></tr>
-<tr><th>400000000</th><th>100.00</th><th>32.00</th><th> 1470.87</th><th> 1477.93</th><th>Copy</th></tr>
-</table>
+##### - Data files:
+ - gov2.sorted from [Document identifier data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+SimpleV 64k)
 
-#### Data files
- - gov2.sorted (from http://lemire.me/data/integercompression2014.html) Blocksize=128<br />
-    (+ SimpleV 64k). Benchmark repeated several times.
-
-   *./icbench -c1 gov2.sorted*
+   >*./icbench -c1 gov2.sorted*
    
-<table>
-<tr><th>Size</th><th>Ratio in %</th><th>Bits/Integer</th><th>C Time MB/s</th><th>D Time MB/s</th><th>Function</th></tr>
-<tr><th> 3214763689</th><th>13.44</th><th>4.30</th><th>279.93</th><th> 665.41</th><th>SimpleV 64k</th></tr>
-<tr><th> 3337758854</th><th>13.95</th><th>4.47</th><th>5.06</th><th> 513.00</th><th>OptPFD</th></tr>
-<tr><th> 3357673495</th><th>14.04</th><th>4.49</th><th>270.57</th><th> 813.83</th><th>TurboPFor</th></tr>
-<tr><th> 3501671314</th><th>14.64</th><th>4.68</th><th>258.56</th><th> 720.76</th><th>SimpleV</th></tr>
-<tr><th> 3820190182</th><th>15.97</th><th>5.11</th><th>118.81</th><th> 650.21</th><th>Simple16</th></tr>
-<tr><th> 4521326518</th><th>18.90</th><th>6.05</th><th>209.17</th><th> 824.26</th><th>Simple-8b</th></tr>
-<tr><th> 4953768342</th><th>20.71</th><th>6.63</th><th>647.75</th><th>1501.24</th><th>TurboPack</th></tr>
-<tr><th> 5203353057</th><th>21.75</th><th>6.96</th><th>1560.34</th><th>1806.60</th><th>SIMDPackFPFD1</th></tr>
-<tr><th> 6699519000</th><th>28.01</th><th>8.96</th><th>502.86</th><th> 624.12</th><th>TurboVbyte</th></tr>
-<tr><th> 6699519000</th><th>28.01</th><th>8.96</th><th>472.01</th><th> 495.12</th><th>VbyteFPF</th></tr>
-<tr><th> 7622896878</th><th>31.87</th><th>10.20</th><th>208.73</th><th>1197.74</th><th>VarintG8IU</th></tr>
-<tr><th>23918861764</th><th>100.00</th><th>32.00</th><th>1391.82</th><th>1420.03</th><th>Copy</th></tr>
-</table>
+|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
+|----------:|-----:|----:|------:|------:|---------------------|
+| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**SimpleV 64k**|
+| 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
+| 3.357.673.495| 14.04| 4.49|**357.77**|**1185.73**|**TurboPFor**|
+| 3.501.671.314| 14.64| 4.68| 321.45| 808.42|**SimpleV**|
+| 3.766.174.764| 15.75| 5.04|**615.19**| 696.89|**EliasFano**|
+| 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
+| 3.958.888.197| 16.55| 5.30| 279.19| 618.60|Lz4 64K|
+| 4.521.326.518| 18.90| 6.05| 209.17| 824.26|Simple-8b|
+| 4.683.323.301| 19.58| 6.27| 826.50| 987.80|**TurboVbyte**|
+| 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
+| 4.953.768.342| 20.71| 6.63|1419.35|1512.86|**TurboPack**|
+| 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackFPFD1|
+| 6.699.519.000| 28.01| 8.96| 472.01| 495.12|VbyteFPF|
+| 6.700.989.563| 28.02| 8.96| 728.72| 991.57|MaskedVByte|
+| 7.622.896.878| 31.87|10.20| 208.73|1197.74|VarintG8IU|
+|23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
+lz4 w/ delta+transpose similar to [blosc](https://github.com/Blosc/c-blosc)
 
-
-### Compressed Inverted Index Intersections with GOV2<br />
+##### - Compressed Inverted Index Intersections with GOV2<br />
    GOV2: 426GB, 25 Millions documents, average doc. size=18k.
 
-   - Aol: **1100** queries per second<br />
-     18000 queries in 16.31s [1103.9 q/s] [0.906 ms/q]<br />
+   + Aol query log: 18.000 queries<br />
+     **~1300** queries per second (single core)<br />
+     **~5000** queries per second (quad core)<br />
      Ratio = 14.37% Decoded/Total Integers.
 
-   - TREC Million Query Track (1MQT): **950** queries per second<br /> 
-     20000 queries in 21.03s, [951.0 q/s] [1.052 ms/q]<br />
+   + TREC Million Query Track (1MQT):<br />
+     **~1100** queries per second (Single core)<br /> 
+     **~4500** queries per second (Quad core CPU)<br />
      Ratio = 11.59% Decoded/Total Integers.
-   
-## Compile:
+
+- Benchmarking intersections (Single core, AOL query log)
+
+| max.docid/q|Time s| q/s | ms/q | # docid found|
+|-----------------:|---:|----:|-----:|-------:|
+|1.000|7.88|2283.1|0.438|371365824|
+|10.000|10.54|1708.5|0.585|385265542|
+| ALL |13.96|1289.0|0.776|460105604|
+q/s: queries/second, ms/q:milliseconds/query
+
+- Benchmarking Parallel Query Processing (Quad core, AOL query log)
+
+| max.docid/q|Time s| q/s | ms/q | # docids found|
+|-----------------:|----:|----:|-----:|-------:|
+|1.000|2.66|6772.6|0.148|381851265|
+|10.000|3.39|5307.5|0.188|409605696|
+|ALL|3.57|5036.5|0.199|459671272|
+	 
+### Compile:
   *make*
 
-## Testing
-###### Synthetic data: 
-  1. test all functions<br />
+### Testing:
+##### - Synthetic data:
+  + test all functions<br />
 
-    *./icbench -a1.0 -m0 -M8 -n100000000*
+    >*./icbench -a1.0 -m0 -M255 -n100m*
 
     - zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)
-    - number of integers = 100000000
-    - integer range from 0 to 255 (integer size = 0 to 8 bits)
+    - number of integers = 100.000.000
+    - integer range from 0 to 255
   
-  2. individual function test (ex. copy TurboPack TurboPack Direct access)<br />
+  + individual function test (ex. Copy TurboPack TurboPFor)<br />
 
-    *./icbench -a1.5 -m0 -M8 -ecopy/turbopack/turbopackda -n100000000*
+    >*./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m*
 
-###### Data files: 
+##### - Data files:
   - Data file Benchmark (file format as in FastPFOR)
 
-    *./icbench -c1 gov2.sorted*
+    >*./icbench -c1 gov2.sorted*
 
-###### Benchmarking intersections
-  - Download gov2 (or clueweb09) + query file (Ex. "1mq.txt")<br />
-    from "http://lemire.me/data/integercompression2014.html"
+##### - Intersections:
+  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt")<br />
+    from [Document identifier data set](http://lemire.me/data/integercompression2014.html)<br />
+   8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
 
-  - Create index file
+  2 - Create index file
 
-    *./idxcr gov2.sorted .*
+  >*./idxcr gov2.sorted .*
 
     create inverted index file "gov2.sorted.i" in the current directory
 
-  - Benchmarking intersections
+  3 - Test intersections
 
-    *./idxqry gov2.sorted.i 1mq.txt*
+  >*./idxqry gov2.sorted.i 1mq.txt*
 
     run queries in file "1mq.txt" over the index of gov2 file
 
-   8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
+##### - Parallel Query Processing:
+  1 - Create partitions
+  
+  >*./idxseg gov2.sorted . -26m -s8*
+  
+    create 8 (CPU hardware threads) partitions for a total of ~26 millions document ids
+  
+  2 - Create index file for each partition
 
-## Function usage:
-In general compression/decompression functions are of the form:
+  >./idxcr gov2.sorted.s*
 
-   **char *endptr = compress( unsigned *in, int n, [int b,] char *out)**<br />
-   endptr : set by compress to the next character in "out" after the compressed buffer<br />
+    create inverted index file for all partitions "gov2.sorted.s00 - gov2.sorted.s07" in the current directory
+
+  3 - Intersections:
+  
+    delete "idxqry.o" file and then type "make para" to compile "idxqry" w. multithreading
+
+  >./idxqry gov2.sorted.s\*.i 1mq.txt*
+
+    run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".
+
+### Function usage:
+In general encoding/decoding functions are of the form:
+
+   **char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
+   endptr : set by encode to the next character in "out" after the encoded buffer<br />
    in     : input integer array<br />
    n      : number of elements<br />
    out    : pointer to output buffer<br />
-   b      : number of bits. Only for bit packing functions
-
-   **char *endptr = decompress( char *in, int n, [int b,] unsigned *out)**<br />
-   endptr : set by decompress to the next character in "in" after the decompressed buffer<br />
+   b      : number of bits. Only for bit packing functions<br />
+   start  : previous value. Only for integrated delta encoding functions
+   
+   **char *endptr = decode( char *in, unsigned n, unsigned *out, [unsigned start], [int b])**<br />
+   endptr : set by decode to the next character in "in" after the decoded buffer<br />
    in     : pointer to input buffer<br />
    n      : number of elements<br />
    out    : output integer array<br />
-   b      : number of bits. Only for bit unpacking functions
+   b      : number of bits. Only for bit unpacking functions<br />
+   start  : previous value. Only for integrated delta decoding functions
 
 header files to use with documentation :<br />
-<table>
-<tr><th>vint.h</th><th>Variable byte</th></tr>
-<tr><th>vsimple.h</th><th>Variable simple</th></tr>
-<tr><th>vp4dc.h, vp4dd.h</th><th>TurboPFor</th></tr>
-<tr><th>bitpack.h bitunpack.h</th><th>Bit Packing</th></tr>
-</table>
-  
 
-## Reference:
- - "SIMD-BitPack FPF" from FastPFor https://github.com/lemire/simdcomp
- - Sorted integer datasets from http://lemire.me/data/integercompression2014.html
- - OptPFD (OptP4) and Simple-16 from http://jinruhe.com/ 
+| header file|Functions|
+|------|--------------|
+|vint.h|variable byte|
+|vsimple.h|variable simple|
+|vp4dc.h, vp4dd.h|TurboPFor|
+|bitpack.h bitunpack.h|Bit Packing|
+|eliasfano.h|Elias Fano|
 
-#------------------------------------------------
+### Environment:
+###### OS/Compiler (64 bits):
+- Linux: GNU GCC (>=4.6)
+- Windows: MinGW-w64 (no parallel query processing)
+
+###### Multithreading:
+- All TurboPFor functions are thread safe
+
+### References:
+ + [FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPackFPF, VbyteFPF
+ + [Optimized Pfor-delta compression code](http://jinruhe.com): PForDelta: OptPFD or OptP4, Simple16
+ + [MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
+ + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
+ + **Publications:**
+   - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
+   - [Quasi-Succinct Indices](http://arxiv.org/abs/1206.4300)
+   - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
