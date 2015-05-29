@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
 	fclose(fi); fclose(fo);
 	if(in) { free(in); free(out); }
     free(tmap);
-																				printf("\nterms=%u size=[tmap=%u skip=%llu post=%llu total=%llu, ratio=%.2f\%\n", tid, (unsigned)(tid*sizeof(tmap_t)), skipsize, postsize-skipsize, postsize+tid*sizeof(tmap_t)+12, (double)postsize*100/(double)fofs );
+																				printf("\nterms=%u size=[tmap=%u skip=%llu post=%llu total=%llu, ratio=%.2f %%\n", tid, (unsigned)(tid*sizeof(tmap_t)), 
+                                                                                  skipsize, postsize-skipsize, postsize+tid*sizeof(tmap_t)+12, (double)postsize*100/(double)fofs );
   }
 }
