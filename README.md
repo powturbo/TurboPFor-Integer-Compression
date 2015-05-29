@@ -115,7 +115,7 @@ q/s: queries/second, ms/q:milliseconds/query
 
 - Benchmarking Parallel Query Processing (Quad core, AOL query log)
 
-| max.docid/q|Time s| q/s | ms/q | # docids found|
+| max.docid/q|Time s| q/s | ms/q | % docids found|
 |-----------------:|----:|----:|-----:|-------:|
 |1.000|2.66|6772.6|0.148|81|
 |10.000|3.39|5307.5|0.188|84|
