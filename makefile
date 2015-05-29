@@ -6,8 +6,6 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 LIBTHREAD=-lpthread
 LIBRT=-lrt
-para: CFLAGS += -DTHREADMAX=32	
-para: idxqry
 endif
 
 BIT=./
@@ -45,6 +43,11 @@ icbench: $(OBJS)
 
 idxseg:   idxseg.o
 	gcc idxseg.o -o idxseg
+
+ifeq ($(UNAME), Linux)
+para: CFLAGS += -DTHREADMAX=32	
+para: idxqry
+endif
 
 idxcr:   idxcr.o bitpack.o vp4dc.o bitutil.o
 	gcc idxcr.o bitpack.o bitpackv.o vp4dc.o bitutil.o -o idxcr $(LFLAGS)
