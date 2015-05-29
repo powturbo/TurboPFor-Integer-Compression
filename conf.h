@@ -27,7 +27,7 @@
 #define CONF_H
 
   #if defined(__GNUC__)
-#define ALIGNED(t,v,n)  __attribute__ ((aligned (n))) t v
+#define ALIGNED(t,v,n)  t v __attribute__ ((aligned (n))) 
 #define ALWAYS_INLINE   inline __attribute__((always_inline))
 #define _PACKED 		__attribute__ ((packed))
 #define likely(x)     	__builtin_expect((x),1)
@@ -39,8 +39,8 @@
 #define TEMPLATE2_(__x, __y) __x##__y
 #define TEMPLATE2(__x, __y) TEMPLATE2_(__x,__y)
 
-#define TEMPLATE3_(x,y,z) x ## ## y ## z
-#define TEMPLATE3(x,y,z) TEMPLATE3_(x, y, z)
+#define TEMPLATE3_(__x,__y,__z) __x##__y##__z
+#define TEMPLATE3(__x,__y,__z) TEMPLATE3_(__x, __y, __z)
 
     #if defined(__x86_64__) || defined(__x86_32__)
 static inline int bsr32(int x) {
