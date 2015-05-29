@@ -432,15 +432,15 @@ unsigned char *TEMPLATE2(P4DD, USIZE)(unsigned char *__restrict in, unsigned n, 
   uint_t *op,*pex = ex; 	
       #if P4DN == 2
   for(op = out;  bb[0]; bb[0] >>= 4,op+=4) { const unsigned m = bb[0]&0xf; 
-    _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+    _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
   } 
   for(op=out+64; bb[1]; bb[1] >>= 4,op+=4) { const unsigned m = bb[1]&0xf; 
-    _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+    _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
   }
 	  #else
   for(i = 0; i < P4DN; i++) { // Loop unrolling
     for(op = out;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf; 
-      _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+      _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
     } out+=64; 
   }
 	  #endif
@@ -487,15 +487,15 @@ unsigned char *TEMPLATE2(P4DDD, USIZE)(unsigned char *__restrict in, unsigned n,
   uint_t *op,*pex = ex; 	
       #if P4DN == 2
   for(op = out;  bb[0]; bb[0] >>= 4,op+=4) { const unsigned m = bb[0]&0xf; 
-      _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+      _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
   } 
   for(op=out+64; bb[1]; bb[1] >>= 4,op+=4) { const unsigned m = bb[1]&0xf; 
-    _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+    _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
   }
 	  #else
   for(i = 0; i < P4DN; i++) { // Loop unrolling
     for(op = out;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf; 
-      _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_load_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+      _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
     } out+=64; 
   }
       #endif
