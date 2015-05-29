@@ -106,20 +106,20 @@ lz4 w/ delta+transpose similar to [blosc](https://github.com/Blosc/c-blosc)
 
 - Benchmarking intersections (Single core, AOL query log)
 
-| max.docid/q|Time s| q/s | ms/q | # docid found|
+| max.docid/q|Time s| q/s | ms/q | % docid found|
 |-----------------:|---:|----:|-----:|-------:|
-|1.000|7.88|2283.1|0.438|371365824|
-|10.000|10.54|1708.5|0.585|385265542|
-| ALL |13.96|1289.0|0.776|460105604|
+|1.000|7.88|2283.1|0.438|81|
+|10.000|10.54|1708.5|0.585|84|
+| ALL |13.96|1289.0|0.776|100|
 q/s: queries/second, ms/q:milliseconds/query
 
 - Benchmarking Parallel Query Processing (Quad core, AOL query log)
 
 | max.docid/q|Time s| q/s | ms/q | # docids found|
 |-----------------:|----:|----:|-----:|-------:|
-|1.000|2.66|6772.6|0.148|381851265|
-|10.000|3.39|5307.5|0.188|409605696|
-|ALL|3.57|5036.5|0.199|459671272|
+|1.000|2.66|6772.6|0.148|81|
+|10.000|3.39|5307.5|0.188|84|
+|ALL|3.57|5036.5|0.199|100|
 	 
 ### Compile:
   *make*
