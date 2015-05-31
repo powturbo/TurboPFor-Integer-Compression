@@ -27,7 +27,8 @@
 #include "conf.h"
 #include "bitunpack.h"
 #define PAD8(__x) (((__x)+7)/8)
- 
+#pragma clang diagnostic push 
+#pragma clang diagnostic ignored "-Wunsequenced"
 //-----------------------------------------------------------------------------------------------------------------
 #define BPI(__w, __op, __parm) __w
 #include __FILE__
@@ -63,6 +64,8 @@ unsigned char *bitf1unpack16(unsigned char *__restrict in, unsigned n, unsigned 
 unsigned char *bitfunpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 unsigned char *bitfunpack16( unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 #undef BPI
+#pragma clang diagnostic pop
+
   #else
 #include <stdint.h>
 #define DST( __op,__x, __w, __parm) *__op++ = BPI(__w, __op, __parm)  	//__op[__x] = BPI(__w,__parm) // 
@@ -150,4 +153,3 @@ unsigned char *bitfunpack16( unsigned char *__restrict in, unsigned n, unsigned 
 } 
   #endif
   #endif
-
