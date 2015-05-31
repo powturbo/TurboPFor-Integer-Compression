@@ -34,8 +34,8 @@ idxqryp.o: $(BIT)idxqry.c
 SIMDCOMPD=ext/simdcomp/
 SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIMDCOMPD)src/simdcomputil.o $(SIMDCOMPD)src/simdbitpacking.o
 
-LZT=../lz/lz8c0.o ../lz/lz8d.o
-LZTB=../lz/lzbc0.o ../lz/lzbd.o
+#LZT=../lz/lz8c0.o ../lz/lz8d.o
+#LZTB=../lz/lzbc0.o ../lz/lzbd.o
 LZ4=ext/lz4.o 
 MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 
