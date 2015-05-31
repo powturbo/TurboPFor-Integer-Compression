@@ -58,7 +58,7 @@ void usage() {
 }
 
 #define SEGMAX 64
-int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; unsigned char *path="";
+int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; char *path="";
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
   static struct option long_options[] = { {"r", 	0, 0, 'r'}, {0,0, 0, 0}  };
   for(;;) {
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; unsigned char
     unsigned long long inum=0;
     char               outname[257], *inname = argv[fno]; 
     strcpy(outname, path); 
-    unsigned char *p = strrchr(inname,'/'); if(!p) p = strrchr(inname,'\\'); if(!p) p=inname; strcat(outname, p); strcat(outname,".s");
+    char *p = strrchr(inname,'/'); if(!p) p = strrchr(inname,'\\'); if(!p) p=inname; strcat(outname, p); strcat(outname,".s");
 
     FILE *fi = fopen64(inname, "rb"); if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
     FILE *fo[SEGMAX] = {0};
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; unsigned char
           int i; for(i = 0; i < tid; i++) { unsigned z = 0; if(fwrite(&z, 1, 4, f) != 4) die("write error"); printf("#");fflush(stdout); }
         }
         unsigned n = an[s];
-        if(fwrite(&n,            1, 4, f) != 4 || n && fwrite(in+as[s], 4, n, f) != n) die("write error");
+        if(fwrite(&n,            1, 4, f) != 4 || (n && fwrite(in+as[s], 4, n, f) != n)) die("write error");
         as[s] = an[s] = 0;
       }
       tid++;
