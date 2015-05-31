@@ -26,14 +26,16 @@
   #ifndef USIZE //------------------------------------ functions ----------------------------------------------------------------- 
 #include <stdint.h>
 #include <string.h>
-#include "conf.h"
-#include "bitpack.h"
-#include "bitunpack.h"
-#include "eliasfano.h"
-
   #ifdef __SSE2__
 #include <emmintrin.h>
   #endif
+
+#include "conf.h"
+#include "bitpack.h"
+#include "bitunpack.h"
+#include "bitutil.h"
+#include "eliasfano.h"
+
 #define bit_t unsigned long long
 #define EFE(__x,__i,__start) ((__x[__i] - __start)-(__i)*EF_INC)
  
@@ -111,6 +113,8 @@
 
   #else //--------------------------------------------- implementation ---------------------------------------------------------------
 #define uint_t TEMPLATE3(uint, USIZE, _t)
+#pragma clang diagnostic push 
+#pragma clang diagnostic ignored "-Wparentheses"
 
 unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) {
   if(!n) return out; 
@@ -131,7 +135,7 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
   *out = lb+1; op = TEMPLATE2(BITPACK,USIZE)(pa, n, out+1, lb);
   
   memset(op, 0, hl);
-  for(i = 0; i < n&~3; ) {
+  for(i = 0; i != n&~3; ) {
     x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
     x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
     x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
@@ -149,28 +153,13 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
    
   if(!lb) { 
       #if defined(__SSE2__) && USIZE == 32
-	__m128i sv = _mm_set1_epi32(start), *ov=(__m128i *)(out), *ove = (__m128i *)(out + n)
         #if EF_INC == 1
-    , cv = _mm_set_epi32(3,2,1,0); 
-    sv = _mm_add_epi32(sv, cv); 
-    cv = _mm_set1_epi32(4) 
+    BITFORZERO(out, n, start, 1);
+        #else
+    BITZERO( out, n, start);
         #endif
-    ;
-    do { 
-      _mm_storeu_si128(ov++, sv)
-        #if EF_INC == 1
-      , sv = _mm_add_epi32(sv, cv)
-        #endif
-      ;
-    } while(ov < ove); 
 	  #else 
-    for(i = 0; i != n&~3; ) {
-	  out[i] = start+i*EF_INC; i++;
-	  out[i] = start+i*EF_INC; i++;
-	  out[i] = start+i*EF_INC; i++;
-	  out[i] = start+i*EF_INC; i++;
-	}  
-	while(i < n) out[i] = start+i*EF_INC,++i;
+    _BITFORZERO(out, n, start, EF_INC);
       #endif
 	return ip; 
   }
@@ -183,4 +172,5 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
 	    return ip + PAD8((EFE(out,n-1,start)>>lb)+n); 
 	}
 }
+#pragma clang diagnostic pop
   #endif
