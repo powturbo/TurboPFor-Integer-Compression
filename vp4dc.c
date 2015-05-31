@@ -65,23 +65,26 @@
 #include __FILE__*/
 
   #else
+#pragma clang diagnostic push 
+#pragma clang diagnostic ignored "-Wparentheses"
+
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 #define P4DN   (P4DSIZE/64)
 
     #ifdef P4D
 unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-  int i,b = 0; unsigned cnt[USIZE+1] = {0}; uint_t *ip;
+  uint_t *ip; unsigned b, cnt[USIZE+1] = {0}; 
   
-  for(ip = in; ip < in+(n&~3); ) {
+  for(ip = in; ip != in+(n&~3); ) {
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
   }
-  while(ip < in+n) ++cnt[TEMPLATE2(bsr, USIZE)(*ip)], b |= *ip++;
+  while(ip != in+n) ++cnt[TEMPLATE2(bsr, USIZE)(*ip)], b |= *ip++;
   b = TEMPLATE2(bsr, USIZE)(b); 
 
-  unsigned bx = b, ml = PAD8(n*b)+1, x = cnt[b];
+  int i; unsigned bx = b, ml = PAD8(n*b)+1, x = cnt[b];
   for(i = b-1; i >= 0; --i) {
     unsigned l = PAD8(n*i) + 2+P4DN*8+PAD8(x*(bx-i)); 
 	if(unlikely(l < ml)) b = i, ml = l; x += cnt[i]; //if(x >= 64) break;
@@ -120,4 +123,5 @@ unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
   P4DSAVE(out, b, bx);
   return TEMPLATE2(P4DE, USIZE)(in, n, out, b, bx);
 }
+#pragma clang diagnostic pop
   #endif
