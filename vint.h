@@ -50,6 +50,15 @@ extern unsigned long long mtab[];
 
 #define vbgeta(__ip, __x, __act) do { unsigned _vdx=(*__ip)&0xf; __x = _pext_u64(*(unsigned long long *)__ip, mtab[_vdx]); __ip+=vtab[_vdx]; __act; } while(0)
   #else
+    #if 1
+#define vbgeta(__ip, __x, __act) do {\
+  if(!((__x = *__ip) & (1<<0))) {  __ip++; __x	                 >>= 1; 		                      __act;}\
+  else if(!(__x      & (1<<1))) { __x = (*(unsigned short *)__ip) >>  2;		           __ip += 2; __act;}\
+  else if(!(__x      & (1<<2))) { __x = (*(unsigned short *)__ip) >>  3 | *(__ip+2) << 13; __ip += 3; __act;}\
+  else if(!(__x      & (1<<3))) { __x = (*(unsigned       *)__ip) >>  4; 		      	   __ip += 4; __act;}\
+  else 			   	            { __x = (*(unsigned       *)__ip) >>  4 | *(__ip+4) << 28; __ip += 5; __act;}\
+} while(0)
+    #else
 #define vbgeta(__ip, __x, __act) do {\
        if(!((__x = *__ip)                   & (1<<0))) { __ip++;          __x >>= 1; 		            	    __act;}\
   else if(!((__x = *(unsigned short *)__ip) & (1<<1))) { __ip += 2;       __x >>= 2;						    __act;}\
@@ -57,7 +66,7 @@ extern unsigned long long mtab[];
   else if(!((__x = *(unsigned       *)__ip) & (1<<3))) { __ip += 4;       __x >>= 4; 					 		__act;}\
   else 			   	                                   { __ip += 5; __x = __x >>  4 | (unsigned)__ip[-1] << 28;	__act;}\
 } while(0)
-	
+    #endif	
   #endif
 //------------------------------------------------------------------------------------------------------------------------
 extern unsigned char vtab[];
