@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  icbench.c - "Integer Compression" benchmark program  
+//  icbench.c - "Integer Compression" benchmark program
 #define _LARGEFILE64_SOURCE 1 
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
