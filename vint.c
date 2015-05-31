@@ -46,11 +46,11 @@ unsigned char vtab[] =      {    1,   2,   1,   3,   1,   2,   1,   4,   1,   2,
 
 // decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
 unsigned char *vbdec(unsigned char  *__restrict in, unsigned n, unsigned *__restrict out) { unsigned x,*op;
-  for(op = out; op != out+(n&~(4-1)); ) {
-    vbgeta(in, x, ;); *op++ = x;            
-    vbgeta(in, x, ;); *op++ = x;
-    vbgeta(in, x, ;); *op++ = x;
-    vbgeta(in, x, ;); *op++ = x;
+  for(op = out; op != out+(n&~(4-1)); op += 4) {
+    vbgeta(in, x, op[0] = x);             
+    vbgeta(in, x, op[1] = x); 
+    vbgeta(in, x, op[2] = x); 
+    vbgeta(in, x, op[3] = x); 
   }
   while(op != out+n) { vbgeta(in, x, ; ); *op++ = x; }
   return in;
@@ -64,7 +64,7 @@ unsigned char *vbenc(unsigned *__restrict in, unsigned n, unsigned char *__restr
     vbput(out, *ip++);
     vbput(out, *ip++);  
   }
-  while(ip <  in+n) vbput(out, *ip++);
+  while(ip !=  in+n) vbput(out, *ip++);
   return out;
 }
 //---------------------------------- increasing integer lists ----------------------------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ unsigned char *vbddec(unsigned char *__restrict in, unsigned n, unsigned *__rest
     vbgeta(in, x, ;); *op++ = (start += x);
     vbgeta(in, x, ;); *op++ = (start += x);
   }
-  while(op < out+n) vbgeta(in, x, *op++ = (start += x));
+  while(op != out+n) vbgeta(in, x, *op++ = (start += x));
   return in;
 }
 
@@ -106,7 +106,7 @@ unsigned char *vbd1enc(unsigned *__restrict in, unsigned n, unsigned char *__res
     v = (*ip)-start-1; start = *ip++; vbputa(op, v, ;); b |= v;
     v = (*ip)-start-1; start = *ip++; vbputa(op, v, ;); b |= v;
   }
-  while(ip < in+n) { v = (*ip)-start-1; start = *ip++; vbput(op, v); b |= v; } 
+  while(ip != in+n) { v = (*ip)-start-1; start = *ip++; vbput(op, v); b |= v; } 
   if(!b) { 
     v = in[-1] << 1 | 1;
 	vbputa(out, v, ;); 
@@ -115,24 +115,11 @@ unsigned char *vbd1enc(unsigned *__restrict in, unsigned n, unsigned char *__res
   return op;
 }
 
-#define BITUNBLKV32_0(ip, i, __op, __parm) {\
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
-}
-#define BITUNPACK0(__parm) __parm = _mm_add_epi32(__parm, cv); cv = _mm_set1_epi32(4)
-
 unsigned char *vbd1dec(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { unsigned x,*op;
   vbgeta(in, x, ;); *out = (start += (x>>1)+1);
   if(x & 1) { 
       #ifdef __SSE2__
-	out++; --n; __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1), *ov=(__m128i *)(out), *ove = (__m128i *)(out + n);
-	BITUNPACK0(sv); do BITUNBLKV32_0( iv, 0, ov, sv) while(ov < ove);
+	out++; --n; BITDIZERO(out, n, start, 1);
 	  #else 
     for(x = 1; x < n; x++) out[x] = start+x;
       #endif
