@@ -52,6 +52,9 @@ static SV_LIM;
 #include "vint.h"
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
+#pragma clang diagnostic push 
+#pragma clang diagnostic ignored "-Wunsequenced"
+
 unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict op) {
   unsigned xm,m,r,x; 
   uint_t *e = in+n,*ip;
@@ -61,7 +64,7 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
       uint_t *q = ip+1; 
       while(q+1 < e && *(q+1) == *ip) q++; 
       r = q - ip; 
-      if(r*TEMPLATE2(bsr, USIZE)(*ip) > 16 || !*ip && r>4) { 
+      if(r*TEMPLATE2(bsr, USIZE)(*ip) > 16 || (!*ip && r>4)) { 
         m = (*ip)?33:0; 
         goto a; 
       }
@@ -260,6 +263,8 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
   } 
   return op;   
 }
+#pragma clang diagnostic pop
+
 
 #define OP(__x) op[__x] // *op++ //
 #define OPI(__x) op+=__x// //
