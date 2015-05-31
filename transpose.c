@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  transpose.c - byte transpose
+//   transpose.c - byte transpose
 
   #ifndef ESIZE
 #include "transpose.h"
