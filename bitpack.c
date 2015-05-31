@@ -25,6 +25,9 @@
   #ifndef IPPB
 #include <stdio.h>
 #include "bitpack.h" 
+#pragma clang diagnostic push 
+#pragma clang diagnostic ignored "-Wunsequenced"
+
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
 #define IPPB( __ip,__x, __parm)
@@ -52,6 +55,7 @@ unsigned char *bitdpack32(unsigned       *__restrict in, unsigned n, unsigned ch
 #include __FILE__
 unsigned char *bitd1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 //-----------------------------------------------------------------------------------------------
+#pragma clang diagnostic pop
   #else
 #include <stdint.h>
 #define USE_BITPACK 64
