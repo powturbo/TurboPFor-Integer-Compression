@@ -61,7 +61,7 @@ typedef struct {
 } idxrd_t;					// Index 
 
 int idxopen(idxrd_t *idx, char *s) {
-  char *p;
+  unsigned char *p;
   
     #ifdef _WIN32
   HANDLE fd;	
@@ -94,7 +94,7 @@ int idxopen(idxrd_t *idx, char *s) {
   return 0;
 }
 
-int idxclose(idxrd_t *idx) { 
+void idxclose(idxrd_t *idx) { 
     #ifdef _WIN32
   UnmapViewOfFile(idx->fdp);
   CloseHandle(idx->hd);
@@ -142,7 +142,7 @@ int postinit( post_t *v, int tid, idxrd_t *idx, unsigned *dids) {
   return v->f_t;
 }
   
-static inline ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v->didno == bno) die("Fatal postdec"); 
+static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v->didno == bno) die("Fatal postdec"); 
   unsigned char *p = v->bp;
   if(v->f_t > BLK_DIDNUM) {  													if(bno < 0 || bno >= v->bnum) die("Fatal bno\n");
     unsigned *pix = (unsigned *)p + bno; 													
@@ -187,7 +187,7 @@ static inline ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids)
   #endif
 
 // Get next docid. Return value >= INT_MAX at end of posting
-static inline ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) { 
+static ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) { 
   if((v->did = dids[++v->didno]) < INT_MAX) return v->did;
   unsigned char *p = v->bp;
   
@@ -223,7 +223,7 @@ static inline ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) {
 #define DS if(QS(q[1]) >= did || q >= qe) break; COFS(v->pofs, *q); q++
 
 // Get next docid equal or greater than the parameter did
-static inline ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) { 
+static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) { 
   if(did >= v->ldid) goto b; 
   for(;;) { a: DD;DD;DD;DD; DD;DD;DD;DD; }																																
   if(v->did < v->ldid) { 														STAT(st_did += (v->did<INT_MAX)); STAT(st_dids[st_terms] += (v->did<INT_MAX)); 
@@ -271,7 +271,7 @@ static inline ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *
 
 /********************************************* query search *************************************************************************************/
 //#define THREAD_MAX 32  //uncomment for parallel processing.
-#define INTERVAL_SUPPORT
+#define SKIP_INTERVALS
 
   #ifdef THREAD_MAX
 #define QRYFIFOMAX (1<<14)
@@ -374,7 +374,7 @@ unsigned qrysearch(qry_t *q, idxrd_t *idx) {
     if(!postinit(&v[0], q->term[0], idx, dids[0]) || !postinit(&v[1], q->term[1], idx, dids[1])) 
       return 0;
     if(v[1].f_t < v[0].f_t) { post_t t = v[0]; v[0] = v[1]; v[1] = t; } // swap
-	  #ifdef INTERVAL_SUPPORT	
+	  #ifdef SKIP_INTERVALS	
 	unsigned *_xd = dids[0], xdnum;   
 	unsigned *_yd = dids[1], ydnum;   
     	if(v[0].f_t > BLK_DIDNUM) { 																		
@@ -570,7 +570,7 @@ static tm_t tminit() { QueryPerformanceFrequency(&tps); tm_t t0=tmtime(),ts; whi
 #include <time.h>
 //static   tm_t tmtime(void)    { struct timeval tm; gettimeofday(&tm, NULL); return (tm_t)tm.tv_sec*1000000ull + tm.tv_usec; }
 static   tm_t tmtime(void)    { struct timespec tm; clock_gettime(CLOCK_MONOTONIC, &tm); return (tm_t)tm.tv_sec*1000000ull + tm.tv_nsec/1000; }
-static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0); return ts; }
+static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0) {}; return ts; }
   #endif
 static double tmsec( tm_t tm) { return (double)tm/1000000.0; }
 static double tmmsec(tm_t tm) { return (double)tm/1000.0; }
