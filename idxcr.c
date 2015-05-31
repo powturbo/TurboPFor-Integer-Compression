@@ -57,7 +57,7 @@ void usage() {
 }
 
 int main(int argc, char *argv[]) { 
-  int fno,c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0; unsigned char *path="";
+  int fno,c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0; char *path="";
   static struct option long_options[] = { {"r", 	0, 0, 'r'}, {0,0, 0, 0}  };
   for(;;) {
     if((c = getopt_long(argc, argv, "xv:", long_options, &option_index)) == -1) break;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
   for(fno = optind; fno < argc; fno++) { 
     char outname[257], *inname = argv[fno]; 
     strcpy(outname, path); 
-    unsigned char *p = strrchr(inname,'/'); 
+    char *p = strrchr(inname,'/'); 
     if(!p) p = strrchr(inname,'\\'); if(!p) p=inname; 
     strcat(outname, p); strcat(outname,".i");
 
@@ -145,14 +145,14 @@ int main(int argc, char *argv[]) {
 	  fofs 		= ftello(fo);
       tmap_t *t = &tmap[tid++]; 
       TIDMAPSET(t, fofs);
-	  if(fwrite(out, 1, op-out, fo) < 0) die("fwrite error\n");				  	postsize += op-out;
+	  if(fwrite(out, 1, op-out, fo) != op-out) die("fwrite error\n");				  	postsize += op-out;
     }
     fofs = ftello(fo);															// write termmap
-	if(fwrite(tmap, 1, tid*sizeof(tmap_t), fo) < 0) die("fwrite error\n");
+	if(fwrite(tmap, sizeof(tmap_t), tid, fo) != tid) die("fwrite error\n");
 
     fseeko(fo, 0, SEEK_SET);
-	if(fwrite(&fofs, 1, sizeof(unsigned long long), fo) < 0) die("fwrite error\n");
-	if(fwrite(&tid,  1, sizeof(unsigned), fo) < 0) die("fwrite error\n");      fofs = ftello(fi); 
+	if(fwrite(&fofs, sizeof(unsigned long long), 1, fo) != 1) die("fwrite error\n");
+	if(fwrite(&tid,  sizeof(unsigned), 1, fo) != 1) die("fwrite error\n");      fofs = ftello(fi); 
 	fclose(fi); fclose(fo);
 	if(in) { free(in); free(out); }
     free(tmap);
