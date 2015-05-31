@@ -1,3 +1,5 @@
+#pragma clang diagnostic push 
+#pragma clang diagnostic ignored "-Wreturn-type"
 #include "bitpacka.h"
 #define INLINE inline
 uint32_t * nullpacker(const uint32_t *  __restrict in, uint32_t *  __restrict  out) {
@@ -17770,4 +17772,3 @@ const uint32_t * __fastunpack32_32(const uint32_t *  __restrict in, uint32_t *  
     }
     //throw logic_error("number of bits is unsupported");
   }
-
