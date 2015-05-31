@@ -22,7 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
     
-//	    idx.h - "Integer Compression" header for idxcr/idxqry 
+//	    idx.h - "Integer Compression" header for idxcr/idxqry
 #include <stdint.h>
 
 #define BLK_DIDNUM (128+1) 	//  Block size 128 + 1 (1 stored in skips)
