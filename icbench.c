@@ -51,7 +51,7 @@ typedef unsigned long long tm_t;
 
 #define TM_T 1000000.0
 static   tm_t tmtime(void)    { struct timeval tm; gettimeofday(&tm, NULL); return (tm_t)tm.tv_sec*1000000ull + tm.tv_usec; }
-static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0); return ts; }
+static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0) {}; return ts; }
 static double tmsec( tm_t tm) { return (double)tm/1000000.0; }
 static double tmmsec(tm_t tm) { return (double)tm/1000.0; }
 //-------------------------------------- TurboPFor ----------------------------
@@ -108,7 +108,7 @@ enum { 	P_CPY, 													// copy
 		P_PCK, P_PCKR, P_PCKV,	P_SIMDV,  			            // bit packing
 		P_SV, 		 			P_S16, P_S64, 					// simple family: , simpleV, simple16, simple-8b
 		P_P4D, P_P4DR, 			P_OPTP4, 						// PFor, PForDelta
-		P_LZT, 					P_LZ4,							// transpose+lz77 (like https://github.com/Blosc/c-blosc)
+		P_LZT, P_LZTB,			P_LZ4,							// transpose+lz77 (like https://github.com/Blosc/c-blosc)
 		P_MAX 
 };
 
@@ -146,12 +146,14 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
 	  // --------- transpose + lz77 ----------------------------------------
       #ifdef _LZT
     case P_LZT:   { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZTB:  { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
       #endif
       #ifdef _LZ4
-    case P_LZ4:     transpose4( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress(sbuf, (char *)out, n*4);
+    case P_LZ4:     transpose4( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
       #endif
 	case P_MAX ... 31: die("Fatal- Not entry %d", id);
-  } 
+  }
+  return out;
 }
 
 unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) {
@@ -185,9 +187,10 @@ unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) 
 	  //---------- transpose + lz77 ----------------------
       #ifdef _LZT
     case P_LZT:    { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz); untranspose4(sbuf, n*4, (unsigned char *)out); } break;
+    case P_LZTB:   { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz); untranspose4(sbuf, n*4, (unsigned char *)out); } break;
       #endif
       #ifdef _LZ4
-    case P_LZ4:     in += LZ4_decompress_fast(in, sbuf, n*4); untranspose4(sbuf, n*4, (unsigned char *)out); break;
+    case P_LZ4:     in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untranspose4(sbuf, n*4, (unsigned char *)out); break;
       #endif
 	case P_MAX ... 31: die("Fatal- Not entry %d", id);
   }
@@ -239,12 +242,14 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
 	  // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
       #ifdef _LZT
     case P_LZT: { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZTB:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
       #endif
       #ifdef _LZ4
-    case P_LZ4: { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); return out + LZ4_compress(sbuf, (char *)out, n*4); }
+    case P_LZ4: { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); }
       #endif
 	case P_MAX ... 31: break;
   }
+  return out;
 } 
  
 unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mode) { unsigned b,x,v;
@@ -291,9 +296,10 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
 	  //---------- transpose + lz77 ----------------------
       #ifdef _LZT
     case P_LZT: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz);  untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); } break;
+    case P_LZTB: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz);  untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); } break;
       #endif
       #ifdef _LZ4
-    case P_LZ4: in += LZ4_decompress_fast(in, sbuf, n*4); untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); break;
+    case P_LZ4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); break;
       #endif	 
     case P_MAX ... 31: break;
   } 
@@ -403,6 +409,7 @@ struct libss libss[] = {
   // ------ transpose+lz77 ----
   #ifdef _LZT
   { P_LZT,   "LzTurbo", 	64*1024 },
+  { P_LZTB,  "LzTurbo 2", 	64*1024 },
     #endif	   
     #ifdef _LZ4
   { P_LZ4,   "lz4", 		64*1024 },
@@ -417,11 +424,11 @@ enum { T_DUP, T_UNI, T_TXT, T_BYTE, T_TST };
 
 struct libs { int id,err,size; char *s,*v; unsigned long long l, c[33]; double tc,td; };
 struct libs libs[64];
-int libini() { int m; for(m = 0; libs[m].id >= 0; m++) libs[m].l = libs[m].tc = libs[m].td = 0; }
+void libini() { int m; for(m = 0; libs[m].id >= 0; m++) libs[m].l = libs[m].tc = libs[m].td = 0; }
 
 int l_cmp(struct libs *a, struct libs *b) {
-  if(a->l  < b->l || a->l == b->l && a->td < b->td || a->l == b->l && a->td == b->td && a->tc < b->tc) return -1;
-  if(a->l  > b->l || a->l == b->l && a->td > b->td || a->l == b->l && a->td == b->td && a->tc > b->tc) return  1;
+  if(a->l  < b->l || (a->l == b->l && a->td < b->td) || (a->l == b->l && a->td == b->td && a->tc < b->tc)) return -1;
+  if(a->l  > b->l || (a->l == b->l && a->td > b->td) || (a->l == b->l && a->td == b->td && a->tc > b->tc)) return  1;
   return 0;
 }
 
@@ -451,9 +458,9 @@ void stprint(char *s) {
 #define BI 1   // BI=4 -> MB/S=Megabyte/Sec  BI=1 -> Millions integer/Sec
 void print(unsigned long long n, char *s, unsigned long long *u) { 
   int m, k; 
-  for(k = 0; libs[k].id >= 0; k++);
+  for(k = 0; libs[k].id >= 0; k++) {};
     qsort(libs, k, sizeof(libs[0]), (int(*)(const void*,const void*))l_cmp);	
-  char *prtname = s?s:""; { unsigned char *p; if((p = strrchr(prtname, '/')) || (p = strrchr(prtname, '\\'))) prtname = p+1;} 
+  char *prtname = s?s:""; { char *p; if((p = strrchr(prtname, '/')) || (p = strrchr(prtname, '\\'))) prtname = p+1;} 
   for(m = 0; m < k; m++) 
     if(/*libs[m].tc ||*/ libs[m].l) { 
       struct libs *lb = &libs[m]; if(!lb->l) lb->tc=lb->td=0.0;
@@ -597,7 +604,7 @@ int main(int argc, char *argv[]) { int r;
         if(!*cmd) break; 							
         q = strchr(cmd,','); 
         if(q) *q=' '; 
-        if(q = strchr(cmd,'/')) 
+        if((q = strchr(cmd,'/')) != NULL)
           *q = '\0';
         for(ls = libss; ls->id >= 0; ls++) 
           if(!strcasecmp(ls->s, cmd)) { 
