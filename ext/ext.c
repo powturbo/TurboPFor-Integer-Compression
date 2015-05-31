@@ -56,20 +56,25 @@ unsigned char *simdunpackn1(uint32_t *in, uint32_t n, uint32_t b, uint32_t start
 }  
 //--------------- Polytec variable byte ----------- 
 #include "vbyte_poly.h"
-unsigned char *vbpolyenc(int *in, int n, unsigned char *out) {
-  int i; for(i = 0; i < n; i++) { unsigned x = in[i]; VBYTE_ENC(out, x); } return out;
+unsigned char *vbpolyenc(unsigned *in, unsigned n, unsigned char *out) {
+  unsigned i; for(i = 0; i < n; i++) { unsigned x = in[i]; VBYTE_ENC(out, x); } return out;
 }
-unsigned char *vbpolydec(unsigned char *in, int n, int *out) {
-  int i; for(i = 0; i < n; i++) { unsigned x; VBYTE_DEC(in, x); out[i] = x; } return in;
+unsigned char *vbpolydec(unsigned char *in, unsigned n, unsigned *out) {
+  unsigned i; for(i = 0; i < n; i++) { unsigned x; VBYTE_DEC(in, x); out[i] = x; } return in;
 }
 
-//#define _LZT
+//#define _LZT // LzTurbo
 #define _LZ4
 
-  #ifdef _LZT
+  #ifdef _LZT  
 #include "../../lz/lz8.h"
-int lz8c0(struct lzobj *lz);
+int lz8c0( struct lzobj *lz);
 int lz8c01(struct lzobj *lz);
+int lz8d(  struct lzobj *lz);
+
+int lzbc0( struct lzobj *lz);
+int lzbc01(struct lzobj *lz);
+int lzbd(  struct lzobj *lz);
   #endif
 
   #ifdef _LZ4
