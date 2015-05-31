@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     vp4dd.c - "Integer Compression" Turbo PforDelta 
+//    vp4dd.c - "Integer Compression" Turbo PforDelta 
   #ifndef USIZE
 #include <stdint.h>
 #include "conf.h"
