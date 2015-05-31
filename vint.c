@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    vint.c - "Integer Compression" variable byte 
+//   vint.c - "Integer Compression" variable byte 
 #include <stdio.h>   
      
 #include "conf.h"
