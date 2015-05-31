@@ -22,6 +22,17 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //     bitutil.h - "Integer Compression" 
+
+#define _BITFORZERO(out, n, start, inc) do {\
+ for(i = 0; i != (n&~3); ) {\
+   out[i] = start+i*inc; i++;\
+   out[i] = start+i*inc; i++;\
+   out[i] = start+i*inc; i++;\
+   out[i] = start+i*inc; i++;\
+ }\
+ while(i < n) out[i] = start+i*inc,++i;\
+} while(0)
+
   #ifdef __SSE2__
 #include <emmintrin.h>
 
@@ -31,10 +42,7 @@
 #define VSCANI(__v, __sv, __vi) VSCAN(__v, __sv); __sv = _mm_add_epi32(__sv, __vi)
 
 // SIMD Horizontal OR
-//#define HOR(__v,__b) __b = (unsigned)_mm_cvtsi128_si32(__v) | (unsigned)_mm_extract_epi32(__v, 1) | (unsigned)_mm_extract_epi32(__v, 2) | (unsigned)_mm_extract_epi32(__v, 3)
-#define HOR(__v,__b) __v = _mm_or_si128(_mm_unpackhi_epi32(__v, __v), _mm_unpacklo_epi32(__v, __v));  /*a3|a1 a2|a0 a3|a1 a2|a0 = a3 a2 a3 a2 | a1 a0 a1 a0*/\
-                     __v = _mm_or_si128(_mm_unpackhi_epi32(__v, __v), _mm_unpacklo_epi32(__v, __v));  /* = a3|a2|a1|a0  a3|a2|a1|a0  a3|a2|a1|a0  a3|a2|a1|a0*/\
-                     __b = (unsigned)_mm_cvtsi128_si32(__v);
+#define HOR(__v,__b) __v = _mm_or_si128(__v, _mm_srli_si128(__v, 8)); __v = _mm_or_si128(__v, _mm_srli_si128(__v, 4)); __b = (unsigned)_mm_cvtsi128_si32(__v)
 
 #define BSRN(__in, __n, __b) { typeof(__in[0]) *_ip; __m128i v = _mm_setzero_si128();\
   for(_ip = __in; _ip != __in+(__n&~(4-1)); _ip+=4) v = _mm_or_si128(v, _mm_loadu_si128((__m128i*)_ip));\
@@ -42,6 +50,41 @@
   while(_ip != __in+__n) __b |= *_ip++;\
   __b = bsr32(__b);\
 }
+
+#define BITZERO(out, n, start) do {\
+  __m128i sv = _mm_set1_epi32(start), *ov = (__m128i *)(out), *ove = (__m128i *)(out + n);\
+  do { _mm_storeu_si128(ov++, sv); } while(ov < ove); \
+} while(0)
+
+#define BITFORZERO(out, n, start, inc) do {\
+  __m128i sv = _mm_set1_epi32(start), *ov=(__m128i *)(out), *ove = (__m128i *)(out + n), cv = _mm_set_epi32(3*inc,2*inc,1*inc,0); \
+    sv = _mm_add_epi32(sv, cv);\
+    cv = _mm_set1_epi32(4);\
+  do { _mm_storeu_si128(ov++, sv); sv = _mm_add_epi32(sv, cv); } while(ov < ove);\
+} while(0)
+
+#if 0
+#define BITUNBLKV32_0(ip, i, __op, __parm) {\
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+  _mm_storeu_si128(__op++, __parm); __parm = _mm_add_epi32(__parm, cv); \
+}
+#define BITUNPACK0(__parm,inc) __parm = _mm_add_epi32(__parm, cv); cv = _mm_set1_epi32(4*inc)
+
+#define BITDIZERO(out, n, start, inc) do {\
+  __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(3+inc,2+inc,1+inc,inc), *ov=(__m128i *)(out), *ove = (__m128i *)(out + n);	BITUNPACK0(sv,inc); do BITUNBLKV32_0( iv, 0, ov, sv) while(ov < ove);\
+} while(0)
+#else
+#define BITDIZERO(out, n, start, inc) do { __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(3+inc,2+inc,1+inc,inc), *ov=(__m128i *)(out), *ove = (__m128i *)(out + n);\
+  sv = _mm_add_epi32(sv, cv); cv = _mm_set1_epi32(4*inc); do { _mm_storeu_si128(ov++, sv), sv = _mm_add_epi32(sv, cv); } while(ov < ove);\
+} while(0)
+#endif
+
   #else																					
 #define BSRN(__in, __n, __b) { typeof(__in[0]) *_ip;\
   for(__b=0,_ip = __in; _ip != __in+(__n&~(4-1)); )\
@@ -49,6 +92,7 @@
   while(_ip != __in+__n) __b |= *_ip++;\
   __b = bsr32(__b);\
 }
+#define BITFORZERO(out, n, start, inc) _BITFORZERO(out, n, start, inc)
   #endif
 
 #define ZIGZAG( __in, __n, __mode,      __out) { unsigned _v; for(      __out[0]=__in[0],_v = __n-1; _v >   0; --_v) { int _z = ((int)__in[_v] - (int)__in[_v-1]) - __mode; __out[_v] = (_z << 1) ^ (_z >> 31); } }
