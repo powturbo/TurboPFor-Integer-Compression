@@ -43,7 +43,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
  - Generate and test skewed distribution (100.000.000 integers, Block size=128).
 
 
-      ./icbench -a1.5 -m0 -M255 -n100m
+        ./icbench -a1.5 -m0 -M255 -n100m
 	
 |Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
 |--------:|-----:|----:|-------:|-------:|---------|
