@@ -133,6 +133,7 @@ q/s: queries/second, ms/q:milliseconds/query
 
       ./icbench -a1.0 -m0 -M255 -n100m
 
+
    >*-zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
      -number of integers = 100.000.000<br />
      -integer range from 0 to 255<br />*
@@ -142,11 +143,13 @@ q/s: queries/second, ms/q:milliseconds/query
 
       ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m
 
+
 ##### - Data files:
   - Data file Benchmark (file from [DocId data set](http://lemire.me/data/integercompression2014.html))
 
 
     ./icbench -c1 gov2.sorted
+
 
 ##### - Intersections:
   1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](http://lemire.me/data/integercompression2014.html)<br />
@@ -157,12 +160,14 @@ q/s: queries/second, ms/q:milliseconds/query
 
       ./idxcr gov2.sorted .
 
+
    >*create inverted index file "gov2.sorted.i" in the current directory*
 
   3 - Test intersections
 
 
       ./idxqry gov2.sorted.i 1mq.txt
+
 
   >*run queries in file "1mq.txt" over the index of gov2 file*
 
