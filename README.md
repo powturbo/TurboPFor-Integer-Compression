@@ -183,7 +183,7 @@ q/s: queries/second, ms/q:milliseconds/query
   2 - Create index file for each partition
 
 
-      ./idxcr gov2.sorted.s
+      ./idxcr gov2.sorted.s*
 
 
   >*create inverted index file for all partitions "gov2.sorted.s00 - gov2.sorted.s07" in the current directory*
@@ -193,7 +193,7 @@ q/s: queries/second, ms/q:milliseconds/query
   delete "idxqry.o" file and then type "make para" to compile "idxqry" w. multithreading
 
 
-      ./idxqry gov2.sorted.s\*.i 1mq.txt
+      ./idxqry gov2.sorted.s*.i 1mq.txt
 
   >*run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".*
 
