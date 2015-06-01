@@ -23,7 +23,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :new: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
 <p>
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference) scheme with **direct access** or bulk decoding.
-  Outstanding compression and speed.<br>More efficient than **ANY** other "integer compression" scheme.
+  Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
