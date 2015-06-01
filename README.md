@@ -42,7 +42,8 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 ##### - Synthetic data: 
  - Generate and test skewed distribution (100.000.000 integers, Block size=128).
 
-    >*./icbench -a1.5 -m0 -M255 -n100m*
+
+      ./icbench -a1.5 -m0 -M255 -n100m
 	
 |Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
 |--------:|-----:|----:|-------:|-------:|---------|
@@ -66,9 +67,10 @@ MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
 **#BOLD** = pareto frontier
 
 ##### - Data files:
- - gov2.sorted from [Document identifier data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+SimpleV 64k)
+ - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+SimpleV 64k)
 
-   >*./icbench -c1 gov2.sorted*
+
+      ./icbench -c1 gov2.sorted
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
@@ -128,77 +130,89 @@ q/s: queries/second, ms/q:milliseconds/query
 ##### - Synthetic data:
   + test all functions<br />
 
-    >*./icbench -a1.0 -m0 -M255 -n100m*
 
-    - zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)
-    - number of integers = 100.000.000
-    - integer range from 0 to 255
+    ./icbench -a1.0 -m0 -M255 -n100m
+
+   >*-zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
+     -number of integers = 100.000.000<br />
+     -integer range from 0 to 255<br />*
   
   + individual function test (ex. Copy TurboPack TurboPFor)<br />
 
-    >*./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m*
+
+    ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m
 
 ##### - Data files:
-  - Data file Benchmark (file format as in FastPFOR)
+  - Data file Benchmark (file from [DocId data set](http://lemire.me/data/integercompression2014.html))
 
-    >*./icbench -c1 gov2.sorted*
+
+    ./icbench -c1 gov2.sorted
 
 ##### - Intersections:
-  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt")<br />
-    from [Document identifier data set](http://lemire.me/data/integercompression2014.html)<br />
+  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](http://lemire.me/data/integercompression2014.html)<br />
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
 
   2 - Create index file
 
-  >*./idxcr gov2.sorted .*
 
-    create inverted index file "gov2.sorted.i" in the current directory
+      ./idxcr gov2.sorted .
+
+   >*create inverted index file "gov2.sorted.i" in the current directory*
 
   3 - Test intersections
 
-  >*./idxqry gov2.sorted.i 1mq.txt*
 
-    run queries in file "1mq.txt" over the index of gov2 file
+      ./idxqry gov2.sorted.i 1mq.txt
+
+  >*run queries in file "1mq.txt" over the index of gov2 file*
 
 ##### - Parallel Query Processing:
   1 - Create partitions
+
   
-  >*./idxseg gov2.sorted . -26m -s8*
+      ./idxseg gov2.sorted . -26m -s8
+
   
-    create 8 (CPU hardware threads) partitions for a total of ~26 millions document ids
+ >*create 8 (CPU hardware threads) partitions for a total of ~26 millions document ids*
   
   2 - Create index file for each partition
 
-  >./idxcr gov2.sorted.s*
 
-    create inverted index file for all partitions "gov2.sorted.s00 - gov2.sorted.s07" in the current directory
+      ./idxcr gov2.sorted.s
+
+
+  >*create inverted index file for all partitions "gov2.sorted.s00 - gov2.sorted.s07" in the current directory*
 
   3 - Intersections:
   
-    delete "idxqry.o" file and then type "make para" to compile "idxqry" w. multithreading
+  delete "idxqry.o" file and then type "make para" to compile "idxqry" w. multithreading
 
-  >./idxqry gov2.sorted.s\*.i 1mq.txt*
 
-    run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".
+      ./idxqry gov2.sorted.s\*.i 1mq.txt
+
+  >*run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".*
 
 ### Function usage:
 In general encoding/decoding functions are of the form:
 
-   **char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
-   endptr : set by encode to the next character in "out" after the encoded buffer<br />
-   in     : input integer array<br />
-   n      : number of elements<br />
-   out    : pointer to output buffer<br />
-   b      : number of bits. Only for bit packing functions<br />
-   start  : previous value. Only for integrated delta encoding functions
+
+  >***char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
+  endptr : set by encode to the next character in "out" after the encoded buffer<br />
+  in     : input integer array<br />
+  n      : number of elements<br />
+  out    : pointer to output buffer<br />
+  b      : number of bits. Only for bit packing functions<br />
+  start  : previous value. Only for integrated delta encoding functions*
+
+
    
-   **char *endptr = decode( char *in, unsigned n, unsigned *out, [unsigned start], [int b])**<br />
-   endptr : set by decode to the next character in "in" after the decoded buffer<br />
-   in     : pointer to input buffer<br />
-   n      : number of elements<br />
-   out    : output integer array<br />
-   b      : number of bits. Only for bit unpacking functions<br />
-   start  : previous value. Only for integrated delta decoding functions
+  >**char *endptr = decode( char *in, unsigned n, unsigned *out, [unsigned start], [int b])**<br />
+  endptr : set by decode to the next character in "in" after the decoded buffer<br />
+  in     : pointer to input buffer<br />
+  n      : number of elements<br />
+  out    : output integer array<br />
+  b      : number of bits. Only for bit unpacking functions<br />
+  start  : previous value. Only for integrated delta decoding functions*
 
 header files to use with documentation :<br />
 
@@ -220,11 +234,11 @@ header files to use with documentation :<br />
 - All TurboPFor functions are thread safe
 
 ### References:
+
  + [FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPackFPF, VbyteFPF
  + [Optimized Pfor-delta compression code](http://jinruhe.com): PForDelta: OptPFD or OptP4, Simple16
  + [MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
-   - [Quasi-Succinct Indices](http://arxiv.org/abs/1206.4300)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
