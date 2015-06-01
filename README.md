@@ -201,7 +201,7 @@ q/s: queries/second, ms/q:milliseconds/query
 In general encoding/decoding functions are of the form:
 
 
-  >***char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
+  >**char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
   endptr : set by encode to the next character in "out" after the encoded buffer<br />
   in     : input integer array<br />
   n      : number of elements<br />
