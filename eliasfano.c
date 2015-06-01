@@ -22,7 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 
-//    eliasfano.c - "Integer Compression" Elias Fano 
+//    eliasfano.c - "Integer Compression" Elias Fano
   #ifndef USIZE //------------------------------------ functions ----------------------------------------------------------------- 
 #include <stdint.h>
 #include <string.h>
