@@ -131,7 +131,7 @@ q/s: queries/second, ms/q:milliseconds/query
   + test all functions<br />
 
 
-      ./icbench -a1.0 -m0 -M255 -n100m
+        ./icbench -a1.0 -m0 -M255 -n100m
 
 
    >*-zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
@@ -141,14 +141,14 @@ q/s: queries/second, ms/q:milliseconds/query
   + individual function test (ex. Copy TurboPack TurboPFor)<br />
 
 
-      ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m
+        ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m
 
 
 ##### - Data files:
   - Data file Benchmark (file from [DocId data set](http://lemire.me/data/integercompression2014.html))
 
 
-    ./icbench -c1 gov2.sorted
+        ./icbench -c1 gov2.sorted
 
 
 ##### - Intersections:
@@ -158,7 +158,7 @@ q/s: queries/second, ms/q:milliseconds/query
   2 - Create index file
 
 
-      ./idxcr gov2.sorted .
+        ./idxcr gov2.sorted .
 
 
    >*create inverted index file "gov2.sorted.i" in the current directory*
@@ -166,7 +166,7 @@ q/s: queries/second, ms/q:milliseconds/query
   3 - Test intersections
 
 
-      ./idxqry gov2.sorted.i 1mq.txt
+        ./idxqry gov2.sorted.i 1mq.txt
 
 
   >*run queries in file "1mq.txt" over the index of gov2 file*
@@ -175,7 +175,7 @@ q/s: queries/second, ms/q:milliseconds/query
   1 - Create partitions
 
   
-      ./idxseg gov2.sorted . -26m -s8
+        ./idxseg gov2.sorted . -26m -s8
 
   
  >*create 8 (CPU hardware threads) partitions for a total of ~26 millions document ids*
