@@ -131,7 +131,7 @@ q/s: queries/second, ms/q:milliseconds/query
   + test all functions<br />
 
 
-    ./icbench -a1.0 -m0 -M255 -n100m
+      ./icbench -a1.0 -m0 -M255 -n100m
 
    >*-zipfian distribution alpha = 1.0 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
      -number of integers = 100.000.000<br />
@@ -140,7 +140,7 @@ q/s: queries/second, ms/q:milliseconds/query
   + individual function test (ex. Copy TurboPack TurboPFor)<br />
 
 
-    ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m
+      ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor -n100m
 
 ##### - Data files:
   - Data file Benchmark (file from [DocId data set](http://lemire.me/data/integercompression2014.html))
