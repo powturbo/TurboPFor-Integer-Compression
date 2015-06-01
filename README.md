@@ -70,7 +70,7 @@ MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
  - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+SimpleV 64k)
 
 
-      ./icbench -c1 gov2.sorted
+        ./icbench -c1 gov2.sorted
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
