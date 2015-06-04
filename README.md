@@ -122,7 +122,14 @@ q/s: queries/second, ms/q:milliseconds/query
 |1.000|2.66|6772.6|0.148|81|
 |10.000|3.39|5307.5|0.188|84|
 |ALL|3.57|5036.5|0.199|100|
-	 
+
+###### Notes:
+- Search engines are spending 90% of the times in intersections when processing queries. 
+- Most search engines are using pruning strategies, caching popular queries,... to reduce the time for intersections and query processing.
+- As indication, google is processing [40.000 Queries per seconds](http://www.internetlivestats.com/google-search-statistics/),
+using [900.000 servers](https://www.cloudyn.com/blog/10-facts-didnt-know-server-farms/) for a total of [8 billions web pages](http://searchenginewatch.com/sew/study/2063479/coincidentally-googles-index-size-jumps).
+- Recent GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
+
 ### Compile:
   *make*
 
@@ -231,7 +238,7 @@ header files to use with documentation :<br />
 
 ### Environment:
 ###### OS/Compiler (64 bits):
-- Linux: GNU GCC (>=4.6) 
+- Linux: GNU GCC (>=4.6) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
 - clang (>=3.2)
 - Windows: MinGW-w64 (no parallel query processing)
 
@@ -247,3 +254,4 @@ header files to use with documentation :<br />
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
+   - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
