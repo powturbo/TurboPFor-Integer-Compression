@@ -73,7 +73,7 @@
 
     #ifdef P4D
 unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-  uint_t *ip; unsigned b, cnt[USIZE+1] = {0}; 
+  uint_t *ip; unsigned b=0, cnt[USIZE+1] = {0}; 
   
   for(ip = in; ip != in+(n&~3); ) {
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
@@ -94,12 +94,12 @@ unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx)
 } 
 #endif
  
-unsigned char *TEMPLATE2(P4DE, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {  
+unsigned char *TEMPLATE2(P4DE, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) { unsigned i, xn, msk = (1ull<<b)-1, c;
   if(!bx) return TEMPLATE2(BITPACK, USIZE)(in,  n, out, b);
   
   uint_t             _in[P4DSIZE], inx[P4DSIZE*2]; 
   unsigned long long xmap[P4DN+1];  
-  unsigned           miss[P4DSIZE],i, xn, msk = (1ull<<b)-1;
+  unsigned           miss[P4DSIZE];
   for(i = 0; i < P4DN; i++) xmap[i] = 0;
   for(xn = i = 0; i != n&~3; ) {
     miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++;
