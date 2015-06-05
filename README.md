@@ -64,7 +64,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 |400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
 |         |      |     |   N/A  | N/A   |**EliasFano**|
 MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
-**#BOLD** = pareto frontier
+**#BOLD** = pareto frontier<br>
 TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
