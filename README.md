@@ -8,7 +8,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :new: Integrated differential encoding/decoding for sorted integer lists
 <p>
 + **Features**
- - Fastest **"Variable Byte"** implementation
+ - Scalar **"Variable Byte"** faster and more efficient than any other implementation
 <p>
  - **Novel** **"Variable Simple"** faster than simple16 and more compact than simple8-b
 <p>
@@ -22,7 +22,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
  - :new: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
 <p>
- - **Novel** **"TurboPFor"** (Patched Frame-of-Reference) scheme with **direct access** or bulk decoding.
+ - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
   Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
 <p>
 + **Inverted Index ...do less, go fast!**
@@ -65,6 +65,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 |         |      |     |   N/A  | N/A   |**EliasFano**|
 MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
 **#BOLD** = pareto frontier
+TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
  - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+SimpleV 64k)
@@ -238,7 +239,7 @@ header files to use with documentation :<br />
 
 ### Environment:
 ###### OS/Compiler (64 bits):
-- Linux: GNU GCC (>=4.6) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
+- Linux: GNU GCC (>=4.6)
 - clang (>=3.2)
 - Windows: MinGW-w64 (no parallel query processing)
 
