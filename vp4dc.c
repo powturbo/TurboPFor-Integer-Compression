@@ -52,7 +52,6 @@
 #undef P4DE
 #undef P4D
 //------------------------------------------
-#define P4DSIZE 128 //64 //
 
 #define P4DENC p4dencv
 #define P4DE p4dev
