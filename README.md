@@ -128,7 +128,7 @@ q/s: queries/second, ms/q:milliseconds/query
 - Search engines are spending 90% of the time in intersections when processing queries. 
 - Most search engines are using pruning strategies, caching popular queries,... to reduce the time for intersections and query processing.
 - As indication, google is processing [40.000 Queries per seconds](http://www.internetlivestats.com/google-search-statistics/),
-using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-know-server-farms/) for searching [8 billions web pages](http://searchenginewatch.com/sew/study/2063479/coincidentally-googles-index-size-jumps) (320*GOV2 size).
+using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-know-server-farms/) for searching [8 billions web pages](http://searchenginewatch.com/sew/study/2063479/coincidentally-googles-index-size-jumps) (320 X size of GOV2).
 - Recent GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
 
 ### Compile:
