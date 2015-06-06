@@ -30,8 +30,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
  - **Novel** Implicit skips with zero extra overhead
  - **Novel** Efficient Bidirectional Inverted Index Architecture (forward/backwards traversal).
- - more than **2000 queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - :new: Parallel Query Processing on Multicores w/ more than **7000 queries/sec** on a quad core PC.<br>
+ - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
+ - :new: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
