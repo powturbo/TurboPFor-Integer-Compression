@@ -73,7 +73,7 @@
 
     #ifdef P4D
 unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-  uint_t *ip; unsigned b=0, cnt[USIZE+1] = {0}; 
+  uint_t *ip; int i,ml,l; unsigned x, bx, b=0, cnt[USIZE+1] = {0}; 
   
   for(ip = in; ip != in+(n&~3); ) {
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
@@ -84,10 +84,10 @@ unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx)
   while(ip != in+n) ++cnt[TEMPLATE2(bsr, USIZE)(*ip)], b |= *ip++;
   b = TEMPLATE2(bsr, USIZE)(b); 
 
-  int i; unsigned bx = b, ml = PAD8(n*b)+1, x = cnt[b];
+  bx = b; ml = PAD8(n*b)+1-2-P4DN*8; x = cnt[b];
   for(i = b-1; i >= 0; --i) {
-    unsigned l = PAD8(n*i) + 2+P4DN*8+PAD8(x*(bx-i)); 
-	if(unlikely(l < ml)) b = i, ml = l; x += cnt[i]; //if(x >= 64) break;
+    int l = PAD8(n*i) + PAD8(x*(bx-i)); x += cnt[i]; 
+	if(unlikely(l < ml)) b = i, ml = l;
   }
   *pbx = bx - b;
   return b;
@@ -98,9 +98,13 @@ unsigned char *TEMPLATE2(P4DE, USIZE)(uint_t *__restrict in, unsigned n, unsigne
   if(!bx) return TEMPLATE2(BITPACK, USIZE)(in,  n, out, b);
   
   uint_t             _in[P4DSIZE], inx[P4DSIZE*2]; 
-  unsigned long long xmap[P4DN+1];  
+  unsigned long long xmap[P4DN];  
   unsigned           miss[P4DSIZE];
+    #if P4DN == 2
+  xmap[0] = xmap[1] = 0;
+    #else
   for(i = 0; i < P4DN; i++) xmap[i] = 0;
+    #endif
   for(xn = i = 0; i != n&~3; ) {
     miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++;
     miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++;
@@ -108,13 +112,18 @@ unsigned char *TEMPLATE2(P4DE, USIZE)(uint_t *__restrict in, unsigned n, unsigne
     miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++;
   }  
   while(i != n) { miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++; }
-  for(i = 0; i < xn; i++) {
-    unsigned c = miss[i]; 
+  for(i = 0; i != xn; ++i) {
+    c           = miss[i]; 
     xmap[c>>6] |= (1ull << (c&0x3f)); 
-    inx[i] = in[c] >> b; 
+    inx[i]      = in[c] >> b; 
   }
   out = TEMPLATE2(BITPACK, USIZE)(_in,  n, out,  b);	
+    #if P4DN == 2
+  *(unsigned long long *)out = xmap[0]; out += 8;    
+  *(unsigned long long *)out = xmap[1]; out += 8;    
+    #else
   for(i=0;i < P4DN; i++) { *(unsigned long long *)out = xmap[i]; out += 8; } 
+    #endif
   return TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  						
 }
 
