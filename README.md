@@ -32,7 +32,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - **Novel** Efficient Bidirectional Inverted Index Architecture (forward/backwards traversal).
  - more than **2000 queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
  - :new: Parallel Query Processing on Multicores w/ more than **7000 queries/sec** on a quad core PC.<br>
-   ...forget ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
+   **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
 CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
