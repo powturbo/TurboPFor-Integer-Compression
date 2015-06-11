@@ -32,8 +32,9 @@ extern "C" {
 #endif
 
 // compress integer array with n values to the buffer out. Return value = end of compressed buffer out
-unsigned char *p4denc32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out);
-unsigned char *p4denc16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out);
+unsigned char *p4denc32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out);
+unsigned char *p4denc16(unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out);
+unsigned char *p4denc64(uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out);
 
 // SIMD compress integer array with n values to the buffer out. Return value = end of compressed buffer out
 unsigned char *p4dencv32(unsigned        *__restrict in, unsigned n, unsigned char *__restrict out);
@@ -42,10 +43,13 @@ unsigned char *p4dencv32(unsigned        *__restrict in, unsigned n, unsigned ch
 // calculate the best bit size b and bx. 
 unsigned p4d32(unsigned       *__restrict in, unsigned n, unsigned *pbx);
 unsigned p4d16(unsigned short *__restrict in, unsigned n, unsigned *pbx);
+unsigned p4d64(uint64_t       *__restrict in, unsigned n, unsigned *pbx);
 
 // same as p4denc, but with b and bx as parameters. Call after p4d32/p4d16
 unsigned char *p4de32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
 unsigned char *p4de16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
+unsigned char *p4de64(uint64_t       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
+
 unsigned char *p4dev32(unsigned      *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
 
 #ifdef __cplusplus
