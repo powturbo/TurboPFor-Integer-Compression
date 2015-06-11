@@ -26,14 +26,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#include <stdint.h>
 #define P4DSIZE 128 //64 //
 #define P4DN 	(P4DSIZE/64)
 
 //---------------- Bulk decompress of TurboPFor compressed integer array -------------------------------------------------------
 // decompress a previously (with p4denc32) 32 bits packed array. Return value = end of packed buffer in 
 unsigned char *p4ddec32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out);
+unsigned char *p4ddec64( unsigned char *__restrict in, unsigned n, uint64_t *__restrict out);
+
 unsigned char *p4dd32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned bx);
+unsigned char *p4dd64( unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, unsigned b, unsigned bx);
 
 // decompress a previously (with p4denc32) 32 bits packed array. Return value = end of packed buffer in 
 unsigned char *p4ddecv32(  unsigned char *__restrict in, unsigned n, unsigned *__restrict out);
