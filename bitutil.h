@@ -22,6 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //     bitutil.h - "Integer Compression" 
+#include <stdint.h>
 
 #define _BITFORZERO(out, n, start, inc) do {\
  for(i = 0; i != (n&~3); ) {\
@@ -111,6 +112,7 @@ extern "C" {
 
 // transform sorted integer array to delta array. inc = increment
 unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc);
+unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
 
 // get delta maximum bit length of the non decreasing integer array
 unsigned bitd32( unsigned *in, unsigned n, unsigned start);  
@@ -118,8 +120,12 @@ unsigned bitd32( unsigned *in, unsigned n, unsigned start);
 // get delta maximum bit length of the non strictly decreasing integer array
 unsigned bitd132(unsigned *in, unsigned n, unsigned start);
 
-void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc);
 void bitund32( unsigned *p, unsigned n, unsigned x);
+void bitund64( uint64_t *p, unsigned n, uint64_t x);
+
+void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc);
+void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc);
+
 void bitund132(unsigned *p, unsigned n, unsigned x);
 #ifdef __cplusplus
 }
