@@ -28,9 +28,9 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
- - **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
- - **Novel** Implicit skips with zero extra overhead
- - **Novel** Efficient Bidirectional Inverted Index Architecture (forward/backwards traversal).
+ - :new: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
+ - :new: **Novel** Implicit skips with zero extra overhead
+ - :new: **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
  - :new: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
@@ -52,7 +52,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 | 63.392.801| 15.85| 5.07|  365.26| 243.15|**TurboPForDA**|
 | 65.359.916| 16.34| 5.23|    7.09| 638.96|OptPFD|
 | 72.364.024| 18.09| 5.79|   85.31| 762.00|Simple16|
-| 78.514.276| 19.63| 6.28|  249.17| 813.41|**SimpleV**|
+| 78.514.276| 19.63| 6.28|  249.17| 813.41|**VSimple**|
 | 95.915.096| 23.98| 7.67|  221.46|1049.70|Simple-8b|
 | 99.910.930| 24.98| 7.99|**2603.47**|**1948.65**|**TurboPackV**|
 | 99.910.930| 24.98| 7.99| 2524.50|1943.41|SIMDPackFPF|
@@ -69,17 +69,17 @@ MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
 TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
- - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+SimpleV 64k)
+ - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+VSimple 64k)
 
 
         ./icbench -c1 gov2.sorted
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
-| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**SimpleV 64k**|
+| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**VSimple 64k**|
 | 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
-| 3.501.671.314| 14.64| 4.68| 321.45| 820.94|**SimpleV**|
+| 3.501.671.314| 14.64| 4.68| 321.45| 820.94|**VSimple**|
 | 3.766.174.764| 15.75| 5.04|**617.88**| 712.31|**EliasFano**|
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
 | 3.958.888.197| 16.55| 5.30| 279.19| 618.60|Lz4 64K|
