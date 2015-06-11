@@ -32,8 +32,9 @@
 //-----------------------------------------------------------------------------------------------------------------
 #define BPI(__w, __op, __parm) __w
 #include __FILE__
-unsigned char *bitunpack32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out				 , unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
-unsigned char *bitunpack16(  unsigned char *__restrict in, unsigned n, unsigned short *__restrict out				 , unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
+unsigned char *bitunpack32(  unsigned char *__restrict in, unsigned n, unsigned           *__restrict out				 , unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
+unsigned char *bitunpack16(  unsigned char *__restrict in, unsigned n, unsigned short     *__restrict out				 , unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
+unsigned char *bitunpack64(  unsigned char *__restrict in, unsigned n, uint64_t           *__restrict out				 , unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK64(in, n, b, out,    0); return ip; }
 #undef BPI
 
 //-----------------------------------------------------------------------------------------------------------------
@@ -112,6 +113,77 @@ unsigned char *bitfunpack16( unsigned char *__restrict in, unsigned n, unsigned 
     case 32: do BITUNPACK64_32(__ip, __op, __parm) while(__op<__ope); break;\
   }\
 } 
+
+#define BITUNPACK64(__ip, __n, __nbits, __op, __parm) { typeof(__op[0]) *__ope = __op + __n,*_op=__op;\
+  switch(__nbits) {\
+    case  0: do BITUNPACK64_0( __ip, __op, __parm) while(__op<__ope); break;\
+    case  1: do BITUNPACK64_1( __ip, __op, __parm) while(__op<__ope); break;\
+    case  2: do BITUNPACK64_2( __ip, __op, __parm) while(__op<__ope); break;\
+    case  3: do BITUNPACK64_3( __ip, __op, __parm) while(__op<__ope); break;\
+    case  4: do BITUNPACK64_4( __ip, __op, __parm) while(__op<__ope); break;\
+    case  5: do BITUNPACK64_5( __ip, __op, __parm) while(__op<__ope); break;\
+    case  6: do BITUNPACK64_6( __ip, __op, __parm) while(__op<__ope); break;\
+    case  7: do BITUNPACK64_7( __ip, __op, __parm) while(__op<__ope); break;\
+    case  8: do BITUNPACK64_8( __ip, __op, __parm) while(__op<__ope); break;\
+    case  9: do BITUNPACK64_9( __ip, __op, __parm) while(__op<__ope); break;\
+    case 10: do BITUNPACK64_10(__ip, __op, __parm) while(__op<__ope); break;\
+    case 11: do BITUNPACK64_11(__ip, __op, __parm) while(__op<__ope); break;\
+    case 12: do BITUNPACK64_12(__ip, __op, __parm) while(__op<__ope); break;\
+    case 13: do BITUNPACK64_13(__ip, __op, __parm) while(__op<__ope); break;\
+    case 14: do BITUNPACK64_14(__ip, __op, __parm) while(__op<__ope); break;\
+    case 15: do BITUNPACK64_15(__ip, __op, __parm) while(__op<__ope); break;\
+    case 16: do BITUNPACK64_16(__ip, __op, __parm) while(__op<__ope); break;\
+    case 17: do BITUNPACK64_17(__ip, __op, __parm) while(__op<__ope); break;\
+    case 18: do BITUNPACK64_18(__ip, __op, __parm) while(__op<__ope); break;\
+    case 19: do BITUNPACK64_19(__ip, __op, __parm) while(__op<__ope); break;\
+    case 20: do BITUNPACK64_20(__ip, __op, __parm) while(__op<__ope); break;\
+    case 21: do BITUNPACK64_21(__ip, __op, __parm) while(__op<__ope); break;\
+    case 22: do BITUNPACK64_22(__ip, __op, __parm) while(__op<__ope); break;\
+    case 23: do BITUNPACK64_23(__ip, __op, __parm) while(__op<__ope); break;\
+    case 24: do BITUNPACK64_24(__ip, __op, __parm) while(__op<__ope); break;\
+    case 25: do BITUNPACK64_25(__ip, __op, __parm) while(__op<__ope); break;\
+    case 26: do BITUNPACK64_26(__ip, __op, __parm) while(__op<__ope); break;\
+    case 27: do BITUNPACK64_27(__ip, __op, __parm) while(__op<__ope); break;\
+    case 28: do BITUNPACK64_28(__ip, __op, __parm) while(__op<__ope); break;\
+    case 29: do BITUNPACK64_29(__ip, __op, __parm) while(__op<__ope); break;\
+    case 30: do BITUNPACK64_30(__ip, __op, __parm) while(__op<__ope); break;\
+    case 31: do BITUNPACK64_31(__ip, __op, __parm) while(__op<__ope); break;\
+    case 32: do BITUNPACK64_32(__ip, __op, __parm) while(__op<__ope); break;\
+    case 33: do BITUNPACK64_33(__ip, __op, __parm) while(__op<__ope); break;\
+    case 34: do BITUNPACK64_34(__ip, __op, __parm) while(__op<__ope); break;\
+    case 35: do BITUNPACK64_35(__ip, __op, __parm) while(__op<__ope); break;\
+    case 36: do BITUNPACK64_36(__ip, __op, __parm) while(__op<__ope); break;\
+    case 37: do BITUNPACK64_37(__ip, __op, __parm) while(__op<__ope); break;\
+    case 38: do BITUNPACK64_38(__ip, __op, __parm) while(__op<__ope); break;\
+    case 39: do BITUNPACK64_39(__ip, __op, __parm) while(__op<__ope); break;\
+    case 40: do BITUNPACK64_40(__ip, __op, __parm) while(__op<__ope); break;\
+    case 41: do BITUNPACK64_41(__ip, __op, __parm) while(__op<__ope); break;\
+    case 42: do BITUNPACK64_42(__ip, __op, __parm) while(__op<__ope); break;\
+    case 43: do BITUNPACK64_43(__ip, __op, __parm) while(__op<__ope); break;\
+    case 44: do BITUNPACK64_44(__ip, __op, __parm) while(__op<__ope); break;\
+    case 45: do BITUNPACK64_45(__ip, __op, __parm) while(__op<__ope); break;\
+    case 46: do BITUNPACK64_46(__ip, __op, __parm) while(__op<__ope); break;\
+    case 47: do BITUNPACK64_47(__ip, __op, __parm) while(__op<__ope); break;\
+    case 48: do BITUNPACK64_48(__ip, __op, __parm) while(__op<__ope); break;\
+    case 49: do BITUNPACK64_49(__ip, __op, __parm) while(__op<__ope); break;\
+    case 50: do BITUNPACK64_50(__ip, __op, __parm) while(__op<__ope); break;\
+    case 51: do BITUNPACK64_51(__ip, __op, __parm) while(__op<__ope); break;\
+    case 52: do BITUNPACK64_52(__ip, __op, __parm) while(__op<__ope); break;\
+    case 53: do BITUNPACK64_53(__ip, __op, __parm) while(__op<__ope); break;\
+    case 54: do BITUNPACK64_54(__ip, __op, __parm) while(__op<__ope); break;\
+    case 55: do BITUNPACK64_55(__ip, __op, __parm) while(__op<__ope); break;\
+    case 56: do BITUNPACK64_56(__ip, __op, __parm) while(__op<__ope); break;\
+    case 57: do BITUNPACK64_57(__ip, __op, __parm) while(__op<__ope); break;\
+    case 58: do BITUNPACK64_58(__ip, __op, __parm) while(__op<__ope); break;\
+    case 59: do BITUNPACK64_59(__ip, __op, __parm) while(__op<__ope); break;\
+    case 60: do BITUNPACK64_60(__ip, __op, __parm) while(__op<__ope); break;\
+    case 61: do BITUNPACK64_61(__ip, __op, __parm) while(__op<__ope); break;\
+    case 62: do BITUNPACK64_62(__ip, __op, __parm) while(__op<__ope); break;\
+    case 63: do BITUNPACK64_63(__ip, __op, __parm) while(__op<__ope); break;\
+    case 64: do BITUNPACK64_64(__ip, __op, __parm) while(__op<__ope); break;\
+  }\
+} 
+
   #elif USE_BITUNPACK == 32
 #include "bitunpack32_.h" // Not included in the github package
 #define BITUNPACK32(__ip, __n, __nbits, __op, __parm) { typeof(__op[0]) *__ope = __op + __n;\
