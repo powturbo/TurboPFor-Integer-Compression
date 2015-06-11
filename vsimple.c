@@ -26,21 +26,36 @@
   #ifdef __SSE2__
 #include <emmintrin.h>
   #endif
+#include <stdint.h>
 #include "vsimple.h"
 
 #define USE_RLE
                                      //   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32 
-#define SV_LIM unsigned char s_lim[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 0 };
-#define SV_ITM unsigned      s_itm[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1, -1 }
-static SV_ITM;
-static SV_LIM;
+#define SV_LIM32 unsigned char s_lim32[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 0 };
+#define SV_ITM32 unsigned      s_itm32[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1, -1 }
 
-#include <stdint.h>
+
+#define SV_LIM64 unsigned char s_lim64[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,\
+                                             60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 64, 64, 64, 64, 64, 64, 64, 64, 0 };
+
+#define SV_ITM64 unsigned      s_itm64[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,\
+                                              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, -1 }
+
+static SV_LIM32;
+static SV_ITM32;
 #define USIZE 32
 #include __FILE__
 #undef USIZE
 
 #define USIZE 16
+#define s_lim16 s_lim32
+#define s_itm16 s_itm32
+#include __FILE__
+#undef USIZE
+
+#define USIZE 64
+static SV_ITM64;
+static SV_LIM64;
 #include __FILE__
 #undef USIZE
 
@@ -65,14 +80,14 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
       while(q+1 < e && *(q+1) == *ip) q++; 
       r = q - ip; 
       if(r*TEMPLATE2(bsr, USIZE)(*ip) > 16 || (!*ip && r>4)) { 
-        m = (*ip)?33:0; 
+        m = (*ip)?(USIZE<=32?33:65):0; 
         goto a; 
       }
     } else 
       #endif
       r = 0;
-    for(m = x = TEMPLATE2(bsr, USIZE)(*ip);(r+1)*(xm = x > m?x:m) <= s_lim[xm] && ip+r<e;) m = xm, x = TEMPLATE2(bsr, USIZE)(*(ip+(++r))); 
-    while(r < s_itm[m]) m++;	
+    for(m = x = TEMPLATE2(bsr, USIZE)(*ip);(r+1)*(xm = x > m?x:m) <= TEMPLATE2(s_lim, USIZE)[xm] && ip+r<e;) m = xm, x = TEMPLATE2(bsr, USIZE)(ip[++r]); 
+    while(r < TEMPLATE2(s_itm, USIZE)[m]) m++;
 			
     a:; 
     switch(m) {
@@ -176,11 +191,11 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
         break;
       case 7: 
         *(uint64_t *)op =    7 |
-        (unsigned)ip[ 0] <<  4 | 
-        (unsigned)ip[ 1] << 11 |
-        (unsigned)ip[ 2] << 18 |
-        (uint64_t)ip[ 3] << 25 |
-        (uint64_t)ip[ 4] << 32; 	ip += 5; op += 5;
+        (unsigned)ip[ 0] <<  5 | 
+        (unsigned)ip[ 1] << 12 |
+        (unsigned)ip[ 2] << 19 |
+        (uint64_t)ip[ 3] << 26 |
+        (uint64_t)ip[ 4] << 33; 	ip += 5; op += 5;
         break;
       case  8: 
       case  9: 
@@ -219,15 +234,18 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (uint64_t)ip[ 3] << 49; 	ip += 4; op += 8;
         break;
       case 16:
+        #if USIZE > 16
       case 17:      
       case 18:
       case 19:      
       case 20: 
+        #endif
         *(uint64_t *)op =   11 |
         (unsigned)ip[ 0] <<  4 | 
         (uint64_t)ip[ 1] << 24 |
         (uint64_t)ip[ 2] << 44; 	ip += 3; op += 8;
         break;
+        #if USIZE > 16
       case 21:
       case 22:      
       case 23:
@@ -244,11 +262,21 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
         break;
       case 31:
       case 32:
+          #if USIZE == 64
+      case 33: case 34: case 35: case 36:
+          #endif
         *(uint64_t *)op =   14 |
         (uint64_t)ip[ 0] <<  4; 	ip++;    op += 5;
-        break;     
+        break;
+          #if USIZE == 64
+      case 37 ... 64: xm = (m+7)/8;        
+        *op++ =   0x17 | (xm-1) << 5;
+        *(uint64_t *)op = (uint64_t)ip[ 0]; ip++;   op += xm; 
+        break;
+          #endif
+        #endif
         #ifdef USE_RLE 
-      case 33: 				ip += r;
+      case USIZE<=32?33:65: 		ip += r;
         if(--r >= 0xf) { 
           *op++ = 0xf0|8; 
           if(n <= 0x100)
@@ -256,9 +284,10 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
           else
             vbput(op, r);            
         } else *op++ = r<<4|8;
-        vbput(op, ip[0]);
+        TEMPLATE2(vbput, USIZE)(op, ip[0]);
         break;
         #endif
+
     }    
   } 
   return op;   
@@ -273,7 +302,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
   uint_t *op_ = op+n;
   while(op < op_) { 
     register uint64_t w = *(uint64_t *)ip;
-    switch(w & 15) {
+    switch(w & 0xf) {
       case 0: { 
         unsigned r = (w>>4)&0xf; ip++; 
         if(unlikely(r == 0xf)) { 
@@ -282,12 +311,12 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
           else
             r = vbget(ip);
         }          
-        uint_t *q=op; op+=r+1; 
-          #ifdef __SSE2__
+        uint_t *q = op; op += r+1; 
+          #if defined(__SSE2__) && USIZE == 32
         __m128i zv = _mm_setzero_si128();
           #endif 
         while(q < op) { 
-            #ifdef __SSE2__
+            #if defined(__SSE2__) && USIZE == 32
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
             #else
@@ -379,12 +408,21 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
         OP(5) = (w >> 34) & 0x3f; 			OPI(  6); ip+=5;
         break;       
                                  
-      case 7:                                  
-        OP(0) = (w >>  4) & 0x7f;      
-        OP(1) = (w >> 11) & 0x7f;      
-        OP(2) = (w >> 18) & 0x7f;      
-        OP(3) = (w >> 25) & 0x7f;      
-        OP(4) = (w >> 32) & 0x7f;     		OPI( 5); ip+=5;                 
+      case 7: 
+          #if USIZE == 64 
+        if(unlikely((w>>4) & 1)) {  
+          unsigned b = ((*ip++) >> 5)+1; 
+          *op = *(unsigned long long *)ip; 
+          if(unlikely(b!=8)) 
+            *op &= (1ull<<(b*8))-1;         op++; ip += b; 
+          break;
+        }            
+          #endif                                                     
+        OP(0) = (w >>  5) & 0x7f;      
+        OP(1) = (w >> 12) & 0x7f;      
+        OP(2) = (w >> 19) & 0x7f;      
+        OP(3) = (w >> 26) & 0x7f;      
+        OP(4) = (w >> 33) & 0x7f;     		OPI( 5); ip+=5;                 
         break; 
                                        
         #ifdef USE_RLE 
@@ -396,7 +434,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
           else
             r = vbget(ip);
         } 
-        unsigned u = vbget(ip); uint_t *q=op; op += r+1;  
+        uint_t u = TEMPLATE2(vbget, USIZE)(ip), *q=op; op += r+1;  
           #if defined(__SSE2__) && USIZE == 32
         __m128i v = _mm_set1_epi32(u);
         while(q < op) { 
@@ -430,7 +468,7 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
         OP(1) = (w >> 16) & 0xfffu;      
         OP(2) = (w >> 28) & 0xfffu;      
         OP(3) = (w >> 40) & 0xfffu;      
-        OP(4) = (w >> 52) & 0xfffu; 			OPI( 5); ip+=8;              
+        OP(4) = (w >> 52) & 0xfffu; 		OPI( 5); ip+=8;              
         break;                                        
       case 15:                                     
         OP(0) = (w >>  4) & 0x7fffu;      
@@ -448,7 +486,11 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
         OP(1) = (w >> 34) & 0x3fffffffu;	OPI( 2); ip+=8;
         break;                                        
       case 14:                                     
-        OP(0) = (w >> 4) & 0xffffffffu;	OPI( 1); ip+=5;              
+          #if USIZE <= 32
+        OP(0) = (w >> 4) &  0xfffffffffull;	OPI( 1); ip+=5;
+          #else
+        OP(0) = (w >> 4) & 0xfffffffffull;	OPI( 1); ip+=5;
+          #endif
         break;                                        
     }
   }
