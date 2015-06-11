@@ -68,6 +68,11 @@ unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, uns
   return bsr32(b);
 }
 
+unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc) {
+  typeof(in[0]) b = 0,*op = out; DELTA(in, n, inc, start, b |= _x; *op++ = _x);
+  return bsr64(b);
+}
+
 unsigned bitd32(unsigned *in, unsigned n, unsigned start) {
     #ifdef __SSE2__
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start);
@@ -113,6 +118,7 @@ unsigned bitd132(unsigned *in, unsigned n, unsigned start) {
 }
 
 void bitund32( unsigned *p, unsigned n, unsigned x) { UNDELTA(p, n, x, 0); }
+void bitund64( uint64_t *p, unsigned n, uint64_t x) { UNDELTA(p, n, x, 0); }
 
 void bitund132(unsigned *p, unsigned n, unsigned x) { 
     #ifdef __SSE2__
@@ -135,3 +141,4 @@ void bitund132(unsigned *p, unsigned n, unsigned x) {
 }
 
 void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { UNDELTA(p, n, x, inc); }
+void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { UNDELTA(p, n, x, inc); }
