@@ -36,7 +36,7 @@
 #define M4   0xfffffff0ull //28
 #define M5 0xfffffffff0ull //36 
 
-			                       //0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111 					 
+			                 //0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111 					 
 unsigned long long mtab[] = {    M1,  M2,  M1,  M3,  M1,  M2,  M1,  M4,  M1,  M2,  M1,  M3,  M1,  M2,  M1,  M5 };
   #endif
 //------------------------------------------------------------------------------------------------------------------------
@@ -161,8 +161,9 @@ unsigned char *vbd1dec(unsigned char *__restrict in, unsigned n, unsigned *__res
   return in;
 }
 
-//--------------------------------------- variable byte : 15 bits -------------------------------------------------------------------
-// like vbenc32 but for 16 bits values
-unsigned char *vbenc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out) { unsigned short *in_  = in +n;   while(in  <  in_) vbput16(out, *in++);        return out;}
-// like vbdec32 but for 16 bits values
-unsigned char *vbdec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out) { unsigned short *out_ = out+n,x; while(out < out_) vbgeta16(in, x, *out++ = x); return in; }
+//--------------------------------------- variable byte : 16/15 bits -------------------------------------------------------------------
+unsigned char *vbenc15(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out) { unsigned short *in_  = in +n;   while(in  <  in_) vbput15(out, *in++);        return out;}
+unsigned char *vbdec15(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out) { unsigned short *out_ = out+n,x; while(out < out_) vbgeta15(in, x, *out++ = x); return in; }
+
+unsigned char *vbenc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out) { unsigned short *in_  = in +n;   while(in  <  in_) vbput(out, *in++);        return out;}
+unsigned char *vbdec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out) { unsigned short *out_ = out+n,x; while(out < out_) vbgeta(in, x, *out++ = x); return in; }
