@@ -26,15 +26,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stdint.h>
 
 #include "conf.h"
 
 // ---------------- Unpack a bit packed integer array --------------------------------------------------------------------------------------
 // unpack a bitpacked integer array. Return value = end of packed buffer in 
 unsigned char *bitunpack32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b);
-
-// like bitunpack32 but for 16 bits integer array
 unsigned char *bitunpack16(unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b);
+unsigned char *bitunpack64(unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b);
 
 // ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------------
   #ifdef __AVX2__
