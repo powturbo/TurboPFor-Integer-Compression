@@ -22,7 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 
-//	    conf.h - "Integer Compression" config & common 
+//	   conf.h - "Integer Compression" config & common 
 #ifndef CONF_H
 #define CONF_H
 
