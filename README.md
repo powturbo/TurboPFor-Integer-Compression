@@ -6,6 +6,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
+ - 16/32 and :new: 64 bits integer lists 
 <p>
 + **Features**
  - Scalar **"Variable Byte"** faster and more efficient than any other implementation
@@ -78,7 +79,7 @@ TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individua
 | 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**SimpleV 64k**|
 | 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
-| 3.501.671.314| 14.64| 4.68| 321.45| 813.90|**SimpleV**|
+| 3.501.671.314| 14.64| 4.68| 321.45| 820.94|**SimpleV**|
 | 3.766.174.764| 15.75| 5.04|**617.88**| 712.31|**EliasFano**|
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
 | 3.958.888.197| 16.55| 5.30| 279.19| 618.60|Lz4 64K|
