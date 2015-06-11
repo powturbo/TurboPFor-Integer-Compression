@@ -23,14 +23,13 @@
 **/
 //     vp4dd.c - "Integer Compression" Turbo PforDelta 
   #ifndef USIZE
-#include <string.h>
+#include <stdint.h>
+
 #include "conf.h"
 #include "bitpack.h"
-
 #include "vp4dc.h"
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
-#include <stdint.h>
 //------------------------------------------
 #define P4DSIZE 128 //64 //
 
@@ -47,6 +46,10 @@
 #include __FILE__
 #undef USIZE
 
+#define USIZE 64
+#include __FILE__
+#undef USIZE
+
 #undef BITPACK 
 #undef P4DENC
 #undef P4DE
@@ -60,9 +63,6 @@
 #include __FILE__
 #undef USIZE
 
-/*#define USIZE 16
-#include __FILE__*/
-
   #else
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
@@ -72,7 +72,7 @@
 
     #ifdef P4D
 unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-  uint_t *ip; int i,ml,l; unsigned x, bx, b=0, cnt[USIZE+1] = {0}; 
+  uint_t *ip,b=0; int i,ml,l; unsigned x, bx, cnt[USIZE+1] = {0}; 
   
   for(ip = in; ip != in+(n&~3); ) {
     ++cnt[TEMPLATE2(bsr, USIZE)(*ip)]; b |= *ip++;
@@ -85,7 +85,7 @@ unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx)
 
   bx = b; ml = PAD8(n*b)+1-2-P4DN*8; x = cnt[b];
   for(i = b-1; i >= 0; --i) {
-    int l = PAD8(n*i) + PAD8(x*(bx-i)); x += cnt[i]; 
+    l = PAD8(n*i) + PAD8(x*(bx-i)); x += cnt[i]; 
 	if(unlikely(l < ml)) b = i, ml = l;
   }
   *pbx = bx - b;
@@ -93,10 +93,10 @@ unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx)
 } 
 #endif
  
-unsigned char *TEMPLATE2(P4DE, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) { unsigned i, xn, msk = (1ull<<b)-1, c;
-  if(!bx) return TEMPLATE2(BITPACK, USIZE)(in,  n, out, b);
-  
-  uint_t             _in[P4DSIZE], inx[P4DSIZE*2]; 
+unsigned char *TEMPLATE2(P4DE, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) { unsigned i, xn, c; 
+  if(!bx || b==USIZE) return TEMPLATE2(BITPACK, USIZE)(in,  n, out, b);
+
+  uint_t             msk = (1ull << b)-1,_in[P4DSIZE], inx[P4DSIZE*2]; 
   unsigned long long xmap[P4DN];  
   unsigned           miss[P4DSIZE];
     #if P4DN == 2
