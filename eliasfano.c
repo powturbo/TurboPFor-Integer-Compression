@@ -68,6 +68,10 @@
 #include __FILE__
 #undef USIZE
 
+#define USIZE 64
+#include __FILE__
+#undef USIZE
+
 /*#define USIZE 16
 #include __FILE__
 #undef USIZE*/
@@ -116,13 +120,13 @@
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
 
-unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) {
+unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
   if(!n) return out; 
   uint_t *ip, e = EFE(in,n-1,start);					 		
   if(!e) { out[0] = 0; return out+1; }	
   
   unsigned char *op;
-  unsigned lb = bsr32(e/n), x = (1u << lb)-1, hl = PAD8((e>>lb)+n),i; 
+  unsigned lb = TEMPLATE2(bsr, USIZE)(e/n); uint_t x = ((uint_t)1 << lb)-1, hl = PAD8((e>>lb)+n),i; 
   
   uint_t pa[n+64];  					
   for(i = 0; i != n&~3;) {
@@ -141,11 +145,11 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
     x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
     x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
   }
-  while(i < n) x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7),++i;
+  while(i < n) x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7),++i;
   return op+hl;
 }
 
-unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, unsigned start) {
+unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
   if(!n) return in;
   unsigned char *ip = in;  																										
   unsigned      i,j,lb   = *ip++;           	
@@ -167,7 +171,7 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
   ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
   for(i=j=0;; j += sizeof(bit_t)*8) 
     for(b = *(bit_t *)(ip+(j>>3)); b; b &= b-1) { 
-	  out[i] = ((j+__builtin_ctzll(b)-i) << lb | out[i]) + start+i*EF_INC; 
+	  out[i] = ((uint_t)(j+__builtin_ctzll(b)-i) << lb | out[i]) + start+i*EF_INC; 
 	  if(unlikely(++i >= n)) 
 	    return ip + PAD8((EFE(out,n-1,start)>>lb)+n); 
 	}
