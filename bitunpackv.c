@@ -130,3 +130,4 @@ unsigned char *bitd1unpackv32( unsigned char *__restrict in, unsigned n, unsigne
   }\
 }
   #endif
+
