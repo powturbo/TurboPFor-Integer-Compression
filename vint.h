@@ -105,6 +105,8 @@ extern unsigned char vtab[];
 #define vbget(__ip) ({     unsigned _x_;       vbgeta(__ip, _x_, ;); _x_; })
 #define vbput32(__op, __x) vbput(__op, __x)
 #define vbget32(__ip) vbget(__ip)
+#define vbput16(__op, __x) vbput(__op, __x)
+#define vbget16(__ip) vbget(__ip)
 
 #define vbput64(__op, __x) { unsigned long long _x_ = __x; vbputa64(__op, _x_, ;); }
 #define vbget64(__ip) ({     unsigned long long _x_;       vbgeta64(__ip, _x_, ;); _x_; })
@@ -129,11 +131,13 @@ unsigned char *vbd1enc (unsigned      *__restrict in, unsigned n, unsigned char 
 unsigned char *vbd1dec (unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
 
 //---------------------------------- variable byte : 15 bits integer lists ------------------------------------------------
-#define vbput16(__op, __x) do { unsigned _x = __x; if(likely(_x < 0x80)) *__op++ = _x; else { *__op++ = (_x) >> 8 | 0x80; *__op++ = _x; } } while(0)
-#define vbgeta16(__ip,__x, __act) do { if((__x = *__ip++) > 0x7f) __x = (__x & 0x7f) << 8 | *__ip++; __act; } while(0)
+#define vbput15(__op, __x) do { unsigned _x = __x; if(likely(_x < 0x80)) *__op++ = _x; else { *__op++ = (_x) >> 8 | 0x80; *__op++ = _x; } } while(0)
+#define vbgeta15(__ip,__x, __act) do { if((__x = *__ip++) > 0x7f) __x = (__x & 0x7f) << 8 | *__ip++; __act; } while(0)
 
-#define vblen16(__x) ((__x) > 0x7f?2:1)
-#define vbget16(__ip) ({ unsigned _x; vbgeta16(__ip, _x, ;); _x; })
+#define vblen15(__x) ((__x) > 0x7f?2:1)
+#define vbget15(__ip) ({ unsigned _x; vbgeta15(__ip, _x, ;); _x; })
+unsigned char *vbenc15(unsigned short *__restrict in, unsigned n, 				  unsigned char  *__restrict out);
+unsigned char *vbdec15(unsigned char  *__restrict in, unsigned n, 				  unsigned short *__restrict out);
 
 #ifdef __cplusplus
 }
