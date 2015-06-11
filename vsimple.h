@@ -30,17 +30,15 @@
 extern "C" {
 #endif
 
-// compress array with n unsigned (32 bits in[n]) values to the buffer out. Return value = end of compressed buffer out
-unsigned char *vsenc32(unsigned       *__restrict in, int n, unsigned char  *__restrict out);
+// vsencNN: compress array with n unsigned (NN bits in[n]) values to the buffer out. Return value = end of compressed buffer out
+unsigned char *vsenc16(unsigned short     *__restrict in, int n, unsigned char      *__restrict out);
+unsigned char *vsenc32(unsigned           *__restrict in, int n, unsigned char      *__restrict out);
+unsigned char *vsenc64(uint64_t           *__restrict in, int n, unsigned char      *__restrict out);
 
-// decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
-unsigned char *vsdec32(unsigned char  *__restrict in, int n, unsigned       *__restrict out);
-
-// like vsenc32 but for 16 bits values
-unsigned char *vsenc16(unsigned short *__restrict in, int n, unsigned char  *__restrict out);
-
-// like vsdec32 but for 16 bits values
-unsigned char *vsdec16(unsigned char  *__restrict in, int n, unsigned short *__restrict out);
+// vsdecNN: decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
+unsigned char *vsdec16(unsigned char      *__restrict in, int n, unsigned short     *__restrict out);
+unsigned char *vsdec32(unsigned char      *__restrict in, int n, unsigned           *__restrict out);
+unsigned char *vsdec64(unsigned char      *__restrict in, int n, uint64_t           *__restrict out);
 
 #ifdef __cplusplus
 }
