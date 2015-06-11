@@ -8,6 +8,8 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 LIBTHREAD=-lpthread
 LIBRT=-lrt
+else
+CC=gcc
 endif
 
 BIT=./
