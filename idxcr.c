@@ -160,3 +160,4 @@ int main(int argc, char *argv[]) {
                                                                                   skipsize, postsize-skipsize, postsize+tid*sizeof(tmap_t)+12, (double)postsize*100/(double)fofs );
   }
 }
+
