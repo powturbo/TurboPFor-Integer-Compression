@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   vint.c - "Integer Compression" variable byte 
+//    vint.c - "Integer Compression" variable byte 
 #include <stdio.h>   
      
 #include "conf.h"
@@ -67,6 +67,30 @@ unsigned char *vbenc(unsigned *__restrict in, unsigned n, unsigned char *__restr
   while(ip !=  in+n) vbput(out, *ip++);
   return out;
 }
+
+unsigned char *vbdec64(unsigned char  *__restrict in, unsigned n, uint64_t *__restrict out) { uint64_t x,*op;
+  for(op = out; op != out+(n&~(4-1)); op += 4) {
+    vbgeta64(in, x, op[0] = x);             
+    vbgeta64(in, x, op[1] = x); 
+    vbgeta64(in, x, op[2] = x); 
+    vbgeta64(in, x, op[3] = x); 
+  }
+  while(op != out+n) { vbgeta64(in, x, ; ); *op++ = x; }
+  return in;
+}
+
+// encode array with n unsigned (32 bits in[n]) values to the buffer out. Return value = end of compressed buffer out
+unsigned char *vbenc64(uint64_t *__restrict in, unsigned n, unsigned char *__restrict out) { uint64_t *ip;
+  for(ip = in; ip != in+(n&~(4-1)); ) {
+    vbput64(out, *ip++);
+    vbput64(out, *ip++);
+    vbput64(out, *ip++);
+    vbput64(out, *ip++);  
+  }
+  while(ip !=  in+n) vbput64(out, *ip++);
+  return out;
+}
+
 //---------------------------------- increasing integer lists ----------------------------------------------------------------------------------------------------
 unsigned char *vbdenc(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) { 
   unsigned *ip,v;
