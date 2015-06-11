@@ -24,6 +24,7 @@
 //    vp4dd.c - "Integer Compression" Turbo PforDelta 
   #ifndef USIZE
 #include <stdint.h>
+
 #include "conf.h"
 #include "bitunpack.h"
 #include "bitutil.h"
@@ -325,7 +326,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define BITUNPACK  bitunpack
 
 #define P4DDECX
-
+                                    //delta 1
 #define P4DDD      p4dd1d
 #define P4DDECD    p4dd1dec
 #define BITUNPACKD bitd1unpack
@@ -341,7 +342,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef P4DDECD
 #undef BITUNPACKD
 #undef BITUNDD
-
+									//delta 0
 #define P4DDD      p4ddd
 #define P4DDECD    p4dddec
 #define BITUNPACKD bitdunpack
@@ -369,7 +370,6 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 
 #undef P4DDEC
 //#undef BITUNPACK
-
 //#undef P4DDECX
 
 #undef P4DDD
@@ -388,8 +388,20 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef BITUNPACKD
 #undef BITUNDD
 
+#undef P4DD
+#undef BITUNPACK
 #undef USIZE
 //----------------------------------
+#define USIZE 64
+#define P4DD       p4dd
+#define P4DDEC     p4ddec
+#define BITUNPACK  bitunpack
+#include __FILE__
+#undef P4DD
+#undef P4DDEC
+#undef BITUNPACK
+
+
   #else
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
@@ -428,7 +440,7 @@ unsigned char *TEMPLATE2(P4DD, USIZE)(unsigned char *__restrict in, unsigned n, 
     } out += 64; 
   }
 	  #endif
-    #elif defined(__SSSE3__)
+    #elif defined(__SSSE3__) && USIZE == 32
   uint_t *op,*pex = ex; 	
       #if P4DN == 2
   for(op = out;  bb[0]; bb[0] >>= 4,op+=4) { const unsigned m = bb[0]&0xf; 
