@@ -6,7 +6,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - 16/32 and :new: 64 bits integer lists 
+ - Full Range 16/32 and :new: 64 bits integer lists 
 <p>
 + **Features**
  - Scalar **"Variable Byte"** faster and more efficient than any other implementation
@@ -52,20 +52,20 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 | 63.392.801| 15.85| 5.07|  365.26| 243.15|**TurboPForDA**|
 | 65.359.916| 16.34| 5.23|    7.09| 638.96|OptPFD|
 | 72.364.024| 18.09| 5.79|   85.31| 762.00|Simple16|
-| 78.514.276| 19.63| 6.28|  249.17| 813.41|**VSimple**|
+| 78.514.276| 19.63| 6.28|  251.34| 841.61|**VSimple**|
 | 95.915.096| 23.98| 7.67|  221.46|1049.70|Simple-8b|
 | 99.910.930| 24.98| 7.99|**2603.47**|**1948.65**|**TurboPackV**|
-| 99.910.930| 24.98| 7.99| 2524.50|1943.41|SIMDPackFPF|
+| 99.910.930| 24.98| 7.99| 2524.50|1943.41|SIMDPack FPF|
 | 99.910.930| 24.98| 7.99| 1883.21|1898.11|**TurboPack**|
 | 99.910.930| 24.98| 7.99| 1877.25| 935.83|**TurboPackDA**|
 |102.074.663| 25.52| 8.17| 1621.64|1694.64|**TurboVbyte**|
 |102.074.663| 25.52|8.17|1214.12|1688.95|MaskedVByte|
-|102.074.663| 25.52| 8.17| 1178.72| 949.59|VbyteFPF|
+|102.074.663| 25.52| 8.17| 1178.72| 949.59|Vbyte FPF|
 |112.500.000| 28.12| 9.00|  305.85|1899.15|VarintG8IU|
 |400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
 |         |      |     |   N/A  | N/A   |**EliasFano**|
-MI/s: 1.000.000 integers/second ( = 4.000.000 bytes/sec )<br>
-**#BOLD** = pareto frontier<br>
+MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br> 
+**#BOLD** = pareto frontier. FPF=FastPFor<br>
 TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
@@ -79,7 +79,7 @@ TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individua
 | 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**VSimple 64k**|
 | 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
-| 3.501.671.314| 14.64| 4.68| 321.45| 820.94|**VSimple**|
+| 3.501.671.314| 14.64| 4.68| 321.45| 827.01|**VSimple**|
 | 3.766.174.764| 15.75| 5.04|**617.88**| 712.31|**EliasFano**|
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
 | 3.958.888.197| 16.55| 5.30| 279.19| 618.60|Lz4 64K|
@@ -87,8 +87,8 @@ TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individua
 | 4.683.323.301| 19.58| 6.27| 828.25| 991.34|**TurboVbyte**|
 | 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
 | 4.953.768.342| 20.71| 6.63|1419.35|1512.86|**TurboPack**|
-| 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackFPFD1|
-| 6.699.519.000| 28.01| 8.96| 472.01| 495.12|VbyteFPF|
+| 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackD1 FPF|
+| 6.699.519.000| 28.01| 8.96| 472.01| 495.12|Vbyte FPF|
 | 6.700.989.563| 28.02| 8.96| 728.72| 991.57|MaskedVByte|
 | 7.622.896.878| 31.87|10.20| 208.73|1197.74|VarintG8IU|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
@@ -249,7 +249,7 @@ header files to use with documentation :<br />
 
 ### References:
 
- + [FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPackFPF, VbyteFPF
+ + [FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF
  + [Optimized Pfor-delta compression code](http://jinruhe.com): PForDelta: OptPFD or OptP4, Simple16
  + [MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
@@ -259,3 +259,4 @@ header files to use with documentation :<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
+Last update: 12 JUN 2015
