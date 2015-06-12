@@ -73,7 +73,7 @@ static SV_LIM64;
 unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict op) {
   unsigned xm,m,r,x; 
   uint_t *e = in+n,*ip;
-  for(ip = in; ip < e; ) {
+  for(ip = in; ip < e; ) { __builtin_prefetch(ip+64, 0);
       #ifdef USE_RLE 
     if(ip+4 < e && *ip == *(ip+1)) { 
       uint_t *q = ip+1; 
@@ -301,7 +301,7 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
 unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint_t *__restrict op) { 
   uint_t *op_ = op+n;
   while(op < op_) { 
-    register uint64_t w = *(uint64_t *)ip;
+    register uint64_t w = *(uint64_t *)ip; __builtin_prefetch(ip+64, 0);
     switch(w & 0xf) {
       case 0: { 
         unsigned r = (w>>4)&0xf; ip++; 
@@ -312,11 +312,11 @@ unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint
             r = vbget(ip);
         }          
         uint_t *q = op; op += r+1; 
-          #if defined(__SSE2__) && USIZE == 32
+          #if defined(__SSE2__)
         __m128i zv = _mm_setzero_si128();
           #endif 
         while(q < op) { 
-            #if defined(__SSE2__) && USIZE == 32
+            #if defined(__SSE2__)
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
             #else
