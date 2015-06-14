@@ -3,7 +3,10 @@
 //#define _SIMPLE16   // limited to 28 bits
 //#define _OPTPFD     // compression very slow and limited to 28 bits. crashs on some lists
 //#define _VBYTEPOLY  // limited to 28 bits. 
+#ifdef __SSSE3__
+  #define VARINTG8IU
 #define _MASKEDVBYTE
+#endif
 //-------------------------------------- External functions for comparison ------------------------------------------------------------------------
 #include "vabyte.h"                                     // Standard Variable Byte
 
@@ -11,8 +14,10 @@
 #include "simdcomp/include/simdcomputil.h"
 #include "simdcomp/include/simdintegratedbitpacking.h"
 
+  #ifdef VARINTG8IU
 #include "varintg8iu.h"							        // SIMD Varint G8IU
 #include "varintg8iu.h"
+  #endif
 
 #include "vas16c.h"										// Simple 16	
 #include "vas16d.h"   
@@ -24,6 +29,8 @@
 #include "MaskedVByte/include/varintencode.h"
 #include "MaskedVByte/include/varintdecode.h"
   #endif
+//#include "c-blosc/blosc/shuffle.h"
+
 //---------------- FastPFor functions ---------------------  
 unsigned char *simdpackwn(uint32_t *in, uint32_t n, uint32_t b, uint32_t *out) {//checkifdivisibleby(n, 128); const uint32_t * const initout(out);  //while(needPaddingTo128Bits(out)) *out++ = 123456;
   uint32_t *in_;
