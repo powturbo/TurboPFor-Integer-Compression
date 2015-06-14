@@ -46,7 +46,7 @@ unsigned char vtab[] =      {    1,   2,   1,   3,   1,   2,   1,   4,   1,   2,
 
 // decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
 unsigned char *vbdec(unsigned char  *__restrict in, unsigned n, unsigned *__restrict out) { unsigned x,*op;
-  for(op = out; op != out+(n&~(4-1)); op += 4) {
+  for(op = out; op != out+(n&~(4-1)); op += 4) { 
     vbgeta(in, x, op[0] = x);             
     vbgeta(in, x, op[1] = x); 
     vbgeta(in, x, op[2] = x); 
@@ -58,7 +58,7 @@ unsigned char *vbdec(unsigned char  *__restrict in, unsigned n, unsigned *__rest
 
 // encode array with n unsigned (32 bits in[n]) values to the buffer out. Return value = end of compressed buffer out
 unsigned char *vbenc(unsigned *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;
-  for(ip = in; ip != in+(n&~(4-1)); ) {
+  for(ip = in; ip != in+(n&~(4-1)); ) { 
     vbput(out, *ip++);
     vbput(out, *ip++);
     vbput(out, *ip++);
