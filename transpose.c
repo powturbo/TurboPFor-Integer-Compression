@@ -49,7 +49,7 @@
 
 #ifdef __SSSE3__
 #include <tmmintrin.h>
-#elif defined(__SSE2)__
+#elif defined(__SSE2__)
 #include <pmmintrin.h>
 #endif
 
