@@ -514,7 +514,7 @@ unsigned char *TEMPLATE2(P4DDD, USIZE)(unsigned char *__restrict in, unsigned n,
     #else
   unsigned k = 0;
   for(i = 0; i < P4DN; i++) {
-	while(bb[i]) { unsigned x = ctzll(b0); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
+	while(bb[i]) { unsigned x = ctzll(bb[i]); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
   }
     #endif
   TEMPLATE2(BITUNDD, USIZE)(_op, n, start);
