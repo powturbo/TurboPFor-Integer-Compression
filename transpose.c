@@ -21,9 +21,10 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    transpose.c - byte transpose
+//   transpose.c - byte transpose
 
   #ifndef ESIZE
+#include <string.h>
 #include "transpose.h"
   
 #define ESIZE 2
@@ -48,19 +49,26 @@
 
 #ifdef __SSSE3__
 #include <tmmintrin.h>
+#elif defined(__SSE2)__
+#include <pmmintrin.h>
+#endif
 
-#include <stdio.h>
 void transposev4(unsigned char *in, unsigned n, unsigned char *out) {
-  unsigned bsize = n/4,i;
+    #ifdef __SSE2__
+  unsigned v = n&~(64-1), bsize = v/4,i;
+  unsigned char *op,*ip;
+      #ifdef __SSE3__
   static unsigned char s[16] = { 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15 };
-  unsigned char *op,*ip,*e;
   __m128i sv = _mm_loadu_si128((__m128i *)s);
-  for(ip = in,op = out; ip != in+(n&~(64-1)); op += 16) {
-	__m128i iv[4],ov[4];
-	iv[0] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
-	iv[1] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
-	iv[2] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
-	iv[3] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
+      #endif
+  for(ip = in,op = out; ip != in+v; op += 16) {
+    __m128i iv[4],ov[4];
+      
+      #ifdef __SSSE3__
+    iv[0] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
+    iv[1] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
+    iv[2] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16;
+    iv[3] = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)ip), sv); ip += 16; 
 
 	ov[0] = _mm_unpacklo_epi32(iv[0], iv[1]);
     ov[1] = _mm_unpackhi_epi32(iv[0], iv[1]);
@@ -71,26 +79,55 @@ void transposev4(unsigned char *in, unsigned n, unsigned char *out) {
     iv[1] = _mm_unpackhi_epi64(ov[0], ov[2]);
     iv[2] = _mm_unpacklo_epi64(ov[1], ov[3]);
     iv[3] = _mm_unpackhi_epi64(ov[1], ov[3]);
-	
+      #elif defined(__SSE2__)
+    iv[0] = _mm_loadu_si128((__m128i *)ip); ip += 16;
+    iv[1] = _mm_loadu_si128((__m128i *)ip); ip += 16;
+    iv[2] = _mm_loadu_si128((__m128i *)ip); ip += 16;
+    iv[3] = _mm_loadu_si128((__m128i *)ip); ip += 16;
+
+    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
+    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
+    ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]);
+    ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);
+
+    iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]);
+    iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
+    iv[2] = _mm_unpacklo_epi8(ov[2], ov[3]);
+    iv[3] = _mm_unpackhi_epi8(ov[2], ov[3]);
+
+    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
+    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
+    ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]);
+    ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);
+
+    iv[0] = _mm_unpacklo_epi64(ov[0], ov[2]);
+    iv[1] = _mm_unpackhi_epi64(ov[0], ov[2]);
+    iv[2] = _mm_unpacklo_epi64(ov[1], ov[3]);
+    iv[3] = _mm_unpackhi_epi64(ov[1], ov[3]);
+      #endif
     _mm_storeu_si128((__m128i *)op,              iv[0]);
     _mm_storeu_si128((__m128i *)(op+(i =bsize)), iv[1]);
     _mm_storeu_si128((__m128i *)(op+(i+=bsize)), iv[2]);
-    _mm_storeu_si128((__m128i *)(op+(i+=bsize)), iv[3]);
-  }
-  transpose4(ip, (in+n)-ip, op);
+    _mm_storeu_si128((__m128i *)(op+(i+=bsize)), iv[3]); 
+  } 
+  transpose4(in+v, n-v, out+v);
+    #else
+  transpose4(in, n, out);
+    #endif
 }
 
 void untransposev4(unsigned char *in, unsigned n, unsigned char *out) {
-  unsigned bsize = n/4,i;
+    #ifdef __SSE2__
+  unsigned v = n&~(64-1), bsize = v/4,i;
   unsigned char *op,*ip; 
-  for(op = out,ip = in; op != out+(n&~(64-1)); ip += 16) {
-	__m128i iv[4], ov[4];
-	iv[0] = _mm_loadu_si128((__m128i *) ip)            ;   
-	iv[1] = _mm_loadu_si128((__m128i *)(ip+(i =bsize)));   
-	iv[2] = _mm_loadu_si128((__m128i *)(ip+(i+=bsize)));   
-	iv[3] = _mm_loadu_si128((__m128i *)(ip+(i+=bsize)));	
-	
-	ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
+  for(op = out,ip = in; op != out+v; ip += 16) {
+    __m128i iv[4], ov[4];
+    iv[0] = _mm_loadu_si128((__m128i *) ip)            ;   
+    iv[1] = _mm_loadu_si128((__m128i *)(ip+(i =bsize)));   
+    iv[2] = _mm_loadu_si128((__m128i *)(ip+(i+=bsize)));   
+    iv[3] = _mm_loadu_si128((__m128i *)(ip+(i+=bsize)));	
+
+    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
     ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
     ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]);
     ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);
@@ -99,10 +136,12 @@ void untransposev4(unsigned char *in, unsigned n, unsigned char *out) {
     _mm_storeu_si128((__m128i *)op, _mm_unpackhi_epi16(ov[0], ov[2])); op += 16;
     _mm_storeu_si128((__m128i *)op, _mm_unpacklo_epi16(ov[1], ov[3])); op += 16;
     _mm_storeu_si128((__m128i *)op, _mm_unpackhi_epi16(ov[1], ov[3])); op += 16;
-  }
-  untranspose4(ip, (out+n)-op, op);
+  } 
+  untranspose4(in+v, n-v, out+v);
+    #else
+  transpose4(in, n, out);
+    #endif
 }
-#endif
 
 void transpose(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   switch(esize) {
