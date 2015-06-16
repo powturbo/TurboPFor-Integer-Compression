@@ -118,7 +118,7 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
 	  //---------- copy ----------------------------------------------------
     case P_CPY:   return u32enc(   in, n, (unsigned *)out);
       // --------- variable byte -------------------------------------------
-    case P_VB:    return vbenc(    in, n, out);
+    case P_VB:    return vbenc32(    in, n, out);
  
     case P_VBL:   return vbyteenc( in, n, (unsigned *)out);
     case P_VBP:   return vbpolyenc(in, n, out);
@@ -143,8 +143,8 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
 	              else { unsigned tmp[2048]; for(i = 0; i < n; i++) tmp[i] = in[i]; return out + OPT4(tmp, n, (unsigned *)out); }
       // --------- bit packing ---------------------------------------------
     case P_PCKR: 
-    case P_PCK:   if(b < 0) { BSRN(in, n, b); *out++ = b; } return bitpack32(in, n, out, b);
-    case P_PCKV:  if(b < 0) { BSRN(in, n, b); *out++ = b; } return n != 128?bitpack32(in, n, out, b):bitpackv32(in, n, out, b);
+    case P_PCK:   if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } return bitpack32(in, n, out, b);
+    case P_PCKV:  if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } return n != 128?bitpack32(in, n, out, b):bitpackv32(in, n, out, b);
        																																   
     case P_SIMDV: if(n < 128) return vbyteenc(in, n, (unsigned *)out); else { if(b < 0) b = maxbits(in), *out++ = b; return simdpackwn(in, n, b, (unsigned *)out); }
 	  // --------- transpose + lz77 ----------------------------------------
@@ -170,7 +170,7 @@ unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) 
        //--------- copy ---------------------------------------------------
     case P_CPY:    return u32dec(   (unsigned *)in, n, out);
       // --------- variable byte -------------------------------------------
-    case P_VB:     return vbdec(    in, n, out); 
+    case P_VB:     return vbdec32(    in, n, out); 
 
     case P_VBL:    return vbytedec( in, n, out); 
     case P_VBP:    return vbpolydec(in, n, out);
@@ -222,7 +222,7 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
       //----------- copy ---------------------------------------------------------------------------------------------------------
     case P_CPY:       										       							return u32enc( in, n, (unsigned *)out);
 	  //----------- variable byte ------------------------------------------------------------------------------------------------
-    case P_VB:    												   							return mode?vbd1enc(in, n, out, -1):vbdenc(in, n, out, 0);
+    case P_VB:    												   							return mode?vbd1enc32(in, n, out, -1):vbdenc32(in, n, out, 0);
 	
     case P_VBL:       bitdelta32( in, n, pa, -mode, mode);									return vbyteenc( pa, n, (unsigned *)out); 
     case P_VBP:       bitdelta32( in, n, pa, -mode, mode);  			   					return vbpolyenc(pa, n, out);
@@ -284,8 +284,8 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
       //------------- copy -------------------------------------------------------
     case P_CPY: 		                   in = u32dec( (unsigned *)in, n,   out);   						 	   break;
       //------------- variable byte ---------------------------------------------- 
-    //case P_VB: 			               in = vbdec(              in, n,   out);   		unzigzag(out, n, mode);   break;
-    case P_VB: 			                   in = mode?vbd1dec(       in, n, out,   -1):vbddec(in, n, out, 0); 	   break;
+    //case P_VB: 			               in = vbdec32(              in, n,   out);   		unzigzag(out, n, mode);   break;
+    case P_VB: 			                   in = mode?vbd1dec32(       in, n, out,   -1):vbddec32(in, n, out, 0); 	   break;
 	
     case P_VBL: 		                   in = vbytedec(           in, n,   out);   		bitundx32(out, n, -mode, mode); break;
     case P_VBP: 	                       in = vbpolydec(          in, n,   out);   		bitundx32(out, n, -mode, mode); break;
