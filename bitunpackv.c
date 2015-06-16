@@ -23,7 +23,9 @@
 **/
 //  bitunpack_.h - "Integer Compression" Bit Packing
   #ifndef VSTO
-#include "conf.h"        
+#include "conf.h"       
+#include "bitutil.h"
+ 
 #include "bitunpack.h"
 
 #define PAD8(__x) (((__x)+7)/8) 
@@ -47,13 +49,8 @@
 unsigned char *bitunpackv32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b) { unsigned char *ip = in+PAD8(n*b); __m128i sv; BITUNPACKV32(in, n, b, out, sv); return ip; }
 #undef VSTO
 #undef BITUNPACK0   
-//------------------------------------------------------
-																
-// Reference: http://stackoverflow.com/questions/10587598/simd-prefix-sum-on-intel-cpu
-#define VSCAN( __v, __sv) __v = _mm_add_epi32(__v, _mm_slli_si128(__v, 4)); __sv = _mm_add_epi32(_mm_shuffle_epi32(__sv, _MM_SHUFFLE(3, 3, 3, 3)), _mm_add_epi32(_mm_slli_si128(__v, 8), __v) )
-#define VSCANI(__v, __sv, __vi) VSCAN(__v, __sv); __sv = _mm_add_epi32(__sv, __vi)
-
-#define VSTO(__op, i, __ov, __sv) VSCAN(__ov,__sv); _mm_storeu_si128(__op++, __sv)
+//------------------------------------------------------																
+#define VSTO(__op, i, __ov, __sv) SCAN128_32(__ov,__sv); _mm_storeu_si128(__op++, __sv)
 
 #include __FILE__
 #define BITUNPACK0(__parm)
@@ -66,7 +63,7 @@ unsigned char *bitdunpackv32( unsigned char *__restrict in, unsigned n, unsigned
 #undef BITUNBLKV32_0
 #undef BITUNPACK0
 //--------------------------------------------------------------------------------------------------------------------------------------------- 
-#define VSTO(__op, i, __ov, __sv) VSCANI(__ov,__sv,cv); _mm_storeu_si128(__op++, __sv);
+#define VSTO(__op, i, __ov, __sv) SCANI128_32(__ov,__sv,cv); _mm_storeu_si128(__op++, __sv);
 
 #include __FILE__
 #define BITUNBLKV32_0(ip, i, __op, __parm) {\
@@ -130,4 +127,3 @@ unsigned char *bitd1unpackv32( unsigned char *__restrict in, unsigned n, unsigne
   }\
 }
   #endif
-
