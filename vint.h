@@ -101,10 +101,12 @@ extern unsigned char vtab[];
 #define vblen(__x) ({ unsigned _x = __x; _x > 0x7f?(_x > 0x3fff?(_x > 0x1fffff?(_x > 0x0fffffff?5:4):3):2):1; })
 
 // encode/decode single value
-#define vbput(__op, __x) { unsigned _x_ = __x; vbputa(__op, _x_, ;); }
-#define vbget(__ip) ({     unsigned _x_;       vbgeta(__ip, _x_, ;); _x_; })
-#define vbput32(__op, __x) vbput(__op, __x)
-#define vbget32(__ip) vbget(__ip)
+#define vbput32(__op, __x) { unsigned _x_ = __x; vbputa(__op, _x_, ;); }
+#define vbget32(__ip) ({     unsigned _x_;       vbgeta(__ip, _x_, ;); _x_; })
+
+#define vbput(__op, __x) vbput32(__op, __x)
+#define vbget(__ip) vbget32(__ip)
+
 #define vbput16(__op, __x) vbput(__op, __x)
 #define vbget16(__ip) vbget(__ip)
 
@@ -112,23 +114,27 @@ extern unsigned char vtab[];
 #define vbget64(__ip) ({     unsigned long long _x_;       vbgeta64(__ip, _x_, ;); _x_; })
 
 // encode array with n unsigned (32 bits in[n]) values to the buffer out. Return value = end of compressed buffer out
-unsigned char *vbenc   (unsigned      *__restrict in, unsigned n, 				  unsigned char  *__restrict out);
 unsigned char *vbenc16(unsigned short *__restrict in, unsigned n, 				  unsigned char  *__restrict out);
+unsigned char *vbenc32(unsigned       *__restrict in, unsigned n, 				  unsigned char  *__restrict out);
 unsigned char *vbenc64(uint64_t       *__restrict in, unsigned n, 			      unsigned char  *__restrict out);
-#define vbenc32(in,n,out) vbenc(in,n,out)
-#define vbdec32(in,n,out) vbdec(in,n,out)
+//#define vbenc(in,n,out) vbenc32(in,n,out)
 
 // decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
-unsigned char *vbdec   (unsigned char *__restrict in, unsigned n, 				  unsigned       *__restrict out);
 unsigned char *vbdec16(unsigned char  *__restrict in, unsigned n, 				  unsigned short *__restrict out);
+unsigned char *vbdec32(unsigned char  *__restrict in, unsigned n, 				  unsigned       *__restrict out);
 unsigned char *vbdec64(unsigned char  *__restrict in, unsigned n, 			      uint64_t       *__restrict out);
+//#define vbdec(in,n,out) vbdec32(in,n,out)
 //---------------------------------- increasing integer lists -------------------------------------------------------------
-unsigned char *vbdenc  (unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
-unsigned char *vbddec  (unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+unsigned char *vbdenc32(unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
+unsigned char *vbddec32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+//#define vbdenc(in,n,out,start) vbdenc32(in,n,out,start)
+//#define vbddec(in,n,out,start) vbddec32(in,n,out,start)
 
 //---------------------------------- strictly increasing (never remaining constant or decreasing) integer lists------------
-unsigned char *vbd1enc (unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
-unsigned char *vbd1dec (unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+unsigned char *vbd1enc32(unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
+unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+//#define vbd1enc(in,n,out,start) vbd1enc32(in,n,out,start)
+//#define vbd1dec(in,n,out,start) vbd1dec32(in,n,out,start)
 
 //---------------------------------- variable byte : 15 bits integer lists ------------------------------------------------
 #define vbput15(__op, __x) do { unsigned _x = __x; if(likely(_x < 0x80)) *__op++ = _x; else { *__op++ = (_x) >> 8 | 0x80; *__op++ = _x; } } while(0)
