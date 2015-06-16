@@ -21,11 +21,11 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    bitutil.h - "Integer Compression" 
+//   bitutil.h - "Integer Compression" 
 #include "conf.h" 
 #include "bitutil.h"
 
-#define DELTA(__p,__n, __inc, __start, __act) {\
+#define BITDELTA(__p,__n, __inc, __start, __act) {\
   typeof(__p[0]) _x, *_p;\
   for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
 	_x = (*_p)-__start-__inc; __start = *_p++; __act;\
@@ -38,7 +38,7 @@
   }\
 }
 
-#define UNDELTA(__p, __n, __start, __inc) { typeof(__p[0]) *_p;\
+#define BITUNDELTA(__p, __n, __start, __inc) { typeof(__p[0]) *_p;\
   for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
     *_p = (__start += (*_p) + __inc); _p++;\
     *_p = (__start += (*_p) + __inc); _p++;\
@@ -54,23 +54,28 @@ unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, uns
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(inc), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, dv = _mm_sub_epi32(DELTAV(iv,sv),cv)); 
+	bv = _mm_or_si128(bv, dv = _mm_sub_epi32(DELTA128_32(iv,sv),cv)); 
 	sv = iv; 
 	_mm_storeu_si128((__m128i *)op, dv); 
 	op += 4; 
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR(bv, b);
+  HOR128_32(bv, b);
   while(ip < in+n) { unsigned x = *ip-start-inc; start = *ip++; b |= x; *op++ = x; }
     #else
-  typeof(in[0]) b = 0,*op = out; DELTA(in, n, inc, start, b |= _x;*op++ = _x);
+  typeof(in[0]) b = 0,*op = out; BITDELTA(in, n, inc, start, b |= _x;*op++ = _x);
     #endif
   return bsr32(b);
 }
 
 unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc) {
-  typeof(in[0]) b = 0,*op = out; DELTA(in, n, inc, start, b |= _x; *op++ = _x);
+  typeof(in[0]) b = 0,*op = out; BITDELTA(in, n, inc, start, b |= _x; *op++ = _x);
   return bsr64(b);
+}
+
+unsigned bit32(unsigned *in, unsigned n) {
+  typeof(in[0]) b; BITSIZE32(in, n, b);
+  return b; 
 }
 
 unsigned bitd32(unsigned *in, unsigned n, unsigned start) {
@@ -78,19 +83,19 @@ unsigned bitd32(unsigned *in, unsigned n, unsigned start) {
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, DELTAV(iv,sv)); 
+	bv = _mm_or_si128(bv, DELTA128_32(iv,sv)); 
 	sv = iv; 
   }
   
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR(bv, b);
+  HOR128_32(bv, b);
   while(ip < in+n) { 
     unsigned x = *ip-start; 
 	start = *ip++; 
 	b |= x; 
   }
     #else
-  typeof(in[0]) b = 0; DELTA(in,n, 0, start, b |= _x);
+  typeof(in[0]) b = 0; BITDELTA(in,n, 0, start, b |= _x);
     #endif
   return bsr32(b); 
 }
@@ -100,25 +105,25 @@ unsigned bitd132(unsigned *in, unsigned n, unsigned start) {
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, _mm_sub_epi32(DELTAV(iv,sv),cv)); 
+	bv = _mm_or_si128(bv, _mm_sub_epi32(DELTA128_32(iv,sv),cv)); 
 	sv = iv; 
   }
   
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR(bv, b);
+  HOR128_32(bv, b);
   while(ip < in+n) { 
     unsigned x = *ip-start-1; 
 	start = *ip++; 
 	b |= x; 
   }
     #else
-  typeof(in[0]) b = 0; DELTA(in, n, 1, start, b |= _x);
+  typeof(in[0]) b = 0; BITDELTA(in, n, 1, start, b |= _x);
 	#endif
   return bsr32(b); 
 }
 
-void bitund32( unsigned *p, unsigned n, unsigned x) { UNDELTA(p, n, x, 0); }
-void bitund64( uint64_t *p, unsigned n, uint64_t x) { UNDELTA(p, n, x, 0); }
+void bitund32( unsigned *p, unsigned n, unsigned x) { BITUNDELTA(p, n, x, 0); }
+void bitund64( uint64_t *p, unsigned n, uint64_t x) { BITUNDELTA(p, n, x, 0); }
 
 void bitund132(unsigned *p, unsigned n, unsigned x) { 
     #ifdef __SSE2__
@@ -126,7 +131,7 @@ void bitund132(unsigned *p, unsigned n, unsigned x) {
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ) {
     __m128i v =  _mm_loadu_si128((__m128i *)ip); 
-	VSCANI(v, sv, cv); 
+	SCANI128_32(v, sv, cv); 
 	_mm_storeu_si128((__m128i *)ip, sv); 
 	ip += 4;
   }
@@ -136,9 +141,9 @@ void bitund132(unsigned *p, unsigned n, unsigned x) {
 	ip++; 
   }
     #else
-  UNDELTA(p, n, x, 1); 
+  BITUNDELTA(p, n, x, 1); 
     #endif
 }
 
-void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { UNDELTA(p, n, x, inc); }
-void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { UNDELTA(p, n, x, inc); }
+void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
+void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
