@@ -39,7 +39,7 @@ unsigned char *bitpackv16(unsigned short *__restrict in, unsigned n, unsigned ch
 #undef IPP
 
 //------------------------------------------------------------------------------------------------------------------------------
-#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = DELTAV(v,__sv); __sv = v
+#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = DELTA128_32(v,__sv); __sv = v
 #define IPP(ip, i, __iv) __iv
 #include __FILE__ 
 
@@ -50,7 +50,7 @@ unsigned char *bitdpackv32(unsigned       *__restrict in, unsigned n, unsigned c
 #undef VSTI
 
 //------------------------------------------------------------------------------------------------------------------------------
-#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = _mm_sub_epi32(DELTAV(v,__sv),cv); __sv = v
+#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = _mm_sub_epi32(DELTA128_32(v,__sv),cv); __sv = v
 
 unsigned char *bitd1packv32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(n*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
@@ -103,4 +103,3 @@ unsigned char *bitd1packv32(unsigned       *__restrict in, unsigned n, unsigned 
   }\
 }
   #endif
-
