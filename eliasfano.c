@@ -158,9 +158,9 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
   if(!lb) { 
       #if defined(__SSE2__) && USIZE == 32
         #if EF_INC == 1
-    BITFORZERO(out, n, start, 1);
+    BITFORZERO32(out, n, start, 1);
         #else
-    BITZERO( out, n, start);
+    BITZERO32( out, n, start);
         #endif
 	  #else 
     _BITFORZERO(out, n, start, EF_INC);
