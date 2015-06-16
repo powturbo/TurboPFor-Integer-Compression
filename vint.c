@@ -45,7 +45,7 @@ unsigned char vtab[] =      {    1,   2,   1,   3,   1,   2,   1,   4,   1,   2,
 // Length of uncompress value. Input __x is the compressed buffer start
 
 // decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
-unsigned char *vbdec(unsigned char  *__restrict in, unsigned n, unsigned *__restrict out) { unsigned x,*op;
+unsigned char *vbdec32(unsigned char  *__restrict in, unsigned n, unsigned *__restrict out) { unsigned x,*op;
   for(op = out; op != out+(n&~(4-1)); op += 4) { 
     vbgeta(in, x, op[0] = x);             
     vbgeta(in, x, op[1] = x); 
@@ -57,7 +57,7 @@ unsigned char *vbdec(unsigned char  *__restrict in, unsigned n, unsigned *__rest
 }
 
 // encode array with n unsigned (32 bits in[n]) values to the buffer out. Return value = end of compressed buffer out
-unsigned char *vbenc(unsigned *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;
+unsigned char *vbenc32(unsigned *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;
   for(ip = in; ip != in+(n&~(4-1)); ) { 
     vbput(out, *ip++);
     vbput(out, *ip++);
@@ -92,7 +92,7 @@ unsigned char *vbenc64(uint64_t *__restrict in, unsigned n, unsigned char *__res
 }
 
 //---------------------------------- increasing integer lists ----------------------------------------------------------------------------------------------------
-unsigned char *vbdenc(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) { 
+unsigned char *vbdenc32(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) { 
   unsigned *ip,v;
   for(ip = in; ip != in+(n&~(4-1)); ) {
     v = (*ip)-start; start=*ip++; vbputa(out, v, ;);
@@ -104,7 +104,7 @@ unsigned char *vbdenc(unsigned *__restrict in, unsigned n, unsigned char *__rest
   return out;
 }  
 
-unsigned char *vbddec(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { 
+unsigned char *vbddec32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { 
   unsigned x,*op;
   for(op = out; op != out+(n&~(4-1)); ) { 
     vbgeta(in, x, ;); *op++ = (start += x);
@@ -117,7 +117,7 @@ unsigned char *vbddec(unsigned char *__restrict in, unsigned n, unsigned *__rest
 }
 
 //----------------------------------strictly increasing (never remaining constant or decreasing) integer lists---------------------------------------------------------
-unsigned char *vbd1enc(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) { 
+unsigned char *vbd1enc32(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) { 
   unsigned *ip, v, b = 0; unsigned char *op = out; 
   v = ((*in) - start - 1)<<1; if(n == 1) v |= 1; 
   vbputa(op, v, ;); 
@@ -139,11 +139,11 @@ unsigned char *vbd1enc(unsigned *__restrict in, unsigned n, unsigned char *__res
   return op;
 }
 
-unsigned char *vbd1dec(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { unsigned x,*op;
+unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { unsigned x,*op;
   vbgeta(in, x, ;); *out = (start += (x>>1)+1);
   if(x & 1) { 
       #ifdef __SSE2__
-	out++; --n; BITDIZERO(out, n, start, 1);
+	out++; --n; BITDIZERO32(out, n, start, 1);
 	  #else 
     for(x = 1; x < n; x++) out[x] = start+x;
       #endif
