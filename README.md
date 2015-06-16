@@ -6,7 +6,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - Full Range 16/32 and :new: 64 bits integer lists 
+ - Full range 16/32 and :new: 64 bits integer lists 
+ - :new: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
 + **Features**
  - Scalar **"Variable Byte"** faster and more efficient than any other implementation
@@ -259,4 +260,4 @@ header files to use with documentation :<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 12 JUN 2015
+Last update: 16 JUN 2015
