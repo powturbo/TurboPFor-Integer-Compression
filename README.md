@@ -6,8 +6,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - Full range 16/32 and :new: 64 bits integer lists 
- - :new: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
+ - Full range 16/32 and :sparkles: 64 bits integer lists 
+ - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
 + **Features**
  - Scalar **"Variable Byte"** faster and more efficient than any other implementation
@@ -17,7 +17,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - Bit Packing with **Direct/Random Access** without decompressing entire blocks
  - Access any single bit packed entry with **zero decompression**
- - :new: **Direct Update** of individual bit packed entries
+ - :sparkles: **Direct Update** of individual bit packed entries
  - Reducing **Cache Pollution**
 <p>
  - :new: Fastest and most efficient **"SIMD Bit Packing"**
@@ -29,11 +29,11 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
- - :new: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
+ - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
  - :new: **Novel** Implicit skips with zero extra overhead
  - :new: **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - :new: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
+ - :sparkles: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
@@ -260,4 +260,4 @@ header files to use with documentation :<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 16 JUN 2015
+Last update: 17 JUN 2015
