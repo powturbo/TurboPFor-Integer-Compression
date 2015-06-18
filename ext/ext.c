@@ -7,6 +7,9 @@
   #define VARINTG8IU
 #define _MASKEDVBYTE
 #endif
+
+//#define _FORLIB
+
 //-------------------------------------- External functions for comparison ------------------------------------------------------------------------
 #include "vabyte.h"                                     // Standard Variable Byte
 
@@ -30,6 +33,10 @@
 #include "MaskedVByte/include/varintdecode.h"
   #endif
 //#include "c-blosc/blosc/shuffle.h"
+
+  #ifdef _FORLIB
+#include "for/for.h"
+  #endif
 
 //---------------- FastPFor functions ---------------------  
 unsigned char *simdpackwn(uint32_t *in, uint32_t n, uint32_t b, uint32_t *out) {//checkifdivisibleby(n, 128); const uint32_t * const initout(out);  //while(needPaddingTo128Bits(out)) *out++ = 123456;
