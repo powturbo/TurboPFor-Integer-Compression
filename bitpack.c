@@ -49,12 +49,36 @@ unsigned char *bitpack64(uint64_t           *__restrict in, unsigned n, unsigned
 
 unsigned char *bitdpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
+#undef SRC
 #undef SRC1
 
 #define IPPB( __ip,__x, __parm) as = *__ip-start-1; start=*__ip++
+#define SRC( __ip,__x) as
 #define SRC1(__ip,__x) (*__ip - start-1)
 #include __FILE__
 unsigned char *bitd1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
+#undef IPPB
+#undef SRC
+#undef SRC1
+
+//------------------------------
+#define IPPB( __ip,__x, __parm) as = *__ip++-start
+#define SRC( __ip,__x) as
+#define SRC1(__ip,__x) (*__ip - start)
+#include __FILE__
+unsigned char *bitfpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
+#undef IPPB
+#undef SRC
+#undef SRC1
+
+#define IPPB( __ip,__x, __parm) as = *__ip++-start++-1
+#define SRC( __ip,__x) as
+#define SRC1(__ip,__x) (*__ip - start-1)
+#include __FILE__
+unsigned char *bitf1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
+#undef IPPB
+#undef SRC
+#undef SRC1
 //-----------------------------------------------------------------------------------------------
 #pragma clang diagnostic pop
   #else
