@@ -6,7 +6,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - Full range 16/32 and :new: 64 bits integer lists 
+ - Full range 16/32 and :sparkles: 64 bits integer lists 
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
 + **Features**
@@ -68,7 +68,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 |         |      |     |   N/A  | N/A   |**EliasFano**|
 MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br> 
 **#BOLD** = pareto frontier. FPF=FastPFor<br>
-TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individual values.
+TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
  - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+VSimple 64k)
