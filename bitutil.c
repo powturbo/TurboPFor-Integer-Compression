@@ -48,6 +48,20 @@
   while(_p < __p+__n) { *_p = (__start += (*_p) + __inc); _p++; }\
 }
 
+#define BITMINMAX(__p,__n, __mi, __mx) {\
+  typeof(__p[0]) _x, *_p;\
+  for(_p = __p, __mi = __mx = 0; _p != __p+(__n&~(4-1)); ) {\
+	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
+	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
+	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
+	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
+  }\
+  while(_p < __p+__n) { \
+	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
+  }\
+}
+
+
 unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc) {
     #ifdef __SSE2__
   unsigned *ip,b,*op = out; 
@@ -76,6 +90,16 @@ unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uns
 unsigned bit32(unsigned *in, unsigned n) {
   typeof(in[0]) b; BITSIZE32(in, n, b);
   return b; 
+}
+
+unsigned bitf32(  unsigned *in, unsigned n, unsigned start) { return n?bsr32(in[n-1] - start    ):0; }
+unsigned bitf132( unsigned *in, unsigned n, unsigned start) { return n?bsr32(in[n-1] - start - n):0; }
+
+unsigned bitfm32(unsigned *in, unsigned n, unsigned *pmin) {
+  unsigned mi,mx; 
+  BITMINMAX(in, n, mi, mx);
+  *pmin = mi;
+  return bsr32(mx - mi);
 }
 
 unsigned bitd32(unsigned *in, unsigned n, unsigned start) {
