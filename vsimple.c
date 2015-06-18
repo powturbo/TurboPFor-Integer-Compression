@@ -29,7 +29,9 @@
 #include <stdint.h>
 #include "vsimple.h"
 
+  #ifndef SV_LIM32
 #define USE_RLE
+
                                      //   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32 
 #define SV_LIM32 unsigned char s_lim32[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 0 };
 #define SV_ITM32 unsigned      s_itm32[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1, -1 }
@@ -43,19 +45,26 @@
 
 static SV_LIM32;
 static SV_ITM32;
+#define s_lim16 s_lim32
+#define s_itm16 s_itm32
+static SV_ITM64;
+static SV_LIM64;
+
+#define EFE(__x,__i,__start) ((__x[__i] - __start)-(__i)*EF_INC)
+
+  #endif
+
+#define VSENC vsenc
+#define VSDEC vsdec
+#define USIZE 16
+#include __FILE__
+#undef USIZE
+
 #define USIZE 32
 #include __FILE__
 #undef USIZE
 
-#define USIZE 16
-#define s_lim16 s_lim32
-#define s_itm16 s_itm32
-#include __FILE__
-#undef USIZE
-
 #define USIZE 64
-static SV_ITM64;
-static SV_LIM64;
 #include __FILE__
 #undef USIZE
 
@@ -70,10 +79,10 @@ static SV_LIM64;
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
-unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict op) {
+unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict op) {
   unsigned xm,m,r,x; 
   uint_t *e = in+n,*ip;
-  for(ip = in; ip < e; ) { __builtin_prefetch(ip+64, 0);
+  for(ip = in; ip < e; ) { 										__builtin_prefetch(ip+64, 0);
       #ifdef USE_RLE 
     if(ip+4 < e && *ip == *(ip+1)) { 
       uint_t *q = ip+1; 
@@ -298,7 +307,7 @@ unsigned char *TEMPLATE2(vsenc, USIZE)(uint_t *__restrict in, int n, unsigned ch
 #define OP(__x) op[__x] // *op++ //
 #define OPI(__x) op+=__x// //
 
-unsigned char *TEMPLATE2(vsdec, USIZE)(unsigned char *__restrict ip, int n, uint_t *__restrict op) { 
+unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint_t *__restrict op) { 
   uint_t *op_ = op+n;
   while(op < op_) { 
     register uint64_t w = *(uint64_t *)ip; __builtin_prefetch(ip+64, 0);
