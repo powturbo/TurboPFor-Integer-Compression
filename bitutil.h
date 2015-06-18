@@ -96,25 +96,30 @@ extern "C" {
 #endif
 
 // get maximum bit length of the elements in the integer array
-unsigned bit32( unsigned *in, unsigned n);  
+unsigned bit32(     unsigned *in, unsigned n);  
 
 // transform sorted integer array to delta array. inc = increment
 unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc);
 unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
 
 // get delta maximum bit length of the non decreasing integer array
-unsigned bitd32( unsigned *in, unsigned n, unsigned start);  
+unsigned bitd32(    unsigned *in, unsigned n, unsigned start);  
 
 // get delta maximum bit length of the non strictly decreasing integer array
-unsigned bitd132(unsigned *in, unsigned n, unsigned start);
+unsigned bitd132(   unsigned *in, unsigned n, unsigned start);
 
-void bitund32( unsigned *p, unsigned n, unsigned x);
-void bitund64( uint64_t *p, unsigned n, uint64_t x);
+void bitund32(      unsigned *p, unsigned n, unsigned x);
+void bitund64(      uint64_t *p, unsigned n, uint64_t x);
 
-void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc);
-void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc);
+void bitundx32(     unsigned *p, unsigned n, unsigned x, unsigned inc);
+void bitundx64(     uint64_t *p, unsigned n, uint64_t x, unsigned inc);
 
-void bitund132(unsigned *p, unsigned n, unsigned x);
+void bitund132(     unsigned *p, unsigned n, unsigned x);
+
+// for
+unsigned bitf32(    unsigned *in, unsigned n, unsigned start);
+unsigned bitf132(   unsigned *in, unsigned n, unsigned start);
+unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);
 #ifdef __cplusplus
 }
 #endif
