@@ -39,6 +39,7 @@ idxqryp.o: $(BIT)idxqry.c
 SIMDCOMPD=ext/simdcomp/
 SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIMDCOMPD)src/simdcomputil.o $(SIMDCOMPD)src/simdbitpacking.o
 
+#FORLIB=ext/for/for.o
 #LZT=../lz/lz8c0.o ../lz/lz8d.o
 #LZTB=../lz/lzbc0.o ../lz/lzbd.o
 #B=../../dv/bench/
@@ -49,7 +50,7 @@ SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIM
 LZ4=ext/lz4.o 
 MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 
-OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(LZT) $(LZTB) $(LZ4) $(MVB) 
+OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(FORLIB) $(LZT) $(LZTB) $(LZ4) $(MVB) 
 
 icbench: $(OBJS)
 	$(CC) $(OBJS) -lm -o icbench $(LFLAGS)
