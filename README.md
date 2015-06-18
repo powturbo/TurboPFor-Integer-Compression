@@ -6,13 +6,13 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - Full range 16/32 and :sparkles: 64 bits integer lists 
+ - Full range 16/32 and :new: 64 bits integer lists 
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
 + **Features**
- - Scalar **"Variable Byte"** faster and more efficient than any other implementation
+ - :sparkles: Scalar **"Variable Byte"** faster and more efficient than any other implementation
 <p>
- - **Novel** **"Variable Simple"** faster than simple16 and more compact than simple8-b
+ - :sparkles: **Novel** **"Variable Simple"** faster than simple16 and more compact than simple8-b
 <p>
  - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - Bit Packing with **Direct/Random Access** without decompressing entire blocks
@@ -33,7 +33,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :new: **Novel** Implicit skips with zero extra overhead
  - :new: **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - :sparkles: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
+ - :new: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
@@ -58,10 +58,11 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 | 99.910.930| 24.98| 7.99|**2603.47**|**1948.65**|**TurboPackV**|
 | 99.910.930| 24.98| 7.99| 2524.50|1943.41|SIMDPack FPF|
 | 99.910.930| 24.98| 7.99| 1883.21|1898.11|**TurboPack**|
-| 99.910.930| 24.98| 7.99| 1877.25| 935.83|**TurboPackDA**|
+| 99.910.930| 24.98| 7.99| 1877.25| 935.83|**TurboForDA**|
 |102.074.663| 25.52| 8.17| 1621.64|1694.64|**TurboVbyte**|
 |102.074.663| 25.52|8.17|1214.12|1688.95|MaskedVByte|
 |102.074.663| 25.52| 8.17| 1178.72| 949.59|Vbyte FPF|
+|103.035.930| 25.76| 8.24| 1480.47|1746.51|ForLib|
 |112.500.000| 28.12| 9.00|  305.85|1899.15|VarintG8IU|
 |400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
 |         |      |     |   N/A  | N/A   |**EliasFano**|
@@ -89,9 +90,12 @@ TurboPForDA,TurboPackDA: Direct Access is normally used when accessing individua
 | 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
 | 4.953.768.342| 20.71| 6.63|1419.35|1512.86|**TurboPack**|
 | 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackD1 FPF|
+| 6.221.886.390| 26.01| 8.32|1666.76|1737.72|**TurboFor**|
+| 6.221.886.390| 26.01| 8.32|1660.52| 565.25|**TurboForDA**|
 | 6.699.519.000| 28.01| 8.96| 472.01| 495.12|Vbyte FPF|
 | 6.700.989.563| 28.02| 8.96| 728.72| 991.57|MaskedVByte|
 | 7.622.896.878| 31.87|10.20| 208.73|1197.74|VarintG8IU|
+| 8.594.342.216| 35.93|11.50|1307.22|1593.07|ForLib|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
 lz4 w/ delta+transpose similar to delta+[blosc](https://github.com/Blosc/c-blosc)
@@ -208,6 +212,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   >*run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".*
 
 ### Function usage:
+See benchmark "icbench" program for usage examples.
 In general encoding/decoding functions are of the form:
 
 
@@ -229,14 +234,14 @@ In general encoding/decoding functions are of the form:
   b      : number of bits. Only for bit unpacking functions<br />
   start  : previous value. Only for integrated delta decoding functions*
 
-header files to use with documentation :<br />
+header files to use with documentation:<br />
 
 | header file|Functions|
 |------|--------------|
 |vint.h|variable byte|
 |vsimple.h|variable simple|
 |vp4dc.h, vp4dd.h|TurboPFor|
-|bitpack.h bitunpack.h|Bit Packing|
+|bitpack.h bitunpack.h|Bit Packing, For, +Direct Access|
 |eliasfano.h|Elias Fano|
 
 ### Environment:
@@ -254,10 +259,11 @@ header files to use with documentation :<br />
  + [Optimized Pfor-delta compression code](http://jinruhe.com): PForDelta: OptPFD or OptP4, Simple16
  + [MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
+ + [Libfor](https://github.com/cruppstahl/for): Forlib
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 17 JUN 2015
+Last update: 18 JUN 2015
