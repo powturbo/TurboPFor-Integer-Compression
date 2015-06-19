@@ -159,7 +159,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 
 ##### - Data files:
-  - Data file Benchmark (file from [DocId data set](#DocId data set)
+  - Data file Benchmark (file from [DocId data set](#DocId data set))
 
 
         ./icbench -c1 gov2.sortedVarintG8IU
