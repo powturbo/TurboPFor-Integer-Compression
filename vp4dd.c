@@ -536,7 +536,7 @@ unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict in, unsigned 
 
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
-      out[i] = TEMPLATE2(vp4dget, USIZE)(p4d, in, b, i);  
+      out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i);  
     return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
   } else {
     for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b); 
@@ -551,7 +551,7 @@ unsigned char *TEMPLATE2(p4dfdecx, USIZE)(unsigned char *__restrict in, unsigned
 
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
-      out[i] = TEMPLATE2(vp4dget, USIZE)(p4d, in, b, i)+start+i+1;  
+      out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i)+start+i+1;  
     return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
   } else {
     for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start+i+1;
@@ -566,7 +566,7 @@ unsigned char *TEMPLATE2(p4df0decx, USIZE)(unsigned char *__restrict in, unsigne
 
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
-      out[i] = TEMPLATE2(vp4dget, USIZE)(p4d, in, b, i)+start;  
+      out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i)+start;  
     return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
   } else {
     for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start;
