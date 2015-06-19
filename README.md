@@ -71,7 +71,7 @@ MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br>
 TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
- - gov2.sorted from [DocId data set](http://lemire.me/data/integercompression2014.html) Block size=128 (lz4+VSimple 64k)
+ - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+VSimple 64k)
 
 
         ./icbench -c1 gov2.sorted
@@ -98,7 +98,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 8.594.342.216| 35.93|11.50|1307.22|1593.07|libfor|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
-lz4 w/ delta+transpose similar to delta+[blosc](https://github.com/Blosc/c-blosc)
+lz4 w/ delta+transpose similar to delta + [blosc](#blosc)
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
    GOV2: 426GB, 25 Millions documents, average doc. size=18k.
@@ -261,6 +261,7 @@ header files to use with documentation:<br />
  + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
  + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
  + <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
+ + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
