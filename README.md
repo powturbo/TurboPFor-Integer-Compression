@@ -12,7 +12,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 + **Features**
  - :sparkles: Scalar **"Variable Byte"** faster and more efficient than any other implementation
 <p>
- - :sparkles: **Novel** **"Variable Simple"** faster than simple16 and more compact than simple8-b
+ - :sparkles: **Novel** **"Variable Simple"** (incl. RLE) faster and more efficient than simple16 or simple8-b
 <p>
  - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - Bit Packing with **Direct/Random Access** without decompressing entire blocks
@@ -159,14 +159,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 
 ##### - Data files:
-  - Data file Benchmark (file from [DocId data set](http://lemire.me/data/integercompression2014.html))
+  - Data file Benchmark (file from [DocId data set](#DocId data set)
 
 
         ./icbench -c1 gov2.sortedVarintG8IU
 
 
 ##### - Intersections:
-  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](http://lemire.me/data/integercompression2014.html)<br />
+  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](#DocId data set)<br />
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
 
   2 - Create index file
@@ -255,12 +255,12 @@ header files to use with documentation:<br />
 
 ### References:
 
- + <a name="SIMDPack FPF"></a><a name="Vbyte FPF"></a><a name="VarintG8IU"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF
+ + <a name="SIMDPack FPF"></a><a name="Vbyte FPF"></a><a name="VarintG8IU"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU
  + <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16
  + <a name="MaskedVByte"></a>[MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
- + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (faster modified version tested)
- + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for): libfor
- + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
+ + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
+ + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
+ + <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
