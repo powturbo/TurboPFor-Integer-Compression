@@ -51,19 +51,19 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 |--------:|-----:|----:|-------:|-------:|---------|
 | 63.392.801| 15.85| 5.07|**388.36**|**1400.87**|**TurboPFor**|
 | 63.392.801| 15.85| 5.07|  365.26| 243.15|**TurboPForDA**|
-| 65.359.916| 16.34| 5.23|    7.09| 638.96|OptPFD|
-| 72.364.024| 18.09| 5.79|   85.31| 762.00|Simple16|
+| 65.359.916| 16.34| 5.23|    7.09| 638.96|[OptPFD](#OptPFD)|
+| 72.364.024| 18.09| 5.79|   85.31| 762.00|[Simple16](#Simple16)|
 | 78.514.276| 19.63| 6.28|  251.34| 841.61|**VSimple**|
-| 95.915.096| 23.98| 7.67|  221.46|1049.70|Simple-8b|
+| 95.915.096| 23.98| 7.67|  221.46|1049.70|[Simple-8b](#Simple-8b)|
 | 99.910.930| 24.98| 7.99|**2603.47**|**1948.65**|**TurboPackV**|
-| 99.910.930| 24.98| 7.99| 2524.50|1943.41|SIMDPack FPF|
+| 99.910.930| 24.98| 7.99| 2524.50|1943.41|[SIMDPack FPF](#SIMDPack FPF)|
 | 99.910.930| 24.98| 7.99| 1883.21|1898.11|**TurboPack**|
 | 99.910.930| 24.98| 7.99| 1877.25| 935.83|**TurboForDA**|
 |102.074.663| 25.52| 8.17| 1621.64|1694.64|**TurboVbyte**|
-|102.074.663| 25.52|8.17|1214.12|1688.95|MaskedVByte|
-|102.074.663| 25.52| 8.17| 1178.72| 949.59|Vbyte FPF|
-|103.035.930| 25.76| 8.24| 1480.47|1746.51|ForLib|
-|112.500.000| 28.12| 9.00|  305.85|1899.15|VarintG8IU|
+|102.074.663| 25.52|8.17|1214.12|1688.95|[MaskedVByte](#MaskedVByte)|
+|102.074.663| 25.52| 8.17| 1178.72| 949.59|[Vbyte FPF](#Vbyte FPF)|
+|103.035.930| 25.76| 8.24| 1480.47|1746.51|[libfor](#libfor)|
+|112.500.000| 28.12| 9.00|  305.85|1899.15|[VarintG8IU](#VarintG8IU)|
 |400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
 |         |      |     |   N/A  | N/A   |**EliasFano**|
 MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br> 
@@ -95,7 +95,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 6.699.519.000| 28.01| 8.96| 472.01| 495.12|Vbyte FPF|
 | 6.700.989.563| 28.02| 8.96| 728.72| 991.57|MaskedVByte|
 | 7.622.896.878| 31.87|10.20| 208.73|1197.74|VarintG8IU|
-| 8.594.342.216| 35.93|11.50|1307.22|1593.07|[libfor](#libfor)|
+| 8.594.342.216| 35.93|11.50|1307.22|1593.07|libfor|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
 lz4 w/ delta+transpose similar to delta+[blosc](https://github.com/Blosc/c-blosc)
@@ -162,7 +162,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   - Data file Benchmark (file from [DocId data set](http://lemire.me/data/integercompression2014.html))
 
 
-        ./icbench -c1 gov2.sorted
+        ./icbench -c1 gov2.sortedVarintG8IU
 
 
 ##### - Intersections:
@@ -255,11 +255,12 @@ header files to use with documentation:<br />
 
 ### References:
 
- + [FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF
- + [Optimized Pfor-delta compression code](http://jinruhe.com): PForDelta: OptPFD or OptP4, Simple16
- + [MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
+ + <a name="SIMDPack FPF"></a><a name="Vbyte FPF"></a><a name="VarintG8IU"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF
+ + <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16
+ + <a name="MaskedVByte"></a>[MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
+ + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (faster modified version tested)
+ + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for): libfor
  + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
- + <a name="libfor"></a>[Libfor](https://github.com/cruppstahl/for): Forlib
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
