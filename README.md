@@ -95,7 +95,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 6.699.519.000| 28.01| 8.96| 472.01| 495.12|Vbyte FPF|
 | 6.700.989.563| 28.02| 8.96| 728.72| 991.57|MaskedVByte|
 | 7.622.896.878| 31.87|10.20| 208.73|1197.74|VarintG8IU|
-| 8.594.342.216| 35.93|11.50|1307.22|1593.07|ForLib|
+| 8.594.342.216| 35.93|11.50|1307.22|1593.07|[libfor](#libfor)|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
 lz4 w/ delta+transpose similar to delta+[blosc](https://github.com/Blosc/c-blosc)
@@ -259,11 +259,11 @@ header files to use with documentation:<br />
  + [Optimized Pfor-delta compression code](http://jinruhe.com): PForDelta: OptPFD or OptP4, Simple16
  + [MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + [Document identifier data set](http://lemire.me/data/integercompression2014.html)
- + [Libfor](https://github.com/cruppstahl/for): Forlib
+ + <a name="libfor"></a>[Libfor](https://github.com/cruppstahl/for): Forlib
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 18 JUN 2015
+Last update: 19 JUN 2015
