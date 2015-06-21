@@ -106,7 +106,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
           if(n <= 0x100)
             *op++ = r; 
           else
-            vbput(op, r);            
+            vbput32(op, r);            
         } else *op++ = r<<4; 
         break;
       case 1:
@@ -291,7 +291,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
           if(n <= 0x100)
             *op++ = r; 
           else
-            vbput(op, r);            
+            vbput32(op, r);
         } else *op++ = r<<4|8;
         TEMPLATE2(vbput, USIZE)(op, ip[0]);
         break;
@@ -318,7 +318,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
           else
-            r = vbget(ip);
+            r = vbget32(ip);
         }          
         uint_t *q = op; op += r+1; 
           #if defined(__SSE2__)
@@ -441,7 +441,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
           else
-            r = vbget(ip);
+            r = vbget32(ip);
         } 
         uint_t u = TEMPLATE2(vbget, USIZE)(ip), *q=op; op += r+1;  
           #if defined(__SSE2__) && USIZE == 32
