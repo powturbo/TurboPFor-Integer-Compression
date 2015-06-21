@@ -263,7 +263,7 @@ header files to use with documentation:<br />
  + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
  + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
  + <a name="lz4"></a>[lz4](https://github.com/Cyan4973/lz4). included w. block size 64K as indication. Tested after preprocessing w. delta+transpose
- + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4
+ + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4 incl. vectorizeed shuffle 
  + <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
