@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/    
-//   idxqry: Inverted Index - query evaluation 
+// idxqry: Inverted Index - query evaluation 
 #define _LARGEFILE64_SOURCE 1 
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
@@ -126,7 +126,7 @@ typedef struct {
 int postinit( post_t *v, int tid, idxrd_t *idx, unsigned *dids) {
   unsigned long long o = TIDMAP(idx->fdm, tid); if(!o) return 0;  			
   unsigned char *p = idx->fdp + o;  					// start of posting;
-  v->f_t     = vbget(p); 								// num docs  
+  v->f_t     = vbget32(p); 								// num docs  
   v->didno   = v->bno = -1;  
   v->bnum    = (v->f_t+BLK_DIDNUM-1)/BLK_DIDNUM;  		// num blocks
   v->_f_t    = v->f_t;
@@ -149,7 +149,7 @@ static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v
 	            p = v->p + pix[v->bnum];	    // o=offset to posting block	    			
           dids[0] = *pix; 						// first did in block
     v->didnum = bno < v->bnum-1?BLK_DIDNUM:v->f_t - bno*BLK_DIDNUM;			
-  } else { v->didnum = v->f_t; dids[0] = vbget(p); }							STAT(st_dec += v->didnum); STAT(st_decs[st_terms] += v->didnum);
+  } else { v->didnum = v->f_t; dids[0] = vbget32(p); }							STAT(st_dec += v->didnum); STAT(st_decs[st_terms] += v->didnum);
     #ifdef SKIP_S
   unsigned b = dids[0] & SKIP_M; dids[0] >>= SKIP_S;
     #endif
@@ -196,7 +196,7 @@ static ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) {
     unsigned *pix = (unsigned *)p + v->bno; 													
 	            p = v->p + pix[v->bnum];	    // o=offset to posting block	    			
          dids[0] = *pix; 						// first did in block
-  } else dids[0] = vbget(p);
+  } else dids[0] = vbget32(p);
     #ifdef SKIP_S
   unsigned b = dids[0] & SKIP_M; dids[0] >>= SKIP_S;
     #endif
@@ -247,7 +247,7 @@ static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) {
 	  #endif
   } else {																					
     p       = v->bp;	
-    v->did  = vbget(p); 																		
+    v->did  = vbget32(p); 																		
     v->ldid = UINT_MAX;
   }													
   	#ifdef SKIP_S
