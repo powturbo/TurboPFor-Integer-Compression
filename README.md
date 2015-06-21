@@ -86,10 +86,11 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
 | 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4) 64K|
 | 4.521.326.518| 18.90| 6.05| 209.17| 824.26|Simple-8b|
-| 4.683.323.301| 19.58| 6.27| 828.25| 991.34|**TurboVbyte**|
+| 4.683.323.301| 19.58| 6.27| 828.97|1007.44|**TurboVbyte**|
 | 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
 | 4.953.768.342| 20.71| 6.63|1419.35|1512.86|**TurboPack**|
 | 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackD1 FPF|
+| 6.074.995.117| 25.40| 8.13| 494.70| 729.97| blosc lz4 64K| 
 | 6.221.886.390| 26.01| 8.32|1666.76|1737.72|**TurboFor**|
 | 6.221.886.390| 26.01| 8.32|1660.52| 565.25|**TurboForDA**|
 | 6.699.519.000| 28.01| 8.96| 472.01| 495.12|Vbyte FPF|
@@ -162,7 +163,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   - Data file Benchmark (file from [DocId data set](#DocId data set))
 
 
-        ./icbench -c1 gov2.sortedVarintG8IU
+        ./icbench -c1 gov2.sorted
 
 
 ##### - Intersections:
@@ -256,7 +257,7 @@ header files to use with documentation:<br />
 ### References:
 
  + <a name="SIMDPack FPF"></a><a name="Vbyte FPF"></a><a name="VarintG8IU"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU
- + <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16
+ + <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16 (limited to 28 bits integers)
  + <a name="MaskedVByte"></a>[MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
  + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
@@ -269,4 +270,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 19 JUN 2015
+Last update: 21 JUN 2015
