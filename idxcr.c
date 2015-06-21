@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/ 
-//	  idxcr.c - "Integer Compression" Create inverted index for using by idxqry for benchmarking
+//	   idxcr.c - "Integer Compression" Create inverted index for using by idxqry for benchmarking
 #define _LARGEFILE64_SOURCE 1 
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
       if(fread(in, 4, num, fi) != num) break;								// read docid list
       
       unsigned char *op = out,*_op; 
-      vbput(op, num);														// store f_t
+      vbput32(op, num);														// store f_t
   
       unsigned *pix = (unsigned *)op; 
       if(num > BLK_DIDNUM) { 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
           pix[bnum] = op - _op; 							// save posting offset
 		    #endif
           pix++;
-        } else vbput(op, u);						   		// skip not needed
+        } else vbput32(op, u);						   		// skip not needed
  
 	    if(n > 1) {
 		    #ifndef SKIP_S
@@ -160,4 +160,3 @@ int main(int argc, char *argv[]) {
                                                                                   skipsize, postsize-skipsize, postsize+tid*sizeof(tmap_t)+12, (double)postsize*100/(double)fofs );
   }
 }
-
