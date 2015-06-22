@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 #include <x86intrin.h>
 
-#define _TRANSP
+//#define _TRANSP
 //#define IC_STATS
 //---------------------------------------- Platform ---------------------------
   #ifdef _WIN32
@@ -528,7 +528,7 @@ int verb = 0, xcheck=2;																					unsigned xbits[33];
 enum { T_TST, T_TXT, T_CHAR, T_BYTE };
 
 struct libs { int id,err,size; char *s,*v; unsigned long long l, c[33]; double tc,td; };
-struct libs libs[64];
+struct libs libs[64],slibs[64];
 void libini() { int m; for(m = 0; libs[m].id >= 0; m++) libs[m].l = libs[m].tc = libs[m].td = 0; }
 
 int l_cmp(struct libs *a, struct libs *b) {
@@ -561,7 +561,7 @@ void stprint(char *s) {
 }
 
 #define BI 1   // BI=4 -> MB/S=Megabyte/Sec  BI=1 -> Millions integer/Sec
-void print(unsigned long long n, char *s, unsigned long long *u) { 
+void print(struct libs *libs, unsigned long long n, char *s, unsigned long long *u) { 
   int m, k; 
   for(k = 0; libs[k].id >= 0; k++) {};
     qsort(libs, k, sizeof(libs[0]), (int(*)(const void*,const void*))l_cmp);	
@@ -784,10 +784,11 @@ int main(int argc, char *argv[]) { int r;
     libs[i++].size = ls->size;    
   } 
   libs[i].id = -1;															if(verb) printf("\n");
+  unsigned long long totlen = 0; 
+  memcpy(slibs,libs,sizeof(slibs));
   if(argc <= optind) { 														// No file specified at commandline
     unsigned      *in, *cpy,*ip; 
 	unsigned char *out; 
-	unsigned long long totlen=0; 
 	
     if(!n) n = 100000000;
       #ifdef ALGN
@@ -808,7 +809,7 @@ int main(int argc, char *argv[]) { int r;
 	    libini(); 															sprintf(s,"b=%d", b);        
         for(*in = n,i = 1; i <= n; i++) 
           in[i] = (1ull << b)-1;
-        totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, b, -1);  print(totlen, s, NULL);
+        totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, b, -1);  print(libs,totlen, s, NULL);
       }
     } else { 																// Benchmark w. generated data
 																			printf("zipf alpha=%.2f range[%u..%u].n=%u\n ", a, rm, rx, n);
@@ -821,7 +822,7 @@ int main(int argc, char *argv[]) { int r;
 		}
 	  } else stprint(""); 	  
       totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
-      print(totlen, s, NULL); 
+      print(libs,totlen, s, NULL); 
     }
       #ifdef ALGN
     afree(_in); afree(_cpy); afree(_out);
@@ -835,8 +836,7 @@ int main(int argc, char *argv[]) { int r;
       FILE *fi = fopen(inname, "r");   if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
       unsigned      *in = NULL, *cpy,*ip, nmax = 0;
 	  unsigned char *out; 
-	  unsigned long long totlen = 0; 
-	
+
       n = 1;
 	  #define LSIZE 1024
       char     s[LSIZE+1]; 
@@ -883,8 +883,10 @@ int main(int argc, char *argv[]) { int r;
       out = malloc(n*5+OVD); if(!out) die("malloc err=%u", n);
       cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n);
       in[0] = n-1; s[0] = 0; 
-      totlen = bench(in, n, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
-      print(totlen, inname, NULL); 											//printf("n=%d.%d\n", n-1,argc);
+      unsigned long long l = bench(in, n, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
+      print(libs,l, inname, NULL); 											//printf("n=%d.%d\n", n-1,argc);
+      int i; for(i=0;libs[i].id>0;i++) slibs[i].tc += libs[i].tc,slibs[i].td += libs[i].td,slibs[i].l += libs[i].l;
+      totlen += l;
 	  continue; 
     } 
 	//------- process integer array file ------------------
@@ -935,6 +937,7 @@ int main(int argc, char *argv[]) { int r;
       #ifdef IC_STATS
     stprint("delta"); 
 	  #endif
-	print(totlen,inname, bitslen);
-  }																			
+	print(libs,totlen,inname, bitslen);
+  }		
+  if(fmt >= T_TXT && (fno-optind)>1) { printf("\n"); print(slibs,totlen, "TOT", NULL); 																	}
 }
