@@ -42,10 +42,13 @@ SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIM
 #FORLIB=ext/for/for.o
 #LZT=../lz/lz8c0.o ../lz/lz8d.o
 #LZTB=../lz/lzbc0.o ../lz/lzbd.o
+
+ifeq ($(EXT), blosc)
 B=ext/
-#CFLAGS+=-DSHUFFLE_SSE2_ENABLED -DHAVE_LZ4 -Iext/
-#LFLAGS+=-lpthread 
-#BLOSC=$(B)lz4hc.o $(B)c-blosc/blosc/blosc.o $(B)c-blosc/blosc/blosclz.o $(B)c-blosc/blosc/shuffle.o $(B)c-blosc/blosc/shuffle-generic.o $(B)c-blosc/blosc/shuffle-sse2.o
+CFLAGS+=-DSHUFFLE_SSE2_ENABLED -DHAVE_LZ4 -Iext/
+LFLAGS+=-lpthread 
+BLOSC=$(B)lz4hc.o $(B)c-blosc/blosc/blosc.o $(B)c-blosc/blosc/blosclz.o $(B)c-blosc/blosc/shuffle.o $(B)c-blosc/blosc/shuffle-generic.o $(B)c-blosc/blosc/shuffle-sse2.o
+endif
 
 LZ4=ext/lz4.o 
 MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
