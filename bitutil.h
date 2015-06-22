@@ -81,12 +81,6 @@
 #define BITZERO32(out, n, start)         _BITFORZERO(out, n, start, 0)
   #endif
 
-#define ZIGZAG( __in, __n, __mode,      __out) { unsigned _v; for(      __out[0]=__in[0],_v = __n-1; _v >   0; --_v) { int _z = ((int)__in[_v] - (int)__in[_v-1]) - __mode; __out[_v] = (_z << 1) ^ (_z >> 31); } }
-#define ZIGZAGB(__in, __n, __mode, __b, __out) { unsigned _v; for(__b=0,__out[0]=__in[0],_v = __n-1; _v >   0; --_v) { int _z = ((int)__in[_v] - (int)__in[_v-1]) - __mode; __out[_v] = (_z << 1) ^ (_z >> 31); __b |= __out[_v]; } __b = bsr32(__b); }
-
-#define UNZIGZAG(__out, __n, __mode) { unsigned _v,_x;\
-  for(_x = __out[0],_v = 1; _v <__n; _v++) { unsigned _z = __out[_v]; __out[_v] = (_x += (_z >> 1 ^ -(_z & 1)) + __mode); }\
-} 																						
 
 #define DELTR( __in, __n, __mode,      __out) { unsigned _v; for(      __out[0]=__in[0],_v = 1;     _v < __n; _v++) __out[_v] = (__in[_v] - __out[0]) -   _v*__mode; }
 #define DELTRB(__in, __n, __mode, __b, __out) { unsigned _v; for(__b=0,__out[0]=__in[0],_v = 1;     _v < __n; _v++) __out[_v] = (__in[_v] - __out[0]) -   _v*__mode, __b |= __out[_v]; __b = bsr32(__b); }
@@ -120,6 +114,10 @@ void bitund132(     unsigned *p, unsigned n, unsigned x);
 unsigned bitf32(    unsigned *in, unsigned n, unsigned start);
 unsigned bitf132(   unsigned *in, unsigned n, unsigned start);
 unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);
+
+unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc);
+void bitunzigzag32(unsigned *p, unsigned n, unsigned x, unsigned inc);
+
 #ifdef __cplusplus
 }
 #endif
