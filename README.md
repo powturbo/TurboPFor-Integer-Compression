@@ -84,7 +84,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 3.501.671.314| 14.64| 4.68| 321.45| 827.01|**VSimple**|
 | 3.766.174.764| 15.75| 5.04|**617.88**| 712.31|**EliasFano**|
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
-| 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4) 64K|
+| 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4)+DT 64K|
 | 4.521.326.518| 18.90| 6.05| 209.17| 824.26|Simple-8b|
 | 4.683.323.301| 19.58| 6.27| 828.97|1007.44|**TurboVbyte**|
 | 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
@@ -99,7 +99,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 8.594.342.216| 35.93|11.50|1307.22|1593.07|libfor|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
-"lz4 64K" after preprocessing delta+transpose similar to delta + [blosc](#blosc)<br>
+"lz4+DT 64K" after preprocessing Delta+Transpose similar to delta + [blosc](#blosc)<br>
 "blosc lz4" tested w/ lz4 compressor+vectorized shuffle
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
