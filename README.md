@@ -99,8 +99,8 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 8.594.342.216| 35.93|11.50|1307.22|1593.07|libfor|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
-lz4 after preprocessing delta+transpose similar to delta + [blosc](#blosc)<br>
-blosc tested w/ lz4 compressor
+"lz4 64K" after preprocessing delta+transpose similar to delta + [blosc](#blosc)<br>
+"blosc lz4" tested w/ lz4 compressor+vectorized shuffle
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
    GOV2: 426GB, 25 Millions documents, average doc. size=18k.
@@ -271,4 +271,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 21 JUN 2015
+Last update: 22 JUN 2015
