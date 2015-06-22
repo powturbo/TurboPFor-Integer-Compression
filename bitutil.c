@@ -61,7 +61,6 @@
   }\
 }
 
-
 unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc) {
     #ifdef __SSE2__
   unsigned *ip,b,*op = out; 
@@ -171,3 +170,35 @@ void bitund132(unsigned *p, unsigned n, unsigned x) {
 
 void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
 void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
+
+//----------------------------- zigzag --------------------------------------------------------
+#define BITZIGZAG(__p,__n, __inc, __start, __act) {\
+  typeof(__p[0]) *_p; int _x;\
+  for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
+	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+  }\
+  while(_p != __p+__n) { \
+	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+  }\
+}
+
+#define BITUNZIGZAG(__p, __n, __start, __inc) { typeof(__p[0]) *_p, _z;\
+  for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
+  }\
+  while(_p != __p+__n) { _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++; }\
+}
+
+unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc) {
+  typeof(in[0]) b = 0,*op = out; BITZIGZAG(in, n, inc, start, b |= (unsigned)_x; *op++ = _x);
+  return bsr32(b);
+}
+
+void bitunzigzag32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNZIGZAG(p, n, x, inc); }
+
