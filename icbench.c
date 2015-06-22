@@ -66,6 +66,9 @@ static double tmmsec(tm_t tm) { return (double)tm/1000.0; }
 #include "bitutil.h"
 #include "ext/ext.c" 			// external functions for comparison. uncomment if not needed
 
+//#define bitdelta32( in, n, pa, start, mode) bitzigzag32( in, n, pa, start, mode)
+//#define bitundx32(out, n, start, mode) bitunzigzag32(out, n, start, mode)
+
 unsigned char *u32enc(unsigned *__restrict in, int n, unsigned *__restrict out) { unsigned *ip; 
   for(ip = in; ip != in+(n&~3); ) {
     *out++ = *ip++;
@@ -237,8 +240,8 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
   switch(id&0x1f) {
       //----------- copy ---------------------------------------------------------------------------------------------------------
     case P_CPY:       										       							return u32enc( in, n, (unsigned *)out);
-	  //----------- variable byte ------------------------------------------------------------------------------------------------
-    case P_VB:    												   							return mode?vbd1enc32(in, n, out, -1):vbdenc32(in, n, out, 0);
+	  //----------- variable byte ------------------------------------------------------------------------------------------------     
+    case P_VB:    												   							return mode?vbd1enc32(in, n, out, -1):vbdenc32(in, n, out, 0);   //case P_VB:        bitdelta32( in, n, pa, -mode, mode);									return vbenc32( pa, n, out); 
 	
     case P_VBL:       bitdelta32( in, n, pa, -mode, mode);									return vbyteenc( pa, n, (unsigned *)out); 
     case P_VBP:       bitdelta32( in, n, pa, -mode, mode);  			   					return vbpolyenc(pa, n, out);
@@ -305,8 +308,7 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
       //------------- copy -------------------------------------------------------
     case P_CPY: 		                   in = u32dec( (unsigned *)in, n,   out);   						 	   break;
       //------------- variable byte ---------------------------------------------- 
-    //case P_VB: 			               in = vbdec32(              in, n,   out);   		unzigzag(out, n, mode);   break;
-    case P_VB: 			                   in = mode?vbd1dec32(       in, n, out,   -1):vbddec32(in, n, out, 0); 	   break;
+    case P_VB: 			                   in = mode?vbd1dec32(       in, n, out,   -1):vbddec32(in, n, out, 0); 	   break;    //case P_VB: 		                       in = vbdec32(            in, n,   out);   		bitundx32(out, n, -mode, mode); break;
 	
     case P_VBL: 		                   in = vbytedec(           in, n,   out);   		bitundx32(out, n, -mode, mode); break;
     case P_VBP: 	                       in = vbpolydec(          in, n,   out);   		bitundx32(out, n, -mode, mode); break;
@@ -675,20 +677,20 @@ void vstest64(int id, int rm,int rx, unsigned n) { fprintf(stderr,"bitpack.n=%d 
     
     unsigned char *op;
     switch(id) { 
-      case 0: op = efanoenc64(in, n, out, 0); break;
-      case 1: op = p4denc64(  in, n, out);    break;
+      case 0: op = vbenc64(   in, n, out);    break;
+      case 1: op = vsenc64(   in, n, out);    break;
       case 2: op = bitpack64( in, n, out, b); break;
-      case 3: op = vbenc64(   in, n, out);    break;
-      case 4: op = vsenc64(   in, n, out);    break;
+      case 3: op = p4denc64(  in, n, out);    break;
+      case 4: op = efanoenc64(in, n, out, 0); break;
     }
     fprintf(stderr,"%d ", (int)(op-out) );     
     memset(cpy, 0, sizeof(cpy));
     switch(id) {
-      case 0: efanodec64( out, n, cpy, 0);   break;
+      case 0: vbdec64(    out, n, cpy);      break;
+      case 1: vsdec64(    out, n, cpy);      break;
       case 2: bitunpack64(out, n, cpy, b);   break;
-      case 3: vbdec64(    out, n, cpy);      break;
-      case 4: vsdec64(    out, n, cpy);      break;
-      case 1: p4ddec64(   out, n, cpy);      break;
+      case 3: p4ddec64(   out, n, cpy);      break;
+      case 4: efanodec64( out, n, cpy, 0);   break;
     }
     for(i = 0; i < n; i++) 
       if(in[i] != cpy[i]) {
@@ -884,8 +886,8 @@ int main(int argc, char *argv[]) { int r;
       cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n);
       in[0] = n-1; s[0] = 0; 
       unsigned long long l = bench(in, n, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
-      print(libs,l, inname, NULL); 											//printf("n=%d.%d\n", n-1,argc);
-      int i; for(i=0;libs[i].id>0;i++) slibs[i].tc += libs[i].tc,slibs[i].td += libs[i].td,slibs[i].l += libs[i].l;
+      print(libs, l, inname, NULL); 											//printf("n=%d.%d\n", n-1,argc);
+      int i; for(i=0;libs[i].id>=0;i++) slibs[i].tc += libs[i].tc,slibs[i].td += libs[i].td,slibs[i].l += libs[i].l;
       totlen += l;
 	  continue; 
     } 
