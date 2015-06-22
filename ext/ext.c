@@ -3,12 +3,15 @@
 //#define _SIMPLE16   // limited to 28 bits
 //#define _OPTPFD     // compression very slow and limited to 28 bits. crashs on some lists
 //#define _VBYTEPOLY  // limited to 28 bits. 
-#ifdef __SSSE3__
-  #define VARINTG8IU
+  #ifdef __SSSE3__
+#define _VARINTG8IU
 #define _MASKEDVBYTE
-#endif
+  #endif
 
-//#define _FORLIB
+//#define _FORLIB // libfor 
+//#define _LZT    // LzTurbo not inluded
+//#define _BLOSC  // 
+//#define _LZ4
 
 //-------------------------------------- External functions for comparison ------------------------------------------------------------------------
 #include "vabyte.h"                                     // Standard Variable Byte
@@ -17,7 +20,7 @@
 #include "simdcomp/include/simdcomputil.h"
 #include "simdcomp/include/simdintegratedbitpacking.h"
 
-  #ifdef VARINTG8IU
+  #ifdef _VARINTG8IU
 #include "varintg8iu.h"							        // SIMD Varint G8IU
 #include "varintg8iu.h"
   #endif
@@ -32,7 +35,6 @@
 #include "MaskedVByte/include/varintencode.h"
 #include "MaskedVByte/include/varintdecode.h"
   #endif
-//#include "c-blosc/blosc/shuffle.h"
 
   #ifdef _FORLIB
 #include "for/for.h"
@@ -77,8 +79,6 @@ unsigned char *vbpolydec(unsigned char *in, unsigned n, unsigned *out) {
   unsigned i; for(i = 0; i < n; i++) { unsigned x; VBYTE_DEC(in, x); out[i] = x; } return in;
 }
 
-//#define _LZT // LzTurbo
-#define _LZ4
 
   #ifdef _LZT  
 #include "../../lz/lz8.h"
@@ -93,4 +93,9 @@ int lzbd(  struct lzobj *lz);
 
   #ifdef _LZ4
 #include "lz4.h"
+  #endif
+
+  #ifdef _BLOSC
+#include "c-blosc/blosc/shuffle.h"
+#include "c-blosc/blosc/blosc.h"
   #endif
