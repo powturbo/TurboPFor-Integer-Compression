@@ -39,10 +39,10 @@
 //---------------------------------------- Platform ---------------------------
   #ifdef _WIN32
 #include <windows.h>
-#define sleep(t) 	Sleep((t) * 1000)
-#define srand48(x) 	srand(x)
-#define drand48() 	((double)(rand()) / RAND_MAX)
-#define __off64_t 	_off64_t  
+#define sleep(t)    Sleep((t) * 1000)
+#define srand48(x)  srand(x)
+#define drand48()   ((double)(rand()) / RAND_MAX)
+#define __off64_t   _off64_t  
   #endif 
 //---------------------------------------- Time -------------------------------
 typedef unsigned long long tm_t;
@@ -65,7 +65,7 @@ static double tmmsec(tm_t tm) { return (double)tm/1000.0; }
 #include "vp4dd.h"
 #include "eliasfano.h"
 #include "bitutil.h"
-#include "ext/ext.c" 			// external functions for comparison. uncomment if not needed
+#include "ext/ext.c"            // external functions for comparison. uncomment if not needed
 
   #ifdef _ZIGZAG
 #define bitdelta32( in, n, pa, start, mode) bitzigzag32( in, n, pa, start)
@@ -109,16 +109,16 @@ unsigned char sbuf[BLK_SIZE*5+64];
  
 #define PACK_SIZE 128
 //      TurboPFor               External functions 
-enum { 	P_CPY, 													// copy
-		P_VB, 		 			P_VBL, P_VG8, P_VBP, P_MVB,     // variable byte
-		P_EFANO,  												// elias fano
-		P_PCK, P_PCKR, P_PCKV,	P_SIMDV, P_FOR,                 // bit packing
-		P_SV, 		 			P_S16, P_S64, 					// simple family: , simpleV, simple16, simple-8b
-		P_P4D, P_P4DR, 			P_OPTP4, 						// PFor, PForDelta
+enum {  P_CPY,                                                  // copy
+        P_VB,                   P_VBL, P_VG8, P_VBP, P_MVB,     // variable byte
+        P_EFANO,                                                // elias fano
+        P_PCK, P_PCKR, P_PCKV,  P_SIMDV, P_FOR,                 // bit packing
+        P_SV,                   P_S16, P_S64,                   // simple family: , simpleV, simple16, simple-8b
+        P_P4D, P_P4DR,          P_OPTP4,                        // PFor, PForDelta
         P_FORLIB,                                               // For 
-		P_LZT, P_LZTB,			P_LZ4, 							// lz77 
+        P_LZT, P_LZTB,          P_LZ4,                          // lz77 
         BLOSC_SHUF, P_BLOSC_LZ, P_BLOSC_LZ4, P_BLOSC_ZLIB,      // https://github.com/Blosc/c-blosc
-		P_ZZAG, P_TRSP, P_TRSPV,                                // transform 
+        P_ZZAG, P_TRSP, P_TRSPV,                                // transform 
         P_ZLIB1, P_ZLIB2, P_ZLIB3, P_ZLIB4, P_ZLIB5, P_ZLIB6, P_ZLIB7, P_ZLIB8, P_ZLIB9,
         P_MAX 
 };
@@ -126,7 +126,7 @@ enum { 	P_CPY, 													// copy
 //------------------ random integer array (not sorted) ---------------------------------
 unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) { int i,xb;
   switch(id&0x3f) {
-	  //---------- copy ----------------------------------------------------
+      //---------- copy ----------------------------------------------------
     case P_CPY:   return u32enc(   in, n, (unsigned *)out);
       // --------- variable byte -------------------------------------------
     case P_VB:    return vbenc32(    in, n, out);
@@ -144,14 +144,14 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
 
     case P_S16:   return vs16enc(  in, n, (unsigned *)out); 
     case P_S64:   return vs8benc(  in, n, out); 
-	  // --------- elias fano ----------------------------------------------
+      // --------- elias fano ----------------------------------------------
     case P_EFANO: return out; 
       // --------- PFor ----------------------------------------------------
     case P_P4DR:  return p4denc32( in, n, out);
     case P_P4D:   return n == 128?p4dencv32(in, n, out):p4denc32(in, n, out);
-	
+    
     case P_OPTP4: if(n < 128) return vbyteenc(in, n, (unsigned *)out);
-	              else { unsigned tmp[2048]; for(i = 0; i < n; i++) tmp[i] = in[i]; return out + OPT4(tmp, n, (unsigned *)out); }
+                  else { unsigned tmp[2048]; for(i = 0; i < n; i++) tmp[i] = in[i]; return out + OPT4(tmp, n, (unsigned *)out); }
       // --------- bit packing ---------------------------------------------
     case P_FOR :
     case P_PCKR: 
@@ -160,9 +160,9 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
       #ifdef _FORLIB
     case P_FORLIB: return out + for_compress_unsorted(in, out, n);
       #endif
-       																																   
+                                                                                                                                       
     case P_SIMDV: if(n < 128) return vbyteenc(in, n, (unsigned *)out); else { if(b < 0) b = maxbits(in), *out++ = b; return simdpackwn(in, n, b, (unsigned *)out); }
-	  // --------- transpose + lz77 ----------------------------------------
+      // --------- transpose + lz77 ----------------------------------------
       #ifdef _TRANSFORM
     case P_ZZAG:  b = bitzigzag32(in, n, (unsigned *)out,  0); return out + n*4;
     case P_TRSP:  transpose4( (unsigned char *)in, n*4, out); return out + n*4;
@@ -188,7 +188,7 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
       { n *= 4; transposev4( (unsigned char *)in, n, sbuf); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
 
-	case P_MAX ... 63: die("Fatal- Not entry %d", id);
+    case P_MAX ... 63: die("Fatal- Not entry %d", id);
   }
   return out;
 }
@@ -213,7 +213,7 @@ unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) 
 
     case P_S16:    return vs16dec(  (unsigned *)in, n, out);  
     case P_S64:    return vs8bdec(  in, n, out);  
-	  // --------- elias fano -----------------------------------------------
+      // --------- elias fano -----------------------------------------------
     case P_EFANO:  return in;
       // --------- PFor -----------------------------------------------------
     case P_P4D :   return n == 128?p4ddecv32(in, n, out):p4ddec32(in, n, out);
@@ -229,7 +229,7 @@ unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) 
       #ifdef _FORLIB
     case P_FORLIB:    return in + for_uncompress(in, out, n);
       #endif
-	  //---------- transpose + lz77 ----------------------
+      //---------- transpose + lz77 ----------------------
       #ifdef _TRANSFORM
     case P_ZZAG:  memcpy(out, in, n*4); bitunzigzag32(out, n, 0); return in + n*4;
     case P_TRSP:  untranspose4(  (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
@@ -254,7 +254,7 @@ unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) 
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
       { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; untransposev4(sbuf, n*4, (unsigned char *)out); } break;
       #endif
-	case P_MAX ... 63: die("Fatal- Not entry %d", id);
+    case P_MAX ... 63: die("Fatal- Not entry %d", id);
   }
   return in;        
 } 
@@ -264,64 +264,64 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
   unsigned pa[BLK_SIZE+2048],x; unsigned b;
   switch(id&0x3f) {
       //----------- copy ---------------------------------------------------------------------------------------------------------
-    case P_CPY:       										       							return u32enc( in, n, (unsigned *)out);
-	  //----------- variable byte ------------------------------------------------------------------------------------------------     
+    case P_CPY:                                                                             return u32enc( in, n, (unsigned *)out);
+      //----------- variable byte ------------------------------------------------------------------------------------------------     
       #ifdef _ZIGZAG
-    case P_VB:        bitdelta32( in, n, pa, -mode, mode);									return vbenc32( pa, n, out); 
+    case P_VB:        bitdelta32( in, n, pa, -mode, mode);                                  return vbenc32( pa, n, out); 
       #else
-    case P_VB:    												   							return mode?vbd1enc32(in, n, out, -1):vbdenc32(in, n, out, 0);   
+    case P_VB:                                                                              return mode?vbd1enc32(in, n, out, -1):vbdenc32(in, n, out, 0);   
         #ifdef _MASKEDVBYTE
-    case P_MVB:   												            				return out+vbyte_encode_delta(in, n, out, 0);	  
+    case P_MVB:                                                                             return out+vbyte_encode_delta(in, n, out, 0);     
         #endif
-	  #endif
-    case P_VBL:       bitdelta32( in, n, pa, -mode, mode);									return vbyteenc( pa, n, (unsigned *)out); 
-    case P_VBP:       bitdelta32( in, n, pa, -mode, mode);  			   					return vbpolyenc(pa, n, out);
+      #endif
+    case P_VBL:       bitdelta32( in, n, pa, -mode, mode);                                  return vbyteenc( pa, n, (unsigned *)out); 
+    case P_VBP:       bitdelta32( in, n, pa, -mode, mode);                                  return vbpolyenc(pa, n, out);
       #ifdef _VARINTG8IU
-    case P_VG8:       bitdelta32( in, n, pa, -mode, mode);  		                		return vintg8enc(pa, n, out);
+    case P_VG8:       bitdelta32( in, n, pa, -mode, mode);                                  return vintg8enc(pa, n, out);
       #endif
       // --------- simple family: simpleV, simple16, simple-8b -------------------------------------------------------------------
       #ifndef _ZIGZAG
-	case P_SV:        bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);       	return vsenc32(  pa, n, out);
-	  #endif
-    case P_S16:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);					          							if(b>28) die("simple16 overflow.bits size>28\n");
-                   						                              				    	return vs16enc(  pa, n, (unsigned *)out); 
-	case P_S64:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);														if(b>28) die("simple-8b overflow.bits size>28\n");
-											               					            	return vs8benc(  pa, n, out);
-      #ifndef _ZIGZAG
-	  // --------- elias fano -----------------------------------------------
-    case P_EFANO: x = *in++;                                   vbput32(out, x); --n;      	
-	  if(mode) {  return n == 128?efano1encv32(in, n, out, x+1):efano1enc32(in, n, out, x+1); }
-	  else {      return n == 128?efanoencv32( in, n, out, x  ):efanoenc32( in, n, out, x  ); }
+    case P_SV:        bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);         return vsenc32(  pa, n, out);
       #endif
-	  // --------- PForDelta: TurboPFor, TurboPForDA, OptPFD ---------------------------------------------------------------------
-    case P_P4D:       bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);       	return n==128?p4dencv32(pa, n, out):p4denc32(pa, n, out);
+    case P_S16:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);                                                     if(b>28) die("simple16 overflow.bits size>28\n");
+                                                                                            return vs16enc(  pa, n, (unsigned *)out); 
+    case P_S64:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);                                                     if(b>28) die("simple-8b overflow.bits size>28\n");
+                                                                                            return vs8benc(  pa, n, out);
       #ifndef _ZIGZAG
-	case P_P4DR:  DELTR( in, n, mode, pa);                     vbput32(out, in[0]);       	return p4denc32(  pa+1, n-1, out);
-    case P_OPTP4: b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);														if(b>28) die("optp4 overflow.bits size>28\n");
-      if(n < 128)                                                                       	return vbyteenc(  pa, n, (unsigned *)out);
-	  else {	                                                     						return out + OPT4(pa, n, (unsigned *)out); }
+      // --------- elias fano -----------------------------------------------
+    case P_EFANO: x = *in++;                                   vbput32(out, x); --n;        
+      if(mode) {  return n == 128?efano1encv32(in, n, out, x+1):efano1enc32(in, n, out, x+1); }
+      else {      return n == 128?efanoencv32( in, n, out, x  ):efanoenc32( in, n, out, x  ); }
+      #endif
+      // --------- PForDelta: TurboPFor, TurboPForDA, OptPFD ---------------------------------------------------------------------
+    case P_P4D:       bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);         return n==128?p4dencv32(pa, n, out):p4denc32(pa, n, out);
+      #ifndef _ZIGZAG
+    case P_P4DR:  DELTR( in, n, mode, pa);                     vbput32(out, in[0]);         return p4denc32(  pa+1, n-1, out);
+    case P_OPTP4: b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);                                                     if(b>28) die("optp4 overflow.bits size>28\n");
+      if(n < 128)                                                                           return vbyteenc(  pa, n, (unsigned *)out);
+      else {                                                                                return out + OPT4(pa, n, (unsigned *)out); }
       // --------- delta bit packing: TurboFor, TurboForDA, TurboPack, TurboPackV, SimdPackFPF --------------------------------------------
     case P_FOR :  
     case P_PCKR:  if(mode) { b = bitf132(in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitf1pack32(in+1, n, out, in[0], b); }
-	              else {     b = bitf32( in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitfpack32( in+1, n, out, in[0], b); }      
+                  else {     b = bitf32( in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitfpack32( in+1, n, out, in[0], b); }      
       #endif
       #ifdef _ZIGZAG
     case P_PCK:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]); *out++=b; return n==128?bitpackv32(pa, n, out, b):bitpack32(pa, n, out, b);
       #else
     case P_PCK:   if(mode) { b = bitd132(in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitd1pack32(in+1, n, out, in[0], b); }
-	              else {     b = bitd32( in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitdpack32( in+1, n, out, in[0], b); } 
+                  else {     b = bitd32( in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitdpack32( in+1, n, out, in[0], b); } 
     case P_PCKV:  
-	  if(mode) {  b = bitd132(in+1, --n, in[0]);               vbput32(out, in[0]); *out++=b; return n < 128?bitd1pack32(in+1, n, out, in[0], b):bitd1packv32(in+1, n, out, in[0], b); }
-	  else {      b = bitd32( in+1, --n, in[0]);               vbput32(out, in[0]); *out++=b; return n < 128?bitdpack32( in+1, n, out, in[0], b):bitdpackv32( in+1, n, out, in[0], b); }
-	  
-    case P_SIMDV: 																					
+      if(mode) {  b = bitd132(in+1, --n, in[0]);               vbput32(out, in[0]); *out++=b; return n < 128?bitd1pack32(in+1, n, out, in[0], b):bitd1packv32(in+1, n, out, in[0], b); }
+      else {      b = bitd32( in+1, --n, in[0]);               vbput32(out, in[0]); *out++=b; return n < 128?bitdpack32( in+1, n, out, in[0], b):bitdpackv32( in+1, n, out, in[0], b); }
+      
+    case P_SIMDV:                                                                                   
       if(n < 129) { bitdelta32( in, n, pa, -mode, mode);                                    return vbyteenc((unsigned *)pa, n, (unsigned *)out); }
-	  else { b = simdmaxbitsd1(in[0], in+1);                   vbput32(out, in[0]); *out++=b; return simdpackwn1((unsigned *)(in+1), n-1, b, in[0], (unsigned *)out); }	  
+      else { b = simdmaxbitsd1(in[0], in+1);                   vbput32(out, in[0]); *out++=b; return simdpackwn1((unsigned *)(in+1), n-1, b, in[0], (unsigned *)out); }   
         #ifdef _FORLIB
     case P_FORLIB:   return out + for_compress_sorted(in, out, n);
         #endif
       #endif
-	  // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
+      // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
       #ifdef _TRANSFORM
     case P_ZZAG:  b = bitzigzag32(in, n, (unsigned *)out,  0); return out + n*4;
     case P_TRSP:  bitdelta32(in, n, (unsigned *)sbuf, -mode, mode); transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
@@ -339,7 +339,7 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
       { bitdelta32(in, n, (unsigned *)out, -mode, mode); transposev4((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
-	case P_MAX ... 63: break;
+    case P_MAX ... 63: break;
   }
   return out;
 } 
@@ -347,32 +347,32 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
 unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mode) { unsigned b,x,v;
   switch(id&0x3f) { 
       //------------- copy -------------------------------------------------------
-    case P_CPY: 		                   in = u32dec( (unsigned *)in, n,   out);   						 	   break;
+    case P_CPY:                            in = u32dec( (unsigned *)in, n,   out);                                 break;
       //------------- variable byte ---------------------------------------------- 
       #ifdef _ZIGZAG
-    case P_VB: 		                       in = vbdec32(            in, n,   out);   		bitundx32(out, n, -mode, mode); break;
+    case P_VB:                             in = vbdec32(            in, n,   out);          bitundx32(out, n, -mode, mode); break;
       #else
-    case P_VB: 			                   in = mode?vbd1dec32(       in, n, out,   -1):vbddec32(in, n, out, 0); 	   break;    
+    case P_VB:                             in = mode?vbd1dec32(       in, n, out,   -1):vbddec32(in, n, out, 0);       break;    
         #ifdef _MASKEDVBYTE
-    case P_MVB:		                       in += masked_vbyte_decode_delta(in, out,   n, 0);				 	   break;
+    case P_MVB:                            in += masked_vbyte_decode_delta(in, out,   n, 0);                       break;
         #endif
-	  #endif
+      #endif
 
-    case P_VBL: 		                   in = vbytedec(           in, n,   out);   		bitundx32(out, n, -mode, mode); break;
-    case P_VBP: 	                       in = vbpolydec(          in, n,   out);   		bitundx32(out, n, -mode, mode); break;
+    case P_VBL:                            in = vbytedec(           in, n,   out);          bitundx32(out, n, -mode, mode); break;
+    case P_VBP:                            in = vbpolydec(          in, n,   out);          bitundx32(out, n, -mode, mode); break;
       #ifdef _VARINTG8IU
-    case P_VG8:		                       in = vintg8dec(          in, n,   out);   		bitundx32(out, n, -mode, mode); break;    
+    case P_VG8:                            in = vintg8dec(          in, n,   out);          bitundx32(out, n, -mode, mode); break;    
       #endif 
       //------------- simple family ----------------------------------------------
       #ifndef _ZIGZAG
-    case P_SV:    _vbget32(in, x, *out = x); in = vsdec32(            in, n-1, out+1); 		bitundx32(out, n, -mode, mode); break;
+    case P_SV:    _vbget32(in, x, *out = x); in = vsdec32(            in, n-1, out+1);      bitundx32(out, n, -mode, mode); break;
       #endif
-    case P_S16:   _vbget32(in, x, *out = x); in = vs16dec((unsigned *)in, n-1, out+1); 		bitundx32(out, n, -mode, mode); break;
-	case P_S64:   _vbget32(in, x, *out = x); in = vs8bdec(            in, n-1, out+1); 		bitundx32(out, n, -mode, mode); break;
+    case P_S16:   _vbget32(in, x, *out = x); in = vs16dec((unsigned *)in, n-1, out+1);      bitundx32(out, n, -mode, mode); break;
+    case P_S64:   _vbget32(in, x, *out = x); in = vs8bdec(            in, n-1, out+1);      bitundx32(out, n, -mode, mode); break;
       #ifndef _ZIGZAG
-	  // ------------ elias fano -------------------------------------------------
+      // ------------ elias fano -------------------------------------------------
     case P_EFANO: _vbget32(in, x,;); *out++ = x; --n;
-	  if(mode) {                                      return n==128?efano1decv32(in, n, out, x+1):efano1dec32( in, n, out, x+1); }
+      if(mode) {                                      return n==128?efano1decv32(in, n, out, x+1):efano1dec32( in, n, out, x+1); }
       else {                                          return n==128?efanodecv32( in, n, out, x  ):efanodec32( in, n, out, x); }
       #endif
       // ------------ PFor -------------------------------------------------------
@@ -381,13 +381,13 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
     case P_P4D:   _vbget32(in, x, *out = x); in = n==129?p4ddecv32(in, n-1, out+1):p4ddec32(in, n-1, out+1); bitundx32(out+1, n-1, x, mode); break;
       #else
     case P_P4D:   _vbget32(in, x, ;); *out++ = x; --n; 
-	  if(mode) {						   return n==128?p4dd1decv32(in, n, out, x):p4dd1dec32(in, n, out, x); }
+      if(mode) {                           return n==128?p4dd1decv32(in, n, out, x):p4dd1dec32(in, n, out, x); }
       else {                               return n==128?p4dddecv32( in, n, out, x):p4dddec32( in, n, out, x); }
     case P_P4DR:  _vbget32(in, x, *out = x); return mode?p4dfdecx32(  in, n-1, out+1, x):p4df0decx32(in, n-1, out+1, x);
     case P_OPTP4: 
-      if(n < 129)  					       in = vbytedec(in, n, out);
+      if(n < 129)                          in = vbytedec(in, n, out);
       else {      _vbget32(in, x, *out = x); unsigned all_array[2048]; in = (unsigned char *)detailed_p4_decode(out+1, (unsigned *)in, all_array); }
-																							bitundx32(out, n, -mode, mode); break;
+                                                                                            bitundx32(out, n, -mode, mode); break;
       // ------------ bit packing ----------------------------------------
     case P_FOR:   _vbget32(in, x, *out = x); b = *in++; return mode?bitf1unpack32( in, n-1, out+1, x, b):bitfunpack32(  in, n-1, out+1, x, b);
     case P_PCKR:  _vbget32(in, x, *out = x); b = *in++; return mode?bitf1unpackx32(in, n-1, out+1, x, b):bitfunpackx32( in, n-1, out+1, x, b);
@@ -399,17 +399,17 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
     case P_PCK:   _vbget32(in, x, *out = x); b = *in++; return mode?bitd1unpack32( in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b);
 
     case P_PCKV:  _vbget32(in, x, *out = x); b = *in++;
-	  if(n < 129) {                                   return mode?bitd1unpack32( in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b); } 
+      if(n < 129) {                                   return mode?bitd1unpack32( in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b); } 
       else {                                          return mode?bitd1unpackv32(in, n-1, out+1, x, b):bitdunpackv32( in, n-1, out+1, x, b); } 
  
     case P_SIMDV:
-      if(n < 129) { in = vbytedec(in, n, out); 				 bitundx32(out, n, -mode, mode); }
+      if(n < 129) { in = vbytedec(in, n, out);               bitundx32(out, n, -mode, mode); }
       else {    _vbget32(in, x, *out = x); b = *in++; in = simdunpackn1((uint32_t *)in, n-1, b, out[0], out+1); } break;
         #ifdef _FORLIB
     case P_FORLIB:    return in + for_uncompress(in, out, n);
         #endif
       #endif 
-	  //---------- transpose + lz77 ----------------------
+      //---------- transpose + lz77 ----------------------
       #ifdef _TRANSFORM
     case P_ZZAG:  memcpy(out, in, n*4); bitunzigzag32(out, n, 0); return in + n*4;
     case P_TRSP:  untranspose4( (unsigned char *)in, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); return in + n*4;
@@ -422,7 +422,7 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
       #endif
       #ifdef _LZ4
     case P_LZ4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposev4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); break;
-      #endif	 
+      #endif     
       #ifdef _ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
       { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; untransposev4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); } break;
@@ -485,9 +485,9 @@ unsigned argtoi(char *s) {
      case 'k': f = 1000;       break;
      case 'm': f = 1000000;    break;
      case 'g': f = 1000000000; break;
-     case 'K': f = 1<<10; 	   break;
-     case 'M': f = 1<<20; 	   break;
-     case 'G': f = 1<<30; 	   break;
+     case 'K': f = 1<<10;      break;
+     case 'M': f = 1<<20;      break;
+     case 'G': f = 1<<30;      break;
   }
   return n*f;
 }
@@ -526,25 +526,25 @@ void afree(void *p) {
 //----------------------------------------------- Benchmark -------------------
 struct libss { int id; char *s;int size; };
 
-struct libss libss[] = { 			
+struct libss libss[] = {            
   //------- PFor + PForDelta ---
-  { P_P4D,   "TurboPFor",   128	}, 
+  { P_P4D,   "TurboPFor",   128 }, 
     #if !defined(_WIN32)
   { P_P4DR,  "TurboPForDA", 128 }, // actually not working w. mingw 
     #endif
-	
+    
     #ifdef _OPTPFD
-  { P_OPTP4, "OptPFD", 		128 }, //max. 28 bits
+  { P_OPTP4, "OptPFD",      128 }, //max. 28 bits
     #endif
   //-------------- Bit Packing -
-  { P_PCKV,       "TurboPackV",  128	},
-  { P_PCK,        "TurboPack",   PACK_SIZE	},
-  { P_FOR,        "TurboFor",    PACK_SIZE	},
-  { P_PCKR,       "TurboForDA",  PACK_SIZE	},
+  { P_PCKV,       "TurboPackV",  128    },
+  { P_PCK,        "TurboPack",   PACK_SIZE  },
+  { P_FOR,        "TurboFor",    PACK_SIZE  },
+  { P_PCKR,       "TurboForDA",  PACK_SIZE  },
   
-  { P_SIMDV,      "SIMDPackFPF", 128	}, 
+  { P_SIMDV,      "SIMDPackFPF", 128    }, 
     #ifdef _FORLIB
-  { P_FORLIB,     "ForLib",      PACK_SIZE	},
+  { P_FORLIB,     "ForLib",      PACK_SIZE  },
     #endif
   //------ Variable byte -----
   { P_VB,         "TurboVbyte"  },
@@ -554,13 +554,13 @@ struct libss libss[] = {
     #ifdef _MASKEDVBYTE
   { P_MVB,        "MaskedVByte" }, 
     #endif
-	#ifdef _VBYTEPOLY
-  { P_VBP,        "VBytePoly"	},
+    #ifdef _VBYTEPOLY
+  { P_VBP,        "VBytePoly"   },
     #endif
   // ----- Simple family -----
   { P_SV,         "VSimple"     },
     #ifdef _SIMPLE_8B
-  { P_S64,        "Simple-8b",	SIMPLE8BMAX },  //crash on 32 bits!
+  { P_S64,        "Simple-8b",  SIMPLE8BMAX },  //crash on 32 bits!
     #endif
     #ifdef _SIMPLE16
   { P_S16,        "Simple16"   },  //max. 28 bits
@@ -571,38 +571,38 @@ struct libss libss[] = {
     #ifdef _LZT
   { P_LZT,        "LzTurbo 10", 64*1024 },
   { P_LZTB,       "LzTurbo 20", 64*1024 },
-    #endif	   
+    #endif     
     #ifdef _LZ4
-  { P_LZ4,        "lz4", 		64*1024 },
+  { P_LZ4,        "lz4",        64*1024 },
     #endif 
     #ifdef _TRANSFORM
-  { P_TRSP,       "transpose", 	64*1024 },
+  { P_TRSP,       "transpose",  64*1024 },
   { P_TRSPV,      "transposev", 64*1024 },
-  { P_ZZAG,       "zigzag", 	64*1024 },
+  { P_ZZAG,       "zigzag",     64*1024 },
     #endif
     #ifdef _BLOSC
-  { P_BLOSC_LZ,   "blosc_lz", 	64*1024 },
-  { P_BLOSC_LZ4,  "blosc_lz4", 	64*1024 },
+  { P_BLOSC_LZ,   "blosc_lz",   64*1024 },
+  { P_BLOSC_LZ4,  "blosc_lz4",  64*1024 },
   { P_BLOSC_ZLIB, "blosc_zlib", 64*1024 },
-  { BLOSC_SHUF,   "shuffle", 	64*1024 },
+  { BLOSC_SHUF,   "shuffle",    64*1024 },
     #endif 
     #ifdef _ZLIB
-  { P_ZLIB1,      "zlib 1", 	64*1024 },
-  { P_ZLIB2,      "zlib 2", 	64*1024 },
-  { P_ZLIB3,      "zlib 3", 	64*1024 },
-  { P_ZLIB4,      "zlib 4", 	64*1024 },
-  { P_ZLIB5,      "zlib 5", 	64*1024 },
-  { P_ZLIB6,      "zlib 6", 	64*1024 },
-  { P_ZLIB7,      "zlib 7", 	64*1024 },
-  { P_ZLIB8,      "zlib 8", 	64*1024 },
-  { P_ZLIB9,      "zlib 9", 	64*1024 },
+  { P_ZLIB1,      "zlib 1",     64*1024 },
+  { P_ZLIB2,      "zlib 2",     64*1024 },
+  { P_ZLIB3,      "zlib 3",     64*1024 },
+  { P_ZLIB4,      "zlib 4",     64*1024 },
+  { P_ZLIB5,      "zlib 5",     64*1024 },
+  { P_ZLIB6,      "zlib 6",     64*1024 },
+  { P_ZLIB7,      "zlib 7",     64*1024 },
+  { P_ZLIB8,      "zlib 8",     64*1024 },
+  { P_ZLIB9,      "zlib 9",     64*1024 },
     #endif 
   { P_CPY,        "Copy"                },
-  { -1, 	      ""                    },
+  { -1,           ""                    },
 };
   
 #define MB 1000000
-int verb = 0, xcheck=2;																					unsigned xbits[33];
+int verb = 0, xcheck=2;                                                                                 unsigned xbits[33];
 enum { T_TST, T_TXT, T_CHAR, T_BYTE };
 
 struct libs { int id,err,size; char *s,*v; unsigned long long l, c[33]; double tc,td; };
@@ -623,7 +623,7 @@ void check(unsigned *in, unsigned n, unsigned *out, char *s) {
       for(j=k & 0xffffff80u; j < k+128;j++) { unsigned e = in[j] != out[j];
         if(e) printf("*"); printf("%d:%x,%x ", j, in[j], out[j] );
       }
-	  printf("\n");
+      printf("\n");
       exit(0); 
     } 
 } 
@@ -642,7 +642,7 @@ void stprint(char *s) {
 void print(struct libs *libs, unsigned long long n, char *s, unsigned long long *u) { 
   int m, k; 
   for(k = 0; libs[k].id >= 0; k++) {};
-    qsort(libs, k, sizeof(libs[0]), (int(*)(const void*,const void*))l_cmp);	
+    qsort(libs, k, sizeof(libs[0]), (int(*)(const void*,const void*))l_cmp);    
   char *prtname = s?s:""; { char *p; if((p = strrchr(prtname, '/')) || (p = strrchr(prtname, '\\'))) prtname = p+1;} 
   for(m = 0; m < k; m++) 
     if(/*libs[m].tc ||*/ libs[m].l) { 
@@ -656,14 +656,14 @@ void print(struct libs *libs, unsigned long long n, char *s, unsigned long long 
 
 //-----------------------------------------------------------------------------------------------
 unsigned bench(unsigned *__restrict _in, unsigned _inlen, int blksize, unsigned char *__restrict _out, unsigned long long outsize, char *inname, tm_t tx, unsigned *__restrict cpy, int bb, int mode ) { int m,id,b=bb,i; 
-  if(!_inlen) return 0;													if(verb>1) { printf(":%d,", _inlen);  fflush(stdout); }
-  unsigned cn; 															
+  if(!_inlen) return 0;                                                 if(verb>1) { printf(":%d,", _inlen);  fflush(stdout); }
+  unsigned cn;                                                          
   if(cpy != _in) memrcpy((unsigned char *)cpy, (unsigned char *)_in, (unsigned long long)_inlen*4);    
-  memcpy(_out, _in, (unsigned long long)_inlen*4); 																																			
+  memcpy(_out, _in, (unsigned long long)_inlen*4);                                                                                                                                          
   for(m = 0; (id=libs[m].id) >= 0; m++) {
     unsigned    bsize = libs[m].size?libs[m].size:blksize, cl;
     int         insize=(mode>=0)?bsize+1:bsize; 
-    struct libs *lb = &libs[m]; 																		if(verb) printf("%s,%d", libs[m].s, insize);
+    struct libs *lb = &libs[m];                                                                         if(verb) printf("%s,%d", libs[m].s, insize);
       #ifdef _BLOSC
     if(lb->id == P_BLOSC_LZ4)
       blosc_set_compressor(BLOSC_LZ4_COMPNAME);
@@ -673,48 +673,48 @@ unsigned bench(unsigned *__restrict _in, unsigned _inlen, int blksize, unsigned 
       blosc_set_compressor(BLOSC_BLOSCLZ_COMPNAME);
       #endif
     if(cpy!=_in) memcpy((unsigned char *)cpy, (unsigned char *)_out, _inlen*4);
-	
+    
     TMDEF; TMBEG   
-	cn = cl = 0;												
+    cn = cl = 0;                                                
     unsigned      *in;
-    unsigned char *out; 				        				
+    unsigned char *out;                                         
     for(out = _out, in = _in; in < _in+_inlen; ) {
       unsigned n, inlen = *in++, *ip = in; in += inlen; cn += inlen;
       *(unsigned *)out = inlen; out += 4; unsigned char *sout = out;
-	  if(mode >= 0)
+      if(mode >= 0)
         for(;ip < in; ip += n) { n = in-ip; n = min(n,insize);      
-          out = besenc(ip, n, out, id, mode);  							
-        } 															
-	  else
-        for(;ip < in; ip += n) { n = in-ip; n = min(n,insize); 		
+          out = besenc(ip, n, out, id, mode);                           
+        }                                                           
+      else
+        for(;ip < in; ip += n) { n = in-ip; n = min(n,insize);      
           out = beenc(ip, n, out, id, bb);  
-        } 															  
-      if(out > _out+outsize) die("Overflow error %llu, %u in %s\n", outsize, (int)(ptrdiff_t)(out - _out), lb->s);		
-      cl += out - sout; 																				
+        }                                                             
+      if(out > _out+outsize) die("Overflow error %llu, %u in %s\n", outsize, (int)(ptrdiff_t)(out - _out), lb->s);      
+      cl += out - sout;                                                                                 
     }
     TMEND   
-    lb->l += cl; lb->tc += (double)tm_tm/tm_rm; 													    if(verb) { printf("/");fflush(stdout);}   
-	
+    lb->l += cl; lb->tc += (double)tm_tm/tm_rm;                                                         if(verb) { printf("/");fflush(stdout);}   
+    
     if(xcheck) {
       TMDEF; TMBEG   
       unsigned *out; 
-	  unsigned char *in;  
+      unsigned char *in;  
       for(out = cpy, in = _out; out < cpy+_inlen;) {
         unsigned n,*op, outlen = *(unsigned *)in; in += 4;  
         *out++ = outlen;                                          
-		if(mode >= 0)
+        if(mode >= 0)
           for(op=out,out += outlen; op < out; op += n) { n = out - op; n = min(n,insize); 
             in = besdec(in,n,op,id, mode);
           }
-		else
+        else
           for(op=out,out += outlen; op < out; op += n) { n = out - op; n = min(n,insize);    
             in = bedec(in,n,op,id,bb);
           }
       }
       TMEND  
-      lb->td += (double)tm_tm/tm_rm;																			 
+      lb->td += (double)tm_tm/tm_rm;                                                                             
       if(xcheck > 1 && lb->l) check(_in, _inlen, cpy, lb->s);
-	}
+    }
   }
   return cn;
 }
@@ -753,8 +753,8 @@ void usage() {
   uint64_t in[NN],cpy[NN]; 
   unsigned char out[NN*9];
 void vstest64(int id, int rm,int rx, unsigned n) { fprintf(stderr,"bitpack.n=%d ", n);   
-  unsigned b,i; 														   
-  for(b = rm; b <= rx; b++) {         									fprintf(stderr,"\nb=%d:", b);        
+  unsigned b,i;                                                            
+  for(b = rm; b <= rx; b++) {                                           fprintf(stderr,"\nb=%d:", b);        
     uint64_t start = 0;
     for(i = 0; i < n; i++) 
       in[i] = (/*start +=*/ RND64 & (b==64?0xffffffffffffffffull:((1ull << b)-1)));//fprintf(stderr, ".%llx ", in[0]); 
@@ -808,43 +808,43 @@ int main(int argc, char *argv[]) { int r;
   blosc_set_nthreads(1);
     #endif
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
-  static struct option long_options[] = { {"repeat", 	0, 0, 'r'}, {0,0, 0, 0}  };
+  static struct option long_options[] = { {"repeat",    0, 0, 'r'}, {0,0, 0, 0}  };
   for(;;) {
     if((c = getopt_long(argc, argv, "Bsha:b:c:e:f:F:H:m:n:r:R:S:T:X:v:M:", long_options, &option_index)) == -1) break;
     switch(c) {
-      case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;								
-      case 'a': a = strtod(optarg, NULL); 	break;
+      case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;                                
+      case 'a': a = strtod(optarg, NULL);   break;
       case 'b': blksize = argtoi(optarg); if(blksize>BLK_SIZE) blksize = BLK_SIZE; break;
-      case 'c': mode    = atoi(optarg); 	break;
-      case 'f': fmt     = atoi(optarg); 	break;
-      case 'F': rdmax   = argtoi(optarg); 	break;
-      case 'h': usage(); 		            break;
-      case 'H': xcheck  = atoi(optarg);	    break;
-      case 'e': cmd = optarg; 				break;
-      case 'v': verb    = atoi(optarg); 	break;
-	  
-      case 'S': tm_slp  = atoi(optarg);		break;
- 	  case 't': tm_tx   = atoi(optarg)*TM_T;break;
- 	  case 'T': tm_Tx   = atoi(optarg)*TM_T;break;
-      case 'r': tm_reps = atoi(optarg); 	break;
-      case 'R': tm_Reps = atoi(optarg);		break;
-	  
+      case 'c': mode    = atoi(optarg);     break;
+      case 'f': fmt     = atoi(optarg);     break;
+      case 'F': rdmax   = argtoi(optarg);   break;
+      case 'h': usage();                    break;
+      case 'H': xcheck  = atoi(optarg);     break;
+      case 'e': cmd = optarg;               break;
+      case 'v': verb    = atoi(optarg);     break;
+      
+      case 'S': tm_slp  = atoi(optarg);     break;
+      case 't': tm_tx   = atoi(optarg)*TM_T;break;
+      case 'T': tm_Tx   = atoi(optarg)*TM_T;break;
+      case 'r': tm_reps = atoi(optarg);     break;
+      case 'R': tm_Reps = atoi(optarg);     break;
+      
       case 'n': n       = argtoi(optarg);   break;
-      case 'm': rm      = argtoi(optarg); 	break;
-      case 'M': rx      = argtoi(optarg); 	break;
+      case 'm': rm      = argtoi(optarg);   break;
+      case 'M': rx      = argtoi(optarg);   break;
       case 'X': vstest64(atoi(optarg),rm,rx,n); break;
       default:  usage();
     }
-  }																														
+  }                                                                                                                     
   int fno,i=0;
-  if(!tm_reps) tm_reps=tm_Reps=1;													//printf("range=(min=%u, max=%u)\n", rm, rx);fflush(stdout);
+  if(!tm_reps) tm_reps=tm_Reps=1;                                                   //printf("range=(min=%u, max=%u)\n", rm, rx);fflush(stdout);
   // build the test functions set
   struct libss *ls; 
-  if(cmd) {						
+  if(cmd) {                     
     char *q = NULL;
     for(i=0,libs[0].id = -1;;) { 
       if(cmd) { 
-        if(!*cmd) break; 							
+        if(!*cmd) break;                            
         q = strchr(cmd,','); 
         if(q) *q=' '; 
         if((q = strchr(cmd,'/')) != NULL)
@@ -855,7 +855,7 @@ int main(int argc, char *argv[]) { int r;
             libs[i].id     = ls->id; 
             libs[i].err    = 0; 
             libs[i].s      = ls->s; 
-            libs[i++].size = ls->size; 										if(verb) printf("%s/", ls->s);fflush(stdout);
+            libs[i++].size = ls->size;                                      if(verb) printf("%s/", ls->s);fflush(stdout);
             break; 
           }
         if(ls->id < 0) die("library: '%s' not found\n", cmd); 
@@ -865,16 +865,16 @@ int main(int argc, char *argv[]) { int r;
   } else for(ls = libss; ls->id >= 0; ls++) { 
     libs[i].id     = ls->id; 
     libs[i].err    = 0; 
-    libs[i].s      = ls->s;  								    			if(verb) printf("%s/", ls->s);fflush(stdout);
+    libs[i].s      = ls->s;                                                 if(verb) printf("%s/", ls->s);fflush(stdout);
     libs[i++].size = ls->size;    
   } 
-  libs[i].id = -1;															if(verb) printf("\n");
+  libs[i].id = -1;                                                          if(verb) printf("\n");
   unsigned long long totlen = 0; 
   memcpy(slibs,libs,sizeof(slibs));
-  if(argc <= optind) { 														// No file specified at commandline
+  if(argc <= optind) {                                                      // No file specified at commandline
     unsigned      *in, *cpy,*ip; 
-	unsigned char *out; 
-	
+    unsigned char *out; 
+    
     if(!n) n = 100000000;
       #ifdef ALGN
     unsigned *_cpy,*_in; unsigned char *_out;  
@@ -885,27 +885,27 @@ int main(int argc, char *argv[]) { int r;
     in  = malloc(n*4+OVD); if(!in)  die("malloc err=%u", n);
     out = malloc(n*5+OVD); if(!out) die("malloc err=%u", n);
     cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n);
-	  #endif
+      #endif
     char s[33]; 
-	s[0] = 0; 
-    if(fmt == T_TST) { 													    // Unit test for fixed bit sizes
-      unsigned b; 														    printf("bittest: %u-%u\n", rm, rx); fflush(stdout);
-      for(b = rm; b <= max(rx,32); b++) {         									
-	    libini(); 															sprintf(s,"b=%d", b);        
+    s[0] = 0; 
+    if(fmt == T_TST) {                                                      // Unit test for fixed bit sizes
+      unsigned b;                                                           printf("bittest: %u-%u\n", rm, rx); fflush(stdout);
+      for(b = rm; b <= max(rx,32); b++) {                                           
+        libini();                                                           sprintf(s,"b=%d", b);        
         for(*in = n,i = 1; i <= n; i++) 
           in[i] = (1ull << b)-1;
         totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, b, -1);  print(libs,totlen, s, NULL);
       }
-    } else { 																// Benchmark w. generated data
-																			printf("zipf alpha=%.2f range[%u..%u].n=%u\n ", a, rm, rx, n);
+    } else {                                                                // Benchmark w. generated data
+                                                                            printf("zipf alpha=%.2f range[%u..%u].n=%u\n ", a, rm, rx, n);
       *in = n; 
-      zipfgen(in+1, a, rm, rx, n);   										for(i = 1; i <= n; i++) xbits[bsr32(in[i])]++; 
-      if(mode >= 0) { 														stprint("delta"); 
-	    unsigned *ip = in+1; int v;
-		for(ip[0]=0,v = 1; v < n; v++) { 
-		  ip[v] += ip[v-1] + mode; 											if(ip[v]>=(1u<<31)) die("overflow generating sorted array\n" );  
-		}
-	  } else stprint(""); 	  
+      zipfgen(in+1, a, rm, rx, n);                                          for(i = 1; i <= n; i++) xbits[bsr32(in[i])]++; 
+      if(mode >= 0) {                                                       stprint("delta"); 
+        unsigned *ip = in+1; int v;
+        for(ip[0]=0,v = 1; v < n; v++) { 
+          ip[v] += ip[v-1] + mode;                                          if(ip[v]>=(1u<<31)) die("overflow generating sorted array\n" );  
+        }
+      } else stprint("");     
       totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
       print(libs,totlen, s, NULL); 
     }
@@ -914,22 +914,22 @@ int main(int argc, char *argv[]) { int r;
       #else
     free(in); free(cpy); free(out);
       #endif
-  } else for(fno = optind; fno < argc; fno++) { 							// Benchmark w. specified data files
+  } else for(fno = optind; fno < argc; fno++) {                             // Benchmark w. specified data files
     libini();
     char *inname = argv[fno];
     if(fmt >= T_TXT) { //------------ convert text file to integer array format
       FILE *fi = fopen(inname, "r");   if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
       unsigned      *in = NULL, *cpy,*ip, nmax = 0;
-	  unsigned char *out; 
+      unsigned char *out; 
 
       n = 1;
-	  #define LSIZE 1024
+      #define LSIZE 1024
       char     s[LSIZE+1]; 
       switch(fmt) {
         case T_TXT: {
-	      while(fgets(s, LSIZE, fi)) {
+          while(fgets(s, LSIZE, fi)) {
           s[strlen(s) - 1] = 0;
-		  unsigned u = strtoul(s, NULL, 10);
+          unsigned u = strtoul(s, NULL, 10);
           if(n >= nmax) {  
             nmax = nmax?(nmax << 1):(1<<20);
             in = realloc(in, nmax*4+OVD); if(!in) die("malloc err=%u", nmax);
@@ -943,7 +943,7 @@ int main(int argc, char *argv[]) { int r;
             int c;
             while((c = getc(fi)) >= '0' && c <= '9') if(p - s < LSIZE) *p++ = c;
             *p = 0;
-		    unsigned u = strtoul(s, NULL, 10);  //printf("%d,",u);
+            unsigned u = strtoul(s, NULL, 10);  //printf("%d,",u);
             if(n >= nmax) {
               nmax = nmax?(nmax << 1):(1<<20);
               in = realloc(in, nmax*4+OVD); if(!in) die("malloc err=%u", nmax);
@@ -964,65 +964,65 @@ int main(int argc, char *argv[]) { int r;
         }
         default: die("unkown data format\n");
       }
-	  fclose(fi);                                                 
+      fclose(fi);                                                 
       out = malloc(n*5+OVD); if(!out) die("malloc err=%u", n);
       cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n);
       in[0] = n-1; s[0] = 0; 
       unsigned long long l = bench(in, n, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
-      print(libs, l, inname, NULL); 											//printf("n=%d.%d\n", n-1,argc);
+      print(libs, l, inname, NULL);                                             //printf("n=%d.%d\n", n-1,argc);
       int i; for(i=0;libs[i].id>=0;i++) slibs[i].tc += libs[i].tc,slibs[i].td += libs[i].td,slibs[i].l += libs[i].l;
       totlen += l;
-	  continue; 
+      continue; 
     } 
-	//------- process integer array file ------------------
+    //------- process integer array file ------------------
     FILE *fi = fopen64(inname, "rb"); 
-	if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); } 
-    fseeko(fi, 0, SEEK_END); unsigned long long fisize = ftello(fi); fseeko(fi, 0, SEEK_SET); 						//printf("fisize=%llu\n", fisize);
+    if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); } 
+    fseeko(fi, 0, SEEK_END); unsigned long long fisize = ftello(fi); fseeko(fi, 0, SEEK_SET);                       //printf("fisize=%llu\n", fisize);
     if(fisize > rdmax) fisize = rdmax; 
-    fisize /= 4; 			
-				
+    fisize /= 4;            
+                
     unsigned *in, *cpy,*ip,num;  
-	unsigned char *out; 
+    unsigned char *out; 
     unsigned long long outsize=fisize*5+OVD,totlen=0,bitslen[33]={0}; 
-    out = malloc(outsize);   	  if(!out) die("malloc err=%llu", fisize); 
-    cpy = malloc(fisize*4+OVD);   if(!cpy) die("malloc err=%llu", fisize);												
-    in  = malloc(fisize*4+1024);  if(!in)  die("malloc err=%llu", fisize); 	
+    out = malloc(outsize);        if(!out) die("malloc err=%llu", fisize); 
+    cpy = malloc(fisize*4+OVD);   if(!cpy) die("malloc err=%llu", fisize);                                              
+    in  = malloc(fisize*4+1024);  if(!in)  die("malloc err=%llu", fisize);  
     
-	ip = in;
-    while(fread(&num, 1, 4, fi) == 4 && num) {  																
-      if(num < rm || num > rx) { fseeko(fi, num*4, SEEK_CUR); continue; }	
-	  if(ip+num > in+fisize) { 
-	    totlen += bench(in, ip-in, blksize, out, outsize, inname, tx, cpy, -1, mode); 
+    ip = in;
+    while(fread(&num, 1, 4, fi) == 4 && num) {                                                                  
+      if(num < rm || num > rx) { fseeko(fi, num*4, SEEK_CUR); continue; }   
+      if(ip+num > in+fisize) { 
+        totlen += bench(in, ip-in, blksize, out, outsize, inname, tx, cpy, -1, mode); 
         if(n && totlen > n) 
           break;
         ip = in;
-	  }												
+      }                                             
       *ip++ = num; if(fread(ip, 4, num, fi) != num) break;  
-	  bitslen[bsr32(num)] += num*4;
+      bitslen[bsr32(num)] += num*4;
         #ifdef IC_STATS
-	  unsigned *ep = ip+num,insize=(mode>=0)?blksize+1:blksize;
+      unsigned *ep = ip+num,insize=(mode>=0)?blksize+1:blksize;
       while(ip < ep) {
         unsigned m = min(ep-ip, insize),i;
         if(mode >= 0) {
-          for(i = 1; i < m; i++) {	 							
+          for(i = 1; i < m; i++) {                              
             if(verb>3) printf(":%u ", ip[i]);fflush(stdout); 
             xbits[bsr32((ip[i] - ip[i-1]) - mode)]++; 
             if(ip[i] < ip[i-1]+mode) die("IDs in '%s' not sorted.[did=%u,%u] at line=%d\n", inname, ip[i], ip[i-1], (int)(ip-in));
           }
         } else for(i = 0; i < m; i++) xbits[bsr32(ip[i])]++;
-        ip += m;									
+        ip += m;                                    
       }
         #else
       ip += num;
         #endif
     }
-	fclose(fi);
-	totlen += bench(in, ip-in, blksize, out, outsize, inname, tx, cpy, -1, mode);	//    printf("N#%u,%u ", (int)(ip-in), (unsigned)(totlen/1000000));
-	free(in); free(cpy); free(out);													
+    fclose(fi);
+    totlen += bench(in, ip-in, blksize, out, outsize, inname, tx, cpy, -1, mode);   //    printf("N#%u,%u ", (int)(ip-in), (unsigned)(totlen/1000000));
+    free(in); free(cpy); free(out);                                                 
       #ifdef IC_STATS
     stprint("delta"); 
-	  #endif
-	print(libs,totlen,inname, bitslen);
-  }		
-  if(fmt >= T_TXT && (fno-optind)>1) { printf("\n"); print(slibs,totlen, "TOT", NULL); 																	}
+      #endif
+    print(libs,totlen,inname, bitslen);
+  }     
+  if(fmt >= T_TXT && (fno-optind)>1) { printf("\n"); print(slibs,totlen, "TOT", NULL);                                                                  }
 }
