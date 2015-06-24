@@ -115,8 +115,11 @@ unsigned bitf32(    unsigned *in, unsigned n, unsigned start);
 unsigned bitf132(   unsigned *in, unsigned n, unsigned start);
 unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);
 
-unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc);
-void bitunzigzag32(unsigned *p, unsigned n, unsigned x, unsigned inc);
+// zigzag encoding 
+unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start);
+unsigned bitzigzag64(unsigned *in, unsigned n, unsigned *out, unsigned start);
+void bitunzigzag32(  unsigned *p,  unsigned n, unsigned start);
+void bitunzigzag64(  unsigned *p,  unsigned n, unsigned start);
 
 #ifdef __cplusplus
 }
