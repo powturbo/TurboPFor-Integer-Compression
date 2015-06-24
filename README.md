@@ -71,37 +71,37 @@ MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br>
 TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual values.
 
 ##### - Data files:
- - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64KI)
+ - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64Ki)
 
 
         ./icbench -c1 gov2.sorted
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
-| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**VSimple 64KI**|
+| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**VSimple 64Ki**|
 | 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
 | 3.501.671.314| 14.64| 4.68| 321.45| 827.01|**VSimple**|
 | 3.766.174.764| 15.75| 5.04|**617.88**| 712.31|**EliasFano**|
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
-| 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4)+DT 64KI|
+| 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4)+DT 64Ki|
 | 4.521.326.518| 18.90| 6.05| 209.17| 824.26|Simple-8b|
 | 4.683.323.301| 19.58| 6.27| 828.97|1007.44|**TurboVbyte**|
 | 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
 | 4.953.768.342| 20.71| 6.63|1419.35|1512.86|**TurboPack**|
 | 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackD1 FPF|
-| 6.074.995.117| 25.40| 8.13| 494.70| 729.97|[blosc_lz4](#blosc) 64KI| 
+| 6.074.995.117| 25.40| 8.13| 494.70| 729.97|[blosc_lz4](#blosc) 64Ki| 
 | 6.221.886.390| 26.01| 8.32|1666.76|1737.72|**TurboFor**|
 | 6.221.886.390| 26.01| 8.32|1660.52| 565.25|**TurboForDA**|
 | 6.699.519.000| 28.01| 8.96| 472.01| 495.12|Vbyte FPF|
 | 6.700.989.563| 28.02| 8.96| 728.72| 991.57|MaskedVByte|
 | 7.622.896.878| 31.87|10.20| 208.73|1197.74|VarintG8IU|
 | 8.594.342.216| 35.93|11.50|1307.22|1593.07|libfor|
-| 8.773.150.644| 36.68|11.74| 637.83|1301.05|blosc_lz 64KI|
+| 8.773.150.644| 36.68|11.74| 637.83|1301.05|blosc_lz 64Ki|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
-KI=1024 Integers. 64KI = 256K bytes<br>
-"lz4+DT 64KI" = Delta+Transpose from TurboPFor + lz4<br>
+KI=1024 Integers. 64Ki = 256k bytes<br>
+"lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" tested w/ lz4 compressor+vectorized shuffle
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
