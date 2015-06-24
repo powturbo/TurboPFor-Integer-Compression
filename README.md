@@ -100,7 +100,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual
 | 8.773.150.644| 36.68|11.74| 637.83|1301.05|blosc_lz 64Ki|
 |23.918.861.764|100.00|32.00|1456.17|1480.78|Copy|
 
-KI=1024 Integers. 64Ki = 256k bytes<br>
+Ki=1024 Integers. 64Ki = 256k bytes<br>
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" tested w/ lz4 compressor+vectorized shuffle
 
