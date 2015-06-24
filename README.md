@@ -6,6 +6,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
+ - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
  - Full range 16/32 and :sparkles: 64 bits integer lists 
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
@@ -226,7 +227,7 @@ In general encoding/decoding functions are of the form:
   n      : number of elements<br />
   out    : pointer to output buffer<br />
   b      : number of bits. Only for bit packing functions<br />
-  start  : previous value. Only for integrated delta encoding functions*
+  start  : previous value. Only for integrated delta encoding functions
 
 
    
@@ -236,7 +237,7 @@ In general encoding/decoding functions are of the form:
   n      : number of elements<br />
   out    : output integer array<br />
   b      : number of bits. Only for bit unpacking functions<br />
-  start  : previous value. Only for integrated delta decoding functions*
+  start  : previous value. Only for integrated delta decoding functions
 
 header files to use with documentation:<br />
 
