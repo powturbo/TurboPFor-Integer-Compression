@@ -172,33 +172,78 @@ void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNDELTA(p
 void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
 
 //----------------------------- zigzag --------------------------------------------------------
-#define BITZIGZAG(__p,__n, __inc, __start, __act) {\
-  typeof(__p[0]) *_p; int _x;\
+#define BITZIGZAG(__p,__n, __start, __act) {\
+  typeof(__p[0]) *_p;\
   for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
-	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
-	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
-	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
-	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
   }\
   while(_p != __p+__n) { \
-	_x = ((int)(*_p)-(int)__start)-__inc; _x = (_x << 1) ^ (_x >> 31); __start = *_p++; __act;\
+	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
   }\
 }
 
-#define BITUNZIGZAG(__p, __n, __start, __inc) { typeof(__p[0]) *_p, _z;\
+#define BITUNZIGZAG(__p, __n, __start) { typeof(__p[0]) *_p, _z;\
   for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
+    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
   }\
-  while(_p != __p+__n) { _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)) + __inc); _p++; }\
+  while(_p != __p+__n) { _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++; }\
 }
 
-unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc) {
-  typeof(in[0]) b = 0,*op = out; BITZIGZAG(in, n, inc, start, b |= (unsigned)_x; *op++ = _x);
+unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
+    #ifdef __SSE2__
+  unsigned *ip,b,*op = out; 
+  __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
+    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
+	dv = DELTA128_32(iv,sv); 
+	sv = iv; 
+    dv = _mm_xor_si128(_mm_slli_epi32(dv,1), _mm_srai_epi32(dv,31));
+    bv = _mm_or_si128(bv, dv);
+	_mm_storeu_si128((__m128i *)op, dv); 
+	op += 4; 
+  }
+  start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
+  HOR128_32(bv, b);
+  while(ip != in+n) { 
+    int x = ((int)(*ip)-(int)start); x = (x << 1) ^ (x >> 31); start = *ip++; b |= x; *op++ = x; 
+  }
+    #else
+  typeof(in[0]) b = 0,*op = out; int _x; BITZIGZAG(in, n, start, b |= (unsigned)_x; *op++ = _x);
+    #endif
   return bsr32(b);
 }
 
-void bitunzigzag32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNZIGZAG(p, n, x, inc); }
+void bitunzigzag32(unsigned *p, unsigned n, unsigned start) { 
+    #ifdef __SSE2__
+  __m128i sv = _mm_set1_epi32(start), c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
+  unsigned *ip;
+  for(ip = p; ip != p+(n&~(4-1)); ) {
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip); 
+    iv = _mm_xor_si128(_mm_srli_epi32(iv,1), _mm_sub_epi32(cz, _mm_and_si128(iv,c1) ));
+	SCAN128_32(iv, sv);
+	_mm_storeu_si128((__m128i *)ip, sv); 
+	ip += 4;
+  }
+  start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
+  while(ip != p+n) { 
+    unsigned z = *ip; *ip = (start += (z >> 1 ^ -(z & 1))); ip++;
+  }
+    #else
+  BITUNZIGZAG(p, n, start);
+    #endif
+}
 
+unsigned bitzigzag64(unsigned *in, unsigned n, unsigned *out, unsigned start) {
+  typeof(in[0]) b = 0,*op = out; long long _x; BITZIGZAG(in, n, start, b |= (unsigned long long)_x; *op++ = _x);
+  return bsr32(b);
+}
+
+void bitunzigzag64(unsigned *p, unsigned n, unsigned start) { 
+  BITUNZIGZAG(p, n, start);
+}
