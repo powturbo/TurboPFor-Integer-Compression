@@ -39,21 +39,28 @@ idxqryp.o: $(BIT)idxqry.c
 SIMDCOMPD=ext/simdcomp/
 SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIMDCOMPD)src/simdcomputil.o $(SIMDCOMPD)src/simdbitpacking.o
 
-#FORLIB=ext/for/for.o
+#LIBFOR=ext/for/for.o
+
+# Lzturbo not included
 #LZT=../lz/lz8c0.o ../lz/lz8d.o
 #LZTB=../lz/lzbc0.o ../lz/lzbd.o
 
+# blosc. Set the env. variable "EXT=blosc" to include 
+#EXT=blosc
 ifeq ($(EXT), blosc)
 B=ext/
-CFLAGS+=-DSHUFFLE_SSE2_ENABLED -DHAVE_LZ4 -Iext/
+CFLAGS+=-DSHUFFLE_SSE2_ENABLED -DHAVE_LZ4 -DHAVE_ZLIB -Iext/
 LFLAGS+=-lpthread 
 BLOSC=$(B)lz4hc.o $(B)c-blosc/blosc/blosc.o $(B)c-blosc/blosc/blosclz.o $(B)c-blosc/blosc/shuffle.o $(B)c-blosc/blosc/shuffle-generic.o $(B)c-blosc/blosc/shuffle-sse2.o
 endif
 
-LZ4=ext/lz4.o 
+#LZ4=ext/lz4.o 
+
+#ZLIB=-lz
+
 MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 
-OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(FORLIB) $(LZT) $(LZTB) $(LZ4) $(MVB) 
+OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(LIBFOR) $(LZT) $(LZTB) $(LZ4) $(MVB) $(ZLIB)
 
 icbench: $(OBJS)
 	$(CC) $(OBJS) -lm -o icbench $(LFLAGS)
