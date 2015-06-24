@@ -8,12 +8,18 @@
 #define _MASKEDVBYTE
   #endif
 
+// Optional external librrary. Activate also in makefile
 //#define _FORLIB // libfor 
 //#define _LZT    // LzTurbo not inluded
 //#define _BLOSC  // 
 //#define _LZ4
+//#define _ZLIB
 
 //-------------------------------------- External functions for comparison ------------------------------------------------------------------------
+  #ifdef _ZLIB
+#include <zlib.h>
+  #endif
+
 #include "vabyte.h"                                     // Standard Variable Byte
 
 #include "simdcomp/include/simdbitpacking.h"   			// SIMD FastPFor
