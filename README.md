@@ -6,7 +6,6 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
  - Full range 16/32 and :sparkles: 64 bits integer lists 
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
@@ -27,6 +26,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
   Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
+<p>
+ - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
