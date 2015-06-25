@@ -41,7 +41,7 @@
   else if(!(__x      & (1<<1))) { __x = (*(unsigned short *)__ip)             >>  2;       __ip += 2; __act;}\
   else if(!(__x      & (1<<2))) { __x = (*(unsigned       *)__ip & 0xffffffu) >>  3;       __ip += 3; __act;}\
   else if(!(__x      & (1<<3))) { __x = (*(unsigned       *)__ip)             >>  4; 	   __ip += 4; __act;}\
-  else 			   	            { __x = (*(unsigned       *)__ip) >>  4 | *(__ip+4) << 28; __ip += 5; __act;}\
+  else 			   	            { __x = (unsigned long long)(*(unsigned       *)__ip) >>  4 | (unsigned long long)(__ip[4]) << 28; __ip += 5; __act;}\
 } while(0)
 
 #define vbputu32(__op, __x) { unsigned _x_ = __x; _vbputu32(__op, _x_, ;); }
@@ -139,13 +139,18 @@ unsigned char *vbddec32(unsigned char *__restrict in, unsigned n, unsigned *__re
 }
 
 //----------------------------------strictly increasing (never remaining constant or decreasing) integer lists---------------------------------------------------------
+#define VINT_Z
 unsigned char *vbd1enc32(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) {
-  unsigned *ip, v, b = 0; unsigned char *op = out;
-  v = ((*in) - start - 1)<<1; if(n == 1) v |= 1;
-  _vbputu32(op, v, ;);
+  unsigned *ip, v, b = 0; 
+  unsigned char *op = out;
+    #ifdef VINT_Z
+  v = in[0] - start - 1; 
+  unsigned long long u = (unsigned long long)v<<1; 
+  if(n == 1) u |= 1;
+  _vbputu32(op, u, ;);
   if(!--n) return op;
   start = *in++;
-  
+    #endif
   for(ip = in; ip != in + (n&~(4-1)); ) {
     v = (*ip)-start-1; start = *ip++; _vbputu32(op, v, ;); b |= v;
     v = (*ip)-start-1; start = *ip++; _vbputu32(op, v, ;); b |= v;
@@ -153,17 +158,21 @@ unsigned char *vbd1enc32(unsigned *__restrict in, unsigned n, unsigned char *__r
     v = (*ip)-start-1; start = *ip++; _vbputu32(op, v, ;); b |= v;
   }
   while(ip != in+n) { v = (*ip)-start-1; start = *ip++; _vbputu32(op, v, ;); b |= v; } 
+    #ifdef VINT_Z
   if(!b) { 
-    v = in[-1] << 1 | 1;
-	_vbputu32(out, v, ;); 
+    u = (unsigned long long)in[-1] << 1 | 1;
+	_vbputu32(out, u, ;); 
 	return out; 
   }
+    #endif
   return op;
 }
 
-unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { unsigned x,*op;
-  _vbgetu32(in, x, ;); *out = (start += (x>>1)+1);
-  if(x & 1) { 
+unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { 
+  unsigned x,*op;
+    #ifdef VINT_Z
+  unsigned long long u; _vbgetu32(in, u, ;); x = u>>1; *out = (start += x+1);
+  if(u & 1) { 
       #ifdef __SSE2__
 	out++; --n; BITDIZERO32(out, n, start, 1);
 	  #else 
@@ -172,7 +181,8 @@ unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned *__r
 	return in; 
   } 
   out++; --n;
-  
+    #endif
+
   for(op = out; op != out+(n&~(8-1)); ) {
     _vbgetu32(in, x, ++x); *op++ = (start += x);
     _vbgetu32(in, x, ++x); *op++ = (start += x);
