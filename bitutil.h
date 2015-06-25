@@ -111,10 +111,10 @@ void bitundx64(     uint64_t *p, unsigned n, uint64_t x, unsigned inc);
 void bitund132(     unsigned *p, unsigned n, unsigned x);
 
 // for
-unsigned bitf32(    unsigned *in, unsigned n, unsigned start);
+unsigned bitf32(    unsigned *in, unsigned n, unsigned start);  // sorted
 unsigned bitf132(   unsigned *in, unsigned n, unsigned start);
-unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);
-
+unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);  // unsorted
+unsigned bitf1m32(  unsigned *in, unsigned n, unsigned *pmin);
 // zigzag encoding 
 unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start);
 unsigned bitzigzag64(unsigned *in, unsigned n, unsigned *out, unsigned start);
