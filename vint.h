@@ -56,9 +56,8 @@ extern unsigned long long mtab[];
   else if(!(__x      & (1<<1))) { __x = (*(unsigned short *)__ip) >>  2;		           __ip += 2;             __act;}\
   else if(!(__x      & (1<<2))) { __x = (*(unsigned short *)__ip) >>  3 | (unsigned)(*(__ip+2)) << 13; __ip += 3; __act;}\
   else if(!(__x      & (1<<3))) { __x = (*(unsigned       *)__ip) >>  4; 		      	   __ip += 4;             __act;}\
-  else 			   	            { __x = (*(unsigned       *)__ip) >>  4 | *(__ip+4) << 28; __ip += 5;             __act;}\
+  else 			   	            { __x = (unsigned long long)(*(unsigned       *)__ip) >>  4 | (unsigned long long)(__ip[4]) << 28; __ip += 5;             __act;}\
 } while(0)
-
   #endif
 
 //----------------- 16 bits --------------------------
