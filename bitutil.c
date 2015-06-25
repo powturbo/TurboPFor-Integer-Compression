@@ -101,6 +101,13 @@ unsigned bitfm32(unsigned *in, unsigned n, unsigned *pmin) {
   return bsr32(mx - mi);
 }
 
+unsigned bitf1m32(unsigned *in, unsigned n, unsigned *pmin) {
+  unsigned mi,mx; 
+  BITMINMAX(in, n, mi, mx);
+  *pmin = mi;
+  return bsr32(mx - mi);
+}
+
 unsigned bitd32(unsigned *in, unsigned n, unsigned start) {
     #ifdef __SSE2__
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start);
