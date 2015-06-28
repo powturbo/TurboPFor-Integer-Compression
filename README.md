@@ -6,7 +6,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - Full range 16/32 and :sparkles: 64 bits integer lists 
+ - :sparkles: Full range 16/32 and :new: 64 bits integer lists and :new: Floating point
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
 + **Features**
@@ -27,7 +27,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
   Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
 <p>
- - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
+ - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
@@ -35,7 +35,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :new: **Novel** Implicit skips with zero extra overhead
  - :new: **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - :new: Parallel Query Processing on Multicores w/ more than **7000! queries/sec** on a quad core PC.<br>
+ - :new: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
@@ -276,4 +276,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 25 JUN 2015
+Last update: 28 JUN 2015
