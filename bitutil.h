@@ -115,11 +115,26 @@ unsigned bitf32(    unsigned *in, unsigned n, unsigned start);  // sorted
 unsigned bitf132(   unsigned *in, unsigned n, unsigned start);
 unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);  // unsorted
 unsigned bitf1m32(  unsigned *in, unsigned n, unsigned *pmin);
-// zigzag encoding 
+
+// zigzag encoding for unsorted integer lists
 unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start);
 unsigned bitzigzag64(unsigned *in, unsigned n, unsigned *out, unsigned start);
 void bitunzigzag32(  unsigned *p,  unsigned n, unsigned start);
 void bitunzigzag64(  unsigned *p,  unsigned n, unsigned start);
+
+//---- Floating point to Integer decompostion ---------------------------------
+
+#define FMANT_BITS    23
+#define DMANT_BITS    52
+
+#define BITFLOAT(__u, __sgn, __expo, __mant,      __mantbits, __one) __sgn = __u >> (sizeof(__u)*8-1); __expo = ((__u >> (__mantbits)) & ( (__one<<(sizeof(__u)*8 - 1 - __mantbits)) -1)); __mant = __u & ((__one<<__mantbits)-1);
+#define BITUNFLOAT(   __sgn, __expo, __mant, __u, __mantbits)        __u = (__sgn) << (sizeof(__u)*8-1) | (__expo) << __mantbits | (__mant) 
+
+// De-/Compose floating point array to/from integer arrays (sign,exponent,mantissa) for using with "Integer Compression" functions ------------
+void bitdouble(  double *in, unsigned n, unsigned *sgn, unsigned *expo, uint64_t *mant);
+void bitundouble(                        unsigned *sgn, unsigned *expo, uint64_t *mant, unsigned n, double *out);
+void bitfloat(   float *in,  unsigned n, unsigned *sgn, unsigned *expo, unsigned *mant);
+void bitunfloat(                         unsigned *sgn, unsigned *expo, unsigned *mant, unsigned n, float *out);
 
 #ifdef __cplusplus
 }
