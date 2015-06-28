@@ -254,3 +254,37 @@ unsigned bitzigzag64(unsigned *in, unsigned n, unsigned *out, unsigned start) {
 void bitunzigzag64(unsigned *p, unsigned n, unsigned start) { 
   BITUNZIGZAG(p, n, start);
 }
+
+//------------------- De-/Compose Floating Point -----------------------------------------
+void bitdouble(double *in, unsigned n, unsigned *sgn, unsigned *expo, uint64_t *mant) {
+  double *ip;
+  uint64_t u;
+  for(ip = in; ip < in+n; ip++) { 
+    u = *(uint64_t *)ip; BITFLOAT(u, *sgn++, *expo++, *mant++, DMANT_BITS, 1ull);
+  }
+}
+
+void bitundouble(unsigned *sgn, unsigned *expo, uint64_t *mant, unsigned n, double *out) {
+  double *op; 
+  uint64_t u;
+  for(op = out; op < out+n; op++) {
+    BITUNFLOAT((uint64_t)(*sgn++), (uint64_t)(*expo++), *mant++, u, DMANT_BITS); *op = *(double *)&u;
+  }
+}
+
+void bitfloat(float *in, unsigned n, unsigned *sgn, unsigned *expo, unsigned *mant) {
+  float *ip;
+  unsigned u;
+  for(ip = in; ip < in+n; ip++) { 
+    u = *(unsigned *)ip; BITFLOAT(u, *sgn++, *expo++, *mant++, FMANT_BITS, 1u);
+  }
+}
+
+void bitunfloat(unsigned *sgn, unsigned *expo, unsigned *mant, unsigned n, float *out) {
+  float *op; 
+  unsigned u;
+  for(op = out; op < out+n; op++) {
+    BITUNFLOAT((*sgn++), (*expo++), *mant++, u, FMANT_BITS); *op = *(float *)&u;
+  }
+}
+
