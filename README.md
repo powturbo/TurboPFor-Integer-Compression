@@ -6,7 +6,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
  - :new: Integrated differential encoding/decoding for sorted integer lists
- - :sparkles: Full range 16/32 and :new: 64 bits integer lists and :new: Floating point
+ - :sparkles: Full range 16/32, :new: 64 bits integer lists and :new: Floating point
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
 <p>
 + **Features**
