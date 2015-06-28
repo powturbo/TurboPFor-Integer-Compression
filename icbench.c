@@ -115,7 +115,7 @@ enum {  P_CPY,                                                  // copy
         P_PCK, P_PCKR, P_PCKV,  P_SIMDV, P_FOR,                 // bit packing
         P_SV,                   P_S16, P_S64,                   // simple family: , simpleV, simple16, simple-8b
         P_P4D, P_P4DR,          P_OPTP4,                        // PFor, PForDelta
-        P_FORLIB,                                               // For 
+        P_LIBFOR,                                               // For 
         P_LZT, P_LZTB,          P_LZ4,                          // lz77 
         P_BLOSC_SHUF, P_BLOSC_LZ, P_BLOSC_LZ4, P_BLOSC_ZLIB,    // https://github.com/Blosc/c-blosc
         P_ZZAG, P_TRSP, P_TRSPV,                                // transform 
@@ -157,8 +157,8 @@ unsigned char *beenc(unsigned *in, size_t n, unsigned char *out, int id, int b) 
     case P_PCKR: 
     case P_PCK:   if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } return bitpack32(in, n, out, b);
     case P_PCKV:  if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } return n != 128?bitpack32(in, n, out, b):bitpackv32(in, n, out, b);
-      #ifdef _FORLIB
-    case P_FORLIB: return out + for_compress_unsorted(in, out, n);
+      #ifdef _LIBFOR
+    case P_LIBFOR: return out + for_compress_unsorted(in, out, n);
       #endif
                                                                                                                                        
     case P_SIMDV: if(n < 128) return vbyteenc(in, n, (unsigned *)out); else { if(b < 0) b = maxbits(in), *out++ = b; return simdpackwn(in, n, b, (unsigned *)out); }
@@ -226,8 +226,8 @@ unsigned char *bedec(unsigned char *in, size_t n, unsigned *out, int id, int b) 
     case P_PCKV:   if(b < 0) b = *in++; return n != 128?bitunpack32(in, n, out, b):bitunpackv32(in, n, out, b);
 
     case P_SIMDV:  if(n < 128) return vbytedec(in, n, out); else { if(b < 0) b = *in++; return simdunpackn( (unsigned *)in, n, b, out); }
-      #ifdef _FORLIB
-    case P_FORLIB:    return in + for_uncompress(in, out, n);
+      #ifdef _LIBFOR
+    case P_LIBFOR:    return in + for_uncompress(in, out, n);
       #endif
       //---------- transpose + lz77 ----------------------
       #ifdef _TRANSFORM
@@ -318,8 +318,8 @@ unsigned char *besenc(unsigned *in, size_t n, unsigned char *out, int id, int mo
     case P_SIMDV:                                                                                   
       if(n < 129) { bitdelta32( in, n, pa, -mode, mode);                                    return vbyteenc((unsigned *)pa, n, (unsigned *)out); }
       else { b = simdmaxbitsd1(in[0], in+1);                   vbput32(out, in[0]); *out++=b; return simdpackwn1((unsigned *)(in+1), n-1, b, in[0], (unsigned *)out); }   
-        #ifdef _FORLIB
-    case P_FORLIB:   return out + for_compress_sorted(in, out, n);
+        #ifdef _LIBFOR
+    case P_LIBFOR:   return out + for_compress_sorted(in, out, n);
         #endif
       #endif
       // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
@@ -409,8 +409,8 @@ unsigned char *besdec(unsigned char *in, size_t n, unsigned *out, int id, int mo
     case P_SIMDV:
       if(n < 129) { in = vbytedec(in, n, out);               bitundx32(out, n, -mode, mode); }
       else {    _vbget32(in, x, *out = x); b = *in++; in = simdunpackn1((uint32_t *)in, n-1, b, out[0], out+1); } break;
-        #ifdef _FORLIB
-    case P_FORLIB:    return in + for_uncompress(in, out, n);
+        #ifdef _LIBFOR
+    case P_LIBFOR:    return in + for_uncompress(in, out, n);
         #endif
       #endif 
       //---------- transpose + lz77 ----------------------
@@ -547,8 +547,8 @@ struct libss libss[] = {
   { P_PCKR,       "TurboForDA",  PACK_SIZE  },
   
   { P_SIMDV,      "SIMDPackFPF", 128    }, 
-    #ifdef _FORLIB
-  { P_FORLIB,     "ForLib",      PACK_SIZE  },
+    #ifdef _LIBFOR
+  { P_LIBFOR,     "LibFor",      PACK_SIZE  },
     #endif
   //------ Variable byte -----
   { P_VB,         "TurboVbyte"  },
@@ -588,7 +588,7 @@ struct libss libss[] = {
   { P_BLOSC_LZ,   "blosc_lz",   64*1024 },
   { P_BLOSC_LZ4,  "blosc_lz4",  64*1024 },
   { P_BLOSC_ZLIB, "blosc_zlib", 64*1024 },
-  { P_BLOSC_SHUF,   "shuffle",    64*1024 },
+  { P_BLOSC_SHUF, "shuffle",    64*1024 },
     #endif 
     #ifdef _ZLIB
   { P_ZLIB1,      "zlib 1",     64*1024 },
@@ -607,7 +607,7 @@ struct libss libss[] = {
   
 #define MB 1000000
 int verb = 0, xcheck=2;                                                                                 unsigned xbits[33];
-enum { T_TST, T_TXT, T_CHAR, T_BYTE };
+enum { T_TST, T_TXT, T_CHAR, T_BYTE, T_DBL };
 
 struct libs { int id,err,size; char *s,*v; unsigned long long l, c[33]; double tc,td; };
 struct libs libs[64],slibs[64];
@@ -966,6 +966,26 @@ int main(int argc, char *argv[]) { int r;
             }
             in[n++] = c;
           }
+        }
+        case T_DBL: { //Test floating pint decomposition
+          double c,*din = NULL; n=0;
+          
+          while(fread(&c, 8, 1, fi)>0) { printf("%e\n", c);
+            if(!din || n >= nmax) {
+              nmax = nmax?(nmax << 1):(1<<20);
+              din = realloc(din, nmax*sizeof(c)+OVD); if(!din)  die("malloc err=%u", nmax);
+            }
+            din[n++] = c; 
+          }
+          double *dcpy = malloc(n*sizeof(dcpy[0]));
+          uint64_t *mantissa = malloc(n*sizeof(mantissa[0]));
+          unsigned *sign     = malloc(n*sizeof(sign[0]));
+          unsigned *exp      = malloc(n*sizeof(exp[0]));   if(!mantissa || !exp || !sign || !dcpy) die("alloc error\n");
+          bitdouble(   din, n, sign, exp, mantissa);
+          bitundouble(         sign, exp, mantissa, n, dcpy);
+          int i; for(i=0;i < n; i++) { printf("%d,%d,%llu,%e,%e\n", sign[i], exp[i], din[i], dcpy[i]); if(din[i]!=dcpy[i]) die("check error at %d %e %e\n", i, din[i], dcpy[i]); }
+          free(din); free(mantissa); free(exp); free(sign); free(dcpy);
+          exit(0);
         }
         default: die("unkown data format\n");
       }
