@@ -119,6 +119,10 @@ unsigned char *vbddec32(unsigned char  *__restrict in, unsigned n, unsigned     
 unsigned char *vbd1enc32(unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
 unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
 
+//------ zigzag encoding integer lists -------------------------------------------------------------
+unsigned char *vbzenc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
+unsigned char *vbzdec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+
 //--- 15 bits integer lists ------------
 #define vbput15(__op, __x) do { unsigned _x = __x; if(likely(_x < 0x80)) *__op++ = _x; else { *__op++ = (_x) >> 8 | 0x80; *__op++ = _x; } } while(0)
 #define _vbget15(__ip,__x, __act) do { if((__x = *__ip++) > 0x7f) __x = (__x & 0x7f) << 8 | *__ip++; __act; } while(0)
