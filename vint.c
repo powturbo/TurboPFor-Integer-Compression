@@ -203,3 +203,32 @@ unsigned char *vbdec15(unsigned char  *__restrict in, unsigned n, unsigned short
 
 unsigned char *vbenc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out) { unsigned short *in_  = in +n;   while(in  <  in_) vbput16(out, *in++);        return out;}
 unsigned char *vbdec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out) { unsigned short *out_ = out+n,x; while(out < out_) _vbget16(in, x, *out++ = x); return in; }
+
+//---------------------------------- Zigzag encoding ------------------------------------------------------------------------------------
+unsigned char *vbzenc32(unsigned *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start) { 
+  unsigned *ip,v;
+  for(ip = in; ip != in+(n&~(4-1)); ) {
+    v = zigzagenc32((*ip)-start); start=*ip++; _vbputu32(out, v, ;);
+    v = zigzagenc32((*ip)-start); start=*ip++; _vbputu32(out, v, ;);
+    v = zigzagenc32((*ip)-start); start=*ip++; _vbputu32(out, v, ;);
+    v = zigzagenc32((*ip)-start); start=*ip++; _vbputu32(out, v, ;);
+  }
+  while(ip <  in+n) { v = zigzagenc32((*ip)-start); start = *ip++; _vbputu32(out, v, ;); }
+  return out;
+}  
+
+unsigned char *vbzdec32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start) { 
+  unsigned x,*op;
+  for(op = out; op != out+(n&~(8-1)); ) {
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+    _vbgetu32(in, x, ;); *op++ = (start += zigzagdec32(x));
+  }
+  while(op != out+n) _vbgetu32(in, x, *op++ = (start += zigzagdec32(x)));
+  return in;
+}
