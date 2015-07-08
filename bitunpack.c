@@ -25,6 +25,7 @@
 
   #ifndef BPI
 #include "conf.h"
+#include "bitutil.h"
 #include "bitunpack.h"
 #define PAD8(__x) (((__x)+7)/8)
 #pragma clang diagnostic push 
@@ -54,6 +55,16 @@ unsigned char *bitd1unpack16(unsigned char *__restrict in, unsigned n, unsigned 
 #include __FILE__
 unsigned char *bitdunpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 unsigned char *bitdunpack16( unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+#undef BPI
+#undef DSTI
+
+
+//------------------------------------------------------------------------------------------
+#define DSTI(__op)
+#define BPI(__w, __x, __parm) (__parm += zigzagdec32(__w))
+#include __FILE__
+unsigned char *bitzunpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+//unsigned char *bitzunpack16( unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 #undef BPI
 #undef DSTI
 
