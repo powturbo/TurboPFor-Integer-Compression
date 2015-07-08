@@ -1,25 +1,26 @@
+//-------------------------------------- External functions for comparison ------------------------------------------------------------------------
+
 // simple-8b simple16 and optpfd don't work with all interger lists. Enable if you to want to test
 //#define _SIMPLE_8B  // crashs on some lists 
 //#define _SIMPLE16   // limited to 28 bits
-//#define _OPTPFD     // compression very slow and limited to 28 bits. crashs on some lists
+//#define _OPTPFD     // compression too slow and limited to 28 bits. crashs on some lists
 //#define _VBYTEPOLY  // limited to 28 bits. 
   #ifdef __SSSE3__
 #define _VARINTG8IU
-#define _MASKEDVBYTE
+#define _MASKEDVBYTE			// http://maskedvbyte.org
   #endif
 
-// Optional external librrary. Activate also in makefile
-//#define _FORLIB // libfor 
-//#define _LZT    // LzTurbo not inluded
-//#define _BLOSC  // 
-//#define _LZ4
-//#define _ZLIB
+//- Optional external libraries. Activate also in makefile -----
+//#define _LIBFOR // libfor 
 
-//-------------------------------------- External functions for comparison ------------------------------------------------------------------------
-  #ifdef _ZLIB
-#include <zlib.h>
-  #endif
+//#define _BTSHUF   			// https://github.com/kiyo-masui/bitshuffle
 
+#define _LZ4
+//#define _BLOSC  				// https://github.com/Blosc/c-blosc
+//#define _ZLIB     
+//#define _LZT      			// LzTurbo not inluded
+
+//-------------------------------------------------------------------------------
 #include "vabyte.h"                                     // Standard Variable Byte
 
 #include "simdcomp/include/simdbitpacking.h"   			// SIMD FastPFor
@@ -37,15 +38,44 @@
 #include "OPT_PFD/opt_p4.h" 							// OptPFD
 #include "simple8b.h"       							// optimized simple-8b
     
-  #ifdef _MASKEDVBYTE										// http://maskedvbyte.org
+  #ifdef _MASKEDVBYTE									
 #include "MaskedVByte/include/varintencode.h"
 #include "MaskedVByte/include/varintdecode.h"
   #endif
 
-  #ifdef _FORLIB
+  #ifdef _LIBFOR
 #include "for/for.h"
   #endif
 
+  #ifdef _ZLIB
+#include <zlib.h>
+  #endif
+
+  #ifdef _LZ4
+#include "lz4.h"
+  #endif
+
+  #ifdef _BLOSC
+#include "c-blosc/blosc/shuffle.h"
+#include "c-blosc/blosc/blosc.h"
+  #endif
+
+  #ifdef _BTSHUF
+#include "bitshuffle/src/bitshuffle.h"
+  #endif
+
+  #ifdef _LZT  
+#include "../../lz/lz8.h"
+int lz8c0( struct lzobj *lz);
+int lz8c01(struct lzobj *lz);
+int lz8d(  struct lzobj *lz);
+
+#include "../../lz/lzb.h"
+int lzbc0( struct lzobj *lz);
+int lzbc01(struct lzobj *lz);
+int lzbc2( struct lzobj *lz);
+int lzbd(  struct lzobj *lz);  
+  #endif
 //---------------- FastPFor functions ---------------------  
 unsigned char *simdpackwn(uint32_t *in, uint32_t n, uint32_t b, uint32_t *out) {//checkifdivisibleby(n, 128); const uint32_t * const initout(out);  //while(needPaddingTo128Bits(out)) *out++ = 123456;
   uint32_t *in_;
@@ -84,24 +114,3 @@ unsigned char *vbpolyenc(unsigned *in, unsigned n, unsigned char *out) {
 unsigned char *vbpolydec(unsigned char *in, unsigned n, unsigned *out) {
   unsigned i; for(i = 0; i < n; i++) { unsigned x; VBYTE_DEC(in, x); out[i] = x; } return in;
 }
-
-
-  #ifdef _LZT  
-#include "../../lz/lz8.h"
-int lz8c0( struct lzobj *lz);
-int lz8c01(struct lzobj *lz);
-int lz8d(  struct lzobj *lz);
-
-int lzbc0( struct lzobj *lz);
-int lzbc01(struct lzobj *lz);
-int lzbd(  struct lzobj *lz);
-  #endif
-
-  #ifdef _LZ4
-#include "lz4.h"
-  #endif
-
-  #ifdef _BLOSC
-#include "c-blosc/blosc/shuffle.h"
-#include "c-blosc/blosc/blosc.h"
-  #endif
