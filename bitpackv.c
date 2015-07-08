@@ -56,6 +56,15 @@ unsigned char *bitd1packv32(unsigned       *__restrict in, unsigned n, unsigned 
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   BITPACKV32(in, n, b, out, sv); return pout; 
 }
+#undef VSTI
+//------------------------------------------------------------------------------------------------------------------------------
+#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = DELTA128_32(v,__sv); __sv = v; __iv = ZIGZAG128_32(__iv)
+
+unsigned char *bitzpackv32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(n*b);
+  __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
+  BITPACKV32(in, n, b, out, sv); return pout; 
+}
+#undef VSTI
   #else
 #include <strings.h>
 #include <emmintrin.h>
