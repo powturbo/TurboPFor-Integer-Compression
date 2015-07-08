@@ -202,6 +202,28 @@ void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { BITUNDELTA(p
   while(_p != __p+__n) { _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++; }\
 }
 
+unsigned bitz32(unsigned *in, unsigned n, unsigned start) { 
+    #ifdef __SSE2__
+  unsigned *ip,b; 
+  __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
+    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
+	dv = DELTA128_32(iv,sv); 
+	sv = iv; 
+    dv = ZIGZAG128_32(dv); 
+    bv = _mm_or_si128(bv, dv);
+  }
+  start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
+  HOR128_32(bv, b);
+  while(ip != in+n) { 
+    int x = ((int)(*ip)-(int)start); x = (x << 1) ^ (x >> 31); start = *ip++; b |= x; 
+  }
+    #else
+  typeof(in[0]) b = 0,*op = out; int _x; BITZIGZAG(in, n, start, b |= (unsigned)_x);
+    #endif
+  return bsr32(b);
+}
+
 unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
     #ifdef __SSE2__
   unsigned *ip,b,*op = out; 
@@ -210,7 +232,7 @@ unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
 	dv = DELTA128_32(iv,sv); 
 	sv = iv; 
-    dv = _mm_xor_si128(_mm_slli_epi32(dv,1), _mm_srai_epi32(dv,31));
+    dv = ZIGZAG128_32(dv); 
     bv = _mm_or_si128(bv, dv);
 	_mm_storeu_si128((__m128i *)op, dv); 
 	op += 4; 
@@ -228,11 +250,11 @@ unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
 
 void bitunzigzag32(unsigned *p, unsigned n, unsigned start) { 
     #ifdef __SSE2__
-  __m128i sv = _mm_set1_epi32(start), c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
+  __m128i sv = _mm_set1_epi32(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ) {
     __m128i iv =  _mm_loadu_si128((__m128i *)ip); 
-    iv = _mm_xor_si128(_mm_srli_epi32(iv,1), _mm_sub_epi32(cz, _mm_and_si128(iv,c1) ));
+    iv = UNZIGZAG128_32(iv); 
 	SCAN128_32(iv, sv);
 	_mm_storeu_si128((__m128i *)ip, sv); 
 	ip += 4;
