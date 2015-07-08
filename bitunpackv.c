@@ -48,7 +48,21 @@
 
 unsigned char *bitunpackv32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b) { unsigned char *ip = in+PAD8(n*b); __m128i sv; BITUNPACKV32(in, n, b, out, sv); return ip; }
 #undef VSTO
-#undef BITUNPACK0   
+#undef BITUNPACK0
+
+//------------------------------------------------------																
+#define VSTO(__op, i, __ov, __sv) __ov = UNZIGZAG128_32(__ov); SCAN128_32(__ov,__sv); _mm_storeu_si128(__op++, __sv)
+
+#include __FILE__
+#define BITUNPACK0(__parm)
+
+unsigned char *bitzunpackv32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); 
+  __m128i sv = _mm_set1_epi32(start); 
+  BITUNPACKV32(in, n, b, out, sv); return ip; 
+}
+#undef VSTO
+#undef BITUNPACK0
+
 //------------------------------------------------------																
 #define VSTO(__op, i, __ov, __sv) SCAN128_32(__ov,__sv); _mm_storeu_si128(__op++, __sv)
 
@@ -62,6 +76,7 @@ unsigned char *bitdunpackv32( unsigned char *__restrict in, unsigned n, unsigned
 #undef VSTO
 #undef BITUNBLKV32_0
 #undef BITUNPACK0
+
 //--------------------------------------------------------------------------------------------------------------------------------------------- 
 #define VSTO(__op, i, __ov, __sv) SCANI128_32(__ov,__sv,cv); _mm_storeu_si128(__op++, __sv);
 
@@ -82,6 +97,10 @@ unsigned char *bitd1unpackv32( unsigned char *__restrict in, unsigned n, unsigne
   __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
   BITUNPACKV32(in, n, b, out, sv); return ip; 
 }
+#undef VSTO
+#undef BITUNBLKV32_0
+#undef BITUNPACK0
+
   #else
 #include <strings.h>
 #include <emmintrin.h>
