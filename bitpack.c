@@ -24,7 +24,9 @@
 //     bitpack.c - "Integer Compression" bit packing 
   #ifndef IPPB
 #include <stdio.h>
-#include "bitpack.h" 
+#include "bitpack.h"
+#include "bitutil.h" 
+ 
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
@@ -76,6 +78,16 @@ unsigned char *bitfpack32(unsigned       *__restrict in, unsigned n, unsigned ch
 #define SRC1(__ip,__x) (*__ip - start-1)
 #include __FILE__
 unsigned char *bitf1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
+#undef IPPB
+#undef SRC
+#undef SRC1
+
+#define IPPB( __ip,__x, __parm) as = zigzagenc32(*__ip-start); start=*__ip++
+#define SRC( __ip,__x) as
+#define SRC1(__ip,__x) zigzagenc32(*__ip - start)
+#include __FILE__
+
+unsigned char *bitzpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
 #undef SRC
 #undef SRC1
