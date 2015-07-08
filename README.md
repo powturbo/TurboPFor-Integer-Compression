@@ -5,9 +5,10 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - No other "Integer Compression" compress or decompress faster with better compression
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
- - :new: Integrated differential encoding/decoding for sorted integer lists
- - :sparkles: Full range 16/32, :new: 64 bits integer lists and :new: Floating point support
+ - :new: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
+ - :sparkles: Full range 16/32, :new: 64 bits integer lists and :new: Floating point
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
+ - Compress better and faster than special binary compressors like blosc
 <p>
 + **Features**
  - :sparkles: Scalar **"Variable Byte"** faster and more efficient than any other implementation
@@ -27,7 +28,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
   Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
 <p>
- - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
+ - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer conversion
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
@@ -276,4 +277,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 28 JUN 2015
+Last update: 8 JUL 2015
