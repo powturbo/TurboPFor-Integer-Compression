@@ -67,6 +67,8 @@ unsigned char *bitd1unpack16(  unsigned char *__restrict in, unsigned n, unsigne
 unsigned char *bitdunpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 unsigned char *bitdunpack16( unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
 
+unsigned char *bitzunpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+
 // ---------------- For : Direct Access for packed SORTED array (Ex. DocId in inverted index) --------------------------------------------
 // out[i] = start + in[i] + i + 1
 unsigned char *bitf1unpack32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
@@ -81,6 +83,7 @@ unsigned char *bitfunpack16(  unsigned char *__restrict in, unsigned n, unsigned
 unsigned char *bitunpackv32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out				  , unsigned b);
 unsigned char *bitdunpackv32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1unpackv32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+unsigned char *bitzunpackv32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 
 #ifdef __cplusplus
 }
