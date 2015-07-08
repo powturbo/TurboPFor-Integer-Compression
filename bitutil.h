@@ -41,6 +41,9 @@
   __b = TEMPLATE(bsr, __usize)(__b);\
 }
 
+static inline unsigned zigzagenc32(int      x) { return x << 1 ^ x >> 31; }
+static inline unsigned zigzagdec32(unsigned x) { return x >> 1 ^ -(x & 1); }
+
   #ifdef __SSE2__
 #include <emmintrin.h>
 
@@ -49,6 +52,8 @@
 #define SCAN128_32( __v, __sv) __v = _mm_add_epi32(__v, _mm_slli_si128(__v, 4)); __sv = _mm_add_epi32(_mm_shuffle_epi32(__sv, _MM_SHUFFLE(3, 3, 3, 3)), _mm_add_epi32(_mm_slli_si128(__v, 8), __v) )
 #define SCANI128_32(__v, __sv, __vi) SCAN128_32(__v, __sv); __sv = _mm_add_epi32(__sv, __vi)
 
+#define   ZIGZAG128_32(__v) _mm_xor_si128(_mm_slli_epi32(__v,1), _mm_srai_epi32(__v,31))
+#define UNZIGZAG128_32(__v) _mm_xor_si128(_mm_srli_epi32(__v,1), _mm_srai_epi32(_mm_slli_epi32(__v,31),31) ) //_mm_sub_epi32(cz, _mm_and_si128(iv,c1))
 // SIMD Horizontal OR
 #define HOR128_32(__v,__b) __v = _mm_or_si128(__v, _mm_srli_si128(__v, 8)); __v = _mm_or_si128(__v, _mm_srli_si128(__v, 4)); __b = (unsigned)_mm_cvtsi128_si32(__v)
 
@@ -117,12 +122,13 @@ unsigned bitfm32(   unsigned *in, unsigned n, unsigned *pmin);  // unsorted
 unsigned bitf1m32(  unsigned *in, unsigned n, unsigned *pmin);
 
 // zigzag encoding for unsorted integer lists
+unsigned bitz32(     unsigned *in, unsigned n, unsigned start);
 unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start);
 unsigned bitzigzag64(unsigned *in, unsigned n, unsigned *out, unsigned start);
 void bitunzigzag32(  unsigned *p,  unsigned n, unsigned start);
 void bitunzigzag64(  unsigned *p,  unsigned n, unsigned start);
 
-//---- Floating point to Integer decompostion ---------------------------------
+//---- Floating point to Integer de-/composition ---------------------------------
 
 #define FMANT_BITS    23
 #define DMANT_BITS    52
