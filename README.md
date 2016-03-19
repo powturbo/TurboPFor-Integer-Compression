@@ -95,9 +95,7 @@ CPU: Skylake
 |112500000|	28.12|	 9.00|  466.94|3003.70|[VarintG8IU](#VarintG8IU)|
 |128125000|	32.03|	10.25| 1109.67|1271.32|[StreamVbyte FPF](#StreamVbyte)|
 |400000000|	100.00|	32.00| 2240.24|2237.05|Copy|
-
-
-
+------------------------------------------------------------------------
 ##### - Data files:
  - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64Ki)
 
