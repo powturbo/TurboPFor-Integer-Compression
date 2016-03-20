@@ -59,12 +59,12 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 | 78.514.276| 19.63| 6.28|  251.34| 841.61|**VSimple**|
 | 95.915.096| 23.98| 7.67|  221.46|1049.70|[Simple-8b](#Simple-8b)|
 | 99.910.930| 24.98| 7.99|**2603.47**|**1948.65**|**TurboPackV**|
-| 99.910.930| 24.98| 7.99| 2524.50|1943.41|[SIMDPack FPF](#SIMDPack FPF)|
+| 99.910.930| 24.98| 7.99| 2524.50|1943.41|[SIMDPack FPF](#FastPFor)|
 | 99.910.930| 24.98| 7.99| 1883.21|1898.11|**TurboPack**|
 | 99.910.930| 24.98| 7.99| 1877.25| 935.83|**TurboForDA**|
 |102.074.663| 25.52| 8.17| 1621.64|1694.64|**TurboVbyte**|
 |102.074.663| 25.52|8.17|1214.12|1688.95|[MaskedVByte](#MaskedVByte)|
-|102.074.663| 25.52| 8.17| 1178.72| 949.59|[Vbyte FPF](#Vbyte FPF)|
+|102.074.663| 25.52| 8.17| 1178.72| 949.59|[Vbyte FPF](#FastPFor)|
 |103.035.930| 25.76| 8.24| 1480.47|1746.51|[libfor](#libfor)|
 |112.500.000| 28.12| 9.00|  305.85|1899.15|[VarintG8IU](#VarintG8IU)|
 |400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
@@ -73,27 +73,27 @@ MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br>
 **#BOLD** = pareto frontier. FPF=FastPFor<br>
 TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual values.
 
-CPU: Skylake
+CPU: Skylake i7-6700 3.7GHz
 
 |Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
 |--------:|-----:|----:|-------:|-------:|---------|
 | 63392801|	15.85|	 5.07|**413.76**|**1482.82**|**TurboPFor**|
 | 63392801|	15.85|	 5.07|  387.30| 243.62|**TurboPForDA**|
-| 65359916|	16.34|	 5.23|    7.58| 609.12|[OptPFD](#OptPFD)|
-| 73477088|	18.37|	 5.88|  101.68| 621.37|[Simple16](#Simple16)|
-| 78514276|	19.63|	 6.28|**256.83**|**676.45**|**VSimple**|
-| 95915096|	23.98|	 7.67|  211.79|**954.62**|[Simple-8b](#Simple-8b)|
+| 65359916|	16.34|	 5.23|    7.58| 609.12|OptPFD|
+| 73477088|	18.37|	 5.88|  101.68| 621.37|Simple16|
+| 78514276|	19.63|	 6.28|256.83|676.45|**VSimple**|
+| 95915096|	23.98|	 7.67|  211.79|954.62|Simple-8b|
 | 98546814|	24.64|	 7.88|   70.85|**2349.71**|[QMX](#QMX)|
 | 99910930|	24.98|	 7.99|**3537.57**|**3081.79**|**TurboPackV**|
-| 99910930|	24.98|	 7.99| 3099.52|3071.77|[SIMDPack FPF](#SIMDPack FPF)|
+| 99910930|	24.98|	 7.99| 3099.52|3071.77|SIMDPack FPF|
 | 99910930|	24.98|	 7.99| 2050.47|2402.54|**TurboPack**|
 | 99910930|	24.98|	 7.99| 2049.85|2364.52|**TurboFor**|
 | 99910930|	24.98|	 7.99| 2049.70|1124.12|**TurboForDA**|
-|102074663|	25.52|	 8.17| 1354.42|1745.69|[MaskedVByte](#MaskedVByte)|
+|102074663|	25.52|	 8.17| 1354.42|1745.69|MaskedVByte|
 |102074663|	25.52|	 8.17| 1660.76|1626.67|**TurboVbyte**|
-|102074663|	25.52|	 8.17| 1249.77|1051.85|[Vbyte FPF](#Vbyte FPF)|
-|112500000|	28.12|	 9.00|  466.94|3003.70|[VarintG8IU](#VarintG8IU)|
-|128125000|	32.03|	10.25| 1109.67|1271.32|[StreamVbyte FPF](#StreamVbyte)|
+|102074663|	25.52|	 8.17| 1249.77|1051.85|Vbyte FPF|
+|112500000|	28.12|	 9.00|  466.94|3003.70|VarintG8IU|
+|128125000|	32.03|	10.25| 1109.67|1271.32|[StreamVbyte FPF](#FastPFor)|
 |400000000|	100.00|	32.00| 2240.24|2237.05|Copy|
 ------------------------------------------------------------------------
 ##### - Data files:
@@ -285,12 +285,12 @@ header files to use with documentation:<br />
 
 ### References:
 
- + <a name="SIMDPack FPF"></a><a name="Vbyte FPF"></a><a name="VarintG8IU"></a><a name="Streamvbyte"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU
+ + <a name="FastPFor"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU, StreamVbyte
  + <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16 (limited to 28 bits integers)
  + <a name="MaskedVByte"></a>[MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
  + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
- + <a name="qmx"></a>[QMX:Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/)
+ + <a name="QMX"></a>[Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/) QMX
  + <a name="lz4"></a>[lz4](https://github.com/Cyan4973/lz4). included w. block size 64K as indication. Tested after preprocessing w. delta+transpose
  + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4 and blosclz incl. vectorizeed shuffle.<br>
    see also [benchmarks from the author of blosc](https://github.com/powturbo/TurboPFor/issues/2) single+multithreading
@@ -301,4 +301,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 8 JUL 2015
+Last update: 20 MAR 2015
