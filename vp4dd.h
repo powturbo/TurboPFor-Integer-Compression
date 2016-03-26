@@ -77,16 +77,14 @@ static inline void p4dini(struct p4d *p4d, unsigned char *__restrict *pin, unsig
 
   unsigned i  = *(unsigned short *)in;
   p4d->i      = i;
-  *b = P4D_B(i);
+  *b          = P4D_B(i);
   p4d->bx     = P4D_XB(i); 
-  P4D_ININC(in,i);
-  *pin = in;
- 
-  p4d->ex     = in + P4D_PAD8(n*(*b));
-  p4d->xmap   = (i&1)?(unsigned long long *)p4d->ex:xmap;
-  p4d->ex    += (i&1)?8*P4DN:0;
-  p4d->cum[0] = 0;
-  for(i=1; i < P4DN; i++) p4d->cum[i] = p4d->cum[i-1] + popcnt64(p4d->xmap[i-1]);  
+  P4D_ININC(in, i);
+
+  p4d->xmap   = (i&1)?(unsigned long long *)in:xmap;
+  p4d->ex     = in + ((i&1)?8*P4DN:0);
+  for(p4d->cum[0] = 0, i=1; i < P4DN; i++) p4d->cum[i] = p4d->cum[i-1] + popcnt64(p4d->xmap[i-1]);  
+  *pin = p4d->ex + P4D_PAD8((p4d->cum[P4DN-1] + popcnt64(p4d->xmap[P4DN-1]))*p4d->bx);
   p4d->oval   = p4d->idx  = -1;
 }
 
