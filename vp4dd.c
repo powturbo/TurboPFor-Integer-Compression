@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2016
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
-//#define __AVX2__ON  // disabled per default. (tested only on notebook cpu i5-4200u, slower than SSE)
+//#define __AVX2__ON  // disabled (tested w/ notebook cpu i5-4200u and skylake i6700-3.7GHz, but slower than SSE3)
 
   #if defined(__AVX2__) && defined(__AVX2__ON)
 #include <immintrin.h>
@@ -355,7 +355,8 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef BITUNDD
 #undef BITUNPACK
 
-//---- SIMD -------------
+//------ SIMD -------------
+#define P4SIMD
 #define P4DD       p4ddv
 #define P4DDEC     p4ddecv
 #define BITUNPACK  bitunpackv
@@ -365,6 +366,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define P4DDD      p4dd1dv
 #define P4DDECD    p4dd1decv
 #define BITUNPACKD bitd1unpackv
+#define BITUNPACKD_ _bitd1unpackv
 #define BITUNDD    bitund1
 #include __FILE__
 
@@ -380,6 +382,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define P4DDD      p4dddv
 #define P4DDECD    p4dddecv
 #define BITUNPACKD bitdunpackv
+#define BITUNPACKD_ _bitdunpackv
 #define BITUNDD    bitund
 #include __FILE__
 
@@ -391,6 +394,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef P4DD
 #undef BITUNPACK
 #undef USIZE
+#undef P4SIMD
 //----------------------------------
 #define USIZE 64
 #define P4DD       p4dd
@@ -406,13 +410,18 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
   #ifdef P4DDEC
+unsigned char *_bitunpackv32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+
 unsigned char *TEMPLATE2(P4DD, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, unsigned b, unsigned bx) {
   uint_t ex[0x100+8]; 
   
-  in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b>>1);
-  if(!(b & 1)) return in;
+  if(!(b & 1)) return TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b>>1);
   b >>= 1;
-
+  #if defined(P4SIMD) && defined(__SSE3__) && USIZE == 32 && P4DN == 2
+  unsigned char *pb = in; 														
+  in = TEMPLATE2(bitunpack, USIZE)(in+16, popcnt64(*(unsigned long long *)in) + popcnt64(*(unsigned long long *)(in+8)), ex, bx);
+  return _bitunpackv32(in, n, out, b, ex, pb);
+  #else
     #if P4DN == 2
   unsigned long long bb[P4DN]; unsigned num=0,i;
   bb[0] = *(unsigned long long *)in; in += 8; 
@@ -424,6 +433,7 @@ unsigned char *TEMPLATE2(P4DD, USIZE)(unsigned char *__restrict in, unsigned n, 
   in = TEMPLATE2(bitunpack, USIZE)(in, num, ex, bx);
 	#endif
 	  
+  in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b);
     #ifdef __AVX2__ON
   uint_t *op,*pex = ex;
       #if P4DN == 2
@@ -459,15 +469,16 @@ unsigned char *TEMPLATE2(P4DD, USIZE)(unsigned char *__restrict in, unsigned n, 
     #else
   unsigned k = 0; 
       #if P4DN == 2
-  while(bb[0]) { unsigned x = ctzll(bb[0]); out[x] += ex[k++]<<b; bb[0] ^= (1ull<<x); } out += 64;
-  while(bb[1]) { unsigned x = ctzll(bb[1]); out[x] += ex[k++]<<b; bb[1] ^= (1ull<<x); }
+  while(bb[0]) { unsigned x = ctz64(bb[0]); out[x] += ex[k++]<<b; bb[0] ^= (1ull<<x); } out += 64;
+  while(bb[1]) { unsigned x = ctz64(bb[1]); out[x] += ex[k++]<<b; bb[1] ^= (1ull<<x); }
       #else
   for(i = 0; i < P4DN; i++) {
-	while(bb[i]) { unsigned x = ctzll(b0); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
+	while(bb[i]) { unsigned x = ctz64(b0); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
   }
       #endif	  
     #endif
   return in;
+  #endif
 }
 
 unsigned char *TEMPLATE2(P4DDEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out) {
@@ -478,16 +489,24 @@ unsigned char *TEMPLATE2(P4DDEC, USIZE)(unsigned char *__restrict in, unsigned n
   #endif
   
   #ifdef P4DDECD
+unsigned char *_bitd1unpackv32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpackv32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+
 unsigned char *TEMPLATE2(P4DDD, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, unsigned start, unsigned b, unsigned bx) {    
   uint_t ex[0x100+8], *_op = out;
   if(!(b & 1)) return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out, start, b>>1);
   b >>= 1;
   
-  in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b);
+  #if defined(P4SIMD) && defined(__SSE3__) && USIZE == 32 && P4DN == 2
+  unsigned char *pb = in; 														
+  in = TEMPLATE2(bitunpack, USIZE)(in+16, popcnt64(*(unsigned long long *)in) + popcnt64(*(unsigned long long *)(in+8)), ex, bx);
+  return TEMPLATE2(BITUNPACKD_, USIZE)(in, n, out, start, b, ex, pb);
+  #else
   unsigned long long bb[P4DN]; unsigned num=0,i;
   for(i = 0; i < P4DN; i++) { bb[i] = *(unsigned long long *)in; in += 8; num += popcnt64(bb[i]); }  
   in = TEMPLATE2(bitunpack, USIZE)(in, num, ex, bx);
 	
+  in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b);
     #ifdef __AVX2__ON
   uint_t *op,*pex = ex;
   for(i = 0; i < P4DN; i++) {
@@ -514,11 +533,12 @@ unsigned char *TEMPLATE2(P4DDD, USIZE)(unsigned char *__restrict in, unsigned n,
     #else
   unsigned k = 0;
   for(i = 0; i < P4DN; i++) {
-	while(bb[i]) { unsigned x = ctzll(bb[i]); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
+	while(bb[i]) { unsigned x = ctz64(bb[i]); out[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } out += 64;
   }
     #endif
   TEMPLATE2(BITUNDD, USIZE)(_op, n, start);
   return in;
+  #endif
 }
 
 unsigned char *TEMPLATE2(P4DDECD, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, unsigned start) {
@@ -529,7 +549,7 @@ unsigned char *TEMPLATE2(P4DDECD, USIZE)(unsigned char *__restrict in, unsigned 
   #endif
 
 #ifdef P4DDECX
-unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out) { 
+unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out) {
   unsigned b,i; 
   struct p4d p4d; 
   p4dini(&p4d, &in, n, &b);
@@ -537,11 +557,8 @@ unsigned char *TEMPLATE2(p4ddecx, USIZE)(unsigned char *__restrict in, unsigned 
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
       out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i);  
-    return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
-  } else {
-    for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b); 
-    return p4d.ex; 
-  }
+  } else for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b); 
+  return in + PAD8(n*b);
 }
 
 unsigned char *TEMPLATE2(p4dfdecx, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, unsigned start) {
@@ -552,11 +569,8 @@ unsigned char *TEMPLATE2(p4dfdecx, USIZE)(unsigned char *__restrict in, unsigned
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
       out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i)+start+i+1;  
-    return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
-  } else {
-    for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start+i+1;
-    return p4d.ex; 
-  }
+  } else for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start+i+1;
+  return in + PAD8(n*b);
 }
 
 unsigned char *TEMPLATE2(p4df0decx, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, unsigned start) {
@@ -566,13 +580,11 @@ unsigned char *TEMPLATE2(p4df0decx, USIZE)(unsigned char *__restrict in, unsigne
 
   if(unlikely(p4d.i & 1)) {
     for(i = 0; i < n; i++) 
-      out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i)+start;  
-    return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
-  } else {
-    for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start;
-    return p4d.ex; 
-  }
+      out[i] = TEMPLATE2(vp4dget, USIZE)(&p4d, in, b, i)+start;//   return p4d.ex + PAD8((p4d.cum[P4DN-1] + popcnt64(p4d.xmap[P4DN-1]))*p4d.bx);
+  } else for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, b, i*b)+start;
+  return in + PAD8(n*b);
 }
 #endif
 
   #endif
+
