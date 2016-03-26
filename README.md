@@ -5,8 +5,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - No other "Integer Compression" compress or decompress faster with better compression
  - Direct Access is several times faster than other libraries
  - Usage in C/C++ as easy as memcpy
- - :new: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
- - :sparkles: Full range 16/32, :new: 64 bits integer lists and :new: Floating point
+ - :sparkles: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
+ - :sparkles: **Full** range 16/32, 64 bits integer lists and Floating point
  - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
  - Compress better and faster than special binary compressors like blosc
 <p>
@@ -21,22 +21,23 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: **Direct Update** of individual bit packed entries
  - Reducing **Cache Pollution**
 <p>
- - :new: Fastest and most efficient **"SIMD Bit Packing"**
+ - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
 <p>
- - :new: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
+ - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
 <p>
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
-  Outstanding compression and speed. More efficient than **ANY** other "integer compression" scheme.
+  Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
+ - :new: **TurboPFor now 30%! more faster**
 <p>
- - :new: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
+ - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
  - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
- - :new: **Novel** Implicit skips with zero extra overhead
- - :new: **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
+ - **Novel** Implicit skips with zero extra overhead
+ - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - :new: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a quad core PC.<br>
+ - :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
@@ -52,7 +53,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 	
 |Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
 |--------:|-----:|----:|-------:|-------:|---------|
-| 63.392.801| 15.85| 5.07|**388.36**|**1400.87**|**TurboPFor**|
+| 63.392.801| 15.85| 5.07|**388.36**|**1600.02**|**TurboPFor**|
 | 63.392.801| 15.85| 5.07|  365.26| 246.93|**TurboPForDA**|
 | 65.359.916| 16.34| 5.23|    7.09| 638.96|[OptPFD](#OptPFD)|
 | 72.364.024| 18.09| 5.79|   85.31| 762.00|[Simple16](#Simple16)|
@@ -77,7 +78,7 @@ CPU: Skylake i7-6700 3.7GHz
 
 |Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
 |--------:|-----:|----:|-------:|-------:|---------|
-| 63392801|	15.85|	 5.07|**413.76**|**1482.82**|**TurboPFor**|
+| 63392801|	15.85|	 5.07|**413.76**|**1749.87**|**TurboPFor**|
 | 63392801|	15.85|	 5.07|  387.30| 243.62|**TurboPForDA**|
 | 65359916|	16.34|	 5.23|    7.58| 609.12|OptPFD|
 | 73477088|	18.37|	 5.88|  101.68| 621.37|Simple16|
@@ -293,7 +294,6 @@ header files to use with documentation:<br />
  + <a name="QMX"></a>[Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/) QMX
  + <a name="lz4"></a>[lz4](https://github.com/Cyan4973/lz4). included w. block size 64K as indication. Tested after preprocessing w. delta+transpose
  + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4 and blosclz incl. vectorizeed shuffle.<br>
-   see also [benchmarks from the author of blosc](https://github.com/powturbo/TurboPFor/issues/2) single+multithreading
  + <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
  + **Publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
@@ -301,4 +301,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 20 MAR 2015
+Last update: 26 MAR 2015
