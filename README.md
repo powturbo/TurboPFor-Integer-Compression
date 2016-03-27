@@ -53,7 +53,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 
 ##### - Synthetic data: 
  - Generate and test skewed distribution (100.000.000 integers, Block size=128)<br>
-   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".<br>
+   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
 
 
