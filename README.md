@@ -3,7 +3,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 + **TurboPFor: The new synonym for "integer compression"**
  - 100% C (C++ compatible headers), w/o inline assembly
  - Usage as simple as memcpy
- - :+1: Java Critical Native Interface. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
+ - :+1: **Java** Critical Native Interface. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
  - :sparkles: **FULL** range 16/32/64 bits integer lists and Floating point
  - No other "Integer Compression" compress or decompress faster with better compression
  - Direct Access is several times faster than other libraries
@@ -78,7 +78,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 |112.500.000| 28.12| 9.00|  305.85|1899.15|[VarintG8IU](#VarintG8IU)|
 |400.000.000|100.00|32.00| 1451.11|1493.46|Copy|
 |         |      |     |   N/A  | N/A   |**EliasFano**|
-MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br> 
+MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier. FPF=FastPFor<br>
 TurboPForDA,TurboForDA: Direct Access is normally used when accessing few individual values.
 
@@ -114,7 +114,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
-| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**VSimple 64Ki**|
+| 3.214.763.689| 13.44| 4.30| 339.90|837.69|**VSimple 64Ki**|
 | 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
 | 3.501.671.314| 14.64| 4.68| 321.45| 827.01|**VSimple**|
@@ -122,7 +122,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz
 | 3.820.190.182| 15.97| 5.11| 118.81| 650.21|Simple16|
 | 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4)+DT 64Ki|
 | 4.521.326.518| 18.90| 6.05| 209.17| 824.26|Simple-8b|
-| 4.683.323.301| 19.58| 6.27| 828.97|1007.44|**TurboVbyte**|
+| 4.683.323.301| 19.58| 6.27|**828.97**|1007.44|**TurboVbyte**|
 | 4.953.768.342| 20.71| 6.63|**1766.05**|**1943.87**|**TurboPackV**|
 | 4.953.768.342| 20.71| 6.63|1419.35|1512.86|**TurboPack**|
 | 5.203.353.057| 21.75| 6.96|1560.34|1806.60|SIMDPackD1 FPF|
