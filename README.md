@@ -10,12 +10,11 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
  - Compress better and faster than special binary compressors like blosc
 <p>
-+ **Variable byte**
- - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskedVByte) implementation
-<p>
-+ **Simple family**
- - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
-   or other "simple family" implementation
++ **For/PFor/PForDelta**
+ - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
+  Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
+ - Compress 70 times faster and decompress up to 3 times faster than OptPFD
+ - :new: **TurboPFor now 30%! more faster**
 <p>
 + **Bit Packing**
  - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
@@ -25,14 +24,15 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: **Direct Update** of individual bit packed entries
  - Reducing **Cache Pollution**
 <p>
++ **Variable byte**
+ - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskedVByte) implementation
+<p>
++ **Simple family**
+ - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
+   or other "simple family" implementation
+<p>
 + **Elias fano**
  - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD
-<p>
-+ **For/PFor/PForDelta**
- - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
-  Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
- - Compress 70 times faster and decompress up to 3 times faster than OptPFD
- - :new: **TurboPFor now 30%! more faster**
 <p>
 + **Transform**
  - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
