@@ -1,52 +1,60 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
-+ **TurboPFor**
++ **TurboPFor: The new synonym for integer compression**
  - 100% C (C++ compatible headers), w/o inline assembly
+ - Usage as simple as memcpy
+ - :+1: Java Critical Native Interface. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
+ - :sparkles: **FULL** range 16/32/64 bits integer lists and Floating point
  - No other "Integer Compression" compress or decompress faster with better compression
  - Direct Access is several times faster than other libraries
- - Usage in C/C++ as easy as memcpy
  - :sparkles: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
- - :sparkles: **Full** range 16/32, 64 bits integer lists and Floating point
- - :+1: Java Critical Native Interface. Access TurboPFor incl. SIMD from Java as fast as calling from C.
  - Compress better and faster than special binary compressors like blosc
 <p>
-+ **Features**
- - :sparkles: Scalar **"Variable Byte"** faster and more efficient than any other implementation
++ **Variable byte**
+ - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskeVByte) implementation
 <p>
- - :sparkles: **Novel** **"Variable Simple"** (incl. RLE) faster and more efficient than simple16 or simple8-b
++ **Simple family**
+ - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple8-b
+   or other "simple family" implementation
 <p>
++ **Bit Packing**
+ - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
  - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - Bit Packing with **Direct/Random Access** without decompressing entire blocks
  - Access any single bit packed entry with **zero decompression**
  - :sparkles: **Direct Update** of individual bit packed entries
  - Reducing **Cache Pollution**
 <p>
- - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
++ **Elias fano**
+ - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD
 <p>
- - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD.
-<p>
++ **For/PFor/PForDelta**
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
   Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
  - :new: **TurboPFor now 30%! more faster**
+ - Compress 70 times faster and decompress up to 3 times faster than OptPFD
 <p>
++ **Transform**
  - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
  - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
  - **Novel** Implicit skips with zero extra overhead
- - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal).
+ - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
  - :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Benchmark:
 CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
-- Realistic and practical benchmark with large integer arrays.
+- Realistic and practical "integer compression" benchmark with large integer arrays.
 - No PURE cache benchmark
 
 ##### - Synthetic data: 
- - Generate and test skewed distribution (100.000.000 integers, Block size=128).
+ - Generate and test skewed distribution (100.000.000 integers, Block size=128)
+   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
+   Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
 
 
         ./icbench -a1.5 -m0 -M255 -n100m
@@ -72,9 +80,9 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 |         |      |     |   N/A  | N/A   |**EliasFano**|
 MI/s: 1.000.000 integers/second. 1000 MI/s = 4 GB/s<br> 
 **#BOLD** = pareto frontier. FPF=FastPFor<br>
-TurboPForDA,TurboForDA: Direct Access is normally used when accessing individual values.
+TurboPForDA,TurboForDA: Direct Access is normally used when accessing few individual values.
 
-CPU: Skylake i7-6700 3.7GHz
+CPU: Skylake i7-6700 w/ only 3.7GHz
 
 |Size|  Ratio % |Bits/Integer |C Time MI/s |D Time MI/s |Function |
 |--------:|-----:|----:|-------:|-------:|---------|
@@ -98,6 +106,7 @@ CPU: Skylake i7-6700 3.7GHz
 |400000000|	100.00|	32.00| 2240.24|2237.05|Copy|
 ------------------------------------------------------------------------
 ##### - Data files:
+ - CPU: Sandy bridge i7-2600k at 4.2GHz
  - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64Ki)
 
 
@@ -166,14 +175,14 @@ q/s: queries/second, ms/q:milliseconds/query
 - Most search engines are using pruning strategies, caching popular queries,... to reduce the time for intersections and query processing.
 - As indication, google is processing [40.000 Queries per seconds](http://www.internetlivestats.com/google-search-statistics/),
 using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-know-server-farms/) for searching [8 billions web pages](http://searchenginewatch.com/sew/study/2063479/coincidentally-googles-index-size-jumps) (320 X size of GOV2).
-- Recent GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
+- Recent "integer compression" GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
 
 ### Compile:
   *make*
 
 ### Testing:
 ##### - Synthetic data:
-  + test all functions<br />
+  + test all "integer compression" functions<br />
 
 
         ./icbench -a1.0 -m0 -M255 -n100m
@@ -243,7 +252,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   >*run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".*
 
 ### Function usage:
-See benchmark "icbench" program for usage examples.
+See benchmark "icbench" program for "integer compression" usage examples.
 In general encoding/decoding functions are of the form:
 
 
@@ -267,8 +276,8 @@ In general encoding/decoding functions are of the form:
 
 header files to use with documentation:<br />
 
-| header file|Functions|
-|------|--------------|
+| header file|Integer Compression functions|
+|------------|-----------------------------|
 |vint.h|variable byte|
 |vsimple.h|variable simple|
 |vp4dc.h, vp4dd.h|TurboPFor|
@@ -282,7 +291,7 @@ header files to use with documentation:<br />
 - Windows: MinGW-w64 (no parallel query processing)
 
 ###### Multithreading:
-- All TurboPFor functions are thread safe
+- All TurboPFor integer compression functions are thread safe
 
 ### References:
 
@@ -291,14 +300,14 @@ header files to use with documentation:<br />
  + <a name="MaskedVByte"></a>[MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
  + <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
  + <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
- + <a name="QMX"></a>[Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/) QMX
+ + <a name="QMX"></a>[Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/) QMX integer compression from the "simple family"
  + <a name="lz4"></a>[lz4](https://github.com/Cyan4973/lz4). included w. block size 64K as indication. Tested after preprocessing w. delta+transpose
  + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4 and blosclz incl. vectorizeed shuffle.<br>
  + <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
- + **Publications:**
+ + **Integer compression publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 26 MAR 2015
+Last update: 27 MAR 2015
