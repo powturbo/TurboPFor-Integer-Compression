@@ -1,6 +1,6 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
-+ **TurboPFor: The new synonym for integer compression**
++ **TurboPFor: The new synonym for "integer compression"**
  - 100% C (C++ compatible headers), w/o inline assembly
  - Usage as simple as memcpy
  - :+1: Java Critical Native Interface. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
@@ -11,7 +11,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - Compress better and faster than special binary compressors like blosc
 <p>
 + **Variable byte**
- - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskeVByte) implementation
+ - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskedVByte) implementation
 <p>
 + **Simple family**
  - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple8-b
@@ -31,15 +31,15 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 + **For/PFor/PForDelta**
  - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
   Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
- - :new: **TurboPFor now 30%! more faster**
  - Compress 70 times faster and decompress up to 3 times faster than OptPFD
+ - :new: **TurboPFor now 30%! more faster**
 <p>
 + **Transform**
  - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
- - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%). 
+ - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%)!. 
  - **Novel** Implicit skips with zero extra overhead
  - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
@@ -52,8 +52,8 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 - No PURE cache benchmark
 
 ##### - Synthetic data: 
- - Generate and test skewed distribution (100.000.000 integers, Block size=128)
-   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
+ - Generate and test skewed distribution (100.000.000 integers, Block size=128)<br>
+   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".<br>
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
 
 
