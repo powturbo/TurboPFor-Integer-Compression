@@ -14,7 +14,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskedVByte) implementation
 <p>
 + **Simple family**
- - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple8-b
+ - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
    or other "simple family" implementation
 <p>
 + **Bit Packing**
