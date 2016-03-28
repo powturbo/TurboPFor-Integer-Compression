@@ -88,7 +88,7 @@ unsigned TEMPLATE2(P4D, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx)
   b = TEMPLATE2(bsr, USIZE)(b); 
 
   bx = b; ml = PAD8(n*b)+1-2-P4DN*8; x = cnt[b];
-    #if 0 //USIZE > 32 
+    #if USIZE > 32 
   for(i = b-1; i >= 0; --i) MINCALC(i);  //    l = PAD8(n*i) + PAD8(x*(bx-i)); x += cnt[i]; if(unlikely(l < ml)) b = i, ml = l;
     #else
   switch(b-1) {
