@@ -21,27 +21,32 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    transpose.h - byte transpose 
+//     transpose.h - byte transpose 
 #ifdef __cplusplus
 extern "C" {
 #endif
+// Transpose/Shuffle block for further compressing with lz77 or other compressors
+void transpose2    (unsigned char *in, unsigned n, unsigned char *out);
+void transpose3    (unsigned char *in, unsigned n, unsigned char *out);
+void transpose4    (unsigned char *in, unsigned n, unsigned char *out);
+void transpose8    (unsigned char *in, unsigned n, unsigned char *out);
+void transpose16   (unsigned char *in, unsigned n, unsigned char *out);
+void transpose     (unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
-void transpose2     (unsigned char *in, unsigned n, unsigned char *out);
-void transpose3     (unsigned char *in, unsigned n, unsigned char *out);
-void transpose4     (unsigned char *in, unsigned n, unsigned char *out);
-void transpose8     (unsigned char *in, unsigned n, unsigned char *out);
-void transpose16    (unsigned char *in, unsigned n, unsigned char *out);
-void transpose      (unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+void untranspose2  (unsigned char *in, unsigned n, unsigned char *out);
+void untranspose3  (unsigned char *in, unsigned n, unsigned char *out);
+void untranspose4  (unsigned char *in, unsigned n, unsigned char *out);
+void untranspose8  (unsigned char *in, unsigned n, unsigned char *out);
+void untranspose16 (unsigned char *in, unsigned n, unsigned char *out);
+void untranspose   (unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
-void untranspose2   (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose3   (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose4   (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose8   (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose16  (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose    (unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+// scalar transpose
+void _transpose4   (unsigned char *in, unsigned n, unsigned char *out); 
+void _untranspose4 (unsigned char *in, unsigned n, unsigned char *out);  
 
-void transposev4  (unsigned char *in, unsigned n, unsigned char *out);
-void untransposev4(unsigned char *in, unsigned n, unsigned char *out);
+// Nibble transpose
+void transposen4   (unsigned char *in, unsigned n, unsigned char *out);
+void untransposen4 (unsigned char *in, unsigned n, unsigned char *out);
 
 #ifdef __cplusplus
 }
