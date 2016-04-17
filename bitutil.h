@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     bitutil.h - "Integer Compression" 
+//    bitutil.h - "Integer Compression" 
 #include <stdint.h>
 
 #define _BITFORZERO(_out_, _n_, _start_, _inc_) do { unsigned _i;\
