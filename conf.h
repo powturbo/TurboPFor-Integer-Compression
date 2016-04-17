@@ -38,13 +38,19 @@
 #define popcnt64(_x_) 	__builtin_popcountll(_x_)
 
     #if defined(__i386__) || defined(__x86_64__)
-static inline int __bsr32(int x) {             asm("bsr  %1,%0" : "=r" (x) : "rm" (x) ); return x; }
-static inline int bsr32(  int x) { int b = -1; asm("bsrl %1,%0" : "+r" (b) : "rm" (x) ); return b + 1; }
-static inline int bsr64(unsigned long long x) { return x?64 - __builtin_clzll(x):0; }
-#define bsr16(_x_) bsr32(_x_)
+static inline int    __bsr32(               int x) {             asm("bsr  %1,%0" : "=r" (x) : "rm" (x) ); return x; }
+static inline int      bsr32(               int x) { int b = -1; asm("bsrl %1,%0" : "+r" (b) : "rm" (x) ); return b + 1; }
+static inline int      bsr64(unsigned long long x) { return x?64 - __builtin_clzll(x):0; }
+#define bsr16(_x_)     bsr32(_x_)
+
+static inline unsigned rol32(unsigned x, int s) { asm ("roll %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
+static inline unsigned ror32(unsigned x, int s) { asm ("rorl %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
+
     #else
-static inline int bsr32(int x               ) { return x?32 - __builtin_clz(  x):0; }
-static inline int bsr64(unsigned long long x) { return x?64 - __builtin_clzll(x):0; }
+static inline int      bsr32(int x               ) { return x?32 - __builtin_clz(  x):0; }
+static inline int      bsr64(unsigned long long x) { return x?64 - __builtin_clzll(x):0; }
+static inline unsigned rol32(unsigned x, int s) { return x << s | x >> (32 - s); }
+static inline unsigned ror32(unsigned x, int s) { return x >> s | x << (32 - s); }
     #endif
 
 #define ctz64(_x_) __builtin_ctzll(_x_)
@@ -65,6 +71,8 @@ static inline int bsr64(unsigned long long x) { unsigned long z = 0; _BitScanFor
 static inline int ctz64(unsigned long long x) { unsigned long z = 0; _BitScanForward64(&z, x); return z; }
     #endif
 static inline int ctz32(unsigned           x) { unsigned      z = 0; _BitScanForward(&z, x); return z; }
+#define rol32(x,s) _lrotl(x, s)
+#define ror32(x,s) _lrotr(x, s)
 #define fseeko _fseeki64
 #define ftello _ftelli64
 #define sleep(x) Sleep(x/1000)

@@ -35,17 +35,17 @@
 #define DSTI(__op)
 #define BPI(__w, __x, __parm) __w
 #include __FILE__
-unsigned char *bitunpack32(  const unsigned char *__restrict in, unsigned n, unsigned           *__restrict out				 , unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
-unsigned char *bitunpack16(  const unsigned char *__restrict in, unsigned n, unsigned short     *__restrict out				 , unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return ip; }
-unsigned char *bitunpack64(  const unsigned char *__restrict in, unsigned n, uint64_t           *__restrict out				 , unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK64(in, n, b, out,    0); return ip; }
+unsigned char *bitunpack32(  const unsigned char *__restrict in, unsigned n, unsigned           *__restrict out				 , unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return (unsigned char *)ip; }
+unsigned char *bitunpack16(  const unsigned char *__restrict in, unsigned n, unsigned short     *__restrict out				 , unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out,    0); return (unsigned char *)ip; }
+unsigned char *bitunpack64(  const unsigned char *__restrict in, unsigned n, uint64_t           *__restrict out				 , unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK64(in, n, b, out,    0); return (unsigned char *)ip; }
 #undef BPI
 #undef DSTI
 //-----------------------------------------------------------------------------------------------------------------
 #define DSTI(__op)
 #define BPI(__w, __x, __parm) (__parm += (__w) + 1)
 #include __FILE__
-unsigned char *bitd1unpack32(const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
-unsigned char *bitd1unpack16(const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitd1unpack32(const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
+unsigned char *bitd1unpack16(const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
 #undef BPI
 #undef DSTI
 
@@ -53,8 +53,8 @@ unsigned char *bitd1unpack16(const unsigned char *__restrict in, unsigned n, uns
 #define DSTI(__op)
 #define BPI(__w, __x, __parm) (__parm += (__w))
 #include __FILE__
-unsigned char *bitdunpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
-unsigned char *bitdunpack16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitdunpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
+unsigned char *bitdunpack16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
 #undef BPI
 #undef DSTI
 
@@ -63,7 +63,7 @@ unsigned char *bitdunpack16( const unsigned char *__restrict in, unsigned n, uns
 #define DSTI(__op)
 #define BPI(__w, __x, __parm) (__parm += zigzagdec32(__w))
 #include __FILE__
-unsigned char *bitzunpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitzunpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
 //unsigned char *bitzunpack16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
 #undef BPI
 #undef DSTI
@@ -73,8 +73,8 @@ unsigned char *bitzunpack32( const unsigned char *__restrict in, unsigned n, uns
 #define BPI(__w, __x, __parm) (__parm + (__w))
 #include __FILE__
 
-unsigned char *bitfunpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
-unsigned char *bitfunpack16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitfunpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
+unsigned char *bitfunpack16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
 #undef BPI
 #undef DSTI
 
@@ -82,8 +82,8 @@ unsigned char *bitfunpack16( const unsigned char *__restrict in, unsigned n, uns
 #define DSTI(__op) start += 32
 #define BPI(__w, __x, __parm) (__parm + (__w)+__x+1)
 #include __FILE__
-unsigned char *bitf1unpack32(const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
-unsigned char *bitf1unpack16(const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return ip; }
+unsigned char *bitf1unpack32(const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
+unsigned char *bitf1unpack16(const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b) { const unsigned char *ip = in+PAD8(n*b); BITUNPACK32(in, n, b, out, start); return (unsigned char *)ip; }
 #undef BPI
 #undef DSTI
 

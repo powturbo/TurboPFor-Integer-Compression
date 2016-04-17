@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2016
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -1080,8 +1080,8 @@ int main(int argc, char *argv[]) { int r;
           uint64_t *mantissa = malloc(n*sizeof(mantissa[0]));
           unsigned *sign     = malloc(n*sizeof(sign[0]));
           unsigned *exp      = malloc(n*sizeof(exp[0]));   if(!mantissa || !exp || !sign || !dcpy) die("alloc error\n");
-          bitdouble(   din, n, sign, exp, mantissa);
-          bitundouble(         sign, exp, mantissa, n, dcpy);
+          bitdouble(   din, n, exp, mantissa);
+          bitundouble(         exp, mantissa, n, dcpy);
           int i; for(i=0;i < n; i++) { printf("%d,%d,%llu,%e,%e\n", sign[i], exp[i],(long long unsigned int)mantissa[i], din[i], dcpy[i]); if(din[i]!=dcpy[i]) die("check error at %d %e %e\n", i, din[i], dcpy[i]); }
           free(din); free(mantissa); free(exp); free(sign); free(dcpy);
           exit(0);

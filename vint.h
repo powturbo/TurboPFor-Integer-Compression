@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2016
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -31,39 +31,31 @@
 extern "C" {
 #endif
 
-//--------- 32 bits ------------------
+//--------------------------- 32 bits ---------------------------------------------------------------------------------------
 extern unsigned char vtab[];
-#define vbvlen32(__x) vtab[(__x)&0xf]
+#define vbvlen32(__x) vtab[((unsigned char)(__x))>>4]
 
 #define _vbput32(__op, __x, __act) {\
-       if(likely(__x < (1<< 7))) {		   		   *__op++ = __x << 1; 			 		                      __act;}\
-  else if(likely(__x < (1<<14))) { *(unsigned short *)__op = __x << 2 | 0x01; __op += 2; 		              __act;}\
-  else if(likely(__x < (1<<21))) { *(unsigned short *)__op = __x << 3 | 0x03; __op += 2; *__op++ = __x >> 13; __act;}\
-  else if(likely(__x < (1<<28))) { *(unsigned       *)__op = __x << 4 | 0x07; __op += 4; 		              __act;}\
-  else { 		                   *(unsigned       *)__op = __x << 4 | 0x0f; __op += 4; *__op++ = __x >> 28; __act;}\
+       if(likely(__x < (1<< 7))) {		  *__op++ = __x; 			 		                                             __act;}\
+  else if(likely(__x < (1<<14))) { ctou16(__op)   = __x << 8 |  __x >>  8         | 0x80;                     __op += 2; __act;}\
+  else if(likely(__x < (1<<21))) {        *__op++ = __x >> 16                     | 0xc0; ctou32(__op) = __x; __op += 2; __act;}\
+  else if(likely(__x < (1<<28))) { ctou32(__op)   = rol32(__x,8)                  | 0xe0;                     __op += 4; __act;}\
+  else { 		                          *__op++ = (unsigned long long)__x >> 32 | 0xf0; ctou32(__op) = __x; __op += 4; __act;}\
 }
 
-//#define __AVX2__VINT
-  #if defined(__AVX2__) && defined(__AVX2__VINT)
-#include <immintrin.h>
-
-extern unsigned long long mtab[];
-
-#define _vbget32(__ip, __x, __act) do { unsigned _vdx=(*__ip)&0xf; __x = _pext_u64(*(unsigned long long *)__ip, mtab[_vdx]); __ip+=vtab[_vdx]; __act; } while(0)
-  #else
-#define _vbget32(__ip, __x, __act) do {\
-  if(!((__x = *__ip) & (1<<0))) {  __ip++; __x	                  >>= 1; 		                                  __act;}\
-  else if(!(__x      & (1<<1))) { __x = (*(unsigned short *)__ip) >>  2;		           __ip += 2;             __act;}\
-  else if(!(__x      & (1<<2))) { __x = (*(unsigned short *)__ip) >>  3 | (unsigned)(*(__ip+2)) << 13; __ip += 3; __act;}\
-  else if(!(__x      & (1<<3))) { __x = (*(unsigned       *)__ip) >>  4; 		      	   __ip += 4;             __act;}\
-  else 			   	            { __x = (unsigned long long)(*(unsigned       *)__ip) >>  4 | (unsigned long long)(__ip[4]) << 28; __ip += 5;             __act;}\
+#define _vbget32(__ip, __x, __act) do { __x = *__ip++;\
+       if(!(__x & 0x80)) {   								        							 __act;}\
+  else if(!(__x & 0x40)) { __x = (__x & 0x3f)<< 8 | *__ip++; 								     __act;}\
+  else if(!(__x & 0x20)) { __x = (__x & 0x1f)<<16 | ctou16(__ip); 	    		      __ip += 2; __act;}\
+  else if(!(__x & 0x10)) { __x = ror32(ctou32(__ip-1),8) & 0xfffffff;				  __ip += 3; __act;}\
+  else 			   	     { __x = (unsigned long long)(__x & 0x07)<<32 | ctou32(__ip); __ip += 4; __act;}\
 } while(0)
-  #endif
 
-//----------------- 16 bits --------------------------
+//----------------- 16 bits -------------------------------------------------------------------------------------------------------
 #define _vbput16(__op, __x)        _vbput32(__op, __x)
 #define _vbget16(__ip, __x, __act) _vbget32(__ip, __x, __act)
-//----------------- 64 bits --------------------------
+
+//----------------- 64 bits -------------------------------------------------------------------------------------------------------
 #define _vbput64(__op, __x, __act) {\
        if(__x < 1   << 7) {		   		        *__op++ = __x << 1; 			 		                                                                   __act;}\
   else if(__x < 1   <<14) { *(unsigned short     *)__op = __x << 2 | 0x01; __op += 2; 		             	                                               __act;}\
@@ -96,8 +88,8 @@ extern unsigned long long mtab[];
 #define  vbput16(__op, __x)  vbput32(__op, __x)
 #define  vbget16(__ip)       vbget32(__ip)
 
-#define vbput32(__op, __x) { unsigned _x_ = __x; _vbput32(__op, _x_, ;); }
-#define vbget32(__ip)     ({ unsigned _x_;       _vbget32(__ip, _x_, ;); _x_; })
+#define vbput32(__op, __x) { register unsigned _x_ = __x; _vbput32(__op, _x_, ;); }
+#define vbget32(__ip)     ({ register unsigned _x_;       _vbget32(__ip, _x_, ;); _x_; })
 
 #define vbput64(__op, __x) { unsigned long long _x_ = __x; _vbput64(__op, _x_, ;); }
 #define vbget64(__ip)     ({ unsigned long long _x_;       _vbget64(__ip, _x_, ;); _x_; })
@@ -122,6 +114,8 @@ unsigned char *vbd1dec32(unsigned char *__restrict in, unsigned n, unsigned     
 //------ zigzag encoding integer lists -------------------------------------------------------------
 unsigned char *vbzenc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
 unsigned char *vbzdec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+unsigned char *vbzenc64(uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t start);
+unsigned char *vbzdec64(unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t start);
 
 //--- 15 bits integer lists ------------
 #define vbput15(__op, __x) do { unsigned _x = __x; if(likely(_x < 0x80)) *__op++ = _x; else { *__op++ = (_x) >> 8 | 0x80; *__op++ = _x; } } while(0)

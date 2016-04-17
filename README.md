@@ -26,6 +26,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **Variable byte**
  - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskedVByte) implementation
+ - :new: **now up to 25% more faster**
 <p>
 + **Simple family**
  - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
@@ -71,7 +72,7 @@ CPU: Sandy bridge i7-2600k at 4.2GHz, gcc 5.1, ubuntu 15.04, single thread.
 | 99.910.930| 24.98| 7.99| 2524.50|1943.41|[SIMDPack FPF](#FastPFor)|
 | 99.910.930| 24.98| 7.99| 1883.21|1898.11|**TurboPack**|
 | 99.910.930| 24.98| 7.99| 1877.25| 935.83|**TurboForDA**|
-|102.074.663| 25.52| 8.17| 1621.64|1694.64|**TurboVbyte**|
+|102.074.663| 25.52| 8.17| 1993.95|1827.04|**TurboVbyte**|
 |102.074.663| 25.52|8.17|1214.12|1688.95|[MaskedVByte](#MaskedVByte)|
 |102.074.663| 25.52| 8.17| 1178.72| 949.59|[Vbyte FPF](#FastPFor)|
 |103.035.930| 25.76| 8.24| 1480.47|1746.51|[libfor](#libfor)|
@@ -90,16 +91,16 @@ CPU: Skylake i7-6700 w/ only 3.7GHz
 | 63392801|	15.85|	 5.07|  387.30| 243.62|**TurboPForDA**|
 | 65359916|	16.34|	 5.23|    7.58| 609.12|OptPFD|
 | 73477088|	18.37|	 5.88|  101.68| 621.37|Simple16|
-| 78514276|	19.63|	 6.28|256.83|676.45|**VSimple**|
-| 95915096|	23.98|	 7.67|  211.79|954.62|Simple-8b|
+| 78514276|	19.63|	 6.28|258.31|691.48|**VSimple**|
+| 95915096|	23.98|	 7.67|  211.79|957.62|Simple-8b|
 | 98546814|	24.64|	 7.88|   70.85|**2349.71**|[QMX](#QMX)|
 | 99910930|	24.98|	 7.99|**3537.57**|**3081.79**|**TurboPackV**|
 | 99910930|	24.98|	 7.99| 3099.52|3071.77|SIMDPack FPF|
-| 99910930|	24.98|	 7.99| 2050.47|2402.54|**TurboPack**|
+| 99910930|	24.98|	 7.99| 2095.79|2495.22|**TurboPack**|
 | 99910930|	24.98|	 7.99| 2049.85|2364.52|**TurboFor**|
 | 99910930|	24.98|	 7.99| 2049.70|1124.12|**TurboForDA**|
 |102074663|	25.52|	 8.17| 1354.42|1745.69|MaskedVByte|
-|102074663|	25.52|	 8.17| 1660.76|1626.67|**TurboVbyte**|
+|102074663|	25.52|	 8.17| 1825.64|1844.34|**TurboVbyte**|
 |102074663|	25.52|	 8.17| 1249.77|1051.85|Vbyte FPF|
 |112500000|	28.12|	 9.00|  466.94|3003.70|VarintG8IU|
 |128125000|	32.03|	10.25| 1109.67|1271.32|[StreamVbyte FPF](#FastPFor)|
@@ -310,4 +311,4 @@ header files to use with documentation:<br />
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update: 27 MAR 2016
+Last update: 08 APR 2016

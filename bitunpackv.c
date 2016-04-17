@@ -78,7 +78,7 @@ unsigned char *bitunpackv32( const unsigned char *__restrict in, unsigned n, uns
   const unsigned char *ip = in+PAD8(n*b); 
   __m128i sv; 
   BITUNPACKV32(in, n, b, out, sv); 
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef VSTO0
@@ -116,7 +116,7 @@ unsigned char *_bitunpackv32( const unsigned char *__restrict in, unsigned n, un
   const unsigned char *ip = in+PAD8(n*b); unsigned m;
   __m128i sv; 
   BITUNPACKV32(in, n, b, out, sv);
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef VSTO0
@@ -134,7 +134,7 @@ unsigned char *bitzunpackv32( const unsigned char *__restrict in, unsigned n, un
   const unsigned char *ip = in+PAD8(n*b); 
   __m128i sv = _mm_set1_epi32(start); 
   BITUNPACKV32(in, n, b, out, sv); 
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef BITUNPACK0
@@ -149,7 +149,7 @@ unsigned char *bitdunpackv32( const unsigned char *__restrict in, unsigned n, un
   const unsigned char *ip = in+PAD8(n*b); 
   __m128i sv = _mm_set1_epi32(start);
   BITUNPACKV32(in, n, b, out, sv); 
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef VSTO0
@@ -171,7 +171,7 @@ unsigned char *_bitdunpackv32( const unsigned char *__restrict in, unsigned n, u
   const unsigned char *ip = in+PAD8(n*b); unsigned m;
   __m128i sv = _mm_set1_epi32(start);
   BITUNPACKV32(in, n, b, out, sv); 
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef VSTO0
@@ -188,7 +188,7 @@ unsigned char *bitd1unpackv32( const unsigned char *__restrict in, unsigned n, u
   const unsigned char *ip = in+PAD8(n*b);
   __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
   BITUNPACKV32(in, n, b, out, sv); 
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef VSTO0
@@ -209,7 +209,7 @@ unsigned char *_bitd1unpackv32( const unsigned char *__restrict in, unsigned n, 
   const unsigned char *ip = in+PAD8(n*b); unsigned m;
   __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
   BITUNPACKV32(in, n, b, out, sv); 
-  return ip; 
+  return (unsigned char *)ip; 
 }
 #undef VSTO
 #undef VSTO0
