@@ -200,7 +200,7 @@ unsigned char *beenc(unsigned *__restrict in, size_t n, unsigned char *__restric
       #ifdef _TRANSFORM
     case P_ZZAG:   bitzigzag32(in, n, (unsigned *)out, 0);      return out + n*4;
     case P_TRSP:   transpose4( (unsigned char *)in, n*4, out);  return out + n*4;
-    case P_TRSPV:  transposev4( (unsigned char *)in, n*4, out); return out + n*4;
+    case P_TRSPV:  transpose4( (unsigned char *)in, n*4, out); return out + n*4;
         #ifdef _BLOSC      
     case P_BSHUF:  shuffle( 4, n*4, (unsigned char *)in, out); return out + n*4;
         #endif
@@ -211,13 +211,13 @@ unsigned char *beenc(unsigned *__restrict in, size_t n, unsigned char *__restric
 
       // --------- transpose + lz77 ----------------------------------------
       #ifdef _LZT
-    case P_LZT10: { n *= 4; transposev4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20: { n *= 4; transposev4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22: { n *= 4; transposev4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz); }     
+    case P_LZT10: { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZT20: { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
+    case P_LZT22: { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz); }     
       #endif
       #ifdef _LZ4
     case P_LZ4:    //bshuf_bitshuffle(in, sbuf, n*4/32, 32, 0);// 
-      transposev4( (unsigned char *)in, n*4, sbuf);
+      transpose4( (unsigned char *)in, n*4, sbuf);
       return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
       #endif
       #ifdef _BLOSC
@@ -227,7 +227,7 @@ unsigned char *beenc(unsigned *__restrict in, size_t n, unsigned char *__restric
       #endif
       #ifdef _ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { n *= 4; transposev4( (unsigned char *)in, n, sbuf); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+      { n *= 4; transpose4( (unsigned char *)in, n, sbuf); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
     case P_MAX ... 63: die("Fatal- Not entry %d", id);
   }
@@ -371,24 +371,24 @@ unsigned char *besenc(unsigned *__restrict in, size_t n, unsigned char *__restri
       #ifdef _TRANSFORM
     case P_ZZAG:  b = bitzigzag32(in, n, (unsigned *)out,  0); return out + n*4;
     case P_TRSP:  bitdelta32(in, n, (unsigned *)sbuf, -mode, mode); transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case P_TRSPV: bitdelta32(in, n, (unsigned *)sbuf, -mode, mode); transposev4( (unsigned char *)sbuf, n*4, out); return out + n*4;
+    case P_TRSPV: bitdelta32(in, n, (unsigned *)sbuf, -mode, mode); transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
     case P_DELTA: bitdelta32(in, n, (unsigned *)out,  -mode, mode); return out + n*4; 
       #endif
 
       // --------- delta + transpose + lz77 ----------------------------------------------------------------------------------------
       #ifdef _LZT
-    case P_LZT10:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transposev4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transposev4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transposev4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
+    case P_LZT10:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZT20:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
+    case P_LZT22:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
       #endif
 
       #ifdef _LZ4
-    case P_LZ4: { bitdelta32(in, n, (unsigned *)out, -mode, mode); transposev4((unsigned char *)out, n*4, sbuf); //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
+    case P_LZ4: { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
       return out + LZ4_compress((char *)sbuf, (char *)out, n*4); }
       #endif
       #ifdef _ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { bitdelta32(in, n, (unsigned *)out, -mode, mode); transposev4((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+      { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
     case P_MAX ... 63: break;
   }
