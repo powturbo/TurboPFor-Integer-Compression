@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   bitutil.h - "Integer Compression" 
+//  bitutil.h - "Integer Compression" 
 #include "conf.h" 
 #include "bitutil.h"
 
