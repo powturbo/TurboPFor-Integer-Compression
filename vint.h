@@ -82,7 +82,7 @@ extern unsigned char vtab[];
 #define _vbget15(_ip_, _x_, _act_) do { if(!((_x_ = *_ip_++) & 0x80)) _x_ = (_x_ & 0x7f) << 8 | *_ip_++; _act_; } while(0)
 
 //----------------------------- Variable byte functions -----------------------------------------------------------------------
-// ---- Variable byte length after compressiing value _x_
+// ---- Variable byte length after compressing value _x_
 #define vblen32(_x_) ({ unsigned _x = _x_; _x > 0x7f?(_x > 0x3fff?(_x > 0x1fffff?(_x > 0x0fffffff?5:4):3):2):1; })
 #define vblen15(_x_) ((_x_) > 0x7f?2:1)
 
@@ -100,53 +100,53 @@ extern unsigned char vtab[];
 #define vbget16(_ip_)       vbget32(_ip_)
 #define vbget15(_ip_)     ({ unsigned _x;                 _vbget15(_ip_, _x, ;); _x; })
 
-// ---- Encode array with n integer values to the buffer out. 	Return value = end of compressed buffer out
-unsigned char *vbenc64(uint64_t        *__restrict in, unsigned n, unsigned char  *__restrict out);
-unsigned char *vbenc32(unsigned        *__restrict in, unsigned n, unsigned char  *__restrict out);
-unsigned char *vbenc16(unsigned short  *__restrict in, unsigned n, unsigned char  *__restrict out);
-unsigned char *vbenc15(unsigned short  *__restrict in, unsigned n, unsigned char  *__restrict out);
+// ---- Encode array with n integer values to the buffer out. 	    Return value = end of compressed output buffer out
+unsigned char *vbenc64(  uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out);
+unsigned char *vbenc32(  unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out);
+unsigned char *vbenc16(  unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out);
+unsigned char *vbenc15(  unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out);
 
-//----- Decode       											Return value = end of decompressed buffer in 
-unsigned char *vbdec64(unsigned char   *__restrict in, unsigned n, uint64_t       *__restrict out);
-unsigned char *vbdec32(unsigned char   *__restrict in, unsigned n, unsigned       *__restrict out);
-unsigned char *vbdec16(unsigned char   *__restrict in, unsigned n, unsigned short *__restrict out);
-unsigned char *vbdec15(unsigned char   *__restrict in, unsigned n, unsigned short *__restrict out);
+//----- Decode       											    Return value = end of compressed input buffer in 
+unsigned char *vbdec64(  unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out);
+unsigned char *vbdec32(  unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out);
+unsigned char *vbdec16(  unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out);
+unsigned char *vbdec15(  unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out);
 
-//----- Delta encoding for increasing integer lists.          	Return value = end of compressed buffer out
-unsigned char *vbdenc64(uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t start);
-unsigned char *vbdenc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
-unsigned char *vbdenc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
-unsigned char *vbdenc15(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+//----- Delta encoding for increasing integer lists.          	    Return value = end of compressed output buffer out
+unsigned char *vbdenc64( uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
+unsigned char *vbdenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+unsigned char *vbdenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+unsigned char *vbdenc15( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 
-//----- Delta decode          								    Return value = end of decompressed buffer in
-unsigned char *vbddec64(unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t start);
-unsigned char *vbddec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
-unsigned char *vbddec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
-unsigned char *vbddec15(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+//----- Delta decode          								        Return value = end of compressed input buffer in
+unsigned char *vbddec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
+unsigned char *vbddec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
+unsigned char *vbddec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+unsigned char *vbddec15( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 
-//----- Delta encoding for strictly increasing (never remaining constant or decreasing) integer lists. Return value = end of compressed buffer out 
-unsigned char *vbd1enc64(uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t start);
-unsigned char *vbd1enc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
+//----- Delta encoding for strictly increasing (never remaining constant or decreasing) integer lists. Return value = end of compressed output buffer out
+unsigned char *vbd1enc64(uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
+unsigned char *vbd1enc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
 unsigned char *vbd1enc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *vbd1enc15(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 
-//----- Delta decode          								    Return value = end of decompressed buffer in
-unsigned char *vbd1dec64(unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t start);
-unsigned char *vbd1dec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+//----- Delta decode          								        Return value = end of compressed input buffer in
+unsigned char *vbd1dec64(unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
+unsigned char *vbd1dec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 unsigned char *vbd1dec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 unsigned char *vbd1dec15(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 
-//----- Zigzag encoding for unsorted integer lists.            Return value = end of compressed buffer out
-unsigned char *vbzenc64(uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t start);
-unsigned char *vbzenc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
-unsigned char *vbzenc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
-unsigned char *vbzenc15(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+//----- Zigzag encoding for unsorted integer lists.                 Return value = end of compressed output buffer out
+unsigned char *vbzenc64( uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
+unsigned char *vbzenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+unsigned char *vbzenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+unsigned char *vbzenc15( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 
-//----- Zigzag decode          								  Return value = end of decompressed buffer in
-unsigned char *vbzdec64(unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t start);
-unsigned char *vbzdec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
-unsigned char *vbzdec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
-unsigned char *vbzdec15(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+//----- Zigzag decode          								        Return value = end of compressed input buffer in
+unsigned char *vbzdec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
+unsigned char *vbzdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
+unsigned char *vbzdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+unsigned char *vbzdec15( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 
 #ifdef __cplusplus
 }
