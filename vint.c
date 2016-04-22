@@ -170,7 +170,8 @@ unsigned char *TEMPLATE2(vbd1enc, USIZE)(uint_t *__restrict in, unsigned n, unsi
     #endif
   return op;
 }
- 
+#undef VINTZ
+
 unsigned char *TEMPLATE2(vbd1dec, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) { 
   uint_t x,*op;
     #if VINT_Z == USIZE
@@ -238,4 +239,5 @@ unsigned char *TEMPLATE2(vbzdec, USIZE)(unsigned char *__restrict in, unsigned n
   }
   return in;
 }
+#undef uint_t 
 #endif
