@@ -43,14 +43,20 @@
   _b_ = TEMPLATE(bsr, _usize_)(_b_);\
 }
 
-static inline unsigned zigzagenc31(int      x) { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; }
-static inline unsigned zigzagdec31(unsigned x) { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
+static inline uint64_t       zigzagenc64(int64_t  x) { return x << 1 ^ x >> 63; }
+static inline uint64_t       zigzagdec64(uint64_t x) { return x >> 1 ^ -(x & 1); }
 
-static inline unsigned zigzagenc32(int      x) { return x << 1 ^   x >> 31; }
-static inline unsigned zigzagdec32(unsigned x) { return x >> 1 ^ -(x &   1); }
+static inline unsigned       zigzagenc32(int      x) { return x << 1 ^   x >> 31; }
+static inline unsigned       zigzagdec32(unsigned x) { return x >> 1 ^ -(x &   1); }
 
-static inline uint64_t zigzagenc64(int64_t  x) { return x << 1 ^ x >> 63; }
-static inline uint64_t zigzagdec64(uint64_t x) { return x >> 1 ^ -(x & 1); }
+static inline unsigned       zigzagenc31(int      x) { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; }
+static inline unsigned       zigzagdec31(unsigned x) { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
+
+static inline unsigned short zigzagenc16(short          x) { return x << 1 ^   x >> 31; }
+static inline unsigned short zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
+
+static inline unsigned char zigzagenc8(char          x) { return x << 1 ^   x >> 31; }
+static inline unsigned char zigzagdec8(unsigned short x) { return x >> 1 ^ -(x &   1); }
 
   #ifdef __SSE2__
 #include <emmintrin.h>
