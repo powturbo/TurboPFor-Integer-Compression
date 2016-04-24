@@ -59,7 +59,11 @@ static inline unsigned ror32(unsigned x, int s) { return x >> s | x << (32 - s);
 #define clz64(_x_) __builtin_clzll(_x_)
 #define clz32(_x_) __builtin_clz(_x_)
 
+#if __GNUC_MINOR__ < 8
+static inline unsigned short bswap16(unsigned short a) { return (a<<8)|(a>>8); }
+#else
 #define bswap16(x) __builtin_bswap16(x)
+#endif
 #define bswap32(x) __builtin_bswap32(x)
 #define bswap64(x) __builtin_bswap64(x)
 
