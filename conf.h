@@ -49,12 +49,19 @@ static inline unsigned ror32(unsigned x, int s) { asm ("rorl %%cl,%0" :"=r" (x) 
     #else
 static inline int      bsr32(int x               ) { return x?32 - __builtin_clz(  x):0; }
 static inline int      bsr64(unsigned long long x) { return x?64 - __builtin_clzll(x):0; }
+
 static inline unsigned rol32(unsigned x, int s) { return x << s | x >> (32 - s); }
 static inline unsigned ror32(unsigned x, int s) { return x >> s | x << (32 - s); }
     #endif
 
 #define ctz64(_x_) __builtin_ctzll(_x_)
 #define ctz32(_x_) __builtin_ctz(_x_)
+#define clz64(_x_) __builtin_clzll(_x_)
+#define clz32(_x_) __builtin_clz(_x_)
+
+#define bswap16(x) __builtin_bswap16(x)
+#define bswap32(x) __builtin_bswap32(x)
+#define bswap64(x) __builtin_bswap64(x)
 
   #elif _MSC_VER
 #define ALIGNED(x)		__declspec(align(x))
@@ -65,14 +72,22 @@ static inline unsigned ror32(unsigned x, int s) { return x >> s | x << (32 - s);
 #define likely(x)     	(x)
 #define unlikely(x)   	(x)
 #define __builtin_prefetch(x) //_mm_prefetch(x, _MM_HINT_NTA)
+
 static inline int bsr32(int x) { return x ? 32 - __builtin_clz(x) : 0; }
     #ifdef _WIN64
 static inline int bsr64(unsigned long long x) { unsigned long z = 0; _BitScanForward64(&z, x); return 64 - z; }
-static inline int ctz64(unsigned long long x) { unsigned long z = 0; _BitScanForward64(&z, x); return z; }
+static inline int clz64(unsigned long long x) { unsigned long z = 0; _BitScanForward64(&z, x); return z; }
+static inline int ctz64(unsigned long long x) { unsigned long z = 0; _BitScanReverse64(&z, x); return z; }
     #endif
-static inline int ctz32(unsigned           x) { unsigned      z = 0; _BitScanForward(&z, x); return z; }
+static inline int clz32(unsigned           x) { unsigned      z = 0; _BitScanForward(  &z, x); return 32 - z; }
+static inline int ctz32(unsigned           x) { unsigned      z = 0; _BitScanReverse(  &z, x); return z; }
 #define rol32(x,s) _lrotl(x, s)
 #define ror32(x,s) _lrotr(x, s)
+
+#define bswap16(x) _byteswap_ushort(x)
+#define bswap32(x) _byteswap_ulong(x)
+#define bswap64(x) _byteswap_uint64(x)
+
 #define fseeko _fseeki64
 #define ftello _ftelli64
 #define sleep(x) Sleep(x/1000)
@@ -81,6 +96,7 @@ static inline int ctz32(unsigned           x) { unsigned      z = 0; _BitScanFor
   #endif 
 
 #define ctz16(_x_) ctz32(_x_)
+#define clz16(_x_) clz32(_x_)
 //--------------- Unaligned memory access -------------------------------------
 /*# || defined(i386) || defined(_X86_) || defined(__THW_INTEL)*/
   #if defined(__i386__) || defined(__x86_64__) || \
