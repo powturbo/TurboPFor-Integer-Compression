@@ -29,10 +29,6 @@
 #include "vint.h"
 #include "bitutil.h"
 
-//------------- 32 bits ----------------------------------------------------------------
-			                //0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111 		
-unsigned char vtab[] =      {    1,   1,   1,   1,   1,   1,   1,   1,   5,   4,   3,   3,   2,   2,   2,   2 };
-
 #define UN 8
 
 #define USIZE 32
@@ -79,7 +75,7 @@ unsigned char *TEMPLATE2(vbdec, USIZE)(unsigned char  *__restrict in, unsigned n
   return in;
 }
 
-unsigned char *TEMPLATE2(vbenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) { 
+unsigned char *TEMPLATE2(vbenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) {
   register uint_t x, *ip;
   for(ip = in; ip != in+(n&~(UN-1)); ip += UN) {  __builtin_prefetch(ip+USIZE*8, 0);
     x = ip[0]; TEMPLATE2(_vbput, USIZE)(out, x, ;);
