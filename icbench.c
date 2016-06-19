@@ -148,6 +148,7 @@ enum {  P_CPY,                                                            // cop
         P_SV, P_SVANS,             P_S16, P_S64,                          // simple family: , simpleV, simple16, simple-8b
         P_P4D, P_P4DR,             P_OPTP4,                               // PFor, PForDelta
                                    P_LIBFOR,                              // For 
+								   P_VSQMX,								  // QMX	
                                    P_LZT10, P_LZT20, P_LZT22,		      // LzTurbo
                                    P_LZ4,                          		  // lz4
                                    P_BSHUF, P_BLZ, P_BLZ4, P_BZLIB,       // https://github.com/Blosc/c-blosc
@@ -177,6 +178,7 @@ unsigned char *beenc(unsigned *__restrict in, size_t n, unsigned char *__restric
     case P_SV:     return vsenc32(  in, n, out);
     case P_S16:    return vs16enc(  in, n, (unsigned *)out); 
     case P_S64:    return vs8benc(  in, n, out); 
+    case P_VSQMX:  { unsigned char *q = qmx_enc(in, n, out+4); *(unsigned *)out = q - (out+4); return q; }
       // --------- elias fano ----------------------------------------------
     case P_EFANO:  return out; 
       // --------- PFor ----------------------------------------------------
@@ -254,6 +256,7 @@ unsigned char *bedec(unsigned char *__restrict in, size_t n, unsigned *__restric
 
     case P_S16:    return vs16dec(  (unsigned *)in, n, out);  
     case P_S64:    return vs8bdec(  in, n, out);  
+    case P_VSQMX:    { unsigned l = *(unsigned *)in;  return qmx_dec(in+4, l, out, n); }   
       // --------- elias fano -----------------------------------------------
     case P_EFANO:  return in;
       // --------- PFor -----------------------------------------------------
@@ -615,6 +618,9 @@ struct libss libss[] = {
   { P_VBP,    "VBytePoly"           },
     #endif
 
+    #ifdef _QMX
+  { P_VSQMX,    "qmx"            	  },  
+    #endif
   // ----- Simple family -----
   { P_SV,     "VSimple"             },
 //  { P_SVANS,      "VSimpleANS", BLK_SIZE },

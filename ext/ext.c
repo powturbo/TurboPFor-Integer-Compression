@@ -12,6 +12,7 @@
 
 //- Optional external libraries. Activate also in makefile -----
 //#define _LIBFOR // libfor 
+#define _QMX
 
 //#define _BTSHUF   			// https://github.com/kiyo-masui/bitshuffle
 
@@ -45,6 +46,10 @@
 
   #ifdef _LIBFOR
 #include "for/for.h"
+  #endif
+
+  #ifdef _QMX
+#include "qmx/compress_qmx.h"
   #endif
 
   #ifdef _ZLIB

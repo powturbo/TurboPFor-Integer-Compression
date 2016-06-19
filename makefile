@@ -41,7 +41,7 @@ SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIM
 
 #LIBFOR=ext/for/for.o
 MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
-
+QMX=ext/qmx/compress_qmx.o 
 # Lzturbo not included
 #LZT=../lz/lz8c0.o ../lz/lz8d.o ../lz/lzbc0.o ../lz/lzbd.o
 
@@ -60,10 +60,10 @@ LZ4=ext/lz4.o
 
 #BSHUFFLE=ext/bitshuffle/src/bitshuffle.o
 
-OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(LIBFOR) $(LZT) $(LZ4) $(MVB) $(ZLIB) $(BSHUFFLE)
+OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(LIBFOR) $(QMX) $(LZT) $(LZ4) $(MVB) $(ZLIB) $(BSHUFFLE)
 
 icbench: $(OBJS)
-	$(CC) $(OBJS) -lm -o icbench $(LFLAGS)
+	$(CXX) $(OBJS) -lm -o icbench $(LFLAGS)
 
 idxseg:   idxseg.o
 	$(CC) idxseg.o -o idxseg
@@ -83,10 +83,10 @@ idxqry:   idxqry.o bitunpack.o vp4dd.o bitunpackv.o bitutil.o
 	$(CC) -O3 $(CFLAGS) $< -c -o $@
 
 .cc.o:
-	$(CXX) -O3 -DNDEBUG -std=c++11 $< -c -o $@
+	$(CXX) -O3 -DNDEBUG $(MARCH) $< -c -o $@
 
 .cpp.o:
-	$(CXX) -O3 -DNDEBUG -std=c++11 $< -c -o $@
+	$(CXX) -O3 -DNDEBUG $< -c -o $@
 	
 clean:
 	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete

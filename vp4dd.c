@@ -377,6 +377,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef P4DDD
 #undef P4DDECD
 #undef BITUNPACKD
+#undef BITUNPACKD_
 #undef BITUNDD
 
 #define P4DDD      p4dddv

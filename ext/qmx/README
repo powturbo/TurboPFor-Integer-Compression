@@ -1,0 +1,16 @@
+QMX README
+----------
+The source is released under the BSD license (you choose which one). 
+
+See (and please cite), in the ACM Digital Library (and on my website):
+
+A. Trotman (2014), Compression, SIMD, and Postings Lists. In Proceedings of the 19th Australasian Document Computing Symposium (ADCS 2014)
+
+One C++ class is provided.  It compiles and runs on Linux, OS X, and Windows.  Use make to build the executable that compresses and decompressed one string (and checks that the code works).
+
+IMPORTANT NOTE
+--------------
+As QMX decodes in "chunks", it can (i.e. will normally) decode more integers than requested.  In other words, it will normally overflow the output buffer.  Allowing for 256 "extras" will suffice.  These extras will be garbage.  Although it is possible to encode to prevent (much) "junk", in this implementation the decision was made to favour smaller compressed size and the consequence is more junk decoded.
+
+Andrew
+
