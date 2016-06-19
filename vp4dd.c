@@ -406,7 +406,6 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef P4DDEC
 #undef BITUNPACK
 
-
   #else
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
