@@ -20,7 +20,6 @@
 //#define _BLOSC  				// https://github.com/Blosc/c-blosc
 //#define _ZLIB     
 //#define _LZT      			// LzTurbo not inluded
-
 //-------------------------------------------------------------------------------
 #include "vabyte.h"                                     // Standard Variable Byte
 
