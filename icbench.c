@@ -37,7 +37,6 @@
 //#define _TRANSFORM     // Transform functions : transpose,zigzag
 
 //#define IC_STATS
-
 //---------------------------------------- Platform ---------------------------
   #ifdef _WIN32
 #include <windows.h>
