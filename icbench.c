@@ -44,6 +44,8 @@
 #define srand48(x)  srand(x)
 #define drand48()   ((double)(rand()) / RAND_MAX)
 #define __off64_t   _off64_t  
+  #elif defined(__APPLE__)
+#define fopen64(a,b) fopen(a,b)
   #endif 
 //---------------------------------------- Time -------------------------------
 typedef unsigned long long tm_t;
