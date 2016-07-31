@@ -559,7 +559,7 @@ static void *amalloc(size_t size, size_t align) {
     #elif _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
   void *p; 
   return posix_memalign(&p, align, size)?NULL:p;
-    #elif __STDC_VERSION__ >= 201112L
+    #elif !defined(__APPLE__) && __STDC_VERSION__ >= 201112L
   return aligned_alloc(16, size);
     #else
   return malloc(size);
@@ -573,7 +573,7 @@ void afree(void *p) {
   _aligned_free(p);
     #elif _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
   free(p);
-    #elif __STDC_VERSION__ >= 201112L
+    #elif !defined(__APPLE__) && __STDC_VERSION__ >= 201112L
   aligned_free(p);
     #else
   free(size);
