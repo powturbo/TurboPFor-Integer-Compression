@@ -175,8 +175,9 @@ unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
 unsigned char *TEMPLATE2(P4DNENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) {
   uint_t *ip;
   for(ip = in; ip < in+n; ip += P4DSIZE) { unsigned l = (in+n) - ip; l = min(l, P4DSIZE);      
-    out = TEMPLATE2(P4DENC, USIZE)(ip, l, out);;                           
+    out = TEMPLATE2(P4DENC, USIZE)(ip, l, out);                           
   }
+  return out;
 }
 #pragma clang diagnostic pop
   #endif
