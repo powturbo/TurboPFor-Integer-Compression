@@ -38,6 +38,10 @@
 #include "vp4dc.h"
 #include "bitpack.h"
 #include "idx.h"
+
+  #if defined(__APPLE__)
+#define fopen64(a,b) fopen(a,b)
+  #endif
 //---------------------------------------------------------------------------------------------------------------
 #define DELTA( __in, __n, __b) do { unsigned _v; for(__b=0,_v = __n-1; _v >   0; --_v) __in[_v] = (__in[_v] - __in[_v-1]) - 1, __b |= __in[_v]; __b = bsr32(__b); } while(0)
 
