@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     ic - "Integer Compression" Java Critical Native Interface Class
+//    ic - "Integer Compression" Java Critical Native Interface Class
  
 public class jic {
   // variable byte
