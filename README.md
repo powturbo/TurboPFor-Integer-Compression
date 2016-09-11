@@ -294,7 +294,7 @@ header files to use with documentation:<br />
 ###### Multithreading:
 - All TurboPFor integer compression functions are thread safe
 
-### References:
+### Libraries benchmarked:
 
  + <a name="FastPFor"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU, StreamVbyte
  + <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16 (limited to 28 bits integers)
@@ -305,11 +305,17 @@ header files to use with documentation:<br />
  + <a name="lz4"></a>[lz4](https://github.com/Cyan4973/lz4). included w. block size 64K as indication. Tested after preprocessing w. delta+transpose
  + <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4 and blosclz incl. vectorizeed shuffle.<br>
  + <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
+
+### References:
+ + **TurboPFor**
+   - [Optimizing communication by compression for Multi-GPU Scalable Breadth-First Searches](http://oa.upm.es/40842/) + [gpugraph500](https://github.com/UniHD-CEG/gpugraph500)
+   - [Small Polygon Compression](http://abhinavjauhri.com/publications/dcc_poster_2016.pdf) + [big_num Compression](https://github.com/ajauhri/bignum_compression)
+   - [TurboPForErl](https://github.com/johannesh/TurboPForErl)
  + **Integer compression publications:**
    - [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
    - [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
    - [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
    - [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
 
-Last update:  19 JUN 2016
+Last update:  11 SEP 2016
 

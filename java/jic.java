@@ -78,8 +78,8 @@ public class jic {
 
   static {
     try {
-      System.loadLibrary("libic.so");
-      //System.load("/home/x/dev/ic/libic.so");
+      //System.loadLibrary("libic.so");
+      System.load("/home/x/TurboPFor/libic.so");
     } catch (UnsatisfiedLinkError e) {
       System.err.println("can't load Native TurboPFor from '" + System.getProperty("java.library.path") + "'" + e);
       System.exit(1);

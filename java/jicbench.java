@@ -24,15 +24,18 @@
 //     icbench - "Integer Compression" Java Critical Native Interface
 
 /* Usage: (actually no makefile available)
-1 - generate header jic.h
+1 - generate header jic.h 
+$ cd ~/TurboPFor/java
 $ javah -jni jic
+$ cp jtrle.h ..
 
 2 - Compile jic and jicbench
 $ javac jic.java
 $ javac jicbench.java
 
 3 - compile & link a shared library
-$ gcc -O3 -march=native -fstrict-aliasing -m64 -shared -fPIC -I/usr/lib/jvm/java-7-openjdk-amd64/include bitpack.c bitunpack.c bitpackv.c bitunpackv.c vp4dc.c vp4dd.c vsimple.c vint.c bitutil.c jic.c -o libic.so
+$ cd ~/TurboPFor
+$ gcc -O3 -march=native -fstrict-aliasing -m64 -shared -fPIC -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/default-java/include/linux bitpack.c bitunpack.c bitpackv.c bitunpackv.c vp4dc.c vp4dd.c vsimple.c vint.c bitutil.c jic.c -o libic.so
 
 4 - copy "libic.so" to java library directory
 
