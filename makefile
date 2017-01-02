@@ -85,7 +85,7 @@ endif
 endif
 
 CFLAGS+=-w -Wall -std=gnu99 -DNDEBUG -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
-CXXFLAGS+=$(DDEBUG) $(MARCH) -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
+CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
 
 all: icbench idxcr idxqry idxseg
 
