@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   bitunpack64_.h - "Integer Compression" scalar bit packing
+// bitunpack include 
 #define BITUNBLK32_0(ip, i, op, parm) { \
   DST(op,i*0+ 0, 0, parm);\
   DST(op,i*0+ 1, 0, parm);\
@@ -3101,3 +3101,4 @@
   BITUNBLK64_64(ip, 30, op, parm);\
   BITUNBLK64_64(ip, 31, op, parm);  DSTI(op); ip += 64*4/sizeof(ip[0]);\
 }
+

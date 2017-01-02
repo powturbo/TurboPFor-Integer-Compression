@@ -1,93 +1,206 @@
-# powturbo  (c) Copyright 2013-2015
-# Linux: "export CC=clang" windows mingw: "set CC=gcc" or uncomment one of following lines
-# CC=clang
-# CC=gcc
+# powturbo  (c) Copyright 2013-2016
+# ----------- Downloading + Compiling ----------------------
+# git clone --recursive git://github.com/powturbo/TurboPFor.git 
+# make
+#
+# Minimum make: "make NCODEC2=1 NCODEC3=1 NTRANFORM=1" to compile only TurboPFor
 
+# Linux: "export CC=clang" "export CXX=clang". windows mingw: "set CC=gcc" "set CXX=g++" or uncomment the CC,CXX lines
+CC ?= gcc
+CXX ?= g++
+#CC=clang
+#CXX=clang++
+
+DDEBUG=-DNDEBUG -s
 MARCH=-march=native
-#MARCH=-msse2
-CFLAGS=-DNDEBUG -fstrict-aliasing -m64 $(MARCH) -Iext
-
-UNAME := $(shell uname)
-ifeq ($(UNAME), Linux)
-LIBTHREAD=-lpthread
-LIBRT=-lrt
+#MARCH=-march=broadwell
+ifeq ($(AVX2),1)
+MARCH+=-mavx2 -mbmi2
 else
-CC=gcc
+#NAVX2=0
+AVX2=0
+DEFS+=-DNAVX2
 endif
 
-BIT=./
+#----------------------------------------------
+ifeq ($(OS),Windows_NT)
+  UNAME := Windows
+CC=gcc
+CXX=g++
+CFLAGS+=-D__int64_t=int64_t
+else
+  UNAME := $(shell uname -s)
+ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
+LDFLAGS+=-lpthread -lrt
+endif
+endif
+
+ifeq ($(STATIC),1)
+LDFLAGS+=-static
+NMEMSIZE=1
+endif
+
+LBITS := $(shell getconf LONG_BIT)
+ifeq ($(LBITS),64)
+ARCH=64
+else
+ifeq ($(ARCH),32)
+CFLAGS=-fomit-frame-pointer
+else
+ARCH=64
+endif
+endif
+
+#---------------------- make args --------------------------
+ifeq ($(NCODEC1),1)
+DEFS+=-DNCODEC1
+else
+NCODEC1=0
+endif
+
+ifeq ($(NCODEC2),1)
+DEFS+=-DNCODEC2
+else
+NCODEC2=0
+endif
+
+ifeq ($(NTRANFORM),1)
+DEFS+=-DNTRANSFORM
+else
+NTRANSFORM=0
+endif
+
+ifeq ($(LZTURBO),1)
+DEFS+=-DLZTURBO
+endif
+
+#------------- 
+# disable peak memory calculation
+ifeq ($(NMEMSIZE),1)
+DEFS+=-DNMEMSIZE
+else
+ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
+LDFLAGS += -ldl
+endif
+endif
+
+CFLAGS+=-w -Wall -DNDEBUG -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
+CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++11 -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
+
 all: icbench idxcr idxqry idxseg
 
-bitpack.o: $(BIT)bitpack.c $(BIT)bitpack.h $(BIT)bitpack64_.h
-	$(CC) -O2 $(CFLAGS) -c $(BIT)bitpack.c
+cpp: vp4c.c
+	$(CC) $(MARCH) -E vp4c.c
 
-bitpackv.o: $(BIT)bitpackv.c $(BIT)bitpack.h $(BIT)bitpackv32_.h
-	$(CC) -O2 $(CFLAGS) -c $(BIT)bitpackv.c
-	
-vp4dc.o: $(BIT)vp4dc.c
-	$(CC) -O3 $(CFLAGS) -funroll-loops -c $(BIT)vp4dc.c
 
-vp4dd.o: $(BIT)vp4dd.c
-	$(CC) -O3 $(CFLAGS) -funroll-loops -c $(BIT)vp4dd.c
+bitpack.o: bitpack.c bitpack.h bitpack64_.h
+	$(CC) -O2 $(CFLAGS) $(MARCH) -c bitpack.c
 
-varintg8iu.o: $(BIT)ext/varintg8iu.c $(BIT)ext/varintg8iu.h 
-	$(CC) -O2 $(CFLAGS) -c -funroll-loops -std=c99 $(BIT)ext/varintg8iu.c
+varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h 
+	$(CC) -O2 $(CFLAGS) $(MARCH) -c -funroll-loops -std=c99 ext/varintg8iu.c
 
-idxqryp.o: $(BIT)idxqry.c
-	$(CC) -O3 $(CFLAGS) -c $(BIT)idxqry.c -o idxqryp.o
+idxqryp.o: idxqry.c
+	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
 
-SIMDCOMPD=ext/simdcomp/
-SIMDCOMP=$(SIMDCOMPD)bitpacka.o $(SIMDCOMPD)src/simdintegratedbitpacking.o $(SIMDCOMPD)src/simdcomputil.o $(SIMDCOMPD)src/simdbitpacking.o
+vsimple.o: vsimple.c
+	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
 
-#LIBFOR=ext/for/for.o
-MVB=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
-QMX=ext/qmx/compress_qmx.o 
-# Lzturbo not included
-#LZT=../lz/lz8c0.o ../lz/lz8d.o ../lz/lzbc0.o ../lz/lzbd.o
+#-------------------------------------------------------------------
+ifeq ($(NCODEC1), 0)
+OB+=ext/streamvbyte/src/streamvbyte.o ext/streamvbyte/src/streamvbytedelta.o 
+OB+=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
+OB+=ext/simdcomp/src/simdintegratedbitpacking.o ext/simdcomp/src/simdcomputil.o ext/simdcomp/src/simdbitpacking.o ext/simdcomp/src/simdpackedselect.o 
+OB+=ext/simdcomp_/simdfor.o 
 
-# blosc. Set the env. variable "EXT=blosc" to include 
-#EXT=blosc
-ifeq ($(EXT), blosc)
-B=ext/
-CFLAGS+=-DSHUFFLE_SSE2_ENABLED -DHAVE_LZ4 -DHAVE_ZLIB -Iext/
-LFLAGS+=-lpthread 
-BLOSC=$(B)lz4hc.o $(B)c-blosc/blosc/blosc.o $(B)c-blosc/blosc/blosclz.o $(B)c-blosc/blosc/shuffle.o $(B)c-blosc/blosc/shuffle-generic.o $(B)c-blosc/blosc/shuffle-sse2.o
+ifeq ($(AVX2),1)
+OB+=ext/simdcomp/src/avxbitpacking.o 
 endif
 
-LZ4=ext/lz4.o 
+OB+=ext/LittleIntPacker/src/bitpacking32.o ext/LittleIntPacker/src/turbobitpacking32.o ext/LittleIntPacker/src/scpacking32.o ext/LittleIntPacker/src/horizontalpacking32.o
+ifeq ($(AVX2),1)
+OB+=ext/LittleIntPacker/src/bmipacking32.o
+endif
 
-#ZLIB=-lz
+OB+=ext/libfor/for.o
+#modified QMX for unaligned SIMD load/store
+OB+=ext/bench_/bench/compress_qmx.o ext/bench_/bench/compress_qmx_v2.o ext/bench_/bench/compress_qmx_v3.o ext/bench_/bench/compress_qmx_v4.o
+#OB+=ext/qmx.o
+#OB+=ext/qmx/compress_qmx.o
+OB+=ext/varintg8iu.o
+OB+=ext/rc.o
+endif
 
-#BSHUFFLE=ext/bitshuffle/src/bitshuffle.o
+#----------------------------------------
+ifeq ($(NCODEC2), 0)
+ext/polycom/optpfd.o: ext/polycom/optpfd.c
+	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@ 
 
-OBJS=icbench.o bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4dd.o vp4dc.o varintg8iu.o bitpackv.o bitunpackv.o $(TRANSP) ext/simple8b.o transpose.o $(BLOSC) $(SIMDCOMP) $(LIBFOR) $(QMX) $(LZT) $(LZ4) $(MVB) $(ZLIB) $(BSHUFFLE)
+OB+=ext/polycom/optpfd.o
+OB+=ext/polycom/polyvbyte.o
 
-icbench: $(OBJS)
-	$(CXX) $(OBJS) -lm -o icbench $(LFLAGS)
+OB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o
 
-idxseg:   idxseg.o
-	$(CC) idxseg.o -o idxseg
+ifeq ($(HAVE_ZLIB), 1)
+CDEFS+=-DZLIB
+ifeq ($(STATIC),1)
+OB+=/usr/lib/x86_64-linux-gnu/libz.a
+else
+OB+=-lz
+endif
+else
+#ZD=zlib/
+#OB+=$(ZD)adler32.o $(ZD)crc32.o $(ZD)compress.o $(ZD)deflate.o $(ZD)infback.o $(ZD)inffast.o $(ZD)inflate.o $(ZD)inftrees.o $(ZD)trees.o $(ZD)uncompr.o $(ZD)zutil.o
+endif
+
+OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o  
+OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o 
+
+ifeq ($(BLOSC),1)
+LDFLAGS+=-lpthread 
+CFLAGS+=-Iext/ -DSHUFFLE_SSE2_ENABLED
+OB+=ext/c-blosc2/blosc/blosc.o ext/c-blosc2/blosc/blosclz.o ext/c-blosc2/blosc/schunk.o ext/c-blosc2/blosc/delta.o ext/c-blosc2/blosc/shuffle.o ext/c-blosc2/blosc/shuffle-generic.o ext/c-blosc2/blosc/shuffle-sse2.o \
+ext/c-blosc2/blosc/bitshuffle-generic.o ext/c-blosc2/blosc/bitshuffle-sse2.o
+endif
+
+endif
+
+OB+=bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4d.o vp4c.o bitpack128v.o bitunpack128v.o bitunpack128h.o $(TRANSP) ext/simple8b.o transpose.o 
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ICLIB=bitpack.o bitunpack.o bitunpack128v.o vint.o vp4d.o bitutil.o bitpack128v.o
+
+ifeq ($(AVX2),1)
+OB+=bitpack256v.o bitunpack256v.o 
+ICLIB+=bitpack256v.o bitunpack256v.o 
+endif
+
+
+icbench: $(OB) icbench.o plugins.o 
+	$(CXX) $^ $(LDFLAGS) -o icbench
+
+.c.o:
+	$(CC) -O3 $(MARCH) $(CFLAGS) $< -c -o $@  
+
+.cc.o:
+	$(CXX) -O3 $(MARCH) $(CXXFLAGS)  $< -c -o $@ 
+
+.cpp.o:
+	$(CXX) -O3 $(MARCH) $(CXXFLAGS) $< -c -o $@ 
+
+idxseg:   idxseg.o $(ICLIB)
+	$(CC) $^ $(LDFLAGS) -o idxseg
 
 ifeq ($(UNAME), Linux)
 para: CFLAGS += -DTHREADMAX=32	
 para: idxqry
 endif
 
-idxcr:   idxcr.o bitpack.o vp4dc.o bitutil.o
-	$(CC) idxcr.o bitpack.o bitpackv.o vp4dc.o bitutil.o -o idxcr $(LFLAGS)
+idxcr:   idxcr.o $(ICLIB)  
+	$(CC) $^ $(LDFLAGS) -o idxcr $(LFLAGS)
 
-idxqry:   idxqry.o bitunpack.o vp4dd.o bitunpackv.o bitutil.o
-	$(CC) idxqry.o bitunpack.o bitunpackv.o vp4dd.o bitutil.o $(LIBTHREAD) $(LIBRT) -o idxqry $(LFLAGS)
+idxqry:  idxqry.o $(ICLIB)
+	$(CC) $^ $(LDFLAGS) $(LIBTHREAD) $(LIBRT) -o idxqry $(LFLAGS)
 
-.c.o:
-	$(CC) -O3 $(CFLAGS) $< -c -o $@
-
-.cc.o:
-	$(CXX) -O3 -DNDEBUG $(MARCH) $< -c -o $@
-
-.cpp.o:
-	$(CXX) -O3 -DNDEBUG $< -c -o $@
-	
 clean:
 	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete
 

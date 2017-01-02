@@ -100,7 +100,7 @@ unsigned char *vs8benc(unsigned *__restrict in, int n, unsigned char *__restrict
 #define MSK(__x) ((1ul<<__x)-1)
 unsigned char *vs8bdec(unsigned char *__restrict in, int n, unsigned *__restrict out) {
   unsigned char *ip = in; 
-  unsigned i,*_out = out,*out_ = out+n;
+  unsigned i,*out_ = out+n;
   while(out < out_) {
     unsigned long long w = *(unsigned long long *)ip;
     switch(w & 15) {  

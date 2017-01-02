@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//      bitunpack_.h - "Integer Compression" Bit Packing 
+//  "Integer Compression" Bit Packing 
 
   #ifndef BPI
 #include "conf.h"

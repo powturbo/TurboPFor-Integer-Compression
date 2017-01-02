@@ -724,7 +724,7 @@ void unpack20(unsigned int *p, unsigned int *w)
 }
 
 
-void unpack32(unsigned int *p, unsigned int *w)
+static void unpack32(unsigned int *p, unsigned int *w)
 {
   int i;
 

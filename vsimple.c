@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   vsimple.c - "Integer Compression" variable simple
+//   "Integer Compression" variable simple
   #ifndef USIZE
   #ifdef __SSE2__
 #include <emmintrin.h>
@@ -98,7 +98,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
     for(m = x = TEMPLATE2(bsr, USIZE)(*ip);(r+1)*(xm = x > m?x:m) <= TEMPLATE2(s_lim, USIZE)[xm] && ip+r<e;) m = xm, x = TEMPLATE2(bsr, USIZE)(ip[++r]); 
     while(r < TEMPLATE2(s_itm, USIZE)[m]) m++;
 			
-    a:; 
+    a:; //printf("%d,", m);
     switch(m) {
       case 0: ip += r; 
         if(--r >= 0xf) { 
@@ -106,7 +106,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
           if(n <= 0x100)
             *op++ = r; 
           else
-            vbput32(op, r);            
+            vbxput32(op, r);            
         } else *op++ = r<<4; 
         break;
       case 1:
@@ -291,9 +291,9 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
           if(n <= 0x100)
             *op++ = r; 
           else
-            vbput32(op, r);
+            vbxput32(op, r);
         } else *op++ = r<<4|8;
-        TEMPLATE2(vbput, USIZE)(op, ip[0]);
+        TEMPLATE2(vbxput, USIZE)(op, ip[0]);
         break;
         #endif
 
@@ -317,8 +317,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint
         if(unlikely(r == 0xf)) { 
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
-          else
-            r = vbget32(ip);
+          else { vbxget32(ip, r); }
         }          
         uint_t *q = op; op += r+1; 
           #if defined(__SSE2__)
@@ -440,10 +439,9 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint
         if(unlikely(r == 0xf)) { 
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
-          else
-            r = vbget32(ip);
+          else { vbxget32(ip, r); }
         } 
-        uint_t u = TEMPLATE2(vbget, USIZE)(ip), *q=op; op += r+1;  
+        uint_t *q=op,u; op += r+1; TEMPLATE2(vbxget, USIZE)(ip,u);  
           #if defined(__SSE2__) && USIZE == 32
         __m128i v = _mm_set1_epi32(u);
         while(q < op) { 

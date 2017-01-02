@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/ 
-//    idxseg.c - Inverted Index - Create partitions from DocId file for prallel query evaluation
+//   idxseg.c - Inverted Index - Create partitions from DocId file for prallel query evaluation
 #define _LARGEFILE64_SOURCE 1 
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
@@ -45,7 +45,7 @@ unsigned argtoi(char *s) {
 }
 
 void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2015 Powturbo  %s\n", __DATE__);
+  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2017 Powturbo  %s\n", __DATE__);
   fprintf(stderr, "Partitioning\n");
   fprintf(stderr, "Usage: idxseg -nNs -sPs <docid file> <destination dir>\n");
   fprintf(stderr, "Ns=total number of documents. Ps=number of partitions\n");

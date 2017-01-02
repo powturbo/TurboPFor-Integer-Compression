@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -2256,3 +2256,4 @@
   BITBLK64_64(ip, 30, op, parm);\
   BITBLK64_64(ip, 31, op, parm);  SRCI(ip); op += 64*4/sizeof(op[0]);\
 }
+

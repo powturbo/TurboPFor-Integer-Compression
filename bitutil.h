@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2016
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,63 +21,108 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    bitutil.h - "Integer Compression" 
+//   "Integer Compression"
 #include <stdint.h>
 
-#define _BITFORZERO(_out_, _n_, _start_, _inc_) do { unsigned _i;\
-  for(_i = 0; _i != (_n_&~3); ) {\
-    _out_[_i] = _start_+_i*_inc_; _i++;\
-    _out_[_i] = _start_+_i*_inc_; _i++;\
-    _out_[_i] = _start_+_i*_inc_; _i++;\
-    _out_[_i] = _start_+_i*_inc_; _i++;\
+#define BITFORSET_(_out_, _n_, _start_, _inc_) do { unsigned _i;\
+  for(_i = 0; _i != (_n_&~3); _i+=4) {\
+    _out_[_i+0] = _start_+(_i  )*_inc_;\
+    _out_[_i+1] = _start_+(_i+1)*_inc_;\
+    _out_[_i+2] = _start_+(_i+2)*_inc_;\
+    _out_[_i+3] = _start_+(_i+3)*_inc_;\
   }\
   while(_i != _n_)\
     _out_[_i] = _start_+_i*_inc_, ++_i;\
 } while(0)
 
-#define BITSIZE(_in_, _n_, _b_, _usize_) { typeof(_in_[0]) *_ip;\
-  for(_b_=0,_ip = _in_; _ip != _in_+(_n_&~(4-1)); )\
-    _b_ |= *_ip++ | *_ip++ | *_ip++ | *_ip++;\
+#define BITSIZE_(_in_, _n_, _b_, _usize_) { typeof(_in_[0]) *_ip;\
+  for(_b_=0,_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
+    _b_ |= _ip[0] | _ip[1] | _ip[2] | _ip[3];\
   while(_ip != _in_+_n_) \
     _b_ |= *_ip++;\
-  _b_ = TEMPLATE(bsr, _usize_)(_b_);\
+  _b_ = TEMPLATE2(bsr, _usize_)(_b_);\
 }
 
-static inline uint64_t       zigzagenc64(int64_t  x) { return x << 1 ^ x >> 63; }
-static inline uint64_t       zigzagdec64(uint64_t x) { return x >> 1 ^ -(x & 1); }
+static inline uint64_t       zigzagenc64(int64_t  x)       { return x << 1 ^ x >> 63; }
+static inline uint64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
 
-static inline unsigned       zigzagenc32(int      x) { return x << 1 ^   x >> 31; }
-static inline unsigned       zigzagdec32(unsigned x) { return x >> 1 ^ -(x &   1); }
+static inline unsigned       zigzagenc32(int      x)       { return x << 1 ^   x >> 31; }
+static inline unsigned       zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
 
-static inline unsigned       zigzagenc31(int      x) { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; }
-static inline unsigned       zigzagdec31(unsigned x) { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
+static inline unsigned       zigzagenc31(int      x)       { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; }
+static inline unsigned       zigzagdec31(unsigned x)       { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
 
-static inline unsigned short zigzagenc16(short          x) { return x << 1 ^   x >> 31; }
+static inline unsigned short zigzagenc16(short          x) { return x << 1 ^   x >> 15; }
 static inline unsigned short zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
 
-static inline unsigned char zigzagenc8(char          x) { return x << 1 ^   x >> 31; }
-static inline unsigned char zigzagdec8(unsigned short x) { return x >> 1 ^ -(x &   1); }
+static inline unsigned char  zigzagenc8( char           x) { return x << 1 ^   x >> 7; }
+static inline unsigned char  zigzagdec8( unsigned short x) { return x >> 1 ^ -(x &   1); }
+
+  #ifdef __AVX2__
+#include <emmintrin.h>
+#include <stdio.h>
+//#define DELTA256x32(_v_, _sv_,_iv_) ?
+
+#define SCAN256x32( _v_, _sv_) {\
+  _v_  = _mm256_add_epi32(_v_, _mm256_slli_si256(_v_, 4));\
+  _v_  = _mm256_add_epi32(_v_, _mm256_slli_si256(_v_, 8));\
+  _sv_ = _mm256_add_epi32(     _mm256_permute2x128_si256(   _mm256_shuffle_epi32(_sv_,_MM_SHUFFLE(3, 3, 3, 3)), _sv_, 0x11), \
+         _mm256_add_epi32(_v_, _mm256_permute2x128_si256(zv,_mm256_shuffle_epi32(_v_, _MM_SHUFFLE(3, 3, 3, 3)),       0x20)));\
+}
+
+#define SCANI256x32(_v_, _sv_, _vi_) SCAN256x32(_v_, _sv_); _sv_ = _mm256_add_epi32(_sv_, _vi_)
+
+#define   ZIGZAG256x32(_v_) _mm256_xor_si256(_mm256_slli_epi32(_v_,1), _mm256_srai_epi32(_v_,31))
+#define UNZIGZAG256x32(_v_) _mm256_xor_si256(_mm256_srli_epi32(_v_,1), _mm256_srai_epi32(_mm256_slli_epi32(_v_,31),31) )
+
+#define HOR256x32(_v_,_b_) _v_ = _mm256_or_si256(_v_, _mm256_srli_si256(_v_, 8)); _v_ = _mm256_or_s256(_v_, _mm256_srli_si256(_v_, 4));\
+   _b_ = _mm256_extract_epi32(_v_,0) | _mm256_extract_epi32(_v_, 4)
+  #endif 
 
   #ifdef __SSE2__
 #include <emmintrin.h>
-// SIMD Delta
-#define DELTA128_32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_or_si128(_mm_srli_si128(_sv_, 12), _mm_slli_si128(_v_, 4)))
 
+#define DELTA128x32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_or_si128(_mm_srli_si128(_sv_, 12), _mm_slli_si128(_v_, 4)))
 // SIMD Scan ( prefix sum ) 
-#define SCAN128_32( _v_, _sv_) _v_ = _mm_add_epi32(_v_, _mm_slli_si128(_v_, 4)); _sv_ = _mm_add_epi32(_mm_shuffle_epi32(_sv_, _MM_SHUFFLE(3, 3, 3, 3)), _mm_add_epi32(_mm_slli_si128(_v_, 8), _v_) )
-#define SCANI128_32(_v_, _sv_, _vi_) SCAN128_32(_v_, _sv_); _sv_ = _mm_add_epi32(_sv_, _vi_)
+#define SCAN128x32( _v_, _sv_) _v_ = _mm_add_epi32(_v_, _mm_slli_si128(_v_, 4)); _sv_ = _mm_add_epi32(_mm_shuffle_epi32(_sv_, _MM_SHUFFLE(3, 3, 3, 3)), _mm_add_epi32(_mm_slli_si128(_v_, 8), _v_) )
+#define SCANI128x32(_v_, _sv_, _vi_) SCAN128x32(_v_, _sv_); _sv_ = _mm_add_epi32(_sv_, _vi_)
 
-// SIMD ZigZag
-#define   ZIGZAG128_32(_v_) _mm_xor_si128(_mm_slli_epi32(_v_,1), _mm_srai_epi32(_v_,31))
-#define UNZIGZAG128_32(_v_) _mm_xor_si128(_mm_srli_epi32(_v_,1), _mm_srai_epi32(_mm_slli_epi32(_v_,31),31) ) //_mm_sub_epi32(cz, _mm_and_si128(iv,c1))
-
+#define   ZIGZAG128x32(_v_) _mm_xor_si128(_mm_slli_epi32(_v_,1), _mm_srai_epi32(_v_,31))
+#define UNZIGZAG128x32(_v_) _mm_xor_si128(_mm_srli_epi32(_v_,1), _mm_srai_epi32(_mm_slli_epi32(_v_,31),31) ) //_mm_sub_epi32(cz, _mm_and_si128(iv,c1))
 // SIMD Horizontal OR
-#define HOR128_32(_v_,_b_) _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 8)); _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 4)); _b_ = (unsigned)_mm_cvtsi128_si32(_v_)
+#define HOR128x32(_v_,_b_) _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 8)); _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 4)); _b_ = (unsigned)_mm_cvtsi128_si32(_v_)
+  #endif 
 
+  #if 0 //def __AVX2__
+#define BITSIZE32(_in_, _n_, _b_) { typeof(_in_[0]) *_ip; __m256i _v = _mm256_setzero_si256();\
+  for(_ip = _in_; _ip != _in_+(_n_&~(8-1)); _ip+=8)\
+    _v = _mm256_or_si256(_v, _mm256_loadu_si256((__m256i*)_ip));\
+  HOR256x32(_v,_b_);\
+  while(_ip != _in_+_n_)\
+    _b_ |= *_ip++;\
+  _b_ = bsr32(_b_);\
+}
+#define BITZERO32(_out_, _n_, _start_) do {\
+  __m256i _sv_ = _mm256_set1_epi32(_start_), *_ov = (__m256i *)(_out_), *_ove = (__m256i *)(_out_ + _n_);\
+  do _mm256_storeu_si256(_ov++, _sv_); while(_ov < _ove);\
+} while(0)
+
+#define BITFORZERO32(_out_, _n_, _start_, _inc_) do {\
+  __m256i _sv = _mm256_set1_epi32(_start_), *_ov=(__m256i *)(_out_), *_ove = (__m256i *)(_out_ + _n_), _cv = _mm256_set_epi32(7+_inc_,6+_inc_,5+_inc_,4+_inc_,3*_inc_,2*_inc_,1*_inc_,0); \
+    _sv = _mm256_add_epi32(_sv, _cv);\
+    _cv = _mm256_set1_epi32(4);\
+  do { _mm256_storeu_si256(_ov++, _sv); _sv = _mm256_add_epi32(_sv, _cv); } while(_ov < _ove);\
+} while(0)
+
+#define BITDIZERO32(_out_, _n_, _start_, _inc_) do { __m256i _sv = _mm256_set1_epi32(_start_), _cv = _mm256_set_epi32(7+_inc_,6+_inc_,5+_inc_,4+_inc_,3+_inc_,2+_inc_,1+_inc_,_inc_), *_ov=(__m256i *)(_out_), *_ove = (__m256i *)(_out_ + _n_);\
+  _sv = _mm256_add_epi32(_sv, _cv); _cv = _mm256_set1_epi32(4*_inc_); do { _mm256_storeu_si256(_ov++, _sv), _sv = _mm256_add_epi32(_sv, _cv); } while(_ov < _ove);\
+} while(0)
+
+  #elif defined(__SSE2__) 
 #define BITSIZE32(_in_, _n_, _b_) { typeof(_in_[0]) *_ip; __m128i _v = _mm_setzero_si128();\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
     _v = _mm_or_si128(_v, _mm_loadu_si128((__m128i*)_ip));\
-  HOR128_32(_v,_b_);\
+  HOR128x32(_v,_b_);\
   while(_ip != _in_+_n_)\
     _b_ |= *_ip++;\
   _b_ = bsr32(_b_);\
@@ -100,9 +145,9 @@ static inline unsigned char zigzagdec8(unsigned short x) { return x >> 1 ^ -(x &
 } while(0)
 
   #else																					
-#define BITSIZE32(_in_, _n_, _b_)        BITSIZE(_in_, _n_, _b_, 32)
-#define BITFORZERO32(_out_, _n_, _start_, _inc_) _BITFORZERO(_out_, _n_, _start_, _inc_)
-#define BITZERO32(_out_, _n_, _start_)         _BITFORZERO(_out_, _n_, _start_, 0)
+#define BITSIZE32(   _in_,  _n_, _b_)            BITSIZE_(_in_, _n_, _b_, 32)
+#define BITFORZERO32(_out_, _n_, _start_, _inc_) BITFORSET_(_out_, _n_, _start_, _inc_)
+#define BITZERO32(   _out_, _n_, _start_)        BITFORSET_(_out_, _n_, _start_, 0)
   #endif
 
 #define DELTR( _in_, _n_, _mode_,      _out_) { unsigned _v; for(      _out_[0]=_in_[0],_v = 1;     _v < _n_; _v++) _out_[_v] = (_in_[_v] - _out_[0]) -   _v*_mode_; }
@@ -161,13 +206,13 @@ void bitunzigzag64(  uint64_t *p,  unsigned n, unsigned start);
 #define DZMANT_BITS   36
 
 
-#define FLTEXPO(__u,__mantbits, __one)  ( ((__u) >> __mantbits) & ( (__one<<(sizeof(__u)*8 - __mantbits)) - 1 ) )
-#define FLTMANT(__u,__mantbits, __one)    ((__u) & ((__one<<__mantbits)-1)) 
+#define FLTEXPO(_u_,_mantbits_, _one_)  ( ((_u_) >> _mantbits_) & ( (_one_<<(sizeof(_u_)*8 - _mantbits_)) - 1 ) )
+#define FLTMANT(_u_,_mantbits_, _one_)    ((_u_) & ((_one_<<_mantbits_)-1)) 
 
-#define BITUNFLOAT(__expo, __mant, __u, __mantbits) __u = ((__expo) << __mantbits) | (__mant)//>>1 | (__mant)<<(sizeof(__u)*8 - 1)
+#define BITUNFLOAT(_expo_, _mant_, _u_, _mantbits_) _u_ = ((_expo_) << _mantbits_) | (_mant_)//>>1 | (_mant_)<<(sizeof(_u_)*8 - 1)
 
-/*#define BITFLOAT(__u, __sgn, __expo, __mant,      __mantbits, __one) __sgn = __u >> (sizeof(__u)*8-1); __expo = EXPO(__u,__mantbits; __mant = __u & ((__one<<__mantbits)-1)
-#define BITUNFLOAT(   __sgn, __expo, __mant, __u, __mantbits)        __u = (__sgn) << (sizeof(__u)*8-1) | (__expo) << __mantbits | (__mant) */
+/*#define BITFLOAT(_u_, _sgn_, _expo_, _mant_,      _mantbits_, _one_) _sgn_ = _u_ >> (sizeof(_u_)*8-1); _expo_ = EXPO(_u_,_mantbits_; _mant_ = _u_ & ((_one_<<_mantbits_)-1)
+#define BITUNFLOAT(   _sgn_, _expo_, _mant_, _u_, _mantbits_)        _u_ = (_sgn_) << (sizeof(_u_)*8-1) | (_expo_) << _mantbits_ | (_mant_) */
 
 // De-/Compose floating point array to/from integer arrays (sign,exponent,mantissa) for using with "Integer Compression" functions ------------
 void bitdouble(  double *in, unsigned n, int *expo, uint64_t *mant);

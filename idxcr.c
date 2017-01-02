@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -35,13 +35,9 @@
 
 #include "conf.h"
 #include "vint.h"
-#include "vp4dc.h"
+#include "vp4c.h"
 #include "bitpack.h"
 #include "idx.h"
-
-  #if defined(__APPLE__)
-#define fopen64(a,b) fopen(a,b)
-  #endif
 //---------------------------------------------------------------------------------------------------------------
 #define DELTA( __in, __n, __b) do { unsigned _v; for(__b=0,_v = __n-1; _v >   0; --_v) __in[_v] = (__in[_v] - __in[_v-1]) - 1, __b |= __in[_v]; __b = bsr32(__b); } while(0)
 
@@ -49,7 +45,7 @@
 int verb;
 
 void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2015 Powturbo  %s\n", __DATE__);
+  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2017 Powturbo  %s\n", __DATE__);
   fprintf(stderr, "https://github.com/powturbo/TurboPFor\n\n");
   fprintf(stderr, "Create inverted index from 'Document identifier data set' format\n");
   fprintf(stderr, "See http://lemire.me/data/integercompression2014.html'\n");
@@ -116,7 +112,7 @@ int main(int argc, char *argv[]) {
         if(n > 1) { 
 		  DELTA(ip, n, b); //bitdelta32( in+1, --n, pa, in[0], mode);
 		    #ifdef _TURBOPFOR 
-		  b = p4d32(ip+1, n-1, &bx);
+		  b = _p4dec32(ip+1, n-1, &bx);
 	        #endif
 		} 	
 		    #ifdef SKIP_S
@@ -139,9 +135,9 @@ int main(int argc, char *argv[]) {
 			#endif
             #ifdef _TURBOPFOR
           *op++ = bx; 
-		  op = n==129?p4dev32(    ip+1, n-1, op, b, bx):p4de32(   ip+1, n-1, op, b, bx);
+		  op = n==129?_p4dec128v32(    ip+1, n-1, op, b, bx):_p4dec32(   ip+1, n-1, op, b, bx);
             #else
-		  op = n==129?bitpackv32( ip+1, n-1, op, b)    :bitpack32(ip+1, n-1, op, b);
+		  op = n==129?bitpack128v32( ip+1, op, b)    :bitpack32(ip+1, n-1, op, b);
             #endif
         }
 		ip += n;	

@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   transpose.c - nibble/byte transpose
+//  Nibble/Byte transpose
 
 #if !defined(TRANSPOSE) && !defined(TRANSPOSEV)
 #include <string.h>

@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    bitunpack.h - "Integer Compression" Binary Packing 
+//  "Integer Compression" Bit Packing 
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,24 +37,17 @@ unsigned char *bitunpack32(const unsigned char *__restrict in, unsigned n, unsig
 unsigned char *bitunpack64(const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b);
 
 // ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------------
-  #ifdef __AVX2__
-#include <x86intrin.h>
-  #else
-#define _bzhi_u64(__u, __b) ((__u) & ((1ull<<__b)-1))
-#define _bzhi_u32(__u, __b) ((__u) & ((1u  <<__b)-1))
-  #endif
-
 // Get a single 32 bits value with index "idx" (or bit index b*idx) from packed integer array
-static ALWAYS_INLINE unsigned  bitgetx32(const unsigned char *__restrict in, unsigned b, unsigned  idx) { unsigned bidx = b*idx; return _bzhi_u64( (*(unsigned long long *)((unsigned *)in+(bidx>>5))) >> (bidx&0x1f), b ); }
-static ALWAYS_INLINE unsigned _bitgetx32(const unsigned char *__restrict in, unsigned b, unsigned bidx) {                        return _bzhi_u64( (*(unsigned long long *)((unsigned *)in+(bidx>>5))) >> (bidx&0x1f), b ); }
-	
+static ALWAYS_INLINE unsigned  bitgetx32(const unsigned char *__restrict in, unsigned  idx, unsigned b) { unsigned bidx = b*idx; return bzhi64( ctou64((unsigned *)in+(bidx>>5)) >> (bidx&0x1f), b ); }
+static ALWAYS_INLINE unsigned _bitgetx32(const unsigned char *__restrict in, unsigned bidx, unsigned b) {                        return bzhi64( ctou64((unsigned *)in+(bidx>>5)) >> (bidx&0x1f), b ); }
+
 // like  bitgetx32 but for 16 bits integer array
-static ALWAYS_INLINE unsigned  bitgetx16(const unsigned char *__restrict in, unsigned b, unsigned  idx) { unsigned bidx = b*idx; return _bzhi_u32( (*(unsigned           *)((unsigned *)in+(bidx>>4))) >> (bidx& 0xf), b ); }
-static ALWAYS_INLINE unsigned _bitgetx16(const unsigned char *__restrict in, unsigned b, unsigned bidx) {                        return _bzhi_u32( (*(unsigned           *)((unsigned *)in+(bidx>>4))) >> (bidx& 0xf), b ); }
+static ALWAYS_INLINE unsigned  bitgetx16(const unsigned char *__restrict in, unsigned  idx, unsigned b) { unsigned bidx = b*idx; return bzhi32( ctou32((unsigned *)in+(bidx>>4)) >> (bidx& 0xf), b ); }
+static ALWAYS_INLINE unsigned _bitgetx16(const unsigned char *__restrict in, unsigned bidx, unsigned b) {                        return bzhi32( ctou32((unsigned *)in+(bidx>>4)) >> (bidx& 0xf), b ); }
 
 // Set a single value with index "idx" 
-static ALWAYS_INLINE void      bitsetx16(const unsigned char *__restrict in, unsigned b, unsigned  idx, unsigned v) { unsigned bidx = b*idx;  unsigned           *p = (unsigned           *)             in+(bidx>>4) ; *p = ( *p & ~(((1u  <<b)-1) << (bidx& 0xf)) ) |                     v<<(bidx& 0xf);}
-static ALWAYS_INLINE void      bitsetx32(const unsigned char *__restrict in, unsigned b, unsigned  idx, unsigned v) { unsigned bidx = b*idx;  unsigned long long *p = (unsigned long long *)((unsigned *)in+(bidx>>5)); *p = ( *p & ~(((1ull<<b)-1) << (bidx&0x1f)) ) | (unsigned long long)v<<(bidx&0x1f);}
+static ALWAYS_INLINE void      bitsetx16(const unsigned char *__restrict in, unsigned  idx, unsigned v, unsigned b) { unsigned bidx = b*idx;  unsigned           *p = (unsigned           *)             in+(bidx>>4) ; *p = ( *p & ~(((1u  <<b)-1) << (bidx& 0xf)) ) |                     v<<(bidx& 0xf);}
+static ALWAYS_INLINE void      bitsetx32(const unsigned char *__restrict in, unsigned  idx, unsigned v, unsigned b) { unsigned bidx = b*idx;  unsigned long long *p = (unsigned long long *)((unsigned *)in+(bidx>>5)); *p = ( *p & ~(((1ull<<b)-1) << (bidx&0x1f)) ) | (unsigned long long)v<<(bidx&0x1f);}
 
 // ---------------- DFOR : integrated bitpacking, for delta packed SORTED array (Ex. DocId in inverted index) -------------------------------
 // start < out[0] < out[1] < ... < out[n-2] < out[n-1] < (1<<N)-1,    N=32,16
@@ -79,11 +72,34 @@ unsigned char *bitfunpack32(  const unsigned char *__restrict in, unsigned n, un
 unsigned char *bitfunpack16(  const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
 
 // ---------------- SIMD : unpack a bit packed integer array -------------------------------------------------------------------------------
-// SIMD unpack a bitpacked integer array. Return value = end of packed buffer in
-unsigned char *bitunpackv32(  const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out				, unsigned b);
-unsigned char *bitdunpackv32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1unpackv32(const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
-unsigned char *bitzunpackv32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
+// SIMD unpack a 128/256 bitpacked integer array. Return value = end of packed buffer in
+unsigned char *bitunpack128v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b);
+unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitd1unpack128v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+
+unsigned char *bitunpack256v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b);
+unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitd1unpack256v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+
+unsigned char *bitunpack128h32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b);
+unsigned char *bitzunpack128h32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack128h32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitd1unpack128h32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+
+// internal TurboPFor functions: masked unpack
+unsigned char *_bitunpack128v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitd1unpack128v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+
+unsigned char *_bitunpack128h32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpack128h32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitd1unpack128h32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+
+unsigned char *_bitunpack256v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitd1unpack256v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
 #ifdef __cplusplus
 }

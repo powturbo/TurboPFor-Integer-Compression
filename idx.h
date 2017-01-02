@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -47,7 +47,6 @@
 //-------------------------- Mapping term id <-> posting offset in file ----------------------------------
 typedef struct { uint8_t offseth; uint32_t offsetl; } __attribute__ ((packed)) tmap_t;   // 40 bits offsets -> 1 Terabyte
 
-#define TIDMAPSET(__t, __ofs) { (__t)->offseth = (__ofs)>>32; (__t)->offsetl = (__ofs) & 0xffffffff; }
-#define TIDMAPGET(__t) ((__off64_t)(__t)->offseth << 32 | (__t)->offsetl)
-#define TIDMAP(__fdm, __tid) ({ unsigned char *_bp = __fdm; tmap_t *_t = (tmap_t *)&_bp[(__tid)*sizeof(tmap_t)]; TIDMAPGET(_t); })
-
+#define TIDMAPSET(_t_, _ofs_) { (_t_)->offseth = (_ofs_)>>32; (_t_)->offsetl = (_ofs_) & 0xffffffff; }
+#define TIDMAPGET(_t_) ((__off64_t)(_t_)->offseth << 32 | (_t_)->offsetl)
+#define TIDMAP(_fdm_, _tid_) ({ unsigned char *_bp = _fdm_; tmap_t *_t = (tmap_t *)&_bp[(_tid_)*sizeof(tmap_t)]; TIDMAPGET(_t); })

@@ -21,477 +21,1145 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   icbench.c - "Integer Compression" benchmark/test program
+//	    IcBench: main program
+#define _CRT_SECURE_NO_WARNINGS
+#define _GNU_SOURCE              
 #define _LARGEFILE64_SOURCE 1 
-#define _FILE_OFFSET_BITS 64
-#include <stdlib.h>
-#include <string.h>
-#include <malloc.h> 
-#include <stdio.h>
-#include <math.h> 
+#include <stdio.h>  
+#include <string.h>  
+#include <stdlib.h> 
+#include <inttypes.h> 
+#include <float.h> 
+#include <errno.h>
+#include <malloc.h>			
+#include <sys/types.h>
+#include <ctype.h>
+#include <math.h>
+  #ifndef _WIN32
+#include <sys/resource.h>
+  #endif 
+  #ifdef _MSC_VER
+#include "vs/getopt.h"
+  #else 
 #include <getopt.h>
-#include <sys/stat.h>
-#include <x86intrin.h>
-
-//#define _ZIGZAG        // switch to zigzag encoding mode. Default = differential encoding
-//#define _TRANSFORM     // Transform functions : transpose,zigzag
-
-//#define IC_STATS
-//---------------------------------------- Platform ---------------------------
-  #ifdef _WIN32
-#include <windows.h>
-#define sleep(t)    Sleep((t) * 1000)
+#include <unistd.h>   
+  #endif
+  #if !defined(_WIN32)
+#include <sys/mman.h>
+#include <sys/resource.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/param.h>
+  #else
+#include <io.h>
+#include <fcntl.h>
 #define srand48(x)  srand(x)
 #define drand48()   ((double)(rand()) / RAND_MAX)
 #define __off64_t   _off64_t  
-  #elif defined(__APPLE__)
-#define fopen64(a,b) fopen(a,b)
-  #endif 
-//---------------------------------------- Time -------------------------------
+  #endif
+
+#include <time.h>
+#include "conf.h"   
+#include "plugins.h"
+#include "vint.h"
+
+//--------------------------------------- Time ------------------------------------------------------------------------
 typedef unsigned long long tm_t;
-#define TM_TMAX (1ull<<63)
-
-#include <sys/time.h>
-#include <unistd.h> // sleep
-
 #define TM_T 1000000.0
-static   tm_t tmtime(void)    { struct timeval tm; gettimeofday(&tm, NULL); return (tm_t)tm.tv_sec*1000000ull + tm.tv_usec; }
-static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0) {}; return ts; }
-static double tmsec( tm_t tm) { return (double)tm/1000000.0; }
-static double tmmsec(tm_t tm) { return (double)tm/1000.0; }
-
-//--------------------------------------- TurboPFor ----------------------------
-#include "vint.h"       
-#include "vsimple.h"
-#include "bitpack.h"
-#include "bitunpack.h"
-#include "vp4dc.h"
-#include "vp4dd.h"
-#include "eliasfano.h"
-#include "bitutil.h"
-#include "transpose.h"
-#include "ext/ext.c"            // external functions for comparison. uncomment if not needed
-
-  #ifdef _ZIGZAG
-#define bitdelta32( in, n, pa, start, mode) bitzigzag32( in, n, pa, start)
-#define bitundx32(out, n, start, mode) bitunzigzag32(out, n, start)
-#define bitd32( in, n, x)  bitz32( in, n, x)
-#define bitd132(in, n, x)  bitz32( in, n, x)
-
-#define vbd1enc32(in, n, out, x) vbzenc32(in, n, out, x)
-#define vbdenc32( in, n, out, x) vbzenc32(in, n, out, x)
-#define vbd1encv32(in, n, out, x) vbzencv32(in, n, out, x)
-#define vbdencv32( in, n, out, x) vbzencv32(in, n, out, x)
-
-#define vbd1dec32(in, n, out, x) vbzdec32(in, n, out, x)
-#define vbddec32( in, n, out, x) vbzdec32(in, n, out, x)
-#define vbd1decv32(in, n, out, x) vbzdecv32(in, n, out, x)
-#define vbddecv32( in, n, out, x) vbzdecv32(in, n, out, x)
-
-#define bitd1pack32(in, n, out, x, b) bitzpack32(in, n, out, x, b)
-#define bitdpack32( in, n, out, x, b) bitzpack32(in, n, out, x, b)
-#define bitd1packv32(in, n, out, x, b) bitzpackv32(in, n, out, x, b)
-#define bitdpackv32( in, n, out, x, b) bitzpackv32(in, n, out, x, b)
-
-#define bitd1unpack32(in, n, out, x, b) bitzunpack32(in, n, out, x, b)
-#define bitdunpack32( in, n, out, x, b) bitzunpack32(in, n, out, x, b)
-#define bitd1unpackv32(in, n, out, x, b) bitzunpackv32(in, n, out, x, b)
-#define bitdunpackv32( in, n, out, x, b) bitzunpackv32(in, n, out, x, b)
+#define TM_MAX (1ull<<63)
+  #ifdef _WIN32
+#include <windows.h>
+static LARGE_INTEGER tps;
+static tm_t tmtime(void) { LARGE_INTEGER tm; QueryPerformanceCounter(&tm); return (tm_t)((double)tm.QuadPart*1000000.0/tps.QuadPart); }
+static tm_t tminit() { QueryPerformanceFrequency(&tps); tm_t t0=tmtime(),ts; while((ts = tmtime())==t0); return ts; } 
+  #else
+static   tm_t tmtime(void)    { struct timespec tm; clock_gettime(CLOCK_MONOTONIC, &tm); return (tm_t)tm.tv_sec*1000000ull + tm.tv_nsec/1000; }
+static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0); return ts; }
   #endif
+//---------------------------------------- bench ----------------------------------------------------------------------
+#define TM_MAX (1ull<<63)
+
+#define MIS   4000000.0
+#define TMIS(__l,__t)         ((__t)>=0.000001?((double)(__l)/MIS)/((__t)/TM_T):0.0)
+
+#define MBS   1000000.0
+#define TMBS(__l,__t)         ((__t)>=0.000001?((double)(__l)/MBS)/((__t)/TM_T):0.0)
+#define TMDEF unsigned tm_r,tm_R,tm_c; tm_t _t0,_tc,_ts; double _tmbs=0.0;
+#define TMSLEEP do { tm_T = tmtime(); if(!tm_0) tm_0 = tm_T; else if(tm_T - tm_0 > tm_TX) { printf("S \b\b\b");fflush(stdout); sleep(tm_slp); tm_0=tmtime();} } while(0)
+#define TMBEG(_c_, _tm_reps_, _tm_Reps_) \
+  for(tm_c=_c_,tm_tm = TM_MAX,tm_rm=1,tm_R=0,_ts=tmtime(); tm_R < _tm_Reps_; tm_R++) { printf("%8.2f %.2d_%d\b\b\b\b\b\b\b\b\b\b\b\b\b",_tmbs,tm_R+1,tm_c);fflush(stdout);\
+    for(_t0 = tminit(), tm_r=0; tm_r < _tm_reps_;) {
  
-unsigned char *u32enc(unsigned *__restrict in, int n, unsigned *__restrict out) { unsigned *ip; 
-    #if 0
-  memcpy(out,in,n*4); return (unsigned char *)(out+n);
-    #else
-  for(ip = in; ip != in+(n&~3); ) {
-    *out++ = *ip++;
-    *out++ = *ip++;
-    *out++ = *ip++;
-    *out++ = *ip++;
+#define TMEND(_len_) tm_T = tmtime(); tm_r++; if((_tc = (tm_T - _t0)) > tm_tx) break; }\
+  if(_tc/(double)tm_r < (double)tm_tm/(double)tm_rm) { tm_tm = _tc,tm_rm=tm_r; tm_c++; double _d = (double)tm_tm/(double)tm_rm; _tmbs=TMIS(_len_, _d); } else if(_tc/tm_tm>1.2) TMSLEEP; if(tm_T-_ts > tm_TX) break;\
+  if((tm_R & 7)==7) { sleep(tm_slp); _ts=tmtime(); } }
+
+static unsigned tm_repc = 1<<30, tm_Repc = 3, tm_repd = 1<<30, tm_Repd = 3, tm_rm, tm_slp = 25;
+static tm_t     tm_tm, tm_tx = TM_T, tm_TX = 30*TM_T, tm_0, tm_T, tm_RepkT=24*3600*TM_T;
+
+//: b 512, kB 1000, K  1024,  MB 1000*1000,  M  1024*1024,  GB  1000*1000*1000,  G 1024*1024*1024
+
+#define Kb (1u<<10)
+#define Mb (1u<<20)
+#define Gb (1u<<30)
+#define KB 1000
+#define MB 1000000
+#define GB 1000000000
+ 
+unsigned argtoi(char *s, unsigned def) {
+  char *p; 
+  unsigned n = strtol(s, &p, 10),f = 1; 
+  switch(*p) {
+    case 'K': f = KB; break;
+    case 'M': f = MB; break;
+    case 'G': f = GB; break;
+    case 'k': f = Kb; break;
+    case 'm': f = Mb; break;
+    case 'g': f = Gb; break;
+    case 'b': return 1u << n;
+	default:  f = def;
   }
-  while(ip <  in+n) *out++ = *ip++;
-  return (unsigned char *)out;
-   #endif
+  return n*f;
 }
 
-unsigned char *u32dec(unsigned *__restrict in, int n, unsigned *__restrict out) { unsigned *op; 
-    #if 0
-  memcpy(out,in,n*4); return (unsigned char *)(in+n);
-    #else
-  for(op = out; op != out+(n&~3); ) { 
-    *op++ = *in++;
-    *op++ = *in++;
-    *op++ = *in++;
-    *op++ = *in++;
+unsigned long long argtol(char *s) {
+  char *p;
+  unsigned long long n = strtol(s, &p, 10),f=1;
+  switch(*p) {
+    case 'K': f = KB; break;
+    case 'M': f = MB; break;
+    case 'G': f = GB; break;
+    case 'k': f = Kb; break;
+    case 'm': f = Mb; break;
+    case 'g': f = Gb; break;
+    case 'b': return 1u << n;
+	default:  f = MB;	
   }
-  while(op < out+n) *op++ = *in++;
-  return (unsigned char *)in;
-  #endif
+  return n*f;
 }
 
-#define PAD8(__x) (((__x)+7)/8)
-unsigned char *_bitunpackx32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out           , unsigned b) { unsigned i,k=0; for(i=0; i < n; i++,k+=b ) *out++ = _bitgetx32(in, b, k); return in + PAD8(n*b); }
+unsigned long long argtot(char *s) {
+  char *p;
+  unsigned long long n = strtol(s, &p, 10),f=1; 
+  switch(*p) {
+    case 'h': f = 3600000; break;
+    case 'm': f = 60000;   break;
+    case 's': f = 1000;    break;
+    case 'M': f = 1;       break;
+	default:  f = 1000;	
+  }
+  return n*f;
+}
 
-// direct access functions included for demonstration only. Use the bulk functions instead, if you are decompressing all values
-unsigned char *bitf1unpackx32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, int start, unsigned b) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start+i+1; return in + PAD8(n*b); }
-unsigned char *bitfunpackx32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, int start, unsigned b) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, b, i)+start; return in + PAD8(n*b); }
+int strpref(char **str, int n, char sep1, char sep2) {
+  int i, j=0;
+  for(;;j++)
+    for(i = 0; i < n; i++)
+ 	  if(!str[i][j] || str[i][j] != str[0][j]) {
+	    while (j > 0 && str[0][j-1] != sep1 && str[0][j-1] != sep2) j--;
+	    return j;
+	  }
+  return 0;
+}
 
-//-------------------------------------------------------------------------------------
-#define BLK_SIZE (64*1024)
-unsigned char sbuf[BLK_SIZE*5+64];
- 
-#define PACK_SIZE 128
-//      TurboPFor                  External functions 
-enum {  P_CPY,                                                            // copy
-        P_VB,                      P_VBL, P_VG8, P_VBP, P_MVB,            // variable byte
-        P_EFANO,                                                          // elias fano
-        P_PCK, P_PCKR, P_PCKV,     P_SIMDV, P_FOR,                        // bit packing
-        P_SV, P_SVANS,             P_S16, P_S64,                          // simple family: , simpleV, simple16, simple-8b
-        P_P4D, P_P4DR,             P_OPTP4,                               // PFor, PForDelta
-                                   P_LIBFOR,                              // For 
-								   P_VSQMX,								  // QMX	
-                                   P_LZT10, P_LZT20, P_LZT22,		      // LzTurbo
-                                   P_LZ4,                          		  // lz4
-                                   P_BSHUF, P_BLZ, P_BLZ4, P_BZLIB,       // https://github.com/Blosc/c-blosc
-                                   P_ZLIB1, P_ZLIB2, P_ZLIB3, P_ZLIB4, P_ZLIB5, P_ZLIB6, P_ZLIB7, P_ZLIB8, P_ZLIB9,
-        P_TRSP, P_TRSPV,           P_BTSHUF,                              // transform 
-        P_ZZAG, P_DELTA, 
-        P_MAX 
+void memrcpy(unsigned char *out, unsigned char *in, unsigned n) { int i; for(i = 0; i < n; i++) out[i] = ~in[i]; }
+
+int memcheck(unsigned char *in, unsigned n, unsigned char *cpy, int cmp) { 
+  int i;
+  if(cmp <= 1) 
+    return 0;
+  for(i = 0; i < n; i++)
+    if(in[i] != cpy[i]) {
+      if(cmp > 3) abort(); // crash (AFL) fuzzing
+      printf("ERROR at %d:%x, %x\n", i, in[i], cpy[i]); 
+      if(cmp > 2) exit(EXIT_FAILURE);      
+	  return i+1; 
+	}
+  return 0;
+}
+//------------------------------- malloc ------------------------------------------------
+#define USE_MMAP
+  #if __WORDSIZE == 64
+#define MAP_BITS 30
+  #else
+#define MAP_BITS 28
+  #endif
+
+void *_valloc(size_t size, int a) {
+  if(!size) return NULL;
+    #if defined(_WIN32)
+  return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    #elif defined(USE_MMAP)
+  void *ptr = mmap((size_t)a<<MAP_BITS, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+  if(ptr == MAP_FAILED) return NULL;														
+  return ptr;
+    #else
+  return malloc(size); 
+    #endif
+}
+
+void _vfree(void *p, size_t size) {
+  if(!p) return;
+    #if defined(_WIN32)
+  VirtualFree(p, 0, MEM_RELEASE);
+    #elif defined(USE_MMAP)
+  munmap(p, size);
+    #else
+  free(p);
+    #endif
+} 
+
+  #if !defined(NMEMSIZE) && !defined(_WIN32)
+#include <dlfcn.h>
+static ALIGNED(char, mem_heap[1<<20],32);
+static char *mem_heapp = mem_heap;
+static size_t mem_peak, mem_used;
+
+static void *(*mem_malloc)(size_t);
+static void *(*mem_calloc)(size_t, size_t);
+static void *(*mem_realloc)(void*, size_t);
+static void  (*mem_free)(void *);
+static void *(*mem_memalign)(size_t, size_t);
+
+static __attribute__((constructor)) void mem_init(void) {
+  mem_malloc   = dlsym(RTLD_NEXT, "malloc" );
+  mem_realloc  = dlsym(RTLD_NEXT, "realloc");
+  mem_free     = dlsym(RTLD_NEXT, "free"   );
+  mem_calloc   = dlsym(RTLD_NEXT, "calloc" );
+  mem_memalign = dlsym(RTLD_NEXT, "memalign");
+  if(!mem_malloc || !mem_calloc || !mem_realloc || !mem_free || !mem_memalign)
+    die("malloc not found\n");
+}
+
+size_t mempeak() { return mem_peak; }
+
+size_t mempeakinit() { mem_peak = mem_used = 0; return mem_peak; }
+
+void mem_add(size_t size) { 
+  if((mem_used += size) > mem_peak) 
+  { mem_peak = mem_used; }
+}
+
+void mem_sub(size_t size) { 
+  if(mem_used > size) 
+    mem_used -= size; 
+}
+
+void *malloc(size_t size) {
+  if(!mem_malloc) {
+    void *p = mem_heapp;
+    if((mem_heapp += size) >= mem_heap+sizeof(mem_heap)) 
+      die("malloc:initial memory overflow\n");
+    return p;       
+  }
+  void *p = (*mem_malloc)(size);
+  if(p) 
+    mem_add(malloc_usable_size(p)); 
+  return p;
+}
+
+void *calloc(size_t nmemb, size_t size) { 
+  size_t _size = nmemb*size;
+  if(!mem_calloc) {
+    void *p = mem_heapp;
+    if((mem_heapp += _size) >= mem_heap+sizeof(mem_heap)) 
+      die("calloc:initial memory overflow\n");
+    memset(p,0,_size);
+    return p;       
+  }
+  void *p = (*mem_calloc)(nmemb, size);
+  if(p) 
+    mem_add(malloc_usable_size(p)); 
+  return p;
+}
+
+void *memalign(size_t nmemb, size_t size) { 
+  size_t _size = nmemb*size;
+
+  mem_add(_size);
+  void *p = (*mem_memalign)(nmemb, size);      
+  if(p) 
+    mem_add(malloc_usable_size(p)); 
+  return p;
+}
+
+void *realloc(void *p, size_t size) { 
+  mem_sub(malloc_usable_size(p));
+  if(p = (*mem_realloc)(p, size))
+    mem_add(malloc_usable_size(p)); 
+  return p;
+}
+
+void free(void *p) { 
+   if(!p || p >= (void*)mem_heap && p < (void*)mem_heapp) 
+     return; 
+   mem_sub(malloc_usable_size(p));
+  (*mem_free)(p); 
+} 
+  #else
+#define mempeak()
+#define mempeakinit() 0
+void mem_add(size_t size) {}
+void mem_sub(size_t size) {}
+  #endif
+
+//--------------------------------------- TurboBench ------------------------------------------------------------------
+enum {  
+  FMT_TEXT=1, 
+  FMT_HTML, 
+  FMT_HTMLT, 
+  FMT_MARKDOWN,    
+  FMT_VBULLETIN,  // ex. post to encode.ru
+  FMT_CSV,
+  FMT_TSV,
+  FMT_SQUASH 
 };
 
-//------------------ random integer array (not sorted) ---------------------------------
-unsigned char *beenc(unsigned *__restrict in, size_t n, unsigned char *__restrict out, int id, int b) { int i,xb;
-  switch(id&0x3f) {
-      //---------- copy ----------------------------------------------------
-    case P_CPY:    return u32enc(   in, n, (unsigned *)out);
-      // --------- variable byte -------------------------------------------
-    case P_VB:     return vbenc32(    in, n, out);
- 
-    case P_VBL:    return vbyteenc( in, n, (unsigned *)out);
-    case P_VBP:    return vbpolyenc(in, n, out);
-      #ifdef _MASKEDVBYTE
-    case P_MVB:    return out + vbyte_encode(in, n, out);
-      #endif
-      #ifdef _VARINTG8IU
-    case P_VG8:    return vintg8enc(in, n, out);
-      #endif 
-      // --------- simple family: , simpleV, simple16, simple-8b -----------
-    case P_SV:     return vsenc32(  in, n, out);
-    case P_S16:    return vs16enc(  in, n, (unsigned *)out); 
-    case P_S64:    return vs8benc(  in, n, out); 
-    case P_VSQMX:  { unsigned char *q = qmx_enc(in, n, out+4); *(unsigned *)out = q - (out+4); return q; }
-      // --------- elias fano ----------------------------------------------
-    case P_EFANO:  return out; 
-      // --------- PFor ----------------------------------------------------
-    case P_P4DR:   return p4denc32( in, n, out);
-    case P_P4D:    return n == 128?p4dencv32(in, n, out):p4denc32(in, n, out);
-    
-    case P_OPTP4:  if(n < 128) return vbyteenc(in, n, (unsigned *)out);
-                   else { unsigned tmp[2048]; for(i = 0; i < n; i++) tmp[i] = in[i]; return out + OPT4(tmp, n, (unsigned *)out); }
-      // --------- bit packing ---------------------------------------------
-    case P_FOR :
-    case P_PCKR: 
-    case P_PCK:    if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } return bitpack32(in, n, out, b);
-    case P_PCKV:   if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } return n != 128?bitpack32(in, n, out, b):bitpackv32(in, n, out, b);
-      #ifdef _LIBFOR
-    case P_LIBFOR: return out + for_compress_unsorted(in, out, n);
-      #endif
-                                                                                                                                       
-    case P_SIMDV:  if(n < 128) return vbyteenc(in, n, (unsigned *)out); else { if(b < 0) b = maxbits(in), *out++ = b; return simdpackwn(in, n, b, (unsigned *)out); }
+char *fmtext[] = { "txt", "txt", "html", "htm", "md", "vbul", "csv", "tsv", "squash" };
 
-      // --------- transform ----------------------------------------
-      #ifdef _TRANSFORM
-    case P_ZZAG:   bitzigzag32(in, n, (unsigned *)out, 0);      return out + n*4;
-    case P_TRSP:   transpose4( (unsigned char *)in, n*4, out);  return out + n*4;
-    case P_TRSPV:  transpose4( (unsigned char *)in, n*4, out); return out + n*4;
-        #ifdef _BLOSC      
-    case P_BSHUF:  shuffle( 4, n*4, (unsigned char *)in, out); return out + n*4;
-        #endif
-        #ifdef _BTSHUF      
-    case P_BTSHUF: bshuf_bitshuffle(in, out, n*4/32, 32, 0); return out + n*4;	//bitshuffle(4, const size_t blocksize, in, out, NULL);      
-        #endif
-      #endif
+//------------- plugin : usage ---------------------------------
+struct plugg { 
+  char id[17],*desc,*s; 
+};
 
-      // --------- transpose + lz77 ----------------------------------------
-      #ifdef _LZT
-    case P_LZT10: { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20: { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22: { n *= 4; transpose4( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz); }     
-      #endif
-      #ifdef _LZ4
-    case P_LZ4:    //bshuf_bitshuffle(in, sbuf, n*4/32, 32, 0);// 
-      transpose4( (unsigned char *)in, n*4, sbuf);
-      return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
-      #endif
-      #ifdef _BLOSC
-    case P_BLZ:
-    case P_BLZ4:
-    case P_BZLIB:  return out + blosc_compress(1/*clevel*/, 1/*doshuffle*/, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
-      #endif
-      #ifdef _ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { n *= 4; transpose4( (unsigned char *)in, n, sbuf); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
-      #endif
-    case P_MAX ... 63: die("Fatal- Not entry %d", id);
-  }
-  return out;
+struct plugg plugg[] =  
+{
+  { "DEFAULT",	"Default",  		"TurboPFor/TurboPFor256/TurboPackV256/TurboPackV/TurboVByte/TurboPack" },
+  { "BENCH",	"Benchmark",  		"TurboPFor/TurboPackV/TurboVByte/TurboPack/QMX/FP.SimdFastPfor/FP.SimdOptPFor/MaskedVbyte/StreamVbyte" },
+  { "EFFICIENT","Efficient",		"TurboPFor/vsimple/turbovbyte" },
+
+  { "BITPACK",	"Bit Packing",  	"TurboPackV/TurboPack256V/TurboPackH/TurboPack/SC.SimdPack128/SC.SimdPack256" },
+  { "VBYTE",	"Variable byte",	"TurboVByte/FP.VByte/PC.Vbyte/VarintG8IU/MaskedVbyte/StreamVbyte" },
+  { "SIMPLE",	"Simple Family",	"simple8b/simple16/vsimple/qmx" },
+  { "LZ4",		"lz4+bitshufle/transpose 4/8",      "lz4_bitshuffle/lz4_tp4/lz4_tp8" },
+  
+  { "LI",		"Little Integer",	"LI.Pack/LI.TurboPack/LI.SuperPack/LI.HorPack/LI.BMIPack256" }
+};
+#define PLUGGSIZE (sizeof(plugg)/sizeof(plugg[0]))
+
+void plugsprt(void) {
+  struct plugs *gs;
+
+  struct plugg *pg; 
+  printf("Codec group:\n");
+  for(pg = plugg; pg < plugg+PLUGGSIZE; pg++) 
+    printf("%-16s %s %s\n", pg->id, pg->desc);
 }
 
-unsigned char *bedec(unsigned char *__restrict in, size_t n, unsigned *__restrict out, int id, int b) {
-  switch(id&0x3f) {         
-       //--------- copy ---------------------------------------------------
-    case P_CPY:    return u32dec(   (unsigned *)in, n, out);
-      // --------- variable byte -------------------------------------------
-    case P_VB:     return vbdec32(    in, n, out); 
+void plugsprtv(FILE *f, int fmt) {
+  struct plugs *gs;
+  char         *pv = "";
 
-    case P_VBL:    return vbytedec( in, n, out); 
-    case P_VBP:    return vbpolydec(in, n, out);
-      #ifdef _MASKEDVBYTE
-    case P_MVB:    return in + masked_vbyte_decode(in, out, n); 
-      #endif
-      #ifdef _VARINTG8IU
-    case P_VG8:    return vintg8dec(in, n, out);
-      #endif
-      // --------- simple family: simple16, simpleV, simple-8b ---------------
-    case P_SV:     return vsdec32(  in, n, out); 
-
-    case P_S16:    return vs16dec(  (unsigned *)in, n, out);  
-    case P_S64:    return vs8bdec(  in, n, out);  
-    case P_VSQMX:    { unsigned l = *(unsigned *)in;  return qmx_dec(in+4, l, out, n); }   
-      // --------- elias fano -----------------------------------------------
-    case P_EFANO:  return in;
-      // --------- PFor -----------------------------------------------------
-    case P_P4D :   return n == 128?p4ddecv32(in, n, out):p4ddec32(in, n, out);
-    case P_P4DR :  return p4ddecx32( in, n, out);
-    case P_OPTP4 : if(n < 128) return vbytedec(in, n, out); else { unsigned all_array[2048]; return (unsigned char *)detailed_p4_decode(out, (unsigned *)in, all_array); }
-      // --------- bit packing -------------------------------------------
-    case P_FOR:    if(b < 0) b = *in++; return bitfunpack32(        in, n, out, 0, b);
-    case P_PCKR:   if(b < 0) b = *in++; return _bitunpackx32(       in, n, out, b);
-    case P_PCK:    if(b < 0) b = *in++; return bitunpack32(         in, n, out, b);
-    case P_PCKV:   if(b < 0) b = *in++; return n != 128?bitunpack32(in, n, out, b):bitunpackv32(in, n, out, b);
-
-    case P_SIMDV:  if(n < 128) return vbytedec(in, n, out); else { if(b < 0) b = *in++; return simdunpackn( (unsigned *)in, n, b, out); }
-      #ifdef _LIBFOR
-    case P_LIBFOR:    return in + for_uncompress(in, out, n);
-      #endif
-
-      //---------- transpose + lz77 ----------------------
-      #ifdef _TRANSFORM
-    case P_ZZAG:  memcpy(out, in, n*4); bitunzigzag32(out, n, 0); return in + n*4;
-    case P_TRSP:  untranspose4(  (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
-    case P_TRSPV: untranspose4( (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
-        #ifdef _BLOSC
-    case P_BSHUF:  unshuffle( 4, n*4, (unsigned char *)in, (unsigned char *)out); return in + n*4;
-        #endif
-        #ifdef _BTSHUF      
-    case P_BTSHUF:  bshuf_bitunshuffle(in, out, n*4/32, 32, 0); return in + n*4;
-        #endif
-      #endif
-
-      //---------- transpose + lz77 ----------------------
-      #ifdef _LZT
-    case P_LZT10:  { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz); untranspose4(sbuf, n*4, (unsigned char *)out); } break;
-    case P_LZT20: 
-    case P_LZT22:  { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz); untranspose4(sbuf, n*4, (unsigned char *)out); } break;
-      #endif
-      #ifdef _LZ4
-    case P_LZ4:     in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); //bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); 
-       untranspose4(sbuf, n*4, (unsigned char *)out); 
-       break;
-      #endif
-      #ifdef _BLOSC
-    case P_BLZ:
-    case P_BLZ4:
-    case P_BZLIB: { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
-      #endif
-      #ifdef _ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; untranspose4(sbuf, n*4, (unsigned char *)out); } break;
-      #endif
-    case P_MAX ... 63: die("Fatal- Not entry %d", id);
+  switch(fmt) {
+    case FMT_HTMLT: 
+    case FMT_HTML: 
+      printf("%s\n", "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>TurboBench</title></head><body><pre><ul>"); 
+      break;
+    case FMT_VBULLETIN:
+      fprintf(f,"[list]\n"); 
+      break;
   }
-  return in;        
-} 
 
-//-------------- Sorted integer array : Delta/Differential compression (mode=0 increasing, mode=1 strictly increasing sequence) ---------------
-unsigned char *besenc(unsigned *__restrict in, size_t n, unsigned char *__restrict out, int id, int mode) {
-  unsigned pa[BLK_SIZE+2048],x; unsigned b;
-  switch(id&0x3f) {
-      //----------- copy ---------------------------------------------------------------------------------------------------------
-    case P_CPY:                                                                             return u32enc( in, n, (unsigned *)out);
-      //----------- variable byte ------------------------------------------------------------------------------------------------     
-    case P_VB: 										                                        return mode?vbd1enc32(in, n, out, -1):vbdenc32(in, n, out, 0);
-      #ifndef _ZIGZAG
-        #ifdef _MASKEDVBYTE
-    case P_MVB:                                                                             return out+vbyte_encode_delta(in, n, out, 0);     
-        #endif
-      #endif
-    case P_VBL:       bitdelta32( in, n, pa, -mode, mode);                                  return vbyteenc( pa, n, (unsigned *)out); 
-    case P_VBP:       bitdelta32( in, n, pa, -mode, mode);                                  return vbpolyenc(pa, n, out);
-      #ifdef _VARINTG8IU
-    case P_VG8:       bitdelta32( in, n, pa, -mode, mode);                                  return vintg8enc(pa, n, out);
-      #endif
-      // --------- simple family: simpleV, simple16, simple-8b -------------------------------------------------------------------
-    case P_SV:        bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);         return vsenc32(  pa, n, out);
+  for(gs = plugs; gs->id >= 0; gs++)
+    if(gs->codec && strcmp(gs->name,pv)) {
+      pv = gs->name;
+	  char name[65],ver[33]; 
+      ver[0] = 0;
+	  codver(gs->id, gs->ver, ver); 
+      sprintf(name, "%s v%s", gs->name, ver);
+      switch(fmt) {  
+        case FMT_VBULLETIN: 
+          fprintf(f, "[*][URL=\"%s\"]%s[/URL] %s\n", gs->url, name, gs->lic ); 
+          break;
+        case FMT_HTML     : 
+          fprintf(f, "<li><a href=\"%s\">%s</a> %s\n", gs->url, name, gs->lic ); 
+          break;
+        case FMT_MARKDOWN :
+          fprintf(f, " - [%s](%s) %s\n", name, gs->url, gs->lic ); 
+          break;
+        default:
+          fprintf(f, "%-24s\t%s\t%s\n", name, gs->lic, gs->url );
+      }
+    }
 
-    case P_S16:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);                                                     if(b>28) die("simple16 overflow.bits size>28\n");
-                                                                                            return vs16enc(  pa, n, (unsigned *)out); 
-    case P_S64:   b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);                                                     if(b>28) die("simple-8b overflow.bits size>28\n");
-                                                                                            return vs8benc(  pa, n, out);
-      #ifndef _ZIGZAG
-      // --------- elias fano -----------------------------------------------
-    case P_EFANO: x = *in++;                                   vbput32(out, x); --n;        
-      if(mode) {  return n == 128?efano1encv32(in, n, out, x+1):efano1enc32(in, n, out, x+1); }
-      else {      return n == 128?efanoencv32( in, n, out, x  ):efanoenc32( in, n, out, x  ); }
-      #endif
-      // --------- PForDelta: TurboPFor, TurboPForDA, OptPFD ---------------------------------------------------------------------
-    case P_P4D:       bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);         return n==128?p4dencv32(pa, n, out):p4denc32(pa, n, out);
-      #ifndef _ZIGZAG
-    case P_P4DR:  DELTR( in, n, mode, pa);                     vbput32(out, in[0]);         return p4denc32(  pa+1, n-1, out);
-    case P_OPTP4: b = bitdelta32( in+1, --n, pa, in[0], mode); vbput32(out, in[0]);                                                     if(b>28) die("optp4 overflow.bits size>28\n");
-      if(n < 128)                                                                           return vbyteenc(  pa, n, (unsigned *)out);
-      else {                                                                                return out + OPT4(pa, n, (unsigned *)out); }
-      // --------- delta bit packing: TurboFor, TurboForDA, TurboPack, TurboPackV, SimdPackFPF --------------------------------------------
-    case P_FOR :  
-    case P_PCKR:  if(mode) { b = bitf132(in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitf1pack32(in+1, n, out, in[0], b); }
-                  else {     b = bitf32( in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitfpack32( in+1, n, out, in[0], b); }      
-      #endif
-    case P_PCK:   if(mode) { b = bitd132(in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitd1pack32(in+1, n, out, in[0], b); }
-                  else {     b = bitd32( in+1, --n, in[0]);    vbput32(out, in[0]); *out++=b; return bitdpack32( in+1, n, out, in[0], b); } 
-    case P_PCKV:  
-      if(mode) {  b = bitd132(in+1, --n, in[0]);               vbput32(out, in[0]); *out++=b; return n < 128?bitd1pack32(in+1, n, out, in[0], b):bitd1packv32(in+1, n, out, in[0], b); }
-      else {      b = bitd32( in+1, --n, in[0]);               vbput32(out, in[0]); *out++=b; return n < 128?bitdpack32( in+1, n, out, in[0], b):bitdpackv32( in+1, n, out, in[0], b); }
-      
-      #ifndef _ZIGZAG
-    case P_SIMDV:                                                                                   
-      if(n < 129) { bitdelta32( in, n, pa, -mode, mode);                                    return vbyteenc((unsigned *)pa, n, (unsigned *)out); }
-      else { b = simdmaxbitsd1(in[0], in+1);                   vbput32(out, in[0]); *out++=b; return simdpackwn1((unsigned *)(in+1), n-1, b, in[0], (unsigned *)out); }   
-        #ifdef _LIBFOR
-    case P_LIBFOR:   return out + for_compress_sorted(in, out, n);
-        #endif
-      #endif
-
-      // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
-      #ifdef _TRANSFORM
-    case P_ZZAG:  b = bitzigzag32(in, n, (unsigned *)out,  0); return out + n*4;
-    case P_TRSP:  bitdelta32(in, n, (unsigned *)sbuf, -mode, mode); transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case P_TRSPV: bitdelta32(in, n, (unsigned *)sbuf, -mode, mode); transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case P_DELTA: bitdelta32(in, n, (unsigned *)out,  -mode, mode); return out + n*4; 
-      #endif
-
-      // --------- delta + transpose + lz77 ----------------------------------------------------------------------------------------
-      #ifdef _LZT
-    case P_LZT10:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22:{ bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
-      #endif
-
-      #ifdef _LZ4
-    case P_LZ4: { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
-      return out + LZ4_compress((char *)sbuf, (char *)out, n*4); }
-      #endif
-      #ifdef _ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { bitdelta32(in, n, (unsigned *)out, -mode, mode); transpose4((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, id-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
-      #endif
-    case P_MAX ... 63: break;
+  switch(fmt) {
+    case FMT_VBULLETIN:
+      fprintf(f,"[/list]\n"); 
+      break;
+    case FMT_HTML:
+      fprintf(f,"</ul></pre></body></html>"); 
+      break;
   }
-  return out;
-} 
- 
-unsigned char *besdec(unsigned char *__restrict in, size_t n, unsigned *__restrict out, int id, int mode) { unsigned b,x,v;
-  switch(id&0x3f) { 
-      //------------- copy -------------------------------------------------------
-    case P_CPY:                              in = u32dec( (unsigned *)in, n,   out);                                 break;
-      //------------- variable byte ---------------------------------------------- 
-    case P_VB: 								  		  return mode?vbd1dec32(     in, n, out,   -1):vbddec32(in, n, out, 0);
-      #ifndef _ZIGZAG
-        #ifdef _MASKEDVBYTE
-    case P_MVB:                              in += masked_vbyte_decode_delta(in, out,   n, 0);                       break;
-        #endif
-      #endif
+}
 
-    case P_VBL:                              in = vbytedec(           in, n,   out);          bitundx32(out, n, -mode, mode); break;
-    case P_VBP:                              in = vbpolydec(          in, n,   out);          bitundx32(out, n, -mode, mode); break;
-      #ifdef _VARINTG8IU
-    case P_VG8:                              in = vintg8dec(          in, n,   out);          bitundx32(out, n, -mode, mode); break;    
-      #endif 
-      //------------- simple family ----------------------------------------------
-      #ifdef _ZIGZAG
-    case P_SV:    _vbget32(in, x, *out = x); in = vsdec32(            in, n-1, out+1);      bitundx32(out+1, n-1, x, mode); break;
-      #else
-    case P_SV:    _vbget32(in, x, *out = x); in = vsdec32(            in, n-1, out+1);      bitundx32(out, n, -mode, mode); break;
-      #endif
-    case P_S16:   _vbget32(in, x, *out = x); in = vs16dec((unsigned *)in, n-1, out+1);      bitundx32(out, n, -mode, mode); break;
-    case P_S64:   _vbget32(in, x, *out = x); in = vs8bdec(            in, n-1, out+1);      bitundx32(out, n, -mode, mode); break;
-      // ------------ elias fano -------------------------------------------------
-      #ifndef _ZIGZAG
-    case P_EFANO: _vbget32(in, x,;); *out++ = x; --n;
-      if(mode) {                                      return n==128?efano1decv32(in, n, out, x+1):efano1dec32( in, n, out, x+1); }
-      else {                                          return n==128?efanodecv32( in, n, out, x  ):efanodec32( in, n, out, x); }
-      #endif
-      // ------------ PFor -------------------------------------------------------
+//------------------ plugin: process ----------------------------------
+struct plug { 
+  int       id,err,blksize,lev;
+  char      *s,prm[17],tms[20]; 
+  long long len,memc,memd;
+  double    tc,td,tck,tdk;
+};
 
-      #ifdef _ZIGZAG
-    case P_P4D:   _vbget32(in, x, *out = x); in = n==129?p4ddecv32(in, n-1, out+1):p4ddec32(in, n-1, out+1); bitundx32(out+1, n-1, x, mode); break;
-      #else
-    case P_P4D:   _vbget32(in, x, ;); *out++ = x; --n; 
-      if(mode) {                                      return n==128?p4dd1decv32(in, n, out, x):p4dd1dec32(in, n, out, x); }
-      else {                                          return n==128?p4dddecv32( in, n, out, x):p4dddec32( in, n, out, x); }
-    case P_P4DR:  _vbget32(in, x, *out = x);          return mode?p4dfdecx32(  in, n-1, out+1, x):p4df0decx32(in, n-1, out+1, x);
-    case P_OPTP4: 
-      if(n < 129)                          in = vbytedec(in, n, out);
-      else {      _vbget32(in, x, *out = x); unsigned all_array[2048]; in = (unsigned char *)detailed_p4_decode(out+1, (unsigned *)in, all_array); }
-                                                                                            bitundx32(out, n, -mode, mode); break;
-      // ------------ bit packing ----------------------------------------
-    case P_FOR:   _vbget32(in, x, *out = x); b = *in++; return mode?bitf1unpack32( in, n-1, out+1, x, b):bitfunpack32(  in, n-1, out+1, x, b);
-    case P_PCKR:  _vbget32(in, x, *out = x); b = *in++; return mode?bitf1unpackx32(in, n-1, out+1, x, b):bitfunpackx32( in, n-1, out+1, x, b);
-      #endif
-      
-    case P_PCK:   _vbget32(in, x, *out = x); b = *in++; return mode?bitd1unpack32( in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b);
-    case P_PCKV:  _vbget32(in, x, *out = x); b = *in++;
-      if(n < 129) {                                     return mode?bitd1unpack32( in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b); } 
-      else {                                            return mode?bitd1unpackv32(in, n-1, out+1, x, b):bitdunpackv32( in, n-1, out+1, x, b); } 
- 
-      #ifndef _ZIGZAG
-    case P_SIMDV:
-      if(n < 129) { in = vbytedec(in, n, out);               bitundx32(out, n, -mode, mode); }
-      else {    _vbget32(in, x, *out = x); b = *in++; in = simdunpackn1((uint32_t *)in, n-1, b, out[0], out+1); } break;
-        #ifdef _LIBFOR
-    case P_LIBFOR:    return in + for_uncompress(in, out, n);
-        #endif
-      #endif 
+struct plug plug[255],plugt[255];
+int         seg_ans = 32*1024, seg_huf = 32*1024, seg_anx = 12*1024, seg_hufx=11*1024;
+static int  cmp = 2,trans, verbose=1;
+double      fac = 1.3;
 
-      //---------- transpose + lz77 ----------------------
-      #ifdef _TRANSFORM
-    case P_ZZAG:  memcpy(out, in, n*4); bitunzigzag32(out, n, 0); return in + n*4;
-    case P_TRSP:  untranspose4( (unsigned char *)in, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); return in + n*4;
-    case P_TRSPV: untranspose4((unsigned char *)in, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); return in + n*4;
-    case P_DELTA: memcpy(out, in, n*4); bitundx32(out, n, -mode, mode); return in + n*4;
-      #endif
+int plugins(struct plug *plug, struct plugs *gs, int *pk, unsigned bsize, int bsizex, int lev, char *prm) { 
+  int i,k = *pk;
+  for(i = 0; i < k; i++) 
+    if(plug[i].id == gs->id && plug[i].lev == lev && !strcmp(plug[i].prm,prm))
+      return -1;
 
-      //---------- delta + transpose + lz77 ----------------------
-      #ifdef _LZ4
-    case P_LZ4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); break;       
-      #endif     
+  memset(&plug[k], 0, sizeof(struct plug)); 
+  plug[k].id  = gs->id; 
+  plug[k].err = 0; 
+  plug[k].s   = gs->s; 
+  plug[k].lev = lev; 
+  strncpy(plug[k].prm, prm?prm:(char *)"", 16); 
+  plug[k].prm[16] = 0;
+  plug[k].tms[0]  = 0;
+  plug[k].blksize = gs->blksize?gs->blksize:bsize;
+  *pk = ++k;
+  return 0;
+}
 
-      #ifdef _ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); } break;
-      #endif
+int plugreg(struct plug *plug, char *cmd, int k, int bsize, int bsizex) {
+  static char *cempty=""; 
+  int ignore = 0;
 
-      #ifdef _LZT
-    case P_LZT10: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz);  untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); } break;
-    case P_LZT20:
-    case P_LZT22: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz);  untranspose4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -mode, mode); } break;
-      #endif
+  while(*cmd) { 
+    while(isspace(*cmd)) 
+      cmd++; 
+    char *name = cmd; 
+    while(isalnum(*cmd) || *cmd == '_' || *cmd == '-' || *cmd == '.') 
+      cmd++; 
+    if(*cmd) *cmd++ = 0;
 
-    case P_MAX ... 63: break;
+    if(!strcmp(name, "ON" )) { 
+      ignore = 1; 
+      continue; 
+    }
+    else if(!strcmp(name, "OFF")) { 
+      ignore = 0; 
+      continue; 
+    }
+
+    for(;;) {																			
+      while(isspace(*cmd) || *cmd == ',') 
+        cmd++;
+
+      char *prm = cmd; 									
+      int lev = strtol(cmd, &cmd, 10); 
+      if(prm == cmd) { 
+        lev = -1; 
+        prm = cempty; 
+      }
+      else if(isalnum(*cmd)) {
+        prm = cmd;
+        while(isalnum(*cmd) || *cmd == '_' || *cmd == '-' || *cmd == '.') 
+          cmd++; 
+        if(*cmd) 
+          *cmd++ = 0; 
+      } else 
+        prm = cempty;
+
+      int found = 0;
+      struct plugs *gs,*gfs=NULL;  
+      if(!*name) 
+        break;
+      for(gs = plugs; gs->id >= 0; gs++)
+        if(gs->codec && !strcasecmp(gs->s, name) ) { 
+          char s[33],*q; 
+          sprintf(s,"%d", lev); 
+          found++; 
+          if(lev<0 && gs->lev && !gs->lev[0] || gs->lev && (q=strstr(gs->lev, s)) && (q==gs->lev || *(q-1) == ',')) {				
+            found++; 
+            plugins(plug, gs, &k, bsize, bsizex, lev, prm); 
+          }
+          break; 
+        }
+      if(found<2 && !ignore) {
+        if(!found) 
+          fprintf(stderr, "codec '%s' not found\n", name);
+        else if(lev<0) 
+          fprintf(stderr, "level [%s] not specified for codec '%s'\n", gs->lev, name );
+        else if(gs->lev && gs->lev[0]) 
+          fprintf(stderr, "level '%d' for codec '%s' not in range [%s]\n", lev, name, gs->lev);
+        else 
+          fprintf(stderr, "codec '%s' has no levels\n", name);
+        exit(0); 
+      }
+      while(isspace(*cmd)) 
+        cmd++;						
+      if(*cmd != ',' && (*cmd < '0' || *cmd > '9')) 
+        break;
+    }
   } 
-  return in;
+  a:plug[k].id = -1;  
+  return k;
+}
+
+//------------------ plugin: print/plot -----------------------------
+struct bandw {
+  unsigned long long bw;
+  unsigned           rtt; 
+  char               *s;
+};
+
+static struct bandw bw[] = {
+  {    7*KB, 500, "GPRS 56"  },//56kbps
+  {   57*KB, 150, "2G 456"   },
+  {  125*KB,  40, "3G 1M"    },
+  {  250*KB,   5, "DSL 2M"   },//DSL 2000
+  {  500*KB,  20, "4G 4M"    },
+  { 3750*KB,   5, "WIFI 30M" },
+  {12500*KB,   5, "CAB 100M" },
+  {   40*MB,   0, "USB2 40MB"},
+  {  125*MB,   0, "ETH 1000" },
+  {  200*MB,   0, "HDD 200MB"},
+  {  550*MB,   0, "SSD 550MB"},
+  {   1u*GB,   0, "SSD 1GB"  },
+  {   2u*GB,   0, "SSD 2GB"  },
+  { 4ull*GB,   0, "4GB/s"    },
+  { 8ull*GB,   0, "8GB/s"    }
+};
+#define BWSIZE (sizeof(bw)/sizeof(struct bandw))
+
+void plugprth(FILE *f, int fmt, char *t) {
+  char *plot  = "<script src=https://cdn.plot.ly/plotly-latest.min.js></script>";
+  char *jquery = "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js\"></script>";
+  char *tstyle = "<link rel=\"stylesheet\" href=\"http://tablesorter.com/themes/blue/style.css\" type=\"text/css\" media=\"print, projection, screen\" />";
+  char *table  = "<script type=\"text/javascript\" src=\"http://tablesorter.com/__jquery.tablesorter.min.js\"></script>";
+  char *code   = "<script type=\"text/javascript\">$(function() {		$(\"#myTable\").tablesorter({sortList:[[0,0],[2,1]], widgets: ['zebra']});		$(\"#options\").tablesorter({sortList: [[0,0]], headers: { 3:{sorter: false}, 4:{sorter: false}}});	});	</script><script type=\"text/javascript\" src=\"http://tablesorter.com/__jquery.tablesorter.min.js\"></script><script type=\"text/javascript\">$(function() {		$(\"#myTable2\").tablesorter({sortList:[[0,0],[2,1]], widgets: ['zebra']});		$(\"#options\").tablesorter({sortList: [[0,0]], headers: { 3:{sorter: false}, 4:{sorter: false}}});	});	</script>";
+  char s[128];
+  time_t tm; 
+  time(&tm);
+  sprintf(s, "TurboBench: %s - %s", t, asctime(localtime(&tm)));
+
+  switch(fmt) {
+    case FMT_TEXT:     
+      fprintf(f,"%s\n", s ); 
+      break;
+    case FMT_VBULLETIN:
+      fprintf(f,"%s\n", s); 
+      break;
+    case FMT_HTMLT:  
+      fprintf(f,"<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>TurboBench: %s - </title></head><body>\n", s); 
+      break;
+    case FMT_HTML:     
+      fprintf(f,"<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>TurboBench: %s - </title>%s%s%s%s%s</head><body>\n", s, plot, jquery, tstyle, table, code); 
+       break;
+    case FMT_MARKDOWN: 
+      fprintf(f,"#### %s (bold = pareto)  MB=1.000.000\n", s); 
+      break;
+  }
+}
+
+void plugprtf(FILE *f, int fmt) {
+  switch(fmt) {
+    case FMT_HTML:     
+      fprintf(f,"</body></html>\n"); 
+      break;
+  }
+}
+
+void plugprtth(FILE *f, int fmt) {
+  char *head =  "      C Size  ratio%%  Bits/Int  C MI/s     D MI/s   Name            File              (bold = pareto)"; 
+
+  switch(fmt) {
+    case FMT_TEXT:     
+      fprintf(f,"      C Size  ratio%% Bits/Int   C MI/s     D MI/s   Name            File\n"); 
+      break;
+    case FMT_VBULLETIN:
+      fprintf(f,"[CODE][B]%s[/B] MB=1.000.0000\n", head); 
+      break;
+    case FMT_HTMLT:    
+      fprintf(f,"<pre><b>%s</b> MB=1.000.0000\n", head); 
+      break;
+    case FMT_HTML:     
+      fprintf(f,"<h3>TurboBench: Compressor Benchmark</h3><table id='myTable' class='tablesorter' style=\"width:35%%\"><thead><tr><th>C Size</th><th>ratio%%</th><th>C MI/s</th><th>D MI/s</th><th>Name</th><th>C Mem</th><th>D Mem</th><th>File</th></tr></thead><tbody>\n"); 
+      break;
+    case FMT_MARKDOWN: 
+      fprintf(f,"|C Size|ratio%%|Bits/Integer|C MI/s|D MI/s|Name|File|\n|--------:|-----:|--------:|--------:|----------------|----------------|\n"); 
+      break;
+    case FMT_CSV:      
+      fprintf(f,"size,csize,ratio,bpi,ctime,dtime,name,file\n"); 
+      break;
+    case FMT_TSV:      
+      fprintf(f,"size\tcsize\tratio\tbpi\tctime\tdtime\tname\tfile\n"); 
+      break;
+    case FMT_SQUASH:   
+      fprintf(f,"dataset,plugin,codec,level,compressed_size,compress_cpu,compress_wall,decompress_cpu,decompress_wall\n"); 
+      break;
+  }
+}
+
+void plugprttf(FILE *f, int fmt) {
+  switch(fmt) {
+    case FMT_VBULLETIN:
+      fprintf(f,"[/CODE]\n"); 
+      break;
+    case FMT_HTMLT:    
+      fprintf(f,"</pre>\n"); 
+      break;
+    case FMT_HTML:
+      fprintf(f,"</tbody></table>\n"); 
+      break;
+    case FMT_MARKDOWN: 
+      fprintf(f,"\n\n"); 
+      break;
+  }
+}
+
+#define RATIO(_clen_, _len_)  ((double)_clen_*100.0/_len_)
+#define RATIOI(_clen_, _len_) ((double)_clen_*32.0/_len_)
+#define FACTOR(_clen_, _len_) ((double)_len_/(double)_clen_)
+
+void plugprt(struct plug *plug, long long totinlen, char *finame, int fmt, double *ptc, double *ptd, FILE *f) {
+  double ratio  = RATIO(plug->len,totinlen), ratioi = RATIOI(plug->len,totinlen),   
+         //ratio  = FACTOR(plug->len,totinlen),
+         tc     = TMIS(totinlen,plug->tc), td = TMIS(totinlen,plug->td);
+  char   name[65]; 
+  if(plug->lev >= 0) 
+    sprintf(name, "%s%s %d%s", plug->err?"?":"", plug->s, plug->lev, plug->prm);
+  else
+    sprintf(name, "%s%s%s",    plug->err?"?":"", plug->s,            plug->prm);
+ 
+  int c = 0, d = 0, n = 0;
+  if(tc > *ptc) { c++; n++; *ptc = tc; } 
+  if(td > *ptd) { d++; n++; *ptd = td; } 
+  switch(fmt) {
+    case FMT_TEXT:     
+      fprintf(f,"%12"PRId64"   %5.1f   %5.2f  %8.2f   %8.2f   %-16s%s\n", 
+        plug->len, ratio, ratioi, tc, td, name, finame); 
+      break;
+    case FMT_VBULLETIN:
+      fprintf(f, "%12"PRId64"   %5.1f   %5.2f   %s%8.2f%s   %s%8.2f%s   %s%-16s%s%s\n", 
+        plug->len, ratio, ratioi, c?"[B]":"", tc, c?"[/B]":"",  d?"[B]":"", td, d?"[/B]":"", n?"[B]":"", name, n?"[/B]":"", finame); 
+      break;
+    case FMT_HTMLT:    
+      fprintf(f, "%12"PRId64"   %5.1f   %5.2f   %s%8.2f%s   %s%8.2f%s   %s%-16s%s%s\n", 
+        plug->len, ratio, ratioi, c?"<b>":"", tc, c?"</b>":"",  d?"<b>":"", td, d?"</b>":"", n?"<b>":"", name, n?"</b>":"", finame); 
+      break;
+    case FMT_HTML:     
+      fprintf(f, "<tr><td align=\"right\">%11"PRId64"</td><td align=\"right\">%5.1f</td><td align=\"right\">%5.2f</td><td align=\"right\">%s%8.2f%s</td><td align=\"right\">%s%8.2f%s</td><td>%s%-16s%s</td><td align=\"right\">%"PRId64"</td><td align=\"right\">%"PRId64"</td><td>%s</td></tr>\n",
+        plug->len, ratio, ratioi, c?"<b>":"", tc, c?"</b>":"",  d?"<b>":"", td, d?"</b>":"", n?"<b>":"", name, n?"</b>":"", 
+//        SIZE_ROUNDUP(plug->memc, Kb)/Kb, SIZE_ROUNDUP(plug->memd,Kb)/Kb, 
+        plug->memc, plug->memd, 
+        finame); 
+      break;
+    case FMT_MARKDOWN: 
+      fprintf(f, "|%"PRId64"|%5.1f|%5.2f|%s%.2f%s|%s%.2f%s|%s%s%s|%s|\n", 
+        plug->len, ratio, ratioi, c?"**":"",  tc, c?"**":"",    d?"**":"",  td, d?"**":"",   n?"**":"",  name, n?"**":"",   finame); 
+      break;
+    case FMT_CSV:
+      fprintf(f, "%12"PRId64",%11"PRId64",%5.1f,%5.2f,%8.2f,%8.2f,%-16s,%s\n",
+        totinlen, plug->len, ratio, ratioi, tc, td, name, finame); 
+      break;
+    case FMT_TSV:    
+      fprintf(f,"%12"PRId64"\t%11"PRId64"\t%5.1f\t5.2f\t%8.2f\t%8.2f\t%-16s\t%s\n",
+        totinlen, plug->len, ratio, ratioi, tc, td, name, finame); 
+      break;
+    case FMT_SQUASH:
+      fprintf(f,"%12"PRId64",%11"PRId64",%5.1f,%8.2f,%8.2f,%-16s,%s\n",
+        finame, name, name, plug->len,        tc, tc, td, td); 
+      break;
+  }
+}
+
+static int blknum, speedup;
+enum { SP_SPEEDUPC=1, SP_SPEEDUPD, SP_TRANSFERC, SP_TRANSFERD };
+
+void plugprtph(FILE *f, int fmt) {
+  int i;
+
+  switch(fmt) {
+    case FMT_HTML: 
+      fprintf(f,"<p><h3>TurboBench: Speedup %s sheet</h3><table id='myTable2' class='tablesorter' style=\"width:80%%\"><thead><tr><th>Name</th>", (speedup&1)?"compression":"decompression");
+      for(i = 0; i < BWSIZE; i++) 
+        fprintf(f, "<th>%s</th>", bw[i].s);
+      fprintf(f, "<td>File"); 
+      if(blknum) 
+        fprintf(f, " blknum=%d ", blknum);
+      fprintf(f, "</td></tr></thead><tbody>\n"); 
+      break;
+    case FMT_MARKDOWN: 
+      fprintf(f,"#### TurboBench: Speedup %s sheet\n\n", (speedup&1)?"compression":"decompression");
+      fprintf(f, "|Name"); 
+      for(i = 0; i < BWSIZE; i++) 
+        fprintf(f, "|%s", bw[i].s);
+      fprintf(f, "|File"); 
+      if(blknum) 
+        fprintf(f, " blknum=%d ", blknum);
+      fprintf(f, "|\n"); 
+      fprintf(f, "|-------------");
+      for(i = 0; i < BWSIZE; i++) 
+        fprintf(f, "|---------:");
+      fprintf(f, "|-------------|\n"); 
+      break;
+    case FMT_VBULLETIN:
+      fprintf(f,"TurboBench: Speedup %s sheet\n\n", (speedup&1)?"compression":"decompression");
+      fprintf(f,"[CODE][B]\n"); 
+    default: 
+      fprintf(f,"Name           ");
+      for(i = 0; i < BWSIZE; i++) 
+        fprintf(f, "%10s", bw[i].s);
+      if(blknum) 
+        fprintf(f, " blknum=%d ", blknum);
+      fprintf(f, "\n"); 
+    if(fmt == FMT_VBULLETIN) 
+      fprintf(f,"[/B]\n"); 
+  }
+}
+
+static inline double spmbs(double td, long long len, int i, long long totinlen) { 
+  double t = td + len*TM_T/(double)bw[i].bw + blknum*(bw[i].rtt*1000.0); 
+  return TMIS(totinlen,t); 
+}
+
+//static inline double spdup(double td, long long len, int i, long long totinlen) { double t = td + len*TM_T/(double)bw[i].bw + blknum*(bw[i].rtt*1000.0); return ((double)totinlen*TM_T*100.0/t)/(double)bw[i].bw;}
+static inline double spdup(double td, long long len, int i, long long totinlen) { 
+  return (double)totinlen*100.0 / ((double)len + ((td+blknum*bw[i].rtt*1000.0)/TM_T)*(double)bw[i].bw ); 
+}
+
+void plugprtp(struct plug *plug, long long totinlen, char *finame, int fmt, int speedup, FILE *f) {
+  int  i;
+  char name[65]; 
+  if(plug->lev>=0) 
+    sprintf(name, "%s%s%s%d%s", plug->err?"?":"", plug->s, fmt==FMT_MARKDOWN?"_":" ", plug->lev, plug->prm);
+  else
+    sprintf(name, "%s%s%s",    plug->err?"?":"", plug->s,            plug->prm);
+  if(fmt == FMT_HTML) 
+    fprintf(f, "<tr><td>%s</td>", name);
+  else 
+    fprintf(f, "%-16s", name);															 
+
+  for(i = 0; i < BWSIZE; i++) {
+    switch(fmt) {
+      case FMT_HTMLT: 
+      case FMT_HTML: 
+        fprintf(f, "<td align=\"right\">"); 
+        break;
+      case FMT_MARKDOWN: 
+        fprintf(f, "|"); 
+        break;
+    }
+    switch(speedup) {
+      case SP_TRANSFERD: 
+        fprintf(f,"%9.3f ", spmbs(plug->td, plug->len, i, totinlen)); 
+        break;
+      case SP_SPEEDUPD:  
+        fprintf(f,"%9d ", (int)(spdup(plug->td, plug->len, i, totinlen)+0.5)); 
+        break;
+      case SP_TRANSFERC: 
+        fprintf(f,"%9.3f ", spmbs(plug->td, plug->len, i, totinlen)); 
+        break;
+      case SP_SPEEDUPC:  
+        fprintf(f,"%9d ", (int)(spdup(plug->td, plug->len, i, totinlen)+0.5)); 
+        break;
+    }
+    switch(fmt) {
+      case FMT_HTMLT: 
+      case FMT_HTML: 
+        fprintf(f, "</td>");
+        break;
+      case FMT_MARKDOWN: 
+        break;
+    }
+  }
+  switch(fmt) {
+    case FMT_HTMLT: 
+    case FMT_HTML: 
+      fprintf(f, "<td>%s</td></tr>\n", finame);
+      break;
+    case FMT_MARKDOWN: 
+      fprintf(f, "|%s|\n", finame); 
+      break;
+    default: 
+      fprintf(f, "%s\n", finame); 
+      break;
+  }
+}
+
+struct { unsigned x,y; } divplot[] = { 
+  { 1920, 1080}, // 16:9
+  { 1600,  900}, 
+  { 1280,  720}, 
+  {  800,  600} 
+};
+
+static unsigned divxy = 1, xlog = 1, xlog2, ylog, ylog2, plotmcpy;
+
+void plugplotb(FILE *f, int fmt, int idiv) { 
+  fprintf(f, "<div id='myDiv%d' style='width: %dpx; height: %dpx;'></div><script>", idiv, divplot[divxy].x, divplot[divxy].y); 
+}
+
+void plugplot(struct plug *plug, long long totinlen, int fmt, int speedup, char *s, FILE *f) {
+  int  i;
+  char name[65];
+  if(plug->lev>=0)
+    sprintf(name, "%s%s_%d%s", plug->err?"?":"", plug->s, plug->lev, plug->prm);
+  else
+    sprintf(name, "%s%s%s",    plug->err?"?":"", plug->s,            plug->prm);
+  strcat(s,name); strcat(s,",");
+
+  fprintf(f, "var %s = { x: [", name);							
+  for(i = 0; i < BWSIZE; i++) 
+    fprintf(f,"%llu%s", bw[i].bw, i+1 < BWSIZE?",":""); 			
+  fprintf(f, "],\ny: [");							
+
+  for(i = 0; i < BWSIZE; i++)  				
+    switch(speedup) {
+      case SP_TRANSFERD: 
+        fprintf(f,"%9.3f%s",    spmbs(plug->td, plug->len, i, totinlen), i+1 < BWSIZE?",":""); 
+        break;
+      case SP_SPEEDUPD:  
+        fprintf(f,"%9d%s", (int)(spdup(plug->td, plug->len, i, totinlen)+0.5), i+1 < BWSIZE?",":""); 
+        break;
+      case SP_TRANSFERC: 
+        fprintf(f,"%9.3f%s",    spmbs(plug->tc, plug->len, i, totinlen), i+1 < BWSIZE?",":""); 
+        break;
+      case SP_SPEEDUPC:  
+        fprintf(f,"%9d%s", (int)(spdup(plug->tc, plug->len, i, totinlen)+0.5), i+1 < BWSIZE?",":""); 
+        break;
+    }															   
+  fprintf(f, "],\ntype: 'scatter',\nmode: 'lines+markers',\nline: {shape: 'spline'},\nname: '%s'\n};\n", name);							 
+}
+
+void plugplote(FILE *f, int fmt, char *s) {
+  fprintf(f, "var data = [%s];\nvar layout = {\ntitle:'TurboBench Speedup: Transfer+%s Speed',\nxaxis: {\ntitle: '%s Transfer Speed (M=MI/s B=GB/s)',\n%s    autorange: true\n  }, \n  yaxis: {\n\ntitle: 'Speedup %%',\n%sautorange: true\n  }\n};\nPlotly.plot('myDiv1', data, layout);</script>\n",
+    s, (speedup&1)?"Compression":"Decompression", xlog?"log":"", xlog?"type: 'log',\n":"", ylog?"type: 'log',\n":"");
+}
+
+int libcmp(const struct plug *e1, const struct plug *e2) {
+  if(e1->len < e2->len)
+    return -1;
+  else if(e1->len > e2->len)
+    return 1;
+  else if(e1->td < e2->td)
+    return -1;
+  else if(e1->td > e2->td)
+    return 1;
+  return 0;
+}
+
+int libcmpn(const struct plug *e1, const struct plug *e2) {
+  int c = strcmp(e1->s, e2->s);
+  if(c < 0)
+    return -1;
+  else if(c > 0)
+    return 1;
+  else if(e1->lev < e2->lev)
+    return -1;
+  else if(e1->lev > e2->lev)
+    return 1;
+  return 0;
+}
+
+#define P_MCPY 1  // memcpy id
+void plugplotc(struct plug *plug, int k, long long totinlen, int fmt, int speedup, char *s, FILE *f) {
+  int  i, n = 0;
+  char name[65],txt[256];  
+  qsort(plug, k, sizeof(struct plug), (int(*)(const void*,const void*))libcmpn);
+  
+  struct plug *g,*gs=plug,*p;
+  for(txt[0] = name[0] = 0, g = plug; g < plug+k; g++) 
+  if(g->id <= P_MCPY && !plotmcpy) 
+    continue;
+  else { 					
+    if(strcmp(g->s, name)) {
+      if(name[0]) { 														
+        fprintf(f, "],\ny: [");
+        for(p = gs; p < g; p++) 
+          fprintf(f, "%.2f%s", speedup<3?FACTOR(p->len,totinlen):RATIO(p->len,totinlen), p+1<g?",":"");        
+        fprintf(f, "],\nmode: 'markers+text',\ntype: 'scatter',\nname: '%s',\ntextposition: 'top center', textfont: { family:  'Raleway, sans-serif' }, marker: { size: 12 }\n", name, txt);	
+        if(txt[0]) 
+          fprintf(f, "\n,text: [%s]\n", txt);
+        fprintf(f, "};\n");
+        strcat(s,",");
+        txt[0] = 0;
+      }
+      gs = g;
+      strcpy(name, g->s);													
+      fprintf(f, "var %s = {\n x: [", g->s);
+      strcat(s, g->s); 
+    } else { 
+      fprintf(f, ",");
+      strcat(txt, ","); 
+    }
+    if(g->lev >= 0) { 
+      char ts[33]; 
+      sprintf(ts, "'%s%s%d%s'", divxy>=2?"":g->s, divxy>=2?"":",", g->lev, g->prm); 
+      strcat(txt, ts); 
+    }
+    double t = (speedup&1)?g->tc:g->td;
+    fprintf(f, "%.2f", TMIS(totinlen,t));
+  }
+  fprintf(f, "],\ny: [");
+  for(p = gs; p < g; p++) 
+    fprintf(f, "%.2f%s", speedup<3?FACTOR(p->len,totinlen):RATIO(p->len,totinlen), p+1<g?",":"");        
+  fprintf(f, "],\nmode: 'markers+text',\ntype: 'scatter',\nname: '%s',\ntextposition: 'top center', textfont: { family:  'Raleway, sans-serif' }, marker: { size: 12 }\n", name, txt);	
+  if(txt[0]) 
+    fprintf(f, "\n,text:[%s]\n", txt);
+  fprintf(f, "};\n");
+}
+
+void plugplotce(FILE *f, int fmt, char *s) {
+  fprintf(f, "var data = [%s];\nvar layout = {\ntitle:'TurboBench: %s',\nxaxis: {\ntitle: '%s speed MI/s',\n%s    autorange: true\n  }, \n  yaxis: {\n\ntitle: 'Ratio (factor)',\n%sautorange: true\n  }\n};\nPlotly.plot('myDiv2', data, layout);</script>\n",
+    s, (speedup&1)?"Compression":"Decompression", xlog2?"log":"", xlog2?"type: 'log',\n":"", ylog2?"type: 'log',\n":"");
+}
+
+int plugprts(struct plug *plug, int k, char *finame, int xstdout, unsigned long long totlen, int fmt, char *t) { 
+  double ptc = 0.0, ptd = 0.0;
+  struct plug *g; 
+  if(!totlen) return 0; 														  					if(verbose>1) printf("'%s'\n", finame); 
+
+  qsort(plugt, k, sizeof(struct plug), (int(*)(const void*,const void*))libcmp);
+  char s[257];
+  sprintf(s, "%s.%s", finame, fmtext[fmt]);
+  FILE *fo = xstdout>=0?stdout:fopen(s, "w");
+  if(!fo) 
+    die("file create error for '%s'\n", finame); 
+
+  plugprth( fo, fmt, t);
+  plugprtth(fo, fmt);
+  for(g = plugt; g < plugt+k; g++) 
+    plugprt(g, totlen, finame, fmt, &ptc, &ptd, fo);
+  plugprttf(fo, fmt);
+
+  if(speedup) { 
+    switch(fmt) {
+      case FMT_TEXT : 
+        fprintf(fo, "\n"); 
+        break;
+      case FMT_HTML : 
+        break;
+      case FMT_HTMLT: 
+        fprintf(fo, "<pre>\n");
+        break;
+      case FMT_MARKDOWN :
+        fprintf(fo, "\n"); 
+        break;
+    }
+    plugprtph(fo, fmt); 
+    for(g = plugt; g < plugt+k; g++) 
+      plugprtp(g, totlen, finame, fmt, speedup, fo);  
+    fprintf(fo, "\n"); 
+    switch(fmt) {
+      case FMT_TEXT : 
+        fprintf(fo, "\n"); break;
+      case FMT_HTML : 
+        fprintf(fo, "</tbody></table>\n"); break;
+      case FMT_HTMLT: 
+        fprintf(fo, "</pre>\n"); 
+        break;
+      case FMT_VBULLETIN:
+        fprintf(fo,"[/CODE]\n"); 
+        break;
+      case FMT_MARKDOWN :
+        fprintf(fo, "\n"); 
+        break;
+    }
+    if(fmt == FMT_HTML) {
+      char s[1025];  
+      s[0] = 0; 															if(verbose>1) printf("generate speedup plot\n");
+      plugplotb(fo, fmt, 1); 
+      for(g = plugt; g < plugt+k; g++) 
+        if(g->id > P_MCPY || plotmcpy)
+          plugplot(g, totlen, fmt, speedup, s, fo);  
+      plugplote(fo, fmt, s);
+
+      s[0] = 0; 															if(verbose>1) printf("generate speed/ratio plot\n");
+      plugplotb(fo, fmt, 2); 
+      plugplotc(plug, k, totlen, fmt, speedup, s, fo);
+      plugplotce(fo, fmt, s);
+
+    }
+  }
+  plugprtf(fo, fmt);
+  fclose(fo);
 } 
+
+int plugread(struct plug *plug, char *finame, long long *totinlen) {
+  char s[256],name[33];
+  struct plug *p=plug;
+  FILE *fi = fopen(finame, "r"); 
+  if(!fi) return -1;
+
+  fgets(s, 255, fi);
+  for(p = plug;;) { 
+    p->tms[0] = 0;
+    int i = fscanf(fi, "%s\t%"PRId64"\t%"PRId64"\t%lf\t%lf\t%s\t%d\t%s\t%"PRId64"\t%"PRId64"\t%s\n", s, totinlen, &p->len, &p->td, &p->tc, name, &p->lev, p->prm, &p->memc, &p->memd, p->tms); 
+    if(i != 11)
+      break;
+    if(p->prm[0]=='?') 
+      p->prm[0]=0;
+    for(i = 0; plugs[i].id >=0; i++) 
+      if(!strcmp(name, plugs[i].s)) { 
+        p->s  = plugs[i].s; 
+        p->id = plugs[i].id; 											if(verbose>1) { fprintf(stdout, "%s\t%"PRId64"\t%"PRId64"\t%.6f\t%.6f\t%s\t%d%s\t%s\t%"PRId64"\t%"PRId64"\n", s, *totinlen, p->len, p->td, p->tc, p->s, p->lev, p->prm, p->tms, p->memc, p->memd); fflush(stdout); }
+        p++;
+        break; 
+      } 																	      		
+  }
+  fclose(fi);
+  return p - plug;
+}
+
+//----------------------------------- Benchmark -----------------------------------------------------------------------------
+static int mcpy, mode, tincx, fuzz;
+
+int becomp(unsigned char *_in, unsigned _inlen, unsigned char *_out, unsigned outsize, unsigned bsize, int id, int lev, char *prm, int ifmt, CODCOMP codcomp) { 
+  unsigned char *op,*oe = _out + outsize;             if(!_inlen) return 0;
+
+  if(ifmt >=0 && bsize == 4) {
+    unsigned *in = (unsigned *)_in,i;
+    for(i = 1; i < _inlen/4; i++)     if(in[i] < in[i-1]+ifmt) die("IDs not sorted %d:%d,%d\n", i, in[i-1], in[i] );
+  }
+  TMDEF;
+  TMBEG(0,tm_repc,tm_Repc);     mempeakinit();                                           
+  unsigned char *in,*ip;																							
+  for(op = _out, in = _in; in < _in+_inlen; ) { 
+    unsigned inlen,bs; 
+    if(mode) { 														blknum++;
+      inlen = ctou32(in); in+=4;	  
+	  vbput32(op, inlen); //ctou32(op) = inlen; op+=4;//
+	  inlen*=4; 
+      if(in+inlen>_in+_inlen) die("FATAL buffer overflow error"); //inlen = (_in+_inlen)-in;
+    } else inlen = _inlen;
+
+    for(ip = in, in += inlen; ip < in; ) { 
+      unsigned iplen = in - ip; iplen = min(iplen, bsize);       
+      op = codcomp(ip, iplen, op, oe-op, id, lev, prm, ifmt);
+	  ip += iplen; 
+      if(op > _out+outsize) 
+	    die("Overflow error %llu, %u in lib=%d\n", outsize, (int)(ptrdiff_t)(op - _out), id);                                                      
+    }
+  }
+  TMEND(_inlen);	
+  return op - _out;
+}
+
+int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outlen, unsigned bsize, int id, int lev, char *prm, int ifmt, CODDECOMP coddecomp) { 
+  unsigned char *ip;
+  TMDEF; 
+  TMBEG(0,tm_repd,tm_Repd);     mempeakinit();
+  unsigned char *out,*op;
+  for(ip = _in, out = _out; out < _out+_outlen;) {
+    unsigned outlen,bs; 
+    if(mode) {  
+	  vbget32(ip, outlen); 	//outlen  = ctou32(ip); ip+=4; //
+      ctou32(out) = outlen; out += 4;
+	  outlen *= 4;
+      if(out+outlen >_out+_outlen) die("FATAL: overflow error"); 
+    } else outlen = _outlen;
+    for(op = out, out += outlen; op < out; ) { 
+      unsigned oplen = out - op; 
+      oplen = min(oplen, bsize);
+      ip = coddecomp(ip, 0, op, oplen, id, lev, prm, ifmt);
+      if(ip >_in+_inlen) die("FATAL inlen");
+	  op += oplen;
+    }
+  }
+  if(!(ip - _in)) return 0;
+  TMEND(_outlen);
+  return ip - _in;
+}
+
+  #ifdef LZTURBO
+#include "../bebench.h"
+  #else
+struct plug plugr[32]; int tid;
+#define BEPRE
+#define BEINI
+#define BEPOST
+#define BEOPT
+#define BEUSAGE
+#define BEFILE
+#define BENCHSTA
+#endif
+
+#define INOVD 4*1024
+
+  #if defined(_WIN32) && !defined(__MINGW__)
+int getpagesize() {
+  static int pagesize = 0;
+  if (pagesize == 0) {
+    SYSTEM_INFO system_info;
+    GetSystemInfo(&system_info);
+    pagesize = max(system_info.dwPageSize, system_info.dwAllocationGranularity);
+  }
+  return pagesize;
+} 
+  #endif
+
+unsigned mininlen;
+struct cod { CODCOMP comp; CODDECOMP decomp; };
+struct cod cods[] = { { codcomp, coddecomp }, {codcomps, coddecomps }}; 
+
+unsigned long long filen;
+size_t insizem;
+char name[65]; 
+int ifmt=-1,mdelta=0;
+
+unsigned long long plugbench(struct plug *plug, unsigned char *_in, unsigned inlen, unsigned _insize, unsigned char *out, unsigned outsize, 
+                             unsigned char *_cpy, unsigned _bsize, struct plug *plugr, int tid, int krep, char *finame) {
+  unsigned char *in = _in; 
+  //if(fuzz & 1) { in = (_in+insizem)-inlen; memmove(in, _in, inlen); }
+  double   tc = 0.0, td = 0.0;         
+  unsigned l = inlen, outlen, bsize = plug->blksize?plug->blksize:_bsize; 
+  int      insize=(ifmt >= 0)?bsize+4:bsize;
+   
+  BEPRE;		
+  int nb = 1;
+  /*if(l < mininlen) {
+    bsize = l;
+    unsigned char *p;
+    for(p = in+l; ; p+=l) {
+      if(p+l > in+insize) break;
+      nb++;
+      memcpy(p, in, l);
+    }
+  }*/
+  size_t peak = mempeakinit();
+  outlen = becomp(in, l*nb, out, outsize, insize, plug->id, plug->lev, plug->prm, ifmt, cods[ifmt<0?0:1].comp)/nb; 
+  plug->len += outlen; 
+  plug->tc  += (tc += (double)tm_tm/((double)tm_rm*nb)); 
+  plug->memc = mempeak() - peak;
+  if(tm_Repc > 1) 
+    TMSLEEP;
+
+																								if(verbose && inlen == filen) { printf("%12u   %5.1f   %5.2f  %8.2f   ", outlen, RATIO(outlen,inlen), RATIOI(outlen,inlen), TMIS(inlen,tc)); fflush(stdout); }
+  if(cmp) {
+    unsigned char *cpy = _cpy; 
+    if(fuzz & 2) cpy = (_cpy+insizem) - l;
+	if(_cpy != _in) memrcpy(cpy, in, l);
+    peak = mempeakinit();
+	unsigned cpylen = bedecomp(out, outlen, cpy, l*nb, insize, plug->id, plug->lev, plug->prm, ifmt, cods[ifmt<0?0:1].decomp)/nb;
+	td = (double)tm_tm/((double)tm_rm*nb);		
+    plug->memd = mempeak() - peak;                                                             	if(verbose && inlen == filen) { printf("%8.2f   %-16s%s\n", TMIS(inlen,td), name, finame); }
+    int e = memcheck(in, l, cpy, fuzz?3:cmp);  
+    plug->err = plug->err?plug->err:e;
+    BEPOST;																	
+ 	plug->td += td; 
+  } else 																						if(verbose && inlen == filen) { printf("%8.2f   %-16s%s\n", 0.0, name, finame); }
+  return outlen; 
+}
 
 //--------------------------------------- Zipfian generator --------------------------------------------------------
+double    a = 1.5;
+                                                                                 unsigned xbits[33];
+void stprint(char *s) {
+  int m;
+  unsigned long long t=0; 
+  for(m = 0; m < 33; m++) 
+    t += xbits[m];
+  printf("\n%s bits histogram:",s); 
+  for(m = 0; m < 33; m++) 
+    if(xbits[m]) printf("%d:%.2f%% ", m, (double)xbits[m]*100/t); printf("\n");
+}
+
 int dcmp(double *a, double *b) {
   if(*a < *b) return -1;
   if(*a > *b) return  1;
@@ -527,633 +1195,481 @@ void zipfgen(unsigned *a, double alpha, unsigned x1, unsigned x2, int n) {
   } 
   free(zmap); 
 }
-//---------------------------------------- bench --------------------------
-#define TM_MAX (1ull<<63)
-#define TMPRINT(__x) { printf("%7.2f MB/s\t%s", (double)(tm_tm>=0.000001?(((double)n*tm_rm/MBS)/(((double)tm_tm/1)/TM_T)):0.0), __x); fflush(stdout); }
-#define TMDEF unsigned tm_r,tm_R; tm_t _t0,_tc
-#define TMBEG for(tm_tm = TM_MAX,tm_R = 0; tm_R < tm_Reps; tm_R++) { if(tm_R && tm_slp) sleep(tm_slp); for(_t0 = tminit(), tm_r=0; tm_r < tm_reps;) {
-#define TMEND                                            tm_r++; if((_tc = (tmtime() - _t0)) > tm_tx) break; } if(_tc < tm_tm) { tm_tm = _tc,tm_rm=tm_r; if(_tc>tm_Tx) break; } }
-#define MBS 1000000.0 //MiBS 1048576.0
-static unsigned tm_reps = 1<<30, tm_Reps = 3, tm_rm, tm_slp;
-static tm_t tm_tm, tm_tx=2*TM_T,tm_Tx=60*TM_T;
 
-void memrcpy(unsigned char *__restrict out, unsigned char *__restrict in, size_t n) { int i; for(i = 0; i < n; i++) out[i] = ~in[i]; }
-unsigned argtoi(char *s) {
-  char *p; unsigned n = strtol(s, &p, 10),f=1;
-  switch(*p) {
-     case 'k': f = 1000;       break;
-     case 'm': f = 1000000;    break;
-     case 'g': f = 1000000000; break;
-     case 'K': f = 1<<10;      break;
-     case 'M': f = 1<<20;      break;
-     case 'G': f = 1<<30;      break;
-  }
-  return n*f;
-}
-#define ALGN
-
-  #ifdef ALGN
-static void *amalloc(size_t size, size_t align) {
-    #if defined(__MINGW32__)
-  return __mingw_aligned_malloc(size, align);
-    #elif defined(_WIN32)
-  return _aligned_malloc(__size, __align);
-    #elif _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
-  void *p; 
-  return posix_memalign(&p, align, size)?NULL:p;
-    #elif !defined(__APPLE__) && __STDC_VERSION__ >= 201112L
-  return aligned_alloc(16, size);
-    #else
-  return malloc(size);
-    #endif
-}
-
-void afree(void *p) {
-    #if defined(__MINGW32__)
-  __mingw_aligned_free(p);
-    #elif defined(_WIN32)
-  _aligned_free(p);
-    #elif _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
-  free(p);
-    #elif !defined(__APPLE__) && __STDC_VERSION__ >= 201112L
-  aligned_free(p);
-    #else
-  free(size);
-    #endif
-}
-  #endif
-//----------------------------------------------- Benchmark -------------------
-struct libss { int id; char *s;int size; };
-
-struct libss libss[] = {            
-  //------- PFor + PForDelta ----------
-  { P_P4D,    "TurboPFor",   128    }, 
-    #if !defined(_WIN32)
-  { P_P4DR,   "TurboPForDA", 128    }, // actually not working w. mingw 
-    #endif
-    
-    #ifdef _OPTPFD
-  { P_OPTP4,  "OptPFD",      128    }, //max. 28 bits
-    #endif
-
-  //-------------- Bit Packing --------
-  { P_PCKV,   "TurboPackV",  128    },
-  { P_PCK,    "TurboPack",   PACK_SIZE  },
-  { P_FOR,    "TurboFor",    PACK_SIZE  },
-  { P_PCKR,   "TurboForDA",  PACK_SIZE  },
-  
-  { P_SIMDV,  "SIMDPackFPF", 128    }, 
-    #ifdef _LIBFOR
-  { P_LIBFOR, "LibFor",     PACK_SIZE },
-    #endif
-
-  //------ Variable byte -------------
-  { P_VB,     "TurboVbyte"          },
-  
-  { P_VBL,    "VbyteFPF"            },
-  { P_VG8,    "VarintG8IU"          }, 
-    #ifdef _MASKEDVBYTE
-  { P_MVB,    "MaskedVByte"         }, 
-    #endif
-    #ifdef _VBYTEPOLY
-  { P_VBP,    "VBytePoly"           },
-    #endif
-
-    #ifdef _QMX
-  { P_VSQMX,    "qmx"            	  },  
-    #endif
-  // ----- Simple family -----
-  { P_SV,     "VSimple"             },
-//  { P_SVANS,      "VSimpleANS", BLK_SIZE },
-    #ifdef _SIMPLE_8B
-  { P_S64,    "Simple-8b",  SIMPLE8BMAX },  //crash on integers w. size 32 bits !
-    #endif
-    #ifdef _SIMPLE16
-  { P_S16,    "Simple16"            },  //max. 28 bits
-    #endif
-
-  //------- Elias Fano ---------
-  { P_EFANO,  "EliasFano"           },
-  { P_CPY,    "Copy"                },
-
-  // ------ transpose/delta + lz77 -------
-    #ifdef _LZT
-  { P_LZT10,  "LzTurbo 10", BLK_SIZE },
-//  { P_LZT20,  "LzTurbo 20", BLK_SIZE },
-//  { P_LZT22,  "LzTurbo 22", BLK_SIZE },
-    #endif     
-
-    #ifdef _LZ4
-  { P_LZ4,    "lz4",        BLK_SIZE },
-    #endif 
-
-    #ifdef _BLOSC
-  { P_BLZ,    "blosc_lz",   BLK_SIZE },
-  { P_BLZ4,   "blosc_lz4",  BLK_SIZE },
-  { P_BZLIB,  "blosc_zlib", BLK_SIZE },
-    #endif 
-
-    #ifdef _ZLIB
-  { P_ZLIB1,  "zlib 1",     BLK_SIZE },
-//{ P_ZLIB2,  "zlib 2",     BLK_SIZE },
-//{ P_ZLIB3,  "zlib 3",     BLK_SIZE },
-//{ P_ZLIB4,  "zlib 4",     BLK_SIZE },
-  { P_ZLIB5,  "zlib 5",     BLK_SIZE },
-//{ P_ZLIB6,  "zlib 6",     BLK_SIZE },
-//{ P_ZLIB7,  "zlib 7",     BLK_SIZE },
-//{ P_ZLIB8,  "zlib 8",     BLK_SIZE },
-  { P_ZLIB9,  "zlib 9",     BLK_SIZE },
-    #endif 
-
-  //------- Transform -------------------
-    #ifdef _TRANSFORM
-  { P_TRSP,   "transpose",  BLK_SIZE },
-  { P_TRSPV,  "transposev", BLK_SIZE },
-  { P_ZZAG,   "zigzag",     BLK_SIZE },
-  { P_DELTA,  "delta",      BLK_SIZE },
-      #ifdef _BLOSC
-  { P_BSHUF,  "shuffle",    BLK_SIZE },
-      #endif 
-      #ifdef _BTSHUF
-  { P_BTSHUF, "bshuffle",   BLK_SIZE },
-      #endif 
-    #endif
-  { -1,       ""                     },
-};
-  
-#define MB 1000000
-int verb = 0, xcheck=2;                                                                                 unsigned xbits[33];
-          
-enum { T_TST, T_TXT, T_CHAR, T_BYTE, T_BYTE2, T_BYTE4, T_DBL };
-
-struct libs { int id,err,size; char *s,*v; unsigned long long l, c[33]; double tc,td; };
-struct libs libs[64],slibs[64];
-void libini() { int m; for(m = 0; libs[m].id >= 0; m++) libs[m].l = libs[m].tc = libs[m].td = 0; }
-
-int l_cmp(struct libs *a, struct libs *b) {
-  if(a->l  < b->l || (a->l == b->l && a->td < b->td) || (a->l == b->l && a->td == b->td && a->tc < b->tc)) return -1;
-  if(a->l  > b->l || (a->l == b->l && a->td > b->td) || (a->l == b->l && a->td == b->td && a->tc > b->tc)) return  1;
-  return 0;
-}
-
-void check(unsigned *in, unsigned n, unsigned *out, char *s) {
-  unsigned k,j; 
-  for(k = 0; k < n; k++) 
-    if(in[k] != out[k]) { 
-      printf("\nFATAL in check %x,%x at %u[%u] in %s\n", in[k], out[k], k, n, s); 
-      for(j=k & 0xffffff80u; j < k+128;j++) { unsigned e = in[j] != out[j];
-        if(e) printf("*"); printf("%d:%x,%x ", j, in[j], out[j] );
+//       0       1        2         3         4         5         6         7,        8         
+enum { T_TST, T_UINT8, T_UINT16, T_UINT24, T_UINT32, T_UINT40, T_UINT48, T_UINT56, T_UINT64, T_CHAR, T_TXT };
+int mdelta;
+unsigned rm=0,rx=1<<20,n=0;
+#define OVD (10*MB)
+#define IPUSH(in,n,isize, nmax,u) { if(n >= nmax) { nmax = nmax?(nmax << 1):(1<<20); in = realloc(in, nmax*isize+OVD); if(!in) die("malloc err=%u", nmax); }\
+                                  ctou32(in+n*isize) = u; n++; \
+								}
+unsigned befgen(unsigned char **_in, int fmt, unsigned isize, FILE *fi) {	
+  unsigned char *in = *_in,*ip; unsigned nmax = 0;           
+  if(!fi) { 
+    if(!n) n = 25000000;  printf("zipf alpha=%.2f range[%u..%u].n=%u\n ", a, rm, rx, n);
+	in = malloc(n*isize+OVD); if(!in) die("malloc err=%u", nmax);
+    zipfgen((unsigned *)in, a, rm, rx, n);                       
+                   int i;for(i = 1; i <= n; i++) xbits[bsr32(ctou32(in+i*4))]++; 
+    if(ifmt >= 0) {                                                       stprint("delta"); 
+      unsigned *ip = (unsigned *)in; int v;
+      for(ip[0]=0,v = 1; v < n; v++) { 
+        ip[v] += ip[v-1] + ifmt;                                          if(ip[v]>=(1u<<31)) die("overflow generating sorted array\n" );  
       }
-      printf("\n");
-      exit(0); 
-    } 
-} 
-
-void stprint(char *s) {
-  int m;
-  unsigned long long t=0; 
-  for(m = 0; m < 33; m++) 
-    t += xbits[m];
-  printf("\n%s bits histogram:",s); 
-  for(m = 0; m < 33; m++) 
-    if(xbits[m]) printf("%d:%.2f%% ", m, (double)xbits[m]*100/t); printf("\n");
-}
-
-#define BI 1   // BI=4 -> MB/S=Megabyte/Sec  BI=1 -> Millions integer/Sec
-void print(struct libs *libs, unsigned long long n, char *s, unsigned long long *u) { 
-  int m, k; 
-  for(k = 0; libs[k].id >= 0; k++) {};
-    qsort(libs, k, sizeof(libs[0]), (int(*)(const void*,const void*))l_cmp);    
-  char *prtname = s?s:""; { char *p; if((p = strrchr(prtname, '/')) || (p = strrchr(prtname, '\\'))) prtname = p+1;} 
-  for(m = 0; m < k; m++) 
-    if(/*libs[m].tc ||*/ libs[m].l) { 
-      struct libs *lb = &libs[m]; if(!lb->l) lb->tc=lb->td=0.0;
-      printf("%-16s%12llu\t%5.2f\t%5.2f\t%8.2f\t%8.2f\t%s\n", prtname, lb->l, (double)lb->l*100.0/((double)n*4.0), (double)lb->l*8.0/(double)n, 
-        lb->tc>=0.000001?((double)n*BI/1000000.0) / (lb->tc/TM_T):0.0,
-        lb->td>=0.000001?((double)n*BI/1000000.0) / (lb->td/TM_T):0.0,
-        lb->s ); 
-    }
-}
-
-//-----------------------------------------------------------------------------------------------
-unsigned bench(unsigned *__restrict _in, unsigned _inlen, int blksize, unsigned char *__restrict _out, unsigned long long outsize, char *inname, tm_t tx, unsigned *__restrict cpy, int bb, int mode ) { int m,id,b=bb,i; 
-  if(!_inlen) return 0;                                                 if(verb>1) { printf(":%d,", _inlen);  fflush(stdout); }
-  unsigned cn;                                                          
-  memcpy(_out, _in, (unsigned long long)_inlen*4);                                                                                                                                          
-  for(m = 0; (id=libs[m].id) >= 0; m++) {
-    unsigned    bsize = libs[m].size?libs[m].size:blksize, cl;
-    int         insize=(mode>=0)?bsize+1:bsize; 
-    struct libs *lb = &libs[m];                                                                         if(verb) printf("%s,%d", libs[m].s, insize);
-      #ifdef _BLOSC
-    if(lb->id == P_BLZ4)
-      blosc_set_compressor(BLOSC_LZ4_COMPNAME);
-    else if(lb->id == P_BZLIB)
-      blosc_set_compressor(BLOSC_ZLIB_COMPNAME);
-    else if(lb->id == P_BLZ)
-      blosc_set_compressor(BLOSC_BLOSCLZ_COMPNAME);
-      #endif
-                  memrcpy((unsigned char *)_out, (unsigned char *)_in, _inlen*4);
-    if(cpy !=_in) memrcpy((unsigned char *)cpy,  (unsigned char *)_in, _inlen*4);
-    
-    TMDEF; TMBEG
-    cn = cl = 0;                                                
-    unsigned      *in;
-    unsigned char *out;                                          
-    for(out = _out, in = _in; in < _in+_inlen; ) {
-      unsigned n, inlen = *in++, *ip = in; in += inlen; cn += inlen;
-      *(unsigned *)out = inlen; out += 4; unsigned char *sout = out;
-      if(mode >= 0)
-        for(;ip < in; ip += n) { n = in - ip; n = min(n,insize);      
-          out = besenc(ip, n, out, id, mode);                           
-        }                                                           
-      else
-        for(;ip < in; ip += n) { n = in - ip; n = min(n,insize);      
-          out = beenc(ip, n, out, id, bb);  
-        }                                                             
-      if(out > _out+outsize) die("Overflow error %llu, %u in %s\n", outsize, (int)(ptrdiff_t)(out - _out), lb->s);      
-      cl += out - sout;                                                                                 
-    }
-    TMEND   																						 if(verb) { printf("/");fflush(stdout); }   	
-    lb->l += cl; lb->tc += (double)tm_tm/tm_rm;                	//printf("(%d %.2f,%2u) ", cl, (double)tm_tm, tm_rm);                                           
-    
-    if(xcheck) {
-      TMDEF; TMBEG   
-      unsigned *out; 
-      unsigned char *in;
-      for(out = cpy, in = _out; out < cpy+_inlen;) {
-        unsigned n,*op, outlen = *(unsigned *)in; in += 4;
-        *out++ = outlen;                                          
-        if(mode >= 0)
-          for(op=out,out += outlen; op < out; op += n) { n = out - op; n = min(n,insize); 
-            in = besdec(in, n, op, id, mode);
-          }
-        else
-          for(op=out,out += outlen; op < out; op += n) { n = out - op; n = min(n,insize);   
-            in = bedec(in, n, op, id, bb);
-          }
-      }
-      TMEND  
-      lb->td += (double)tm_tm/tm_rm;       						//printf("(%d %.2f,%2u) ", cl, (double)tm_tm, tm_rm); 										printf("(%d,%d %.2f,%.2f) ", cl, lb->l, lb->tc, lb->td);                                                                      
-      if(xcheck > 1 && lb->l) check(_in, _inlen, cpy, lb->s);
-    }
+    } else stprint("");
+    *_in = in;	
+	return n*isize;
   }
-  return cn;
+  {
+  unsigned n = 0;																//printf("fmt=%d,", fmt);fflush(stdout);
+ #define LSIZE 1024
+  char s[LSIZE+1]; 
+  switch(fmt) {
+    case T_TXT:
+      while(fgets(s, LSIZE, fi)) {
+        s[strlen(s) - 1] = 0;										
+        unsigned long long u = strtoull(s, NULL, 10) - mdelta;
+        IPUSH(in,n,isize,nmax,u);		
+      }  
+      break;
+    case T_CHAR:
+      for(;;) {
+        char *p = s;
+        int c;
+        while((c = getc(fi)) >= '0' && c <= '9') 
+		  if(p - s < LSIZE) *p++ = c;
+        *p = 0;
+        unsigned long long u = strtoull(s, NULL, 10) - mdelta;
+        IPUSH(in,n,isize,nmax,u);		
+        if(c == EOF) break;
+      }
+      break;
+    case T_UINT8: {
+      unsigned char u;
+      while(fread(&u, 1, 1, fi)>0)
+        IPUSH(in,n,isize,nmax, u-mdelta);		
+    } break;
+    case T_UINT16: {
+      unsigned short u;
+      while(fread(&u, sizeof(u), 1, fi)>0)
+        IPUSH(in,n,isize,nmax, u-mdelta);		
+    } break;
+    /*case T_UINT32: {
+      unsigned u; 
+      while(fread(&u, sizeof(u), 1, fi)>0)
+        IPUSH(in,n,isize,nmax, u-mdelta);
+    } break;*/
+	default: die("unkown data format\n");
+  }
+  *_in = in;
+  return n*isize;
+  }
 }
 
-void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2015 Powturbo  %s\n", __DATE__);
-  fprintf(stderr, "Usage: icbench [options] [file]\n");
-  fprintf(stderr, "Use zipfian generator when no file specified\n");
-  fprintf(stderr, "<options>\n");
-  fprintf(stderr, " -bNs    N = blocksize (default 128) ex. -b64k -b64K\n");
-  fprintf(stderr, " -cN     N = 0,1 delta for ordered integer lists)/9,10,11=1 integer per line/19,20,21:integers separated by non digit char\n");
-  fprintf(stderr, " -eS     S = encoder schemes sparated by / (default all)\n");
-  fprintf(stderr, " -vN     N = verbosity 1..3\n");
-  fprintf(stderr, " -tN     N = time in seconds per interation\n");
-  fprintf(stderr, " -RN     N = Iterations (default 3)\n");
-  fprintf(stderr, "----- file specified --------------\n");
-  fprintf(stderr, " -fN     N = file format: 1=text:one integer per line 2=text:integers separated by non digit char, 3=bytes\n");
-  fprintf(stderr, " -FNs    N = max. file size to read\n");
-  fprintf(stderr, "Ex. ./icbench -c1 gov2.sorted -eturbopack/turbopfor\n");
-  fprintf(stderr, "----- file not specified --------------\n");
-  fprintf(stderr, " -fN     N = 0:bits range test. Ex. ./icbench -f0 -n0 -M32 -ebitpack\n");
+void usage(char *pgm) {
+  fprintf(stderr, "\nIcBench Copyright (c) 2013-2017 Powturbo %s\n", __DATE__);
+  fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
+  fprintf(stderr, " -eS      S = compressors/groups separated by '/' Parameter can be specified after ','\n");
+  fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
+  fprintf(stderr, " -B#s     # = max. benchmark filesize (default 1GB) ex. -B4G\n");
+  fprintf(stderr, " -s#s     # = min. buffer size to duplicate & test small files (ex. -s50)\n");
+  fprintf(stderr, "          s = modifier s:K,M,G=(1000, 1.000.000, 1.000.000.000) s:k,m,h=(1024,1Mb,1Gb). (default m) ex. 64k or 64K\n");
+  fprintf(stderr, "Benchmark:\n");
+  fprintf(stderr, " -i#/-j#  # = Minimum  de/compression iterations per run (default=auto)\n");
+  fprintf(stderr, " -I#/-J#  # = Number of de/compression runs (default=3)\n");
+  fprintf(stderr, " -t#      # = min. time in seconds per run.(default=2sec)\n");
+  fprintf(stderr, " -S#      Sleep # min. after 2 min. processing mimizing CPU trottling\n");
+  fprintf(stderr, " -k#      Repeat all benchmarks # times (default=3). -k0 = test mode\n");
+  fprintf(stderr, " -K#t     Max. time limit for all benchmarks (default 24h)\n");
+  fprintf(stderr, "          t = M:millisecond s:second m:minute h:hour. ex. 3h\n");
+  fprintf(stderr, " -D       No process real-time priority setting\n");
+  fprintf(stderr, "Check:\n");
+  fprintf(stderr, " -C#      #=0 compress only, #=1 ignore errors, #=2 exit on error, #=3 crash on error\n");
+  fprintf(stderr, " -fXs     X = file format: 1=int8,2=int16,4=int32(=default), t=text:one integer per line c=text:integers separated by non digit char\n");
+  fprintf(stderr, "          s = sorted,S=sorted unique\n");
+//  fprintf(stderr, " -z#      check reading/writing outside bounds: #=1 compress, #=2 decompress, #3:both\n");
+  fprintf(stderr, "Output:\n");
+  fprintf(stderr, " -v#      # = verbosity 0..3 (default 1)\n");
+  fprintf(stderr, " -l#      # = 1 : print all groups/plugins, # = 2 : print all codecs\n");
+  fprintf(stderr, " -S#      Plot transfer speed: #=1 Comp speedup #=2 Decomp speedup #=3 Comp 'MI/s' #=4 Decomp 'MI/s'\n");
+  fprintf(stderr, " -p#      #='print format' 1=text 2=html 3=htm 4=markdown 5:vBulletin 6:csv(comma) 7=tsv(tab)\n");
+  fprintf(stderr, " -Q#      # Plot window 0:1920x1080, 1:1600x900, 2:1280x720, 3:800x600 (default=1)\n");
+  fprintf(stderr, " -g       -g:no merge w/ old result 'file.tbb', -gg:process w/o output (use for fuzzing)\n");
+  fprintf(stderr, " -o       print on standard output\n");
+  fprintf(stderr, " -G       plot memcpy\n");
+  fprintf(stderr, " -1       Plot Speedup linear x-axis (default log)\n");
+  fprintf(stderr, " -3       Plot Ratio/Speed logarithmic x-axis (default linear)\n");
+  fprintf(stderr, "Multiblock (0=number of integers followed by integer array):\n");
+  fprintf(stderr, " -Moutput concatenate all input files to multiple blocks file output\n");\
+  fprintf(stderr, " -r       process multiple blocks per file (ex. gov2.sorted).\n");
+  fprintf(stderr, "----- arg. ZIPF specified --------------\n");
   fprintf(stderr, " -aF     F = zipfian distribution alpha ex. -a1.0 uniform -a1.5 skewed\n");
   fprintf(stderr, " -mNs    N = minimum integer generated. s=(k,K, m,M, g,G\n");
   fprintf(stderr, " -MNs    N = maximum integer generated\n");
   fprintf(stderr, " -nNs    N = number of integers to generate\n");
-  fprintf(stderr, "Ex. ./icbench -a1.5 -m0 -M255 -n100m\n");
-  fprintf(stderr, "         s = modifier s:k,m,g=(1000,1 million,1 billion) s:K,M,G=(1024,1MB,1GB) ex. 64k or 64K\n");
+  fprintf(stderr, "Ex. ./icbench -a1.5 -m0 -M255 -n100m ZIPF\n");
+  BEUSAGE;
+  fprintf(stderr, "ex. ./icbench file -eVBYTE/turbopfor ZIPF\n");
+  fprintf(stderr, "ex. ./icbench -eTurboPFor -fS -r gov2.sorted\n");
   exit(0);
-}
+} 
 
-#define TEST64
-  #ifdef TEST64
-#define R64 ((unsigned long long)rand()) 
-#define RND64 ( (R64<<60) ^ (R64<<45) ^ (R64<<30) ^ (R64<<15) ^ (R64<<0) )
-#include <stdint.h>
-  #define NN (4*1024*1024)
-  uint64_t in[NN],cpy[NN]; 
-  unsigned char out[NN*9];
-void vstest64(int id, int rm,int rx, unsigned n) { fprintf(stderr,"bitpack.n=%d ", n);   
-  unsigned b,i;                                                            
-  for(b = rm; b <= rx; b++) {                                           fprintf(stderr,"\nb=%d:", b);        
-    uint64_t start = 0;
-    for(i = 0; i < n; i++) 
-      in[i] = (/*start +=*/ RND64 & (b==64?0xffffffffffffffffull:((1ull << b)-1)));//fprintf(stderr, ".%llx ", in[0]); 
-    
-    unsigned char *op;
-    switch(id) { 
-      case 0: op = vbenc64(   in, n, out);    break;
-      case 1: op = vsenc64(   in, n, out);    break;
-      case 2: op = bitpack64( in, n, out, b); break;
-      case 3: op = p4denc64(  in, n, out);    break;
-      case 4: op = efanoenc64(in, n, out, 0); break;
-    }
-    fprintf(stderr,"%d ", (int)(op-out) );     
-    memset(cpy, 0, sizeof(cpy));
-    switch(id) {
-      case 0: vbdec64(    out, n, cpy);      break;
-      case 1: vsdec64(    out, n, cpy);      break;
-      case 2: bitunpack64(out, n, cpy, b);   break;
-      case 3: p4ddec64(   out, n, cpy);      break;
-      case 4: efanodec64( out, n, cpy, 0);   break;
-    }
-    for(i = 0; i < n; i++) 
-      if(in[i] != cpy[i]) {
-        fprintf(stderr, "Error b=%d at '%d'", b, i); break;
-      } 
-  }
-  exit(0);
-}
-  #else
-#define vstest64(id,rm,rx,n)
+void printfile(char *finame, int xstdout, int fmt, char *rem) {
+  long long totinlen;
+  int       k = plugread(plugt, finame, &totinlen); 
+  char      *p, s[256];
+  if(k < 0)
+    die("file open error for '%s'\n", finame); 
+  if(!k) return;
+  strncpy(s, finame, 255); 
+  s[255]=0;
+  if((p = strrchr(s,'.')) && !strcmp(p, ".tbb"))
+    *p=0;
+  plugprts(plugt, k, s, xstdout, totinlen, fmt, rem);	
+} 
+
+char *sifmt[] = {"","s","S","z"};
+  #ifdef __MINGW32__
+extern int _CRT_glob = 1;
   #endif
+int main(int argc, char* argv[]) {
 
-#define OVD (10*MB)
-int main(int argc, char *argv[]) { int r; 
-  char      fname[0x100], *cmd=NULL;
-  unsigned  rm=0,rx=1<<29,n=0;
-  int       mode = -1,fmt = -1;
-  long long rdmax = 1ull<<32; 
-  double    a = 1.5;
-  tm_t      tx=1*1000000; 
-  unsigned  blksize = PACK_SIZE;
-  tminit();
-    #ifdef _VARINTG8IU
-  VarIntG8IU(); 
-    #endif
-    #ifdef _MASKEDVBYTE
-  simdvbyteinit();  
-    #endif
-    #ifdef _BLOSC
-  blosc_init();
-  blosc_set_nthreads(1);
-    #endif
-    #ifdef _LZT
-  anscset(0); ansdset(0);
-    #endif
-  int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
-  static struct option long_options[] = { {"repeat",    0, 0, 'r'}, {0,0, 0, 0}  };
+  int 				 xstdout=-1,xstdin=-1;
+  int                recurse  = 0, xplug = 0,tm_Repk=1,plot=-1,fmt=0,fno,merge=0,rprio=1;
+  unsigned           bsize    = 1u<<30, bsizex=0;
+  unsigned long long filenmax = 0;
+  char               *scmd = NULL,*trans=NULL,*beb=NULL,*rem="",s[2049];
+  char               *_argvx[1], **argvx=_argvx;
+  int 				 dfmt = 0;
+  
+  int c, digit_optind = 0;
   for(;;) {
-    if((c = getopt_long(argc, argv, "Bsha:b:c:e:f:F:H:m:n:r:R:S:t:T:X:v:M:", long_options, &option_index)) == -1) break;
-    switch(c) {
-      case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;                                
+    int this_option_optind = optind ? optind : 1;
+    int option_index = 0;
+    static struct option long_options[] = {
+      { "help", 	0, 0, 'h'},
+      { 0, 		    0, 0, 0}
+    };
+    if((c = getopt_long(argc, argv, "1234A:a:b:B:C:d:ce:E:F:f:gGi:I:j:J:k:K:l:L:m:M:n:N:oOPp:Q:rRs:S:t:T:Uv:V:W:X:Y:Z:z", long_options, &option_index)) == -1) break;
+    switch(c) { 
+      case 0:
+        printf("Option %s", long_options[option_index].name);
+        if(optarg) printf (" with arg %s", optarg);  printf ("\n");
+        break;
       case 'a': a = strtod(optarg, NULL);   break;
-      case 'b': blksize = argtoi(optarg); if(blksize>BLK_SIZE) blksize = BLK_SIZE; break;
-      case 'c': mode    = atoi(optarg);     break;
-      case 'f': fmt     = atoi(optarg);     break;
-      case 'F': rdmax   = argtoi(optarg);   break;
-      case 'h': usage();                    break;
-      case 'H': xcheck  = atoi(optarg);     break;
-      case 'e': cmd = optarg;               break;
-      case 'v': verb    = atoi(optarg);     break;
-      
-      case 'S': tm_slp  = atoi(optarg);     break;
-      case 't': tm_tx   = atoi(optarg)*TM_T;break;
-      case 'T': tm_Tx   = atoi(optarg)*TM_T;break;
-      case 'r': tm_reps = atoi(optarg);     break;
-      case 'R': tm_Reps = atoi(optarg);     break;
-      
-      case 'n': n       = argtoi(optarg);   break;
-      case 'm': rm      = argtoi(optarg);   break;
-      case 'M': rx      = argtoi(optarg);   break;
-      case 'X': vstest64(atoi(optarg),rm,rx,n); break;
-      default:  usage();
-    }
-  }                                                                                                                     
-  int fno,i=0;
-  if(!tm_reps) tm_reps=tm_Reps=1;                                                   //printf("range=(min=%u, max=%u)\n", rm, rx);fflush(stdout);
-  // build the test functions set
-  struct libss *ls; 
-  if(cmd) {                     
-    char *q = NULL;
-    for(i=0,libs[0].id = -1;;) { 
-      if(cmd) { 
-        if(!*cmd) break;                            
-        q = strchr(cmd,','); 
-        if(q) *q=' '; 
-        if((q = strchr(cmd,'/')) != NULL)
-          *q = '\0';
-        for(ls = libss; ls->id >= 0; ls++) 
-          if(!strcasecmp(ls->s, cmd)) { 
-            memset(&libs[i], 0, sizeof(struct libs)); 
-            libs[i].id     = ls->id; 
-            libs[i].err    = 0; 
-            libs[i].s      = ls->s; 
-            libs[i++].size = ls->size;                                      if(verb) printf("%s/", ls->s);fflush(stdout);
-            break; 
-          }
-        if(ls->id < 0) die("library: '%s' not found\n", cmd); 
-        cmd = q?(q+1):"";
-      }
-    }
-  } else for(ls = libss; ls->id >= 0; ls++) { 
-    libs[i].id     = ls->id; 
-    libs[i].err    = 0; 
-    libs[i].s      = ls->s;                                                 if(verb) printf("%s/", ls->s);fflush(stdout);
-    libs[i++].size = ls->size;    
-  } 
-  libs[i].id = -1;                                                          if(verb) printf("\n");
-  unsigned long long totlen = 0; 
-  memcpy(slibs,libs,sizeof(slibs));
-  if(argc <= optind) {                                                      // No file specified at commandline
-    unsigned      *in, *cpy,*ip; 
-    unsigned char *out; 
-    
-    if(!n) n = 100000000;
-      #ifdef ALGN
-    unsigned *_cpy,*_in; unsigned char *_out;  
-    _in  = amalloc(n*4+OVD,64);     if(!_in)  die("malloc err=%u", n); in =_in +0;
-    _out = amalloc(n*5+OVD,64);     if(!_out) die("malloc err=%u", n); out=_out+12;
-    _cpy = amalloc(n*4+OVD,64);     if(!_cpy) die("malloc err=%u", n); cpy=_cpy+3; 
-      #else
-    in  = malloc(n*4+OVD); if(!in)  die("malloc err=%u", n);
-    out = malloc(n*5+OVD); if(!out) die("malloc err=%u", n);
-    cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n);
-      #endif
-    char s[33]; 
-    s[0] = 0; 
-    if(fmt == T_TST) {                                                      // Unit test for fixed bit sizes
-      unsigned b;                                                           printf("bittest: %u-%u\n", rm, rx); fflush(stdout);
-      for(b = rm; b <= max(rx,32); b++) {                                           
-        libini();                                                           sprintf(s,"b=%d", b);        
-        for(*in = n,i = 1; i <= n; i++) 
-          in[i] = (1ull << b)-1;
-        totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, b, 
-            #ifdef _ZIGZAG
-          mode
-            #else
-          -1
-            #endif
-					  );  													print(libs,totlen, s, NULL);
-      }
-    } else {                                                                // Benchmark w. generated data
-                                                                            printf("zipf alpha=%.2f range[%u..%u].n=%u\n ", a, rm, rx, n);
-      *in = n; 
-      zipfgen(in+1, a, rm, rx, n);                                          for(i = 1; i <= n; i++) xbits[bsr32(in[i])]++; 
-      if(mode >= 0) {                                                       stprint("delta"); 
-        unsigned *ip = in+1; int v;
-        for(ip[0]=0,v = 1; v < n; v++) { 
-          ip[v] += ip[v-1] + mode;                                          if(ip[v]>=(1u<<31)) die("overflow generating sorted array\n" );  
-        }
-      } else stprint("");     
-      totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
-      print(libs,totlen, s, NULL); 
-    }
-      #ifdef ALGN
-    afree(_in); afree(_cpy); afree(_out);
-      #else
-    free(in); free(cpy); free(out);
-      #endif
-  } else for(fno = optind; fno < argc; fno++) {                             // Benchmark w. specified data files
-    libini();
-    char *inname = argv[fno];
-    if(fmt >= T_TXT) { //------------ convert text file to integer array format
-      FILE *fi = fopen(inname, "r");   if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
-      unsigned      *in = NULL, *cpy,*ip, nmax = 0;
-      unsigned char *out; 
+      case 'b': bsize    = argtol(optarg); bsizex++; break;
+      case 'B': filenmax = argtol(optarg);    		 break;
+      case 'C': cmp      = atoi(optarg);      		 break;
+//      case 'c': ifmt     = atoi(optarg);             break;
+      case 'd': mdelta   = atoi(optarg);             break;
+      case 'e': scmd     = optarg;            		 break;
+      case 'f': { char *s = optarg; if(*s =='c') { dfmt = T_CHAR; s++;} else if(*s=='t') { dfmt = T_TXT; s++; } 
+	            else if(*s=='1' || *s=='2') { dfmt = s[0]-'0';s++;}
+	      switch(*s) { case 's': ifmt = 0; break; case 'S': ifmt = 1;break; case 'z': ifmt = 2;break; }
+	    } break;
+      case 'F': fac      = strtod(optarg, NULL); 	 break;
+//      case 'f': fuzz     = atoi(optarg);       		 break;
+      case 'g': merge++;		 			 		 break;
+      case 'G': plotmcpy++;	 			 		 	 break;
 
-      n = 1;
-      #define LSIZE 1024
-      char     s[LSIZE+1]; 
-      switch(fmt) {
-        case T_TXT: {
-          while(fgets(s, LSIZE, fi)) {
-          s[strlen(s) - 1] = 0;
-          unsigned u = strtoul(s, NULL, 10);
-          if(n >= nmax) {  
-            nmax = nmax?(nmax << 1):(1<<20);
-            in = realloc(in, nmax*4+OVD); if(!in) die("malloc err=%u", nmax);
-          }
-          in[n++] = u;
-          }
-        } break;
-        case T_CHAR:
-          for(;;) {
-            char *p = s;
-            int c;
-            while((c = getc(fi)) >= '0' && c <= '9') if(p - s < LSIZE) *p++ = c;
-            *p = 0;
-            unsigned u = strtoul(s, NULL, 10);  //printf("%d,",u);
-            if(n >= nmax) {
-              nmax = nmax?(nmax << 1):(1<<20);
-              in = realloc(in, nmax*4+OVD); if(!in) die("malloc err=%u", nmax);
-            }
-            in[n++] = u;
-            if(c == EOF) break;
-          }
-          break;
-        case T_BYTE: {
-          unsigned char c;
-          while(fread(&c, 1, 1, fi)>0) {
-            if(n >= nmax) {
-              nmax = nmax?(nmax << 1):(1<<20);
-              in = realloc(in, nmax*4+OVD); if(!in)  die("malloc err=%u", nmax);
-            }
-            in[n++] = c;
-          }
-        } break;
-        case T_BYTE2: {
-          unsigned short c;
-          while(fread(&c, sizeof(c), 1, fi)>0) {
-            if(n >= nmax) {
-              nmax = nmax?(nmax << 1):(1<<20);
-              in = realloc(in, nmax*4+OVD); if(!in)  die("malloc err=%u", nmax);
-            }
-            in[n++] = c;
-          }          
-        } break;
-        case T_BYTE4: {
-          unsigned c;
-          while(fread(&c, sizeof(c), 1, fi)>0) { //printf("%d,", c);
-            if(n >= nmax) {
-              nmax = nmax?(nmax << 1):(1<<20);
-              in = realloc(in, nmax*4+OVD); if(!in)  die("malloc err=%u", nmax);
-            }
-            in[n++] = c; 
-          }
-        } break;
-        case T_DBL: { //Test floating pint decomposition
-          double c,*din = NULL; n=0;
-          
-          while(fread(&c, 8, 1, fi)>0) { printf("%e\n", c);
-            if(!din || n >= nmax) {
-              nmax = nmax?(nmax << 1):(1<<20);
-              din = realloc(din, nmax*sizeof(c)+OVD); if(!din)  die("malloc err=%u", nmax);
-            }
-            din[n++] = c; 
-          }
-          double *dcpy = malloc(n*sizeof(dcpy[0]));
-          uint64_t *mantissa = malloc(n*sizeof(mantissa[0]));
-          unsigned *sign     = malloc(n*sizeof(sign[0]));
-          unsigned *exp      = malloc(n*sizeof(exp[0]));   if(!mantissa || !exp || !sign || !dcpy) die("alloc error\n");
-          bitdouble(   din, n, exp, mantissa);
-          bitundouble(         exp, mantissa, n, dcpy);
-          int i; for(i=0;i < n; i++) { printf("%d,%d,%llu,%e,%e\n", sign[i], exp[i],(long long unsigned int)mantissa[i], din[i], dcpy[i]); if(din[i]!=dcpy[i]) die("check error at %d %e %e\n", i, din[i], dcpy[i]); }
-          free(din); free(mantissa); free(exp); free(sign); free(dcpy);
-          exit(0);
-        }
-        default: die("unkown data format\n");
-      }
-      fclose(fi);                                                 
-      out = malloc(n*5+OVD); if(!out) die("malloc err=%u", n);
-      cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n);
-      in[0] = n-1; s[0] = 0; 
-      unsigned long long l = bench(in, n, blksize, out, n*5+OVD, s, tx, cpy, -1, mode);
-      print(libs, l, inname, NULL);                                             //printf("n=%d.%d\n", n-1,argc);
-      int i; for(i=0;libs[i].id>=0;i++) slibs[i].tc += libs[i].tc,slibs[i].td += libs[i].td,slibs[i].l += libs[i].l;
-      totlen += l;
-      continue; 
-    } 
-    //------- process integer array file ------------------
-    FILE *fi = fopen64(inname, "rb"); 
-    if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); } 
-    fseeko(fi, 0, SEEK_END); unsigned long long fisize = ftello(fi); fseeko(fi, 0, SEEK_SET);                       //printf("fisize=%llu\n", fisize);
-    if(fisize > rdmax) fisize = rdmax; 
-    fisize /= 4;            
-                
-    unsigned *in, *cpy,*ip,num;  
-    unsigned char *out; 
-    unsigned long long outsize=fisize*5+OVD,totlen=0,bitslen[33]={0}; 
-    out = malloc(outsize);        if(!out) die("malloc err=%llu", fisize); 
-    cpy = malloc(fisize*4+OVD);   if(!cpy) die("malloc err=%llu", fisize);                                              
-    in  = malloc(fisize*4+1024);  if(!in)  die("malloc err=%llu", fisize);  
-    
-    ip = in;
-    while(fread(&num, 1, 4, fi) == 4 && num) {                                                                  
-      if(num < rm || num > rx) { fseeko(fi, num*4, SEEK_CUR); continue; }   
-      if(ip+num > in+fisize) { 
-        totlen += bench(in, ip-in, blksize, out, outsize, inname, tx, cpy, -1, mode); 
-        if(n && totlen > n) 
-          break;
-        ip = in;
-      }                                             
-      *ip++ = num; if(fread(ip, 4, num, fi) != num) break;  
-      bitslen[bsr32(num)] += num*4;
-        #ifdef IC_STATS
-      unsigned *ep = ip+num,insize=(mode>=0)?blksize+1:blksize;
-      while(ip < ep) {
-        unsigned m = min(ep-ip, insize),i;
-        if(mode >= 0) {
-          for(i = 1; i < m; i++) {                              
-            if(verb>3) printf(":%u ", ip[i]);fflush(stdout); 
-            xbits[bsr32((ip[i] - ip[i-1]) - mode)]++; 
-            if(ip[i] < ip[i-1]+mode) die("IDs in '%s' not sorted.[did=%u,%u] at line=%d\n", inname, ip[i], ip[i-1], (int)(ip-in));
-          }
-        } else for(i = 0; i < m; i++) xbits[bsr32(ip[i])]++;
-        ip += m;                                    
-      }
+      case 'i': if((tm_repc  = atoi(optarg))<=0) 
+		          tm_repc=tm_Repc=1;         		 break;
+      case 'I': tm_Repc  = atoi(optarg);       		 break;
+      case 'j': if((tm_repd  = atoi(optarg))<=0) 
+		          tm_repd=tm_Repd=1;         		 break;
+      case 'J': tm_Repd  = atoi(optarg);      		 break;
+      case 'k': if((tm_Repk  = atoi(optarg))<=0) tm_repc=tm_Repc=tm_repd=tm_Repd=tm_Repk=1; break;
+      case 'K': tm_RepkT = argtot(optarg);     		 break;
+      case 'L': tm_slp   = atoi(optarg);      		 break;
+ 	  case 't': tm_tx    = atoi(optarg)*TM_T; 		 break;
+ 	  case 'T': tm_TX    = atoi(optarg)*TM_T; 		 break;
+      case 'S': speedup  = atoi(optarg);       		 break;
+
+      case 'l': xplug    = atoi(optarg);             break;
+      case 'r': mode++; 		 			 		 break;
+      case 'o': xstdout++; 							 break;
+      case 'p': fmt      = atoi(optarg);             break;
+      case 'P': mcpy++;       		 			     break;	  
+      case 'Q': divxy    = atoi(optarg); 
+                if(divxy>3) divxy=3;                 break;
+      case 'D': rprio=0;		 			 		 break;
+      case 's': mininlen = argtoi(optarg,Mb);    	 break;
+      case 'v': verbose  = atoi(optarg);       		 break;
+      case 'Y': seg_ans  = argtoi(optarg,Kb);        break;
+      case 'Z': seg_huf  = argtoi(optarg,Kb);        break;  
+      case '1': xlog     =  xlog?0:1; 				 break;
+      case '2': ylog     =  ylog?0:1;                break;
+      case '3': xlog2    = xlog2?0:1;                break;
+      case '4': ylog2    = ylog2?0:1;                break;
+        #ifdef LZTURBO
+      case 'c': beb      = optarg; 		 			 break; 
         #else
-      ip += num;
+      case 'c': fprintf(stderr, "Option M: only in binary package available"); exit(0);
         #endif
+      case 'n': n       = argtoi(optarg,1);   break;
+      case 'm': rm      = argtoi(optarg,1);   break;
+      case 'M': rx      = argtoi(optarg,1);  break;
+//      case 'z': vstest64(atoi(optarg),rm,rx,n); break;
+      BEOPT;
+	  case 'h':
+      default: 
+        usage(argv[0]);
+        exit(0); 
     }
-    fclose(fi);
-    totlen += bench(in, ip-in, blksize, out, outsize, inname, tx, cpy, -1, mode);   //    printf("N#%u,%u ", (int)(ip-in), (unsigned)(totlen/1000000));
-    free(in); free(cpy); free(out);                                                 
-      #ifdef IC_STATS
-    stprint("delta"); 
+  }
+  if(xplug) { 
+    xplug==1?plugsprt():plugsprtv(stdout, fmt); 
+    exit(0); 
+  }
+
+  if(argc <= optind) {
+      #ifdef _WIN32
+    setmode( fileno(stdin), O_BINARY ); 
       #endif
-    print(libs,totlen,inname, bitslen);
-  }     
-  if(fmt >= T_TXT && (fno-optind)>1) { printf("\n"); print(slibs,totlen, "TOT", NULL);                                                                  }
+    argvx[0] = "stdin";
+    optind   = 0;
+    argc     = 1;   
+    recurse  = 0;
+  } else 
+    argvx = argv;
+
+  if(fmt) {
+    if(argc <= optind) { printf("no input file specified"); exit(0); }
+    for(fno = optind; fno < argc; fno++)
+      printfile(argvx[fno], xstdout, fmt, rem);
+    exit(0);
+  }
+  if((tm_repc|tm_Repc|tm_repd|tm_Repd) ==1) 
+    tm_Repk = 1;
+  if(rprio) { 
+      #ifdef _WIN32
+    SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+      #else
+    setpriority(PRIO_PROCESS, 0, -19);
+	  #endif
+  }
+  if(!scmd) scmd = "DEFAULT"; 
+  for(s[0] = 0;;) {
+    char *q; int i;
+    if(!*scmd) break;
+    if(q = strchr(scmd,'/')) *q = '\0';
+    for(i = 0; i < PLUGGSIZE; i++)
+      if(!strcmp(scmd, plugg[i].id)) { 
+        strcat(s, "ON/"); 
+        strcat(s, plugg[i].s); 
+        strcat(s, "OFF/"); 
+        break;
+      }
+    if(i >= PLUGGSIZE) { 
+      strcat(s,scmd); 
+      strcat(s,"/"); 
+    }
+    scmd = q?(q+1):(char*)"";
+  }
+  unsigned k = plugreg(plug, s, 0, bsize, bsizex);
+  if(k > 1 && argc == 1 && !strcmp(argvx[0],"stdin")) { printf("multiple codecs not allowed when reading from stdin"); exit(0); }
+
+  BEINI;
+  if(!filenmax) filenmax = Gb;
+  int                krep;
+  char               *finame = "";
+  int                pagesize = getpagesize();
+  unsigned long long totinlen;
+  tm_t               tmk0 = tminit();    
+
+  struct plug *g;
+  for(g = plugt; g < plugt+k; g++) g->tc = g->td = DBL_MAX;
+  char sfiname[33];
+
+  /*if(dfmt == T_TST) {                                                      // Unit test for fixed bit sizes
+    unsigned b;                                                           printf("bittest: %u-%u\n", rm, rx); fflush(stdout);
+    for(b = rm; b <= max(rx,32); b++) {                                           
+      codini(insize, p->id);	                                                           
+	  sprintf(s,"b=%d", b);        
+      for(i = 0; i < n; i++) 
+        in[i] = (1ull << b)-1;
+	  outlen = plugbench(p, in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);   
+
+      totlen = bench(in, n+1, blksize, out, n*5+OVD, s, tx, cpy, b, 
+          #ifdef _ZIGZAG
+        mode
+          #else
+        -1
+          #endif
+	  )  													print(libs,totlen, s, NULL);
+    }
+	exit(0);
+  }*/
+  for(krep = 0; krep < tm_Repk; krep++) { 						    								if(tm_Repk > 1)  printf("Benchmark: %d from %d\n", krep+1, tm_Repk);
+    totinlen = 0;
+    for(g = plugt; g < plugt+k; g++) 
+      g->len = g->tck = g->tdk = 0;			//      BEFILE;
+    
+    for(fno = optind; fno < argc; fno++) {
+      finame = argvx[fno];																			if(verbose > 1) printf("%s\n", finame);        		
+      FILE *fi = NULL;
+	  if(!strcmp(finame,"ZIPF")) { sprintf(sfiname, "ZIPF%.2f_%u-%u", a,rm,rx); 
+	    strcat(sfiname,sifmt[ifmt+1]);
+	    finame=sfiname; if(!dfmt) dfmt=T_UINT32; 
+	  } else { fi = strcmp(finame,"stdin")?fopen(finame, "rb"):stdin; if(!fi) { perror(finame); die("open error '%s'\n", finame); } }
+	  
+      char *q; 
+      if((q = strrchr(finame, '\\')) || (q = strrchr(finame, '/'))) finame = q+1; 					if(verbose>1) printf("'%s'\n", finame);     
+
+      size_t        outsize,insize;
+      unsigned char *_in = NULL;
+      int           inlen;																	
+      if(dfmt) { 
+	    if(!_in) { filen = inlen = befgen(&_in, dfmt, 4, fi); 
+          insize  = min(filen,(1u<<MAP_BITS)); 											if(filen < mininlen) insize = mininlen;
+          insizem = (fuzz&3)?SIZE_ROUNDUP(insize, pagesize):(insize+INOVD);
+        }
+      } else { 
+        if(finame) {
+          fseeko(fi, 0, SEEK_END); filen = ftello(fi); fseeko(fi , 0 , SEEK_SET); 		//if(filen > filenmax) filen = filenmax;
+        } else 
+          filen = filenmax;
+        insize  = filen; if(insize > filenmax) insize = filenmax; 
+        insize  = min(filen,(1u<<MAP_BITS)); 											if(filen < mininlen) insize = mininlen;
+        insizem = (fuzz&3)?SIZE_ROUNDUP(insize, pagesize):(insize+INOVD);
+  
+        if(insizem && !(_in = _valloc(insizem,1)))
+          die("malloc error in size=%u\n", insizem);
+      }
+      outsize             = insize*fac + 10*Mb;
+      unsigned char *_cpy = _in, *out = (unsigned char*)_valloc(outsize,2);				if(!out)  die("malloc error out size=%u\n", outsize);
+
+      if((cmp || tid) && insizem && !(_cpy = _valloc(insizem,3)))
+        die("malloc error cpy size=%u\n", insizem);
+      
+      unsigned long long ftotinlen;
+      struct plug *p,*g;
+      for(p = plug, g = plugt; p < plug+k; p++,g++) {
+        if(p->lev >= 0) 
+          sprintf(name, "%s %d%s", p->s, p->lev, p->prm);
+        else
+          sprintf(name, "%s%s",    p->s,         p->prm);
+
+        codini(insize, p->id);	
+        long long outlen=0;
+        double    ptc      = DBL_MAX, ptd = DBL_MAX;
+        bsize              = p->blksize;
+        p->len             = p->tc = p->td = 0; 													blknum = 0;	
+
+        if(dfmt) {
+          ftotinlen = inlen;											  			   memrcpy(out, _in, inlen);
+          outlen   = plugbench(p, _in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);   
+        } else {
+          ftotinlen = 0;
+          fseek(fi, 0, SEEK_SET);
+          while((inlen = fread(_in, 1, insize, fi)) > 0) { 								memrcpy(out, _in, inlen);
+            if(mode) {
+	          unsigned char *ip,*e = _in+inlen;
+	          for(ip = _in;;) { 
+	            unsigned l = ctou32(ip); 															//printf("%d:", l);
+		        if(ip+4+l*4 > e) {
+		          fseek(fi, -(e - ip), SEEK_CUR); 												//printf("%d,", -(e-ip));
+		          break;
+		        }
+		        ip += 4+l*4;
+	          }
+	          inlen = ip - _in;	  
+	        }
+            ftotinlen += inlen;																
+            outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);   
+	        if(ftotinlen >= filen) break;
+          } 	  
+        }
+        g->len    += outlen;
+	    g->tck    += p->tc;
+	    g->tdk    += p->td;
+        g->err     = g->err?g->err:p->err;  								
+        if(p->memc > g->memc) g->memc = p->memc;
+        if(p->memd > g->memd) g->memd = p->memd;						
+	    g->s       = p->s;
+        g->lev     = p->lev;
+        strcpy(g->prm, p->prm);
+	    g->id      = p->id;
+        codexit(p->id);																        if(verbose && filen > insize) plugprt(p, totinlen, finame, FMT_TEXT, &ptc, &ptd,stdout);
+      }
+      totinlen += ftotinlen;  
+      if(fi) fclose(fi);
+      dfmt?free(_in):_vfree(_in, insizem); _in = NULL;
+      _vfree(out, outsize); 
+      if(_cpy && _cpy != _in) 
+        _vfree(_cpy, insizem);
+    }
+    for(g = plugt; g < plugt+k; g++) {
+      if(g->tck < g->tc) g->tc = g->tck;
+      if(g->tdk < g->td) g->td = g->tdk;        //g->totinlen += plugfile(fi, p, finame, filenmax, bsize, plugr, tid, krep);
+    }
+    //if(tmtime() - tmk0 > tm_RepkT) break;
+  }
+  BENCHSTA;
+
+  if(argc - optind > 1) {
+    unsigned clen = strpref(&argvx[optind], argc-optind, '\\', '/');
+    strncpy(s, argvx[optind], clen);
+    if(clen && (s[clen-1] == '/' || s[clen-1] == '\\')) 
+      clen--;
+    s[clen] = 0; 
+    finame = strrchr(s,'/'); 
+    if(!finame) 
+      finame = strrchr(s, '\\'); 
+    if(!finame) 
+      finame = s; 
+    else finame++;
+  } else {
+    char *p;  
+    if((p = strrchr(finame, '\\')) || (p = strrchr(finame, '/'))) 
+      finame = p+1;
+  }
+  if(!strcmp(finame,"ZIPF")) finame = sfiname;
+  sprintf(s, "%s.tbb", finame);
+  if(merge /*|| tm_repc <= 1 || tm_repd <= 1*/) {
+    if(merge == 1) 
+      plugprts(plugt, k, s, 1, totinlen, FMT_TEXT, rem);	
+    exit(0);
+  }
+
+  long long _totinlen;
+  int       gk = plugread(plug, s, &_totinlen);
+  if(_totinlen != totinlen) 
+    gk = 0;  
+  FILE *fo = fopen(s, "w");
+  if(fo) {
+    char tms[20];
+    time_t tm; 
+    time(&tm);    
+	struct tm *ltm = localtime(&tm); 
+	sprintf(tms, "%.4d-%.2d-%.2d.%.2d:%.2d:%.2d", 1900 + ltm->tm_year, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+	
+    struct plug *g,*p;
+    fprintf(fo, "dataset\tsize\tcsize\tdtime\tctime\tcodec\tlevel\tparam\tcmem\tdmem\ttime\n");
+    for(p = plugt; p < plugt+k; p++) {
+      for(g = plug; g < plug+gk; g++) 
+        if(g->id >= 0 && !strcmp(g->s, p->s) && g->lev == p->lev && !strcmp(g->prm, p->prm)) {
+          if(g->len == p->len) {
+            int u=0;
+            if(g->td < p->td || p->td < 0.01) 
+			  p->td = g->td,u++;
+            if(g->tc < p->tc || p->tc < 0.01) 
+			  p->tc = g->tc,u++;
+
+            if(g->memd != p->memd) u++;
+            if(g->memc != p->memc) u++;
+            strcpy(p->tms, u?tms:g->tms);		//printf("(%lld %lld) ", g->memc, g->memd);printf("(%lld %lld) ", p->memc, p->memd);
+          } 
+          g->id = -1;
+          break; 
+        }
+      fprintf(fo,   "%s\t%"PRId64"\t%"PRId64"\t%.6f\t%.6f\t%s\t%d\t%s\t%"PRId64"\t%"PRId64"\t%s\n", finame, totinlen, p->len, p->td, p->tc, p->s, p->lev, p->prm[0]?p->prm:"?", p->memc, p->memd, p->tms[0]?p->tms:tms);
+    }
+    for(g = plug; g < plug+gk; g++) 
+      if(g->id >= 0)
+        fprintf(fo, "%s\t%"PRId64"\t%"PRId64"\t%.6f\t%.6f\t%s\t%d\t%s\t%"PRId64"\t%"PRId64"\t%s\n", finame, totinlen, g->len, g->td, g->tc, g->s, g->lev, g->prm[0]?g->prm:"?", g->memc, g->memd, g->tms[0]?g->tms:tms);
+    fclose(fo);
+    printfile(s, 0, FMT_TEXT, rem);
+  }
 }
+

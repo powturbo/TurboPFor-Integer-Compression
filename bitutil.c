@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2016
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,20 +21,20 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  bitutil.h - "Integer Compression" 
-#include "conf.h" 
+//  "Integer Compression" utility - delta, for, zigzag 
+#include "conf.h"  
 #include "bitutil.h"
 
-#define BITDELTA(__p,__n, __inc, __start, __act) {\
-  typeof(__p[0]) _x, *_p;\
-  for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
-	_x = (*_p)-__start-__inc; __start = *_p++; __act;\
-	_x = (*_p)-__start-__inc; __start = *_p++; __act;\
-	_x = (*_p)-__start-__inc; __start = *_p++; __act;\
-	_x = (*_p)-__start-__inc; __start = *_p++; __act;\
+#define BITDELTA(_p_,_n_, __inc, _start_, _act_) {\
+  typeof(_p_[0]) _x, *_p;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
+	_x = (*_p)-_start_-__inc; _start_ = *_p++; _act_;\
+	_x = (*_p)-_start_-__inc; _start_ = *_p++; _act_;\
+	_x = (*_p)-_start_-__inc; _start_ = *_p++; _act_;\
+	_x = (*_p)-_start_-__inc; _start_ = *_p++; _act_;\
   }\
-  while(_p != __p+__n) { \
-    _x = *_p-__start-__inc; __start = *_p++; __act;\
+  while(_p != _p_+_n_) { \
+    _x = *_p-_start_-__inc; _start_ = *_p++; _act_;\
   }\
 }
 
@@ -51,15 +51,16 @@
   }\
 }
 
-#define BITMINMAX(__p,__n, __mi, __mx) {\
-  typeof(__p[0]) _x, *_p;\
-  for(_p = __p, __mi = __mx = 0; _p != __p+(__n&~(4-1)); ) {\
+
+#define BITMINMAX(_p_,_n_, __mi, __mx) {\
+  typeof(_p_[0]) _x, *_p;\
+  for(_p = _p_, __mi = __mx = 0; _p != _p_+(_n_&~(4-1)); ) {\
 	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
 	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
 	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
 	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
   }\
-  while(_p != __p+__n) { \
+  while(_p != _p_+_n_) { \
 	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
   }\
 }
@@ -70,12 +71,12 @@ unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, uns
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(inc), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, dv = _mm_sub_epi32(DELTA128_32(iv,sv),cv)); 
+	bv = _mm_or_si128(bv, dv = _mm_sub_epi32(DELTA128x32(iv,sv),cv)); 
 	sv = iv; 
 	_mm_storeu_si128((__m128i *)op, dv); 
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR128_32(bv, b);
+  HOR128x32(bv, b);
   while(ip != in+n) { 
     unsigned x = *ip-start-inc; 
 	start = *ip++;
@@ -123,12 +124,12 @@ unsigned bitd32(unsigned *in, unsigned n, unsigned start) {
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, DELTA128_32(iv,sv)); 
+	bv = _mm_or_si128(bv, DELTA128x32(iv,sv)); 
 	sv = iv; 
   }
   
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR128_32(bv, b);
+  HOR128x32(bv, b);
   while(ip != in+n) { 
     unsigned x = *ip-start; 
 	start = *ip++; 
@@ -146,12 +147,12 @@ unsigned bitd132(unsigned *in, unsigned n, unsigned start) {
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, _mm_sub_epi32(DELTA128_32(iv,sv),cv)); 
+	bv = _mm_or_si128(bv, _mm_sub_epi32(DELTA128x32(iv,sv),cv)); 
 	sv = iv; 
   }
   
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR128_32(bv, b);
+  HOR128x32(bv, b);
   while(ip != in+n) { 
     unsigned x = *ip-start-1; 
 	start = *ip++; 
@@ -173,7 +174,7 @@ void bitund132(unsigned *p, unsigned n, unsigned x) {
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
     __m128i v =  _mm_loadu_si128((__m128i *)ip); 
-	SCANI128_32(v, sv, cv); 
+	SCANI128x32(v, sv, cv); 
 	_mm_storeu_si128((__m128i *)ip, sv); 
   }
   x = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
@@ -190,29 +191,29 @@ void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNDELTA(p
 void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
 
 //----------------------------- zigzag --------------------------------------------------------
-#define BITZIGZAG(__p,__n, __start, __act) {\
-  typeof(__p[0]) *_p;\
-  for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
-	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
-	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
-	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
-	_x = ((int)(*_p)-(int)__start); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
+#define BITZIGZAG(_p_,_n_, _start_, _act_) {\
+  typeof(_p_[0]) *_p;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
+	_x = ((int)(*_p)-(int)_start_); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); _start_ = *_p++; _act_;\
+	_x = ((int)(*_p)-(int)_start_); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); _start_ = *_p++; _act_;\
+	_x = ((int)(*_p)-(int)_start_); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); _start_ = *_p++; _act_;\
+	_x = ((int)(*_p)-(int)_start_); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); _start_ = *_p++; _act_;\
   }\
-  while(_p != __p+__n) { \
-	_x = ((int)(*_p)-(int)__start);	_x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); __start = *_p++; __act;\
+  while(_p != _p_+_n_) { \
+	_x = ((int)(*_p)-(int)_start_);	_x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); _start_ = *_p++; _act_;\
   }\
 }
 
-#define BITUNZIGZAG(__p, __n, __start) {\
-  typeof(__p[0]) *_p, _z;\
-  for(_p = __p; _p != __p+(__n&~(4-1)); ) {\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1))); _p++;\
+#define BITUNZIGZAG(_p_, _n_, _start_) {\
+  typeof(_p_[0]) *_p, _z;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
+    _z = *_p; *_p = (_start_ += (_z >> 1 ^ -(_z & 1))); _p++;\
+    _z = *_p; *_p = (_start_ += (_z >> 1 ^ -(_z & 1))); _p++;\
+    _z = *_p; *_p = (_start_ += (_z >> 1 ^ -(_z & 1))); _p++;\
+    _z = *_p; *_p = (_start_ += (_z >> 1 ^ -(_z & 1))); _p++;\
   }\
-  while(_p != __p+__n) {\
-    _z = *_p; *_p = (__start += (_z >> 1 ^ -(_z & 1)));	_p++;\
+  while(_p != _p_+_n_) {\
+    _z = *_p; *_p = (_start_ += (_z >> 1 ^ -(_z & 1)));	_p++;\
   }\
 }
 
@@ -222,13 +223,13 @@ unsigned bitz32(unsigned *in, unsigned n, unsigned start) {
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	dv = DELTA128_32(iv,sv); 
+	dv = DELTA128x32(iv,sv); 
 	sv = iv; 
-    dv = ZIGZAG128_32(dv); 
+    dv = ZIGZAG128x32(dv); 
     bv = _mm_or_si128(bv, dv);
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR128_32(bv, b);
+  HOR128x32(bv, b);
   while(ip != in+n) { 
     int x = ((int)(*ip)-(int)start); 
 	x = (x << 1) ^ (x >> 31); 
@@ -236,7 +237,7 @@ unsigned bitz32(unsigned *in, unsigned n, unsigned start) {
 	b |= x; 
   }
     #else
-  typeof(in[0]) b = 0,*op = out; 
+  typeof(in[0]) b = 0; 
   int _x; 
   BITZIGZAG(in, n, start, b |= (unsigned)_x);
     #endif
@@ -249,14 +250,14 @@ unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	dv = DELTA128_32(iv,sv); 
+	dv = DELTA128x32(iv,sv); 
 	sv = iv; 
-    dv = ZIGZAG128_32(dv); 
+    dv = ZIGZAG128x32(dv); 
     bv = _mm_or_si128(bv, dv);
 	_mm_storeu_si128((__m128i *)op, dv); 
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
-  HOR128_32(bv, b);
+  HOR128x32(bv, b);
   while(ip != in+n) { 
     int x = ((int)(*ip)-(int)start); 
 	x = (x << 1) ^ (x >> 31); 
@@ -278,8 +279,8 @@ void bitunzigzag32(unsigned *p, unsigned n, unsigned start) {
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
     __m128i iv =  _mm_loadu_si128((__m128i *)ip); 
-    iv = UNZIGZAG128_32(iv); 
-	SCAN128_32(iv, sv);
+    iv = UNZIGZAG128x32(iv); 
+	SCAN128x32(iv, sv);
 	_mm_storeu_si128((__m128i *)ip, sv); 
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));

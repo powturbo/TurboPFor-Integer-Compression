@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,13 @@
 #include "bitunpack.h"
 #include "bitutil.h"
 #include "eliasfano.h"
-
+  #ifdef __SSE42__
+static inline unsigned long long blsr(unsigned long long x) { unsigned long long r; asm ("blsrq %1, %0" : "=r" (r) : "r" (x)); return r; }  
+  #else
+static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1); } 
+//#define blsr(_x_) (_x_ & (_x_ - 1))
+  #endif
+ 
 #define bit_t unsigned long long
 #define EFE(__x,__i,__start) ((__x[__i] - __start)-(__i)*EF_INC)
  
@@ -84,11 +90,12 @@
 #undef EFANODEC
 
 //----------------------
-#define BITPACK bitpackv
-#define BITUNPACK bitunpackv
+#define EFSIMD
+#define BITPACK bitpack128v
+#define BITUNPACK bitunpack128v
 #define EF_INC 1
-#define EFANOENC efano1encv
-#define EFANODEC efano1decv
+#define EFANOENC efano1enc128v
+#define EFANODEC efano1dec128v
 
 #define USIZE 32
 #include __FILE__
@@ -104,12 +111,13 @@
 
 //------------------------------------------
 #define EF_INC 0
-#define EFANOENC efanoencv
-#define EFANODEC efanodecv
+#define EFANOENC efanoenc128v
+#define EFANODEC efanodec128v
 
 #define USIZE 32
 #include __FILE__
 #undef USIZE
+#undef EFSIMD
 
 /*#define USIZE 16
 #include __FILE__
@@ -136,7 +144,12 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
     pa[i] = EFE(in,i,start) & x; ++i;
   }
   while(i < n) pa[i] = EFE(in,i,start) & x, ++i;
-  *out = lb+1; op = TEMPLATE2(BITPACK,USIZE)(pa, n, out+1, lb);
+  *out = lb+1; 
+  op = TEMPLATE2(BITPACK,USIZE)(pa, 
+           #ifndef EFSIMD       
+         n, 
+           #endif
+   out+1, lb);
   
   memset(op, 0, hl);
   for(i = 0; i != n&~3; ) {
@@ -163,18 +176,27 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
     BITZERO32( out, n, start);
         #endif
 	  #else 
-    _BITFORZERO(out, n, start, EF_INC);
+    BITFORSET_(out, n, start, EF_INC);
       #endif
 	return ip; 
   }
   
-  ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
+  ip = TEMPLATE2(BITUNPACK,USIZE)(ip, 
+           #ifndef EFSIMD       
+         n, 
+           #endif
+       out, --lb);
   for(i=j=0;; j += sizeof(bit_t)*8) 
-    for(b = *(bit_t *)(ip+(j>>3)); b; b &= b-1) { 
-	  out[i] = ((uint_t)(j+__builtin_ctzll(b)-i) << lb | out[i]) + start+i*EF_INC; 
-	  if(unlikely(++i >= n)) 
-	    return ip + PAD8((EFE(out,n-1,start)>>lb)+n); 
+    for(b = *(bit_t *)(ip+(j>>3)); ; ) { 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 	   
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; i++; 	   
+	  if(unlikely(i >= n)) goto e; b = blsr(b);
 	}
+  e:return ip + PAD8((EFE(out,n-1,start)>>lb)+n); 
 }
 #pragma clang diagnostic pop
   #endif

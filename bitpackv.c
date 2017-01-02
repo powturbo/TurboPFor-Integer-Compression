@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    bitpackv.c - "Integer Compression" SIMD bit packing 
+//   "Integer Compression" SIMD bit packing 
   #ifndef VSTI
 #include <emmintrin.h>
 #include "bitpack.h"

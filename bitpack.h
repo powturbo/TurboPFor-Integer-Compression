@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -28,30 +28,32 @@ extern "C" {
 #endif
 #include <stdint.h>
 // bipackNN: Pack array with n unsigned (NN bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
-unsigned char *bitpack32(  unsigned           *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
-unsigned char *bitpack16(  unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
-unsigned char *bitpack64(  uint64_t           *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+unsigned char *bitpack32(  unsigned              *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+unsigned char *bitpack16(  unsigned short        *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+unsigned char *bitpack64(  uint64_t              *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
 
 // delta bit packing
-unsigned char *bitdpack32( unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1pack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdpack32( unsigned              *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1pack32(unsigned              *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
 // for bit packing
-unsigned char *bitfpack32( unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitf1pack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitfpack32( unsigned              *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitf1pack32(unsigned              *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
 // zigzag
-unsigned char *bitzpack32( unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitzpack32( unsigned              *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
 //-------------------------------------- SIMD ------------------------------------------------------------------------------------------
-// Pack array with n unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
-unsigned char *bitpackv32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
-unsigned char *bitdpackv32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1packv32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitzpackv32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+// Pack array with 128 unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
+unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitdpack128v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1pack128v32(unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
 
-// like bitpack32 but for 16 bits arrays
-unsigned char *bitpackv16(  unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out				   , unsigned b);
+unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1pack256v32(unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
 
 #ifdef __cplusplus
 }

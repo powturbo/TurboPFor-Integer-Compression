@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -118,4 +118,5 @@ JNIEXPORT jint JNICALL Java_jic_bit32(         JNIEnv *env, jclass cls,  jintArr
 JNIEXPORT jint JNICALL Java_jic_bitd32(        JNIEnv *env, jclass cls,  jintArray _in, jint n,                  jint start        ) { JNIBITS(bitd32,          _in, n,       start   ); } JNIEXPORT jint JNICALL JavaCritical_jic_bitd32(        jint i,            jint *in, jint n,                     jint start        ) { return bitd32(        (unsigned      *)in, n,                       start ); }
 
 JNIEXPORT jint JNICALL Java_jic_bitd132(       JNIEnv *env, jclass cls,  jintArray _in, jint n,                  jint start        ) { JNIBITS(bitd132,         _in, n,       start   ); } JNIEXPORT jint JNICALL JavaCritical_jic_bitd132(       jint i,            jint *in, jint n,                     jint start        ) { return bitd132(       (unsigned      *)in, n,                       start ); }
+
 

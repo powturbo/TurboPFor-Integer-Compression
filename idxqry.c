@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@
 #include "conf.h"
 #include "vint.h"
 #include "bitunpack.h"
-#include "vp4dd.h"
+#include "vp4d.h"
 #include "idx.h"
 
 //#define STATS
@@ -126,7 +126,7 @@ typedef struct {
 int postinit( post_t *v, int tid, idxrd_t *idx, unsigned *dids) {
   unsigned long long o = TIDMAP(idx->fdm, tid); if(!o) return 0;  			
   unsigned char *p = idx->fdp + o;  					// start of posting;
-  v->f_t     = vbget32(p); 								// num docs  
+  vbget32(p, v->f_t); 								// num docs  
   v->didno   = v->bno = -1;  
   v->bnum    = (v->f_t+BLK_DIDNUM-1)/BLK_DIDNUM;  		// num blocks
   v->_f_t    = v->f_t;
@@ -149,7 +149,7 @@ static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v
 	            p = v->p + pix[v->bnum];	    // o=offset to posting block	    			
           dids[0] = *pix; 						// first did in block
     v->didnum = bno < v->bnum-1?BLK_DIDNUM:v->f_t - bno*BLK_DIDNUM;			
-  } else { v->didnum = v->f_t; dids[0] = vbget32(p); }							STAT(st_dec += v->didnum); STAT(st_decs[st_terms] += v->didnum);
+  } else { v->didnum = v->f_t;  vbget32(p, dids[0]); }							STAT(st_dec += v->didnum); STAT(st_decs[st_terms] += v->didnum);
     #ifdef SKIP_S
   unsigned b = dids[0] & SKIP_M; dids[0] >>= SKIP_S;
     #endif
@@ -160,9 +160,9 @@ static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v
 	  #endif
       #ifdef _TURBOPFOR
     unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1dv32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4dd1d128v32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpackv32( p, v->didnum-1, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+    p = v->didnum == 129?bitd1unpack128v32( p,              &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   v->didno        = bno;
@@ -196,7 +196,7 @@ static ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) {
     unsigned *pix = (unsigned *)p + v->bno; 													
 	            p = v->p + pix[v->bnum];	    // o=offset to posting block	    			
          dids[0] = *pix; 						// first did in block
-  } else dids[0] = vbget32(p);
+  } else vbget32(p, dids[0]);
     #ifdef SKIP_S
   unsigned b = dids[0] & SKIP_M; dids[0] >>= SKIP_S;
     #endif
@@ -209,9 +209,9 @@ static ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) {
 	  #endif
       #ifdef _TURBOPFOR
     unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1dv32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4dd1d128v32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpackv32( p, v->didnum-1, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+    p = v->didnum == 129?bitd1unpack128v32( p,              &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   dids[v->didnum] = INT_MAX; 
@@ -247,7 +247,7 @@ static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) {
 	  #endif
   } else {																					
     p       = v->bp;	
-    v->did  = vbget32(p); 																		
+    vbget32(p, v->did); 																		
     v->ldid = UINT_MAX;
   }													
   	#ifdef SKIP_S
@@ -261,9 +261,9 @@ static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) {
 	  #endif
       #ifdef _TURBOPFOR
     unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1dv32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4dd1d128v32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpackv32( p, v->didnum-1, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+    p = v->didnum == 129?bitd1unpack128v32( p,              &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   dids[v->didnum] = v->ldid&INT_MAX; v->didno = 0; goto a;
@@ -377,7 +377,7 @@ unsigned qrysearch(qry_t *q, idxrd_t *idx) {
 	  #ifdef SKIP_INTERVALS	
 	unsigned *_xd = dids[0], xdnum;   
 	unsigned *_yd = dids[1], ydnum;   
-    	if(v[0].f_t > BLK_DIDNUM) { 																		
+    if(v[0].f_t > BLK_DIDNUM) { 																		
 	  unsigned *_x = (unsigned *)v[0].bp, *x_ = _x+v[0].bnum, *x = _x, *xd;   
 	  unsigned *_y = (unsigned *)v[1].bp, *y_ = _y+v[1].bnum, *y = _y, *yd;     
 	  _xd[0] = _yd[0] = UINT_MAX;
@@ -536,7 +536,7 @@ int qrybatch(idxrd_t *idx, char *fqname
 }
 
 void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2015 Powturbo  %s\n", __DATE__);
+  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2017 Powturbo  %s\n", __DATE__);
   fprintf(stderr, "https://github.com/powturbo/TurboPFor\n\n");
     #ifdef THREAD_MAX
   fprintf(stderr, "Benchmark: parallel intersections in compressed inverted index\n\n");

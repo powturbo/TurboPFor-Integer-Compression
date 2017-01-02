@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -30,15 +30,15 @@
 extern "C" {
 #endif
 
-// vsencNN: compress array with n unsigned (NN bits in[n]) values to the buffer out. Return value = end of compressed buffer out
-unsigned char *vsenc16(unsigned short     *__restrict in, int n, unsigned char      *__restrict out);
-unsigned char *vsenc32(unsigned           *__restrict in, int n, unsigned char      *__restrict out);
-unsigned char *vsenc64(uint64_t           *__restrict in, int n, unsigned char      *__restrict out);
+// vsencNN: compress array with n unsigned (NN bits in[n]) values to the buffer out. Return value = end of compressed output buffer out
+unsigned char *vsenc16(unsigned short *__restrict in, int n, unsigned char      *__restrict out);
+unsigned char *vsenc32(unsigned       *__restrict in, int n, unsigned char      *__restrict out);
+unsigned char *vsenc64(uint64_t       *__restrict in, int n, unsigned char      *__restrict out);
 
-// vsdecNN: decompress buffer into an array of n unsigned values. Return value = end of decompressed buffer in
-unsigned char *vsdec16(unsigned char      *__restrict in, int n, unsigned short     *__restrict out);
-unsigned char *vsdec32(unsigned char      *__restrict in, int n, unsigned           *__restrict out);
-unsigned char *vsdec64(unsigned char      *__restrict in, int n, uint64_t           *__restrict out);
+// vsdecNN: decompress buffer into an array of n unsigned values. Return value = end of compressed input buffer in 
+unsigned char *vsdec16(unsigned char  *__restrict in, int n, unsigned short     *__restrict out);
+unsigned char *vsdec32(unsigned char  *__restrict in, int n, unsigned           *__restrict out);
+unsigned char *vsdec64(unsigned char  *__restrict in, int n, uint64_t           *__restrict out);
 
 #ifdef __cplusplus
 }
