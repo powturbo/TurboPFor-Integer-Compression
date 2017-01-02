@@ -164,7 +164,7 @@ endif
 
 endif
 
-OB+=bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4d.o vp4c.o bitpack128v.o bitunpack128v.o bitunpack128h.o $(TRANSP) ext/simple8b.o transpose.o 
+OB+=bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4d.o vp4c.o bitpack128v.o bitunpack128v.o $(TRANSP) ext/simple8b.o transpose.o 
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------
 ICLIB=bitpack.o bitunpack.o bitunpack128v.o vint.o vp4d.o bitutil.o bitpack128v.o
