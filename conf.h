@@ -65,7 +65,7 @@ static inline unsigned ror32(unsigned x, int s) { return x >> s | x << (32 - s);
 #if __GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 8
 #define bswap16(x) __builtin_bswap16(x)
 #else
-static inline unsigned short bswap16(unsigned short) { return __builtin_bswap32(x << 16); }
+static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap32(x << 16); }
 #endif
 #define bswap32(x) __builtin_bswap32(x)
 #define bswap64(x) __builtin_bswap64(x)
