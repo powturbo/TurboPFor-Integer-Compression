@@ -63,6 +63,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 	
 CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 
+
 |C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name|File|
 |--------:|-----:|--------:|--------:|----------------|
 |62939886| 15.7| 5.04|**392.67**|**2311.32**|**TurboPFor256**|
@@ -88,6 +89,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |400000000|	100.00|	32.00| 2240.24|2237.05|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
+
 MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier.<br>
 FP=FastPFor SC:simdcomp PC:Polycom<br>
@@ -102,7 +104,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
         ./icbench -c1 gov2.sorted
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
-|----------:|-----:|----:|------:|------:|---------------------|
+|-----------:|------:|-----:|-------:|-------:|---------------------|
 | 3.319.692.190| 13.88| 4.44|**336.68**|**1410.74**|**TurboPFor**| 
 | 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
