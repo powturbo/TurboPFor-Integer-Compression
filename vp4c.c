@@ -35,7 +35,7 @@
 //------------------------------------------
 #define VSIZE 256
 
-#define EXCEP 0 // Hybrid TurboPFor : 1=Variable byte 2=Vsimple
+#define EXCEP 1 // Hybrid TurboPFor : 1=Variable byte 2=Vsimple
 #define _P4BITS _p4bits
 //-- Scalar
 #define _P4ENC  _p4enc
