@@ -101,7 +101,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
  - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64Ki)
 
 
-        ./icbench -fS gov2.sorted
+        ./icbench -fS -r gov2.sorted
 
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
@@ -185,12 +185,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   *make AVX2=1* 
 
 ### Testing:
-##### - Synthetic data:
-  + benchmark "integer compression" functions (use ZIPF parameter)<br />
+##### - Synthetic data (use ZIPF parameter):
+  + benchmark groups of "integer compression" functions <br />
 
 
         ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
-        ./icbench -eBENCH/BITPACK/VBYTE -a1.2 -m0 -M255 -n100m ZIPF
+        ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100m ZIPF
+
+   >*Type "icbench -l2" for a list*
 
 
    >*-zipfian distribution alpha = 1.2 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
@@ -204,7 +206,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 
 ##### - Data files:
-  - Sorted data file Benchmark (file from [DocId data set](#DocId data set))
+  - Raw 32 bits binary data file (see option "-f" for other formats)
+
+
+        ./icbench file
+
+
+
+  - Multiblock sorted (unique) data file like gov2 file from [DocId data set](#DocId data set)
 
 
         ./icbench -fS -r gov2.sorted
@@ -323,4 +332,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](http://abhinavjauhri.com/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  02 JAN 2017
+Last update:  03 JAN 2017
