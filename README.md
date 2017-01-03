@@ -59,7 +59,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
 
 
-        ./icbench -a1.5 -m0 -M255 -n100m ZIPF
+        ./icbench -a1.5 -m0 -M255 -n100M ZIPF
 	
 CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 
@@ -70,8 +70,8 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |63392759| 15.8| 5.07|329.70|1608.42|**TurboPFor**|
 |63392801| 15.8| 5.07|326.18|230.97|**TurboPForDA**|
 |65060504| 16.3| 5.20|15.77|687.13|[FP.SIMDOptPFor](#FastPFor)|
-|65359916|16.34| 5.23| 7.58| 609.12|OptPFD|
-|73477088|18.37| 5.88|101.68| 621.37|Simple16|
+|65359916|16.34| 5.23| 7.58| 609.12|PC.OptPFD|
+|73477088|18.37| 5.88|101.68| 621.37|PC.Simple16|
 |73481096| 18.4| 5.88|155.16|2187.15|[FP.SimdFastPFor](#FastPFor)|
 |76345136| 19.1| 6.11|245.21|652.78|**VSimple**|
 |95915096|23.98| 7.67|  211.79|957.62|Simple-8b|
@@ -101,13 +101,13 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
  - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64Ki)
 
 
-        ./icbench -c1 gov2.sorted
+        ./icbench -fS gov2.sorted
 
    
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |-----------:|------:|-----:|-------:|-------:|---------------------|
 | 3.319.692.190| 13.88| 4.44|**336.68**|**1410.74**|**TurboPFor**| 
-| 3.337.758.854| 13.95| 4.47|   5.06| 513.00|OptPFD|
+| 3.337.758.854| 13.95| 4.47|   5.06| 513.00|PC.OptPFD|
 | 3.357.673.495| 14.04| 4.49|**357.77**|**1192.14**|**TurboPFor**|
 | 3.501.671.314| 14.64| 4.68| 321.45| 827.01|**VSimple**|
 | 3.766.174.764| 15.75| 5.04|**617.88**| 712.31|**EliasFano**|
@@ -177,16 +177,19 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 - Recent "integer compression" GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
 
 ### Compile:
+
   *make*
+
   or
+
   *make AVX2=1* 
 
 ### Testing:
 ##### - Synthetic data:
-  + benchmark "integer compression" functions<br />
+  + benchmark "integer compression" functions (use ZIPF parameter)<br />
 
 
-        ./icbench -eBENCH -a1.2 -m0 -M255 -n100m ZIPF
+        ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
         ./icbench -eBENCH/BITPACK/VBYTE -a1.2 -m0 -M255 -n100m ZIPF
 
 
@@ -204,7 +207,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   - Sorted data file Benchmark (file from [DocId data set](#DocId data set))
 
 
-        ./icbench -fS gov2.sorted
+        ./icbench -fS -r gov2.sorted
 
 
 ##### - Intersections:
@@ -282,7 +285,7 @@ header files to use with documentation:<br />
 |------------|-----------------------------|
 |vint.h|variable byte|
 |vsimple.h|variable simple|
-|vp4dc.h, vp4dd.h|TurboPFor|
+|vp4c.h, vp4d.h|TurboPFor|
 |bitpack.h bitunpack.h|Bit Packing, For, +Direct Access|
 |eliasfano.h|Elias Fano|
 
@@ -318,5 +321,6 @@ header files to use with documentation:<br />
  + **Applications:**
    - [Graph500](https://github.com/julianromera/graph500)
    - [Small Polygon Compression](http://abhinavjauhri.com/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
+   - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
 Last update:  02 JAN 2017
