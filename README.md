@@ -178,11 +178,13 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 ### Compile:
 
-  *make*
+  		git clone --recursive git://github.com/powturbo/TurboPFor.git
+        cd TurboPFor
+  		*make*
 
-  or
+  		or
 
-  *make AVX2=1* 
+  		*make AVX2=1* 
 
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
