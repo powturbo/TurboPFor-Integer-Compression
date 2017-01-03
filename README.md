@@ -190,9 +190,9 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 
         ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
-        ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100m ZIPF
+        ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100M ZIPF
 
-   >*Type "icbench -l2" for a list*
+   >*Type "icbench -l1" for a list*
 
 
    >*-zipfian distribution alpha = 1.2 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
