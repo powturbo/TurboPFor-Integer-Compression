@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   Nibble/Byte transpose
+//  Nibble/Byte transpose
 
 #if !defined(TRANSPOSE) && !defined(TRANSPOSEV)
 #include <string.h>
