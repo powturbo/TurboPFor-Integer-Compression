@@ -108,13 +108,13 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 | 3.339.730.557| 14.0| 4.47|   8| 536|PC.OptPFD|
 | 3.350.717.959| 14.0| 4.48|**365**|**1744**|**TurboPFor256**| 
 | 3.501.671.314| 14.6| 4.68| 314| 710|**VSimple**|
-| 3.766.174.764| 15.8| 5.04|**618**| 712|**EliasFano**|
-| 3.820.190.182| 16.0| 5.11| 119| 650|PC.Simple16|
+| 3.768.146.467| 15.8| 5.04|**807**| 913|**EliasFanoV**|
+| 3.822.161.885| 16.0| 5.11| 143| 611|PC.Simple16|
 | 4.521.326.518| 18.9| 6.05| 209| 824|Simple-8b|
-| 4.649.671.427| 19.4| 6.22|**771**|962|**TurboVbyte**|
-| 4.953.768.342| 20.7| 6.63|1419|1513|**TurboPack**|
+| 4.649.671.427| 19.4| 6.22|771|962|**TurboVbyte**|
+| 4.953.768.342| 20.7| 6.63|1397|1467|**TurboPack**|
 | 4.955.740.045| 20.7| 6.63|**1766**|**2567**|**TurboPackV**|
-| 5.203.353.057| 21.8| 6.96|1560|1807|FP.SIMDPackD1|
+| 5.205.324.760|21.8| 6.96|1738|2372|SC.SIMDPack128|
 | 5.393.769.503| 22.5| 7.21|**2261**|**2715**|**TurboPackV256**|
 | 6.221.886.390| 26.0| 8.32|1667|1738|**TurboFor**|
 | 6.221.886.390| 26.0| 8.32|1661| 565|**TurboForDA**|
@@ -329,7 +329,7 @@ header files to use with documentation:<br />
 
  + **Applications:**
    - [Graph500](https://github.com/julianromera/graph500)
-   - [Small Polygon Compression](http://abhinavjauhri.com/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
+   - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
 Last update:  04 JAN 2017
