@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   "Integer Compression" Turbo PforDelta 
+//    "Integer Compression" Turbo PforDelta 
 
 #ifdef __cplusplus
 extern "C" {
