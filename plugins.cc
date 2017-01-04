@@ -79,6 +79,7 @@ enum {
   TB_VBYTE,    
   TB_VSIMPLE,
   TB_ELIASFANO, 	
+  TB_ELIASFANOV, 	
   TB_VS_S1,
   TB_VS_S4,   
   TB_VS_S8,
@@ -348,6 +349,7 @@ struct plugs plugs[] = {
   { TB_VBYTE, 		"TurboVByte", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"" }, 
   { TB_VSIMPLE, 	"VSimple", 			C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"" }, 
   { TB_ELIASFANO, 	"EliasFano",		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"" }, 
+  { TB_ELIASFANOV, 	"EliasFanoV",		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"" }, 
 
   { TB_VS_S1,  		"vs_bitshuffle",	C_LZ4, 			"",	"TurboPFor",			"",		"https://github.com/Cyan4973/lz4", 						    "", 0,BLK_SIZE }, 
   { TB_VS_S4,  		"vs_s4",			C_LZ4, 			"",	"TurboPFor",			"",		"https://github.com/Cyan4973/lz4", 							"", 0,BLK_SIZE }, 
@@ -531,9 +533,12 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
 	  
     case TB_VBYTE:                                                  VBPUT32(out, in[0]);		    return inc?vbd1enc32(in+1, n-1, out, in[0]):vbdenc32(in+1, n-1, out, in[0]);
     case TB_VSIMPLE:   bitdelta32( in+1, --n, pa, in[0], inc); 		VBPUT32(out, in[0]);        	return vsenc32(  pa, n, out);
-    case TB_ELIASFANO: x = *in++;                                   VBPUT32(out, x); --n;        
+    case TB_ELIASFANOV: x = *in++;                                   VBPUT32(out, x); --n;        
       if(inc) {   																					return n == 128?efano1enc128v32(in, n, out, x+1):efano1enc32(in, n, out, x+1); }
       else {      																					return n == 128?efanoenc128v32( in, n, out, x  ):efanoenc32( in, n, out, x  ); }
+    case TB_ELIASFANO: x = *in++;                                   VBPUT32(out, x); --n;        
+      if(inc) {   																					return efano1enc32(in, n, out, x+1); }
+      else {      																					return efanoenc32( in, n, out, x  ); }
 
     case TB_PFOR128:  bitdelta32( in+1, --n, pa, in[0], inc); 		VBPUT32(out, in[0]);       		return n == 128?p4enc128v32(pa, n, out):p4enc32(pa, n, out);
       #ifdef __AVX2__
@@ -660,6 +665,9 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case P_MCPY: 	   memcpy(_out, in, _n); 		  	  return _out+_n;
 
     case TB_ELIASFANO:VBGET32(in, x); *out++ = x; --n;
+      if(inc) {                                           return efano1dec32( in, n, out, x+1); }
+      else {                                              return efanodec32( in, n, out, x); }
+    case TB_ELIASFANOV:VBGET32(in, x); *out++ = x; --n;
       if(inc) {                                           return n==128?efano1dec128v32(in, n,   out,   x+1 ):efano1dec32( in, n, out, x+1); }
       else {                                              return n==128?efanodec128v32( in, n,   out,   x   ):efanodec32( in, n, out, x); }
     case TB_PFOR128:  VBGET32(in, x); *out++ = x; --n;  //__builtin_prefetch(in+256);
@@ -798,6 +806,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_VSIMPLE:  return vsenc32(  in, n, out);
     case AM_SIMPLE8B: return vs8benc(  in, n, out);
     case TB_ELIASFANO:return out; 
+    case TB_ELIASFANOV:return out; 
     case TB_PFORDA:   return p4encx32( in, n, out);
     case TB_PFOR128:  return n == 128?p4enc128v32(in, n, out):p4enc32(in, n, out);
       #ifdef __AVX2__
@@ -977,6 +986,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case AM_SIMPLE8B:						 return vs8bdec(  in, n, out); 
     case TB_VSIMPLE:    					 return vsdec32(  in, n, out); 
     case TB_ELIASFANO:    					 return in;
+    case TB_ELIASFANOV:    					 return in;
     case TB_FOR:   		if(b < 0) b = *in++; return bitfunpack32(        in, n, out, 0, b);
     case TB_FORDA: 		if(b < 0) b = *in++; return _bitunpackx32(       in, n, out, b);
     case TB_PACK:    	if(b < 0) b = *in++; return bitunpack32(         in, n, out, b);
