@@ -99,8 +99,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 ##### - Data files:
  - gov2.sorted from [DocId data set](#DocId data set) Block size=128 (lz4+blosc+VSimple w/ 64Ki)
 
-![Speed/Ratio](ext/icbench.png "Speed/Ratio: Decompression")
-
+![Speed/Ratio](ext/gov2.png "Speed/Ratio: Decompression")
 
         ./icbench -fS -r gov2.sorted
 
