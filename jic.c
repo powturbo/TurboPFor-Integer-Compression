@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     ic - "Integer Compression" Java Critical Native Interface
+//    ic - "Integer Compression" Java Critical Native Interface
 #include <stdio.h>
 #include <stdlib.h>
 #include "bitutil.h"
