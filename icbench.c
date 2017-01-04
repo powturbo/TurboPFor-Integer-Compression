@@ -209,101 +209,7 @@ void _vfree(void *p, size_t size) {
     #endif
 } 
 
-  #if !defined(NMEMSIZE) && !defined(_WIN32)
-#include <dlfcn.h>
-static ALIGNED(char, mem_heap[1<<20],32);
-static char *mem_heapp = mem_heap;
-static size_t mem_peak, mem_used;
-
-static void *(*mem_malloc)(size_t);
-static void *(*mem_calloc)(size_t, size_t);
-static void *(*mem_realloc)(void*, size_t);
-static void  (*mem_free)(void *);
-static void *(*mem_memalign)(size_t, size_t);
-
-static __attribute__((constructor)) void mem_init(void) {
-  mem_malloc   = dlsym(RTLD_NEXT, "malloc" );
-  mem_realloc  = dlsym(RTLD_NEXT, "realloc");
-  mem_free     = dlsym(RTLD_NEXT, "free"   );
-  mem_calloc   = dlsym(RTLD_NEXT, "calloc" );
-  mem_memalign = dlsym(RTLD_NEXT, "memalign");
-  if(!mem_malloc || !mem_calloc || !mem_realloc || !mem_free || !mem_memalign)
-    die("malloc not found\n");
-}
-
-size_t mempeak() { return mem_peak; }
-
-size_t mempeakinit() { mem_peak = mem_used = 0; return mem_peak; }
-
-void mem_add(size_t size) { 
-  if((mem_used += size) > mem_peak) 
-  { mem_peak = mem_used; }
-}
-
-void mem_sub(size_t size) { 
-  if(mem_used > size) 
-    mem_used -= size; 
-}
-
-void *malloc(size_t size) {
-  if(!mem_malloc) {
-    void *p = mem_heapp;
-    if((mem_heapp += size) >= mem_heap+sizeof(mem_heap)) 
-      die("malloc:initial memory overflow\n");
-    return p;       
-  }
-  void *p = (*mem_malloc)(size);
-  if(p) 
-    mem_add(malloc_usable_size(p)); 
-  return p;
-}
-
-void *calloc(size_t nmemb, size_t size) { 
-  size_t _size = nmemb*size;
-  if(!mem_calloc) {
-    void *p = mem_heapp;
-    if((mem_heapp += _size) >= mem_heap+sizeof(mem_heap)) 
-      die("calloc:initial memory overflow\n");
-    memset(p,0,_size);
-    return p;       
-  }
-  void *p = (*mem_calloc)(nmemb, size);
-  if(p) 
-    mem_add(malloc_usable_size(p)); 
-  return p;
-}
-
-void *memalign(size_t nmemb, size_t size) { 
-  size_t _size = nmemb*size;
-
-  mem_add(_size);
-  void *p = (*mem_memalign)(nmemb, size);      
-  if(p) 
-    mem_add(malloc_usable_size(p)); 
-  return p;
-}
-
-void *realloc(void *p, size_t size) { 
-  mem_sub(malloc_usable_size(p));
-  if(p = (*mem_realloc)(p, size))
-    mem_add(malloc_usable_size(p)); 
-  return p;
-}
-
-void free(void *p) { 
-   if(!p || p >= (void*)mem_heap && p < (void*)mem_heapp) 
-     return; 
-   mem_sub(malloc_usable_size(p));
-  (*mem_free)(p); 
-} 
-  #else
-#define mempeak()
-#define mempeakinit() 0
-void mem_add(size_t size) {}
-void mem_sub(size_t size) {}
-  #endif
-
-//--------------------------------------- TurboBench ------------------------------------------------------------------
+//--------------------------------------- IcBench ------------------------------------------------------------------
 enum {  
   FMT_TEXT=1, 
   FMT_HTML, 
@@ -1021,21 +927,25 @@ static int mcpy, mode, tincx, fuzz;
 int becomp(unsigned char *_in, unsigned _inlen, unsigned char *_out, unsigned outsize, unsigned bsize, int id, int lev, char *prm, int ifmt, CODCOMP codcomp) { 
   unsigned char *op,*oe = _out + outsize;             if(!_inlen) return 0;
 
-  if(ifmt >=0 && bsize == 4) {
+  if(ifmt >=0 && !mode) {
     unsigned *in = (unsigned *)_in,i;
-    for(i = 1; i < _inlen/4; i++)     if(in[i] < in[i-1]+ifmt) die("IDs not sorted %d:%d,%d\n", i, in[i-1], in[i] );
+    for(i = 1; i < _inlen/4; i++)     
+      if(in[i] < in[i-1]+ifmt) { 
+        fprintf(stderr, "WARNING: IDs not sorted %d:%d,%d\n", i, in[i-1], in[i]);fflush(stderr); 
+        break; 
+      }
   }
   TMDEF;
-  TMBEG(0,tm_repc,tm_Repc);     mempeakinit();                                           
+  TMBEG(0, tm_repc,tm_Repc);
+                                          
   unsigned char *in,*ip;																							
   for(op = _out, in = _in; in < _in+_inlen; ) { 
-    unsigned inlen,bs; 
+    unsigned inlen = _inlen,bs;
     if(mode) { 														blknum++;
-      inlen = ctou32(in); in+=4;	  
-	  vbput32(op, inlen); //ctou32(op) = inlen; op+=4;//
-	  inlen*=4; 
-      if(in+inlen>_in+_inlen) die("FATAL buffer overflow error"); //inlen = (_in+_inlen)-in;
-    } else inlen = _inlen;
+      inlen = ctou32(in); in+=4;									
+  	  vbput32(op, inlen); 											// ctou32(op) = inlen; op+=4;
+	  inlen *= 4; 													if(in+inlen>_in+_inlen) die("FATAL buffer overflow error");
+    }
 
     for(ip = in, in += inlen; ip < in; ) { 
       unsigned iplen = in - ip; iplen = min(iplen, bsize);       
@@ -1051,26 +961,26 @@ int becomp(unsigned char *_in, unsigned _inlen, unsigned char *_out, unsigned ou
 
 int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outlen, unsigned bsize, int id, int lev, char *prm, int ifmt, CODDECOMP coddecomp) { 
   unsigned char *ip;
+
   TMDEF; 
-  TMBEG(0,tm_repd,tm_Repd);     mempeakinit();
+  TMBEG(0,tm_repd,tm_Repd);     
   unsigned char *out,*op;
   for(ip = _in, out = _out; out < _out+_outlen;) {
-    unsigned outlen,bs; 
+    unsigned outlen=_outlen,bs; 
     if(mode) {  
-	  vbget32(ip, outlen); 	//outlen  = ctou32(ip); ip+=4; //
-      ctou32(out) = outlen; out += 4;
-	  outlen *= 4;
-      if(out+outlen >_out+_outlen) die("FATAL: overflow error"); 
-    } else outlen = _outlen;
+	  vbget32(ip, outlen); 	      									  //outlen      = ctou32(ip);  ip  += 4;  											              
+      ctou32(out) = outlen;      out += 4;
+	  outlen *= 4;													      if(out+outlen >_out+_outlen) die("FATAL: overflow error %d ", outlen); 
+    }
     for(op = out, out += outlen; op < out; ) { 
       unsigned oplen = out - op; 
       oplen = min(oplen, bsize);
-      ip = coddecomp(ip, 0, op, oplen, id, lev, prm, ifmt);
-      if(ip >_in+_inlen) die("FATAL inlen");
+      ip = coddecomp(ip, 0, op, oplen, id, lev, prm, ifmt);      		  if(ip >_in+_inlen) die("FATAL inlen %d,%d ", _inlen, ip-(_in+_inlen));
 	  op += oplen;
     }
   }
-  if(!(ip - _in)) return 0;
+  if(!(ip - _in)) 
+    return 0;
   TMEND(_outlen);
   return ip - _in;
 }
@@ -1111,47 +1021,23 @@ size_t insizem;
 char name[65]; 
 int ifmt=-1,mdelta=0;
 
-unsigned long long plugbench(struct plug *plug, unsigned char *_in, unsigned inlen, unsigned _insize, unsigned char *out, unsigned outsize, 
-                             unsigned char *_cpy, unsigned _bsize, struct plug *plugr, int tid, int krep, char *finame) {
-  unsigned char *in = _in; 
-  //if(fuzz & 1) { in = (_in+insizem)-inlen; memmove(in, _in, inlen); }
-  double   tc = 0.0, td = 0.0;         
-  unsigned l = inlen, outlen, bsize = plug->blksize?plug->blksize:_bsize; 
-  int      insize=(ifmt >= 0)?bsize+4:bsize;
-   
-  BEPRE;		
-  int nb = 1;
-  /*if(l < mininlen) {
-    bsize = l;
-    unsigned char *p;
-    for(p = in+l; ; p+=l) {
-      if(p+l > in+insize) break;
-      nb++;
-      memcpy(p, in, l);
-    }
-  }*/
-  size_t peak = mempeakinit();
-  outlen = becomp(in, l*nb, out, outsize, insize, plug->id, plug->lev, plug->prm, ifmt, cods[ifmt<0?0:1].comp)/nb; 
-  plug->len += outlen; 
-  plug->tc  += (tc += (double)tm_tm/((double)tm_rm*nb)); 
-  plug->memc = mempeak() - peak;
-  if(tm_Repc > 1) 
-    TMSLEEP;
+unsigned long long plugbench(struct plug *plug, unsigned char *in, unsigned inlen, unsigned insize, unsigned char *out, unsigned outsize, 
+                             unsigned char *_cpy, unsigned bsize, struct plug *plugr, int tid, int krep, char *finame) {
+  double tc = 0.0, td = 0.0;
 
+  unsigned outlen = becomp(in, inlen, out, outsize, bsize, plug->id, plug->lev, plug->prm, ifmt, cods[ifmt<0?0:1].comp); 
+  plug->len += outlen; 
+  plug->tc  += (tc += (double)tm_tm/(double)tm_rm); 
 																								if(verbose /*&& inlen == filen*/) { printf("%12u   %5.1f   %5.2f  %8.2f   ", outlen, RATIO(outlen,inlen), RATIOI(outlen,inlen), TMIS(inlen,tc)); fflush(stdout); }
   if(cmp) {
     unsigned char *cpy = _cpy; 
-    if(fuzz & 2) cpy = (_cpy+insizem) - l;
-	if(_cpy != _in) memrcpy(cpy, in, l);
-    peak = mempeakinit();
-	unsigned cpylen = bedecomp(out, outlen, cpy, l*nb, insize, plug->id, plug->lev, plug->prm, ifmt, cods[ifmt<0?0:1].decomp)/nb;
-	td = (double)tm_tm/((double)tm_rm*nb);		
-    plug->memd = mempeak() - peak;                                                             	if(verbose /*&& inlen == filen*/) { printf("%8.2f   %-16s%s\n", TMIS(inlen,td), name, finame); }
-    int e = memcheck(in, l, cpy, fuzz?3:cmp);  
-    plug->err = plug->err?plug->err:e;
-    BEPOST;																	
+	if(_cpy != in) memrcpy(cpy, in, inlen);
+	unsigned cpylen = bedecomp(out, outlen, cpy, inlen, bsize, plug->id, plug->lev, plug->prm, ifmt, cods[ifmt<0?0:1].decomp);
+	td = (double)tm_tm/(double)tm_rm;		                                                             	if(verbose /*&& inlen == filen*/) { printf("%8.2f   %-16s%s\n", TMIS(inlen,td), name, finame); }
+    int e = memcheck(in, inlen, cpy, cmp);  
+    plug->err = plug->err?plug->err:e;													
  	plug->td += td; 
-  } else 																						if(verbose /*&& inlen == filen*/) { printf("%8.2f   %-16s%s\n", 0.0, name, finame); }
+  } else 																									if(verbose /*&& inlen == filen*/) { printf("%8.2f   %-16s%s\n", 0.0, name, finame); }
   return outlen; 
 }
 
@@ -1344,7 +1230,7 @@ int main(int argc, char* argv[]) {
 
   int 				 xstdout=-1,xstdin=-1;
   int                recurse  = 0, xplug = 0,tm_Repk=1,plot=-1,fmt=0,fno,merge=0,rprio=1;
-  unsigned           bsize    = 1u<<30, bsizex=0;
+  unsigned           bsize    = 128*4, bsizex=0;
   unsigned long long filenmax = 0;
   char               *scmd = NULL,*trans=NULL,*beb=NULL,*rem="",s[2049];
   char               *_argvx[1], **argvx=_argvx;
@@ -1365,7 +1251,7 @@ int main(int argc, char* argv[]) {
         if(optarg) printf (" with arg %s", optarg);  printf ("\n");
         break;
       case 'a': a = strtod(optarg, NULL);   break;
-      case 'b': bsize    = argtol(optarg); bsizex++; break;
+      case 'b': bsize    = argtoi(optarg,1)*4; bsizex++; break;
       case 'B': filenmax = argtol(optarg);    		 break;
       case 'C': cmp      = atoi(optarg);      		 break;
 //      case 'c': ifmt     = atoi(optarg);             break;
@@ -1512,8 +1398,12 @@ int main(int argc, char* argv[]) {
     FILE *fi = NULL;
     if(!strcmp(finame,"ZIPF")) { sprintf(sfiname, "ZIPF%.2f_%u-%u", a,rm,rx); 
 	  strcat(sfiname,sifmt[ifmt+1]);
-	  finame=sfiname; if(!dfmt) dfmt=T_UINT32; 
-	} else { fi = strcmp(finame,"stdin")?fopen(finame, "rb"):stdin; if(!fi) { perror(finame); die("open error '%s'\n", finame); } }
+	  finame = sfiname; 
+      if(!dfmt) dfmt = T_UINT32; 
+	} else { 
+      fi = strcmp(finame,"stdin")?fopen(finame, "rb"):stdin; 
+      if(!fi) { perror(finame); die("open error '%s'\n", finame); } 
+    }
 	  
     char *q; 
     if((q = strrchr(finame, '\\')) || (q = strrchr(finame, '/'))) finame = q+1; 					if(verbose>1) printf("'%s'\n", finame);     
@@ -1551,44 +1441,51 @@ int main(int argc, char* argv[]) {
         sprintf(name, "%s %d%s", p->s, p->lev, p->prm);
       else
         sprintf(name, "%s%s",    p->s,         p->prm);
-
+           
       codini(insize, p->id);	
-      bsize              = p->blksize;
-
-      p->len             = p->tc = p->td = 0; 													blknum = 0;	
+      unsigned pbsize = p->blksize?p->blksize:bsize;
+      if(ifmt >= 0) 
+        pbsize += 4; // start stored w. variable byte for delta coding
+                                                                                    //printf("bsize=%d, ", pbsize);
+      p->len = p->tc = p->td = 0; 													blknum = 0;	
       long long outlen=0;
       if(dfmt) {
         ftotinlen = inlen;											  			   memrcpy(out, _in, inlen);
-        outlen    = plugbench(p, _in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);   
+        outlen    = plugbench(p, _in, inlen, insize, out, outsize, _cpy, pbsize, plugr,tid, krep, finame);   
       } else {
         ftotinlen = 0;
         fseek(fi, 0, SEEK_SET);
         if(mode) {
           unsigned char *ip = _in; unsigned num;
           while(fread(&num, 1, 4, fi) == 4 && num) {           //if(num < rm || num > rx) { fseeko(fi, num*4, SEEK_CUR); continue; }
-            num*=4; 
+            num *= 4; 
             if(ip+num >= _in+insize) {                 
               inlen      = ip - _in;									memrcpy(out, _in, inlen); 
               ftotinlen += inlen;															
-              outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);          //if(n && outlen > n) break;
+              outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, pbsize, plugr,tid, krep, finame);          //if(n && outlen > n) break;
               ip = _in;
             }                                             
             ctou32(ip) = num/4; ip += 4;
             if(fread(ip, 1, num, fi) != num) 
               break;  
+            if(ifmt >=0) {
+              unsigned *p = (unsigned *)ip,i;
+              for(i = 1; i < num/4; i++) if(p[i] < p[i-1]+ifmt) { printf("Warning: IDs not sorted :%d:%d,%d\n", i, p[i-1], p[i] );break; }
+            }
             ip += num;
           }
-          inlen = ip - _in;
-          ftotinlen += inlen;																
-          outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);   
-	      if(ftotinlen >= filen) break;
+         if(inlen = ip - _in) {
+            ftotinlen += inlen;																
+            outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, pbsize, plugr,tid, krep, finame);   
+          }
+	      //if(ftotinlen >= filen) break;
         } else  while((inlen = fread(_in, 1, insize, fi)) > 0) { 								memrcpy(out, _in, inlen);
           ftotinlen += inlen;																
-          outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, bsize, plugr,tid, krep, finame);   
-	      if(ftotinlen >= filen) break;
+          outlen += plugbench(p, _in, inlen, insize, out, outsize, _cpy, pbsize, plugr,tid, krep, finame);   
+	      //if(ftotinlen >= filen) break;
         } 	  
       }
-      codexit(p->id);																        if(verbose /*&& filen > insize*/) plugprt(p, ftotinlen, finame, FMT_TEXT,stdout);
+      codexit(p->id);																        //if(verbose && filen > insize) plugprt(p, ftotinlen, finame, FMT_TEXT,stdout);
     }
     totinlen += ftotinlen;  
     if(fi) fclose(fi);
