@@ -63,7 +63,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread 
 
 
-|C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name 128/256 |
+|C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name|
 |--------:|-----:|--------:|----------:|----------:|--------------|
 |62939886| 15.7| 5.04|**397**|**2311**|**TurboPFor256**|
 |63392759| 15.8| 5.07|330|1608|**TurboPFor**|
@@ -73,8 +73,8 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |73477088|18.4| 5.88|102| 621|PC.Simple16|
 |73481096| 18.4| 5.88|156|2187|[FP.SimdFastPFor](#FastPFor) 64k *|
 |76345136| 19.1| 6.11|245|653|**VSimple**|
-|95915096|24.0| 7.67|  212|958|Simple-8b|
 |91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
+|95915096|24.0| 7.67|  212|958|Simple-8b|
 |99910930| 25.0| 7.99|**3290**|**2968**|**TurboPackV**|
 |99910930| 25.0| 7.99|2122|2347|**TurboPack**|
 |99910930| 25.0| 7.99|2105|2219|**TurboFor**|
@@ -88,7 +88,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
-(*) suitable for large block size
+(*) optimzed for large block size
 
 MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier.<br>
@@ -105,7 +105,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |-----------:|------:|-----:|-------:|-------:|---------------------|
 | 3.321.663.893| 13.9| 4.44|**328**|**1452**|**TurboPFor**| 
-| 3.337.758.854| 14.0| 4.47|   5| 513|PC.OptPFD|
+| 3.339.730.557| 14.0| 4.47|   8| 536|PC.OptPFD|
 | 3.350.717.959| 14.0| 4.48|**365**|**1744**|**TurboPFor256**| 
 | 3.501.671.314| 14.6| 4.68| 314| 710|**VSimple**|
 | 3.766.174.764| 15.8| 5.04|**618**| 712|**EliasFano**|
@@ -115,7 +115,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 | 4.953.768.342| 20.7| 6.63|1419|1513|**TurboPack**|
 | 4.955.740.045| 20.7| 6.63|**1766**|**2567**|**TurboPackV**|
 | 5.203.353.057| 21.8| 6.96|1560|1807|FP.SIMDPackD1|
-| 5.393.769.503| 22.5| 7.21|**2260.63**|**2715.30**|**TurboPackV256**|
+| 5.393.769.503| 22.5| 7.21|**2261**|**2715**|**TurboPackV256**|
 | 6.221.886.390| 26.0| 8.32|1667|1738|**TurboFor**|
 | 6.221.886.390| 26.0| 8.32|1661| 565|**TurboForDA**|
 | 6.699.519.000| 28.0| 8.96| 472| 495|FP.Vbyte|
@@ -332,4 +332,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](http://abhinavjauhri.com/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  03 JAN 2017
+Last update:  04 JAN 2017
