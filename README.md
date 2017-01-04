@@ -60,7 +60,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
         ./icbench -a1.5 -m0 -M255 -n100M ZIPF
 	
-CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
+CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread 
 
 
 |C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name 128/256 |
