@@ -205,6 +205,9 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
         ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor/turbopack256v ZIPF
 
+  + Generate interactive html plot for browsing
+
+        ./icbench -p2 -S2 -Q3 file.tbb 
 
 ##### - Data files:
   - Raw 32 bits binary data file (see option "-f" for other formats)
