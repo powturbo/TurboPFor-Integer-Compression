@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     eliasfano.h - "Integer Compression" Elias Fano c/c++ header
+//    eliasfano.h - "Integer Compression" Elias Fano c/c++ header
 #ifdef __cplusplus
 extern "C" {
 #endif
