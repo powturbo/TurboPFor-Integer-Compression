@@ -1,6 +1,3 @@
-[submodule "ext/FastPFor"]
-	path = ext/FastPFor
-	url = https://github.com/lemire/FastPFor.git
 [submodule "ext/libfor"]
 	path = ext/libfor
 	url = https://github.com/cruppstahl/libfor.git
@@ -28,3 +25,6 @@
 [submodule "ext/simdcomp"]
 	path = ext/simdcomp
 	url = https://github.com/lemire/simdcomp.git
+[submodule "FastPFor"]
+	path = FastPFor
+	url = https://github.com/lemire/FastPFor
