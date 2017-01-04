@@ -55,16 +55,15 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
 ##### - Synthetic data (2017): 
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
-   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression". 
+   Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
-
 
         ./icbench -a1.5 -m0 -M255 -n100M ZIPF
 	
 CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 
 
-|C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name|
+|C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name 128/256 |
 |--------:|-----:|--------:|----------:|----------:|--------------|
 |62939886| 15.7| 5.04|**397**|**2311**|**TurboPFor256**|
 |63392759| 15.8| 5.07|330|1608|**TurboPFor**|
@@ -72,15 +71,15 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |65060504| 16.3| 5.20|15|687|[FP.SIMDOptPFor](#FastPFor)|
 |65359916|16.3| 5.23| 8| 609|PC.OptPFD|
 |73477088|18.4| 5.88|102| 621|PC.Simple16|
-|73481096| 18.4| 5.88|156|2187|[FP.SimdFastPFor](#FastPFor)|
+|73481096| 18.4| 5.88|156|2187|[FP.SimdFastPFor](#FastPFor) 64k *|
 |76345136| 19.1| 6.11|245|653|**VSimple**|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
+|91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
 |99910930| 25.0| 7.99|**3290**|**2968.35**|**TurboPackV**|
 |99910930| 25.0| 7.99|2122|2347|**TurboPack**|
 |99910930| 25.0| 7.99|2105|2219|**TurboFor**|
 |100332929| 25.1| 8.03|**3580**|**2998.17**|**TurboPack256V**|
 |101015650| 25.3| 8.08|2380|2371|**TurboVByte**|
-|101879302| 25.5| 8.15|65|2141|[QMX](#QMX)|
 |102074663| 25.5| 8.17|1428|1979|[MaskedVByte](#MaskedVByte)|
 |102074663| 25.5| 8.17|565|1052|[PC.Vbyte](#PolyCom)|
 |102083036| 25.5| 8.17|1300|1067|[FP.VByte](#FastPFor)|
@@ -89,6 +88,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
+(*) inefficent for small block size
 
 MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier.<br>
@@ -111,11 +111,11 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 | 3.766.174.764| 15.8| 5.04|**618**| 712|**EliasFano**|
 | 3.820.190.182| 16.0| 5.11| 119| 650|PC.Simple16|
 | 4.521.326.518| 18.9| 6.05| 209| 824|Simple-8b|
-| 4.647.699.724| 19.4| 6.22|**889**|1131|**TurboVbyte**|
+| 4.649.671.427| 19.4| 6.22|**771**|962|**TurboVbyte**|
 | 4.953.768.342| 20.7| 6.63|1419|1513|**TurboPack**|
 | 4.955.740.045| 20.7| 6.63|**1766**|**2567**|**TurboPackV**|
 | 5.203.353.057| 21.8| 6.96|1560|1807|FP.SIMDPackD1|
-| 5.393.769.503| 22.5| 7.21|**2251.43**|**2715.30**|**TurboPackV256**|
+| 5.393.769.503| 22.5| 7.21|**2260.63**|**2715.30**|**TurboPackV256**|
 | 6.221.886.390| 26.0| 8.32|1667|1738|**TurboFor**|
 | 6.221.886.390| 26.0| 8.32|1661| 565|**TurboForDA**|
 | 6.699.519.000| 28.0| 8.96| 472| 495|FP.Vbyte|
