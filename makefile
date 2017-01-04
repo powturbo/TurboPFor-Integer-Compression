@@ -23,7 +23,7 @@ else
 AVX2=0
 DEFS+=-DNAVX2
 endif
-
+ 
 #----------------------------------------------
 ifeq ($(OS),Windows_NT)
   UNAME := Windows
