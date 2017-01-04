@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//	    TurboPFor: plugins.h - settings 
+//	   TurboPFor: plugins.h - settings 
 
 struct plugs { 
   int  id; 
