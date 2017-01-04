@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/ 
-//	   idxcr.c - "Integer Compression" Create inverted index for using by idxqry for benchmarking
+//	  idxcr.c - "Integer Compression" Create inverted index for using by idxqry for benchmarking
 #define _LARGEFILE64_SOURCE 1 
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
