@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  "Integer Compression" utility - delta, for, zigzag 
+//   "Integer Compression" utility - delta, for, zigzag 
 #include "conf.h"  
 #include "bitutil.h"
 
