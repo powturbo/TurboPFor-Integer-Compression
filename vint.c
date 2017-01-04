@@ -75,27 +75,26 @@
 #define OVERFLOWD(in,n,out,vbmax)    if(*in == vbmax) { memcpy(out, in+1, n*(USIZE/8)); return in+1+n*(USIZE/8); }
 #define OVERFLOWE(in,n,out,op,vbmax) if(op > out + n*(USIZE/8)) { *out = vbmax; memcpy(out+1, in, n*(USIZE/8)); op = out+1+n*(USIZE/8); }
 
-//#define RLE(_ip_,_op_) if(_ip_+1 < e && *_ip_ == *(_ip_+1)) { uint_t *_q = _ip_+1; while(_q+1 < e && *(_q+1) == *_ip_) _q++; unsigned _r = _q - _ip_;\
-//  { _ip_+=_r; _r--; *_op_++= _ip_[0]?252:253; vbput32(op, _r); if(_ip_[0]) TEMPLATE2(vbput, USIZE)(op, _ip_[0]);  }}
-//#define RLE(_ip_,_op_)
-
 unsigned char *TEMPLATE2(vbdec, USIZE)(unsigned char  *__restrict in, unsigned n, uint_t *__restrict out) { 
   register uint_t x, *op; 
   OVERFLOWD(in, n, out, VB_MAX);
+
   #define VBE(_i_) TEMPLATE2(_vbget, USIZE)(in, x, op[_i_] = x)
   for(op = out; op != out+(n&~(UN-1)); op += UN) { VBE(0); VBE(1); VBE(2); VBE(3); __builtin_prefetch(in+8*USIZE, 0);
 	  #if UN > 4
     VBE(4); VBE(5); VBE(6); VBE(7);	  
       #endif
   }
-  while(op != out+n) TEMPLATE2(_vbget, USIZE)(in, x, *op++ = x );
+  while(op != out+n) 
+    TEMPLATE2(_vbget, USIZE)(in, x, *op++ = x );
   return in;
 }
 #undef VBE
 
 unsigned char *TEMPLATE2(vbenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) {
-  register uint_t x, *ip, *e=in+n; 
+  uint_t x, *ip; 
   unsigned char *op = out;
+
   #define VBD(_i_) x = ip[_i_]; TEMPLATE2(_vbput, USIZE)(op, x, ;);
   for(ip = in; ip != in+(n&~(UN-1)); ip += UN) {  		__builtin_prefetch(ip+USIZE*8, 0);
     VBD(0); VBD(1); VBD(2); VBD(3); 
@@ -107,6 +106,7 @@ unsigned char *TEMPLATE2(vbenc, USIZE)(uint_t *__restrict in, unsigned n, unsign
     x = *ip++; 
 	TEMPLATE2(_vbput, USIZE)(op, x, ;); 
   }
+
   OVERFLOWE(in,n,out,op,VB_MAX);
   return op;
 }
@@ -116,7 +116,8 @@ uint_t TEMPLATE2(vbgetx, USIZE)(unsigned char  *__restrict in, unsigned idx) {
   unsigned char *ip;
   unsigned i;
   uint_t x;
-  if(*in == 255) return TEMPLATE2(ctou, USIZE)(in+1+idx*(USIZE/8));
+  if(*in == 255) 
+    return TEMPLATE2(ctou, USIZE)(in+1+idx*(USIZE/8));
   for(ip = in,i = 0; i <= idx; i++)
 	ip += TEMPLATE2(_vbvlen, USIZE)(*ip);
   TEMPLATE2(_vbget, USIZE)(in, x, ;);
@@ -142,16 +143,17 @@ uint_t TEMPLATE2(vbgetx, USIZE)(unsigned char  *__restrict in, unsigned idx) {
 unsigned char *TEMPLATE2(vbzenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { 
   uint_t *ip,v;
   unsigned char *op = out;
+
   #define VBZE { v = TEMPLATE2(zigzagenc, USIZE)((*ip)-start); start=*ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); }
   for(ip = in; ip != in+(n&~(4-1)); ) { VBZE;VBZE;VBZE;VBZE; }
-  while(ip <  in+n) VBZE; 
-  //OVERFLOWE(in,n,out,op);
+  while(ip <  in+n) VBZE;						  //OVERFLOWE(in,n,out,op);
   return op;
 }  
 #undef VBZE
 
 unsigned char *TEMPLATE2(vbzdec, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) { 
   uint_t x,*op;
+
   #define VBZD { TEMPLATE2(_vbget, USIZE)(in, x, ;); *op++ = (start += TEMPLATE2(zigzagdec, USIZE)(x)); }
   for(op = out; op != out+(n&~(UN-1)); ) { VBZD; VBZD; VBZD; VBZD;
 	  #if UN > 4
@@ -159,6 +161,7 @@ unsigned char *TEMPLATE2(vbzdec, USIZE)(unsigned char *__restrict in, unsigned n
       #endif
   }
   while(op != out+n) VBZD; 
+
   return in;
 }
 #undef VBZD
@@ -167,6 +170,7 @@ uint_t TEMPLATE2(vbzgetx, USIZE)(unsigned char  *__restrict in, unsigned idx, ui
   unsigned char *ip;
   unsigned i;
   uint_t x;
+
   for(ip = in,i = 0; i <= idx; i++) {
 	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
     start += x+1;
@@ -190,7 +194,7 @@ unsigned TEMPLATE2(vbzgeteq, USIZE)(unsigned char **__restrict in, unsigned n, u
 
 unsigned char *TEMPLATE2(VBDENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
   unsigned char *op = out; if(!n) return out;
-  uint_t *ip, b=0,v /*,x=in[0]-start-VDELTA*/; 
+  uint_t *ip, b=0,v; 
   #define VBDE { v = (*ip)-start-VDELTA; start = *ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); b |= (v /*^ x*/); }
   for(ip = in; ip != in + (n&~(UN-1)); ) { VBDE;VBDE;VBDE;VBDE; 
 	  #if UN > 4
