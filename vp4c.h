@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     vp4dc.h - "Integer Compression" TurboPfor  (see vp4dd.h for decompression) 
+//  "Integer Compression" TurboPfor  (see vp4dd.h for decompression) 
  
 #define P4EB(_b_) (_b_ << 1)
 #define P4EBX(_b_, _bx_) (_bx_ << 8 | _b_ << 1 | 1) 
