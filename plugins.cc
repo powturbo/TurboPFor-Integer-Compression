@@ -362,20 +362,20 @@ struct plugs plugs[] = {
   { AM_SIMPLE8B, 	"Simple8b", 		C_SIMPLE8B,		"",	"Simple-8b optimized",	"",	"", 						"", 0,1024 },
 
   { PC_SIMPLE16, 	"PC.Simple16", 		C_POLYCOM,		"",	"Polycom",				"",	"https://github.com/encode84/bcm", 								"", 0,BLK_V128 }, 
-  { PC_OPTPFD,     	"PC.OptPFD",		C_POLYCOM,    	"",	"Polycom",				"",	"", 								"", 0,BLK_V128},
+  { PC_OPTPFD,     	"PC.OptPFD",		C_POLYCOM,    	"",	"Polycom",				"",	"", 															"", 0,BLK_V128},
   { PC_VBYTE,  		"PC.Vbyte",			C_POLYCOM, 		"",	"Polycom",				"",	"https://github.com/jibsen/brieflz", 							"" }, 
-  { PC_RICE,  		"PC.Rice",			C_POLYCOM, 		"",	"Polycom optimized",	"",	"https://github.com/jibsen/brieflz", 				"", 0,BLK_V128}, 
+  { PC_RICE,  		"PC.Rice",			C_POLYCOM, 		"",	"Polycom optimized",	"",	"https://github.com/jibsen/brieflz", 							"", 0,BLK_V128}, 
 
   { P_VARINTG8IU,	"VarintG8IU", 		C_VARINTG8IU, 	"",	"VarintG8IU",			"Apache license",	"", 						""},
   { P_MASKEDVBYTE,	"MaskedVbyte", 		C_MASKEDVBYTE,	"",	"MaskedVbyte",			"Apache license",	"http://maskedvbyte.org", 									""},
   { P_STREAMVBYTE,	"StreamVbyte", 		C_STREAMVBYTE,	"",	"StreamVbyte",			"Apache license",	"", 						""},
 
-  { FP_FASTPFOR,	"FP.FastPFor", 		C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										"", 0,BLK_SIZE},
-  { FP_SIMDFASTPFOR,"FP.SimdFastPFor", 	C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										"", 0,BLK_SIZE},
+  { FP_FASTPFOR,	"FP.FastPFor", 		C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										""/*, 0,BLK_SIZE*/},
+  { FP_SIMDFASTPFOR,"FP.SimdFastPFor", 	C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										""/*, 0,BLK_SIZE*/},
   { FP_OPTPFOR,		"FP.OptPFor",  		C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										"", 0},
   { FP_SIMDOPTPFOR,	"FP.SIMDOptPFor",  	C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										"", 0},
-  { FP_VBYTE,		"FP.VByte", 		C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										"", 0,BLK_SIZE},
-  { FP_SIMPLE8BRLE,	"FP.Simple8bRLE", 	C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										"", 0,BLK_SIZE},
+  { FP_VBYTE,		"FP.VByte", 		C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										""/*, 0,BLK_SIZE*/},
+  { FP_SIMPLE8BRLE,	"FP.Simple8bRLE", 	C_FASTPFOR, 	"",	"FastPFor",				"",	"", 										""/*, 0,BLK_SIZE*/},
 
   { SC_SIMDPACK128,	"SC.SIMDPack128", 	C_SIMDCOMP, 	"",	"Simdcomp",				"",	"", 										"", 0,BLK_V128},
   { SC_SIMDPACK256,	"SC.SIMDPack256", 	C_SIMDCOMP, 	"",	"Simdcomp",				"",	"", 										"", 0,BLK_V256},
@@ -387,16 +387,16 @@ struct plugs plugs[] = {
   { LF_FOR,			"LibFor.For", 		C_SIMDCOMP, 	"",	"LibFor",				"",	"", 										"", 0,BLK_V128},
   { LF_FORX,		"LibFor.ForDA",		C_SIMDCOMP, 	"",	"LibFor",				"",	"", 										"", 0,BLK_V128},
 
-  { LI_PACK,		"LI.Pack",			C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										"", 0,BLK_V128},
-  { LI_TURBOPACK,	"LI.TurboPack",		C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										"", 0,BLK_V128},
-  { LI_SCPACK,		"LI.SuperPack",		C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										"", 0,BLK_V128},
-  { LI_HORPACK,		"LI.HorPack",		C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										"", 0,BLK_V128},
-  { LI_BMIPACK,		"LI.BMIPack256",	C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										"", 0,BLK_V128},
+  { LI_PACK,		"LI.Pack",			C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										""/*, 0,BLK_V128*/},
+  { LI_TURBOPACK,	"LI.TurboPack",		C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										""/*, 0,BLK_V128*/},
+  { LI_SCPACK,		"LI.SuperPack",		C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										""/*, 0,BLK_V128*/},
+  { LI_HORPACK,		"LI.HorPack",		C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										""/*, 0,BLK_V128*/},
+  { LI_BMIPACK,		"LI.BMIPack256",	C_LITTLEPACK, 	"",	"LittlePack",			"",	"", 										""/*, 0,BLK_V128*/},
 
-  { P_QMX,			"qmx",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										"", 0,BLK_V128},
-  { P_QMX2,			"qmx2",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										"", 0,BLK_V128},
-  { P_QMX3,			"qmx3",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										"", 0,BLK_V128},
-  { P_QMX4,			"qmx4",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										"", 0,BLK_V128},
+  { P_QMX,			"qmx",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										""/*, 0,BLK_V128*/},
+  { P_QMX2,			"qmx2",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										""/*, 0,BLK_V128*/},
+  { P_QMX3,			"qmx3",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										""/*, 0,BLK_V128*/},
+  { P_QMX4,			"qmx4",		    	C_QMX, 			"",	"QMX",			"https://bitbucket.org/andrewtrotman/bench.git",	"", 										""/*, 0,BLK_V128*/},
   
   { P_LZT,			"LzTurbo",	    	C_LZTURBO, 		"",	"LzTurbo",				"",	"https://sites.google.com/site/powturbo", 						"20,21,22,32", 0,BLK_SIZE },
   { P_VSHUF,		"VSimpleANS",		C_LZTURBO, 		"",	"LzTurbo",				"",	"https://sites.google.com/site/powturbo", 	"20,21,22,32", 0,BLK_SIZE },
@@ -520,7 +520,7 @@ void codexit(int codec) {}
 #define VBGET32(a,b) vbxget32(a,b)
 
 unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc) { 
-  unsigned *in = (unsigned *)_in, n = (_n+3) / 4,i; 	  //for(i = 1; i < n; i++) if(in[i] < in[i-1]+inc) die("IDs not sorted %d:%d,%d\n", i, in[i-1], in[i] );
+  unsigned *in = (unsigned *)_in, n = (_n+3) / 4,i; 	  
  
   unsigned pa[BLK_SIZE+2048],x,b;
   
@@ -529,8 +529,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case P_COPY:                                                             						return u32enc( in, n, (unsigned *)out);
     case P_MCPY: 	   memcpy(out, _in, _n); 														return out+_n;
 	  
-    case TB_VBYTE:                                                  VBPUT32(out, in[0]);	
-		return inc?vbd1enc32(in+1, n-1, out, in[0]):vbdenc32(in+1, n-1, out, in[0]);
+    case TB_VBYTE:                                                  VBPUT32(out, in[0]);		    return inc?vbd1enc32(in+1, n-1, out, in[0]):vbdenc32(in+1, n-1, out, in[0]);
     case TB_VSIMPLE:   bitdelta32( in+1, --n, pa, in[0], inc); 		VBPUT32(out, in[0]);        	return vsenc32(  pa, n, out);
     case TB_ELIASFANO: x = *in++;                                   VBPUT32(out, x); --n;        
       if(inc) {   																					return n == 128?efano1enc128v32(in, n, out, x+1):efano1enc32(in, n, out, x+1); }
@@ -672,8 +671,8 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
       else {                                              return n==256?p4ddec256v32(   in, n,   out,   x   ):p4ddec32( in, n, out, x); }
       #endif
     case TB_PFORDA:   VBGET32(in, x);*out = x;            return inc?p4fdecx32(      in, n-1, out+1, x   ):p4f0decx32(in, n-1, out+1, x);
-    case TB_VBYTE: 	  VBGET32(in, x); *out = x; 	  	  return inc?vbd1dec32(      in, n-1, out+1, x   ):vbddec32(in, n-1, out+1, x);
-    case TB_VSIMPLE:  VBGET32(in, x); *out = x;           in = vsdec32(              in, n-1, out+1);      bitundx32(out, n, -inc, inc); break;
+    case TB_VBYTE: 	  VBGET32(in, x);*out = x; 	  	  	  return inc?vbd1dec32(      in, n-1, out+1, x   ):vbddec32(in, n-1, out+1, x);
+    case TB_VSIMPLE:  VBGET32(in, x);*out = x;            in = vsdec32(              in, n-1, out+1);      bitundx32(out, n, -inc, inc); break;
     case TB_FOR:      VBGET32(in, x);*out = x; b = *in++; return inc?bitf1unpack32(  in, n-1, out+1, x, b):bitfunpack32(  in, n-1, out+1, x, b);
     case TB_FORDA:    VBGET32(in, x);*out = x; b = *in++; return inc?bitf1unpackx32( in, n-1, out+1, x, b):bitfunpackx32( in, n-1, out+1, x, b);      
     case TB_PACK:     VBGET32(in, x);*out = x; b = *in++; return inc?bitd1unpack32(  in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b);
@@ -789,7 +788,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
 
 unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int outsize, int codec, int lev, char *prm, int b) {
   unsigned *in = (unsigned *)_in, n = (_n+3) / 4; 	
-  int i,xb;	 //int outlen; unsigned char *oend=out+outsize;
+  int i,xb;
   switch(codec&0x3f) {
       //---------- copy ----------------------------------------------------
     case P_COPY:      return u32enc(   in, n, (unsigned *)out);
