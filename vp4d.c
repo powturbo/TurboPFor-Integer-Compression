@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  "Integer Compression" TurboPFor - Pfor/PforDelta 
+//   "Integer Compression" TurboPFor - Pfor/PforDelta 
 #ifndef USIZE 
 #include <stdint.h>
 
