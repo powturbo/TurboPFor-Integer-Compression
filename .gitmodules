@@ -25,3 +25,6 @@
 [submodule "ext/simdcomp"]
 	path = ext/simdcomp
 	url = https://github.com/lemire/simdcomp.git
+[submodule "ext/FastPFor"]
+	path = ext/FastPFor
+	url = https://github.com/lemire/FastPFor
