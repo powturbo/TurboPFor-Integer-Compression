@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    transpose.h - byte transpose 
+//   transpose.h - byte transpose 
 #ifdef __cplusplus
 extern "C" {
 #endif
