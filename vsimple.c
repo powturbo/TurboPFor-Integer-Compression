@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   "Integer Compression" variable simple
+//  "Integer Compression" variable simple
   #ifndef USIZE
   #ifdef __SSE2__
 #include <emmintrin.h>
