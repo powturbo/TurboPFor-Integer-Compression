@@ -24,7 +24,7 @@
 //    eliasfano.h - "Integer Compression" Elias Fano c/c++ header
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif 
 #include <stdint.h>
 
 // compress/decompress integer array with n values to the buffer out. Return value = end of output/input buffer
