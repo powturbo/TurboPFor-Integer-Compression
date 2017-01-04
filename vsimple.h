@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//	    vsimple.h - "Integer Compression" variable simple "SimpleV"
+//  "Integer Compression" variable simple "SimpleV"
 //	this belongs to the integer compression known as "simple family", like simple-9,simple-16
 //	or simple-8b. SimpleV is compressing integers in groups into variable word size 32, 40 and 64 bits + RLE (run length encoding) 
 //	SimpleV is faster than simple-16 and compress better than simple-16 or simple-8b.
