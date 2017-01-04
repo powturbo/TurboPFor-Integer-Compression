@@ -977,7 +977,7 @@ int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outl
       oplen = min(oplen, bsize);
       ip = coddecomp(ip, 0, op, oplen, id, lev, prm, ifmt);      		  if(ip >_in+_inlen) die("FATAL inlen %d,%d ", _inlen, ip-(_in+_inlen));
 	  op += oplen;
-    }
+    } 
   }
   if(!(ip - _in)) 
     return 0;
