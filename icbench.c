@@ -983,7 +983,7 @@ int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outl
     return 0;
   TMEND(_outlen);
   return ip - _in;
-}
+} 
 
   #ifdef LZTURBO
 #include "../bebench.h"
