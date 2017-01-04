@@ -88,7 +88,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
-(*) inefficent for small block size
+(*) suitable for large block size
 
 MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier.<br>
@@ -107,7 +107,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 | 3.321.663.893| 13.9| 4.44|**328**|**1452**|**TurboPFor**| 
 | 3.337.758.854| 14.0| 4.47|   5| 513|PC.OptPFD|
 | 3.350.717.959| 14.0| 4.48|**365**|**1744**|**TurboPFor256**| 
-| 3.501.671.314| 14.6| 4.68| 322| 827|**VSimple**|
+| 3.501.671.314| 14.6| 4.68| 314| 710|**VSimple**|
 | 3.766.174.764| 15.8| 5.04|**618**| 712|**EliasFano**|
 | 3.820.190.182| 16.0| 5.11| 119| 650|PC.Simple16|
 | 4.521.326.518| 18.9| 6.05| 209| 824|Simple-8b|
