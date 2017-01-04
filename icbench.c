@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2016
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -259,7 +259,7 @@ void plugsprtv(FILE *f, int fmt) {
   switch(fmt) {
     case FMT_HTMLT: 
     case FMT_HTML: 
-      printf("%s\n", "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>TurboBench</title></head><body><pre><ul>"); 
+      printf("%s\n", "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>IcBench</title></head><body><pre><ul>"); 
       break;
     case FMT_VBULLETIN:
       fprintf(f,"[list]\n"); 
@@ -441,7 +441,7 @@ void plugprth(FILE *f, int fmt, char *t) {
   char s[128];
   time_t tm; 
   time(&tm);
-  sprintf(s, "TurboBench: %s - %s", t, asctime(localtime(&tm)));
+  sprintf(s, "IcBench: %s - %s", t, asctime(localtime(&tm)));
 
   switch(fmt) {
     case FMT_TEXT:     
@@ -451,10 +451,10 @@ void plugprth(FILE *f, int fmt, char *t) {
       fprintf(f,"%s\n", s); 
       break;
     case FMT_HTMLT:  
-      fprintf(f,"<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>TurboBench: %s - </title></head><body>\n", s); 
+      fprintf(f,"<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>IcBench: %s - </title></head><body>\n", s); 
       break;
     case FMT_HTML:     
-      fprintf(f,"<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>TurboBench: %s - </title>%s%s%s%s%s</head><body>\n", s, plot, jquery, tstyle, table, code); 
+      fprintf(f,"<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><title>IcBench: %s - </title>%s%s%s%s%s</head><body>\n", s, plot, jquery, tstyle, table, code); 
        break;
     case FMT_MARKDOWN: 
       fprintf(f,"#### %s (bold = pareto)  MB=1.000.000\n", s); 
@@ -484,7 +484,7 @@ void plugprtth(FILE *f, int fmt) {
       fprintf(f,"<pre><b>%s</b> MB=1.000.0000\n", head); 
       break;
     case FMT_HTML:     
-      fprintf(f,"<h3>TurboBench: Compressor Benchmark</h3><table id='myTable' class='tablesorter' style=\"width:35%%\"><thead><tr><th>C Size</th><th>ratio%%</th><th>C MI/s</th><th>D MI/s</th><th>Name</th><th>C Mem</th><th>D Mem</th><th>File</th></tr></thead><tbody>\n"); 
+      fprintf(f,"<h3>IcBench: Compressor Benchmark</h3><table id='myTable' class='tablesorter' style=\"width:35%%\"><thead><tr><th>C Size</th><th>ratio%%</th><th>C MI/s</th><th>D MI/s</th><th>Name</th><th>C Mem</th><th>D Mem</th><th>File</th></tr></thead><tbody>\n"); 
       break;
     case FMT_MARKDOWN: 
       fprintf(f,"|C Size|ratio%%|Bits/Integer|C MI/s|D MI/s|Name|File|\n|--------:|-----:|--------:|--------:|----------------|----------------|\n"); 
@@ -580,7 +580,7 @@ void plugprtph(FILE *f, int fmt) {
 
   switch(fmt) {
     case FMT_HTML: 
-      fprintf(f,"<p><h3>TurboBench: Speedup %s sheet</h3><table id='myTable2' class='tablesorter' style=\"width:80%%\"><thead><tr><th>Name</th>", (speedup&1)?"compression":"decompression");
+      fprintf(f,"<p><h3>IcBench: Speedup %s sheet</h3><table id='myTable2' class='tablesorter' style=\"width:80%%\"><thead><tr><th>Name</th>", (speedup&1)?"compression":"decompression");
       for(i = 0; i < BWSIZE; i++) 
         fprintf(f, "<th>%s</th>", bw[i].s);
       fprintf(f, "<td>File"); 
@@ -589,7 +589,7 @@ void plugprtph(FILE *f, int fmt) {
       fprintf(f, "</td></tr></thead><tbody>\n"); 
       break;
     case FMT_MARKDOWN: 
-      fprintf(f,"#### TurboBench: Speedup %s sheet\n\n", (speedup&1)?"compression":"decompression");
+      fprintf(f,"#### IcBench: Speedup %s sheet\n\n", (speedup&1)?"compression":"decompression");
       fprintf(f, "|Name"); 
       for(i = 0; i < BWSIZE; i++) 
         fprintf(f, "|%s", bw[i].s);
@@ -603,7 +603,7 @@ void plugprtph(FILE *f, int fmt) {
       fprintf(f, "|-------------|\n"); 
       break;
     case FMT_VBULLETIN:
-      fprintf(f,"TurboBench: Speedup %s sheet\n\n", (speedup&1)?"compression":"decompression");
+      fprintf(f,"IcBench: Speedup %s sheet\n\n", (speedup&1)?"compression":"decompression");
       fprintf(f,"[CODE][B]\n"); 
     default: 
       fprintf(f,"Name           ");
@@ -732,7 +732,7 @@ void plugplot(struct plug *plug, long long totinlen, int fmt, int speedup, char 
 }
 
 void plugplote(FILE *f, int fmt, char *s) {
-  fprintf(f, "var data = [%s];\nvar layout = {\ntitle:'TurboBench Speedup: Transfer+%s Speed',\nxaxis: {\ntitle: '%s Transfer Speed (M=MI/s B=GB/s)',\n%s    autorange: true\n  }, \n  yaxis: {\n\ntitle: 'Speedup %%',\n%sautorange: true\n  }\n};\nPlotly.plot('myDiv1', data, layout);</script>\n",
+  fprintf(f, "var data = [%s];\nvar layout = {\ntitle:'IcBench Speedup: Transfer+%s Speed',\nxaxis: {\ntitle: '%s Transfer Speed (M=MI/s B=GB/s)',\n%s    autorange: true\n  }, \n  yaxis: {\n\ntitle: 'Speedup %%',\n%sautorange: true\n  }\n};\nPlotly.plot('myDiv1', data, layout);</script>\n",
     s, (speedup&1)?"Compression":"Decompression", xlog?"log":"", xlog?"type: 'log',\n":"", ylog?"type: 'log',\n":"");
 }
 
@@ -810,7 +810,7 @@ void plugplotc(struct plug *plug, int k, long long totinlen, int fmt, int speedu
 }
 
 void plugplotce(FILE *f, int fmt, char *s) {
-  fprintf(f, "var data = [%s];\nvar layout = {\ntitle:'TurboBench: %s',\nxaxis: {\ntitle: '%s speed MI/s',\n%s    autorange: true\n  }, \n  yaxis: {\n\ntitle: 'Ratio (factor)',\n%sautorange: true\n  }\n};\nPlotly.plot('myDiv2', data, layout);</script>\n",
+  fprintf(f, "var data = [%s];\nvar layout = {\ntitle:'IcBench: %s',\nxaxis: {\ntitle: '%s speed MI/s',\n%s    autorange: true\n  }, \n  yaxis: {\n\ntitle: 'Ratio (factor)',\n%sautorange: true\n  }\n};\nPlotly.plot('myDiv2', data, layout);</script>\n",
     s, (speedup&1)?"Compression":"Decompression", xlog2?"log":"", xlog2?"type: 'log',\n":"", ylog2?"type: 'log',\n":"");
 }
 
