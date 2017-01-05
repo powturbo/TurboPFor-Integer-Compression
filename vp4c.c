@@ -27,15 +27,12 @@
  
 #include "conf.h"
 #include "bitpack.h"
+#include "vint.h"		//#include "vsimple.h"
 #include "vp4c.h"
-#include "vint.h"
-#include "vsimple.h"
 
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 //------------------------------------------
-#define VSIZE 256
-
-#define EXCEP 1 // Hybrid TurboPFor : 1=Variable byte 2=Vsimple
+#define EXCEP 1 // Hybrid TurboPFor : 1=Variable byte (2=Vsimple, not used)
 #define _P4BITS _p4bits
 //-- Scalar
 #define _P4ENC  _p4enc
@@ -45,15 +42,12 @@
 
 #define USIZE 16
 #include __FILE__
-#undef USIZE
 
 #define USIZE 32
 #include __FILE__
-#undef USIZE
 
 #define USIZE 64
 #include __FILE__
-#undef USIZE
 
 #define EXCEP 0             // Direct access
 #define _P4BITS _p4bitsx
@@ -62,11 +56,9 @@
 
 #define USIZE 16
 #include __FILE__
-#undef USIZE
 
 #define USIZE 32
 #include __FILE__
-#undef USIZE
 
 #undef _P4ENC
 #undef  P4ENC
@@ -76,7 +68,7 @@
 
 #define EXCEP 1 // 
 //-- SIMD: Vertical bitpacking
-#define P4SIMD 
+#define VSIZE 128 
 #define _P4ENC    _p4enc128v
 #define  P4ENC     p4enc128v
 //#define  P4NENC   p4dnencv
@@ -88,6 +80,7 @@
 #undef   BITPACK
 
 #ifdef __AVX2__
+#define VSIZE 256
 #define _P4ENC    _p4enc256v
 #define  P4ENC     p4enc256v
 #define  BITPACK   bitpack256v
@@ -111,7 +104,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
   uint_t *ip; int b=0,r; int i,ml,l; 
   unsigned x, bx, cnt[USIZE+1] = {0}, _vb[USIZE*2+5] = {0}, *vb=&_vb[USIZE],fx=0, b64=(n+7)/8;
     #if EXCEP >= 2
-  unsigned long long smap[USIZE+1][VSIZE/64]={0},xmap[VSIZE/64]={0}; unsigned c; 
+  unsigned long long smap[USIZE+1][P4D_MAX/64]={0},xmap[P4D_MAX/64]={0}; unsigned c; 
     #endif
 	
   #define CNTE { ++cnt[r=TEMPLATE2(bsr, USIZE)(*ip)]; VSC(c = ip-in; smap[r][c>>6] |= (1ull << (c&0x3f))); b |= *ip++; }
@@ -120,7 +113,8 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
 
   b  = TEMPLATE2(bsr, USIZE)(b);
   bx = b; 
-  ml = PAD8(n*b)+1; x = cnt[b]; 
+  ml = PAD8(n*b)+1; x = cnt[b];
+ 
     #if EXCEP == 1
 #define VBB(_x_,_b_) vb[_b_-7]+=_x_; vb[_b_-15]+=_x_*2; vb[_b_-19]+=_x_*3; vb[_b_-25]+=_x_*4;
   int vv = x; VBB(x,b); 
@@ -136,7 +130,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
 	x += cnt[i]; vv+=cnt[i]+vb[i]; VBB(cnt[i],i);
     if(v < l) l=v,vx=1; if(unlikely(l < ml)) ml=l,b=i,fx=vx; 
 	  #elif EXCEP == 2
-	uint_t tin[VSIZE],*tp=tin;
+	uint_t tin[P4D_MAX],*tp=tin;
 	for(ip=in,c = 0; c < (n+63)/64;c++,ip+=64) {
       unsigned long long z = xmap[c];
       while(z) { unsigned x = ctz64(z); *tp++ = ip[x]; z ^= (1ull<<x); }
@@ -162,15 +156,11 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
  
 unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
   if(!bx) 
-    return TEMPLATE2(BITPACK, USIZE)(in, 
-      #ifndef P4SIMD
-     n, 
-      #endif
-	out, b);
+    return TEMPLATE2(BITPACK, USIZE)(in, n,	out, b);
 
-  uint_t             msk = (1ull << b)-1,_in[VSIZE], inx[VSIZE*2];
-  unsigned long long xmap[VSIZE/64] = { 0 };  
-  unsigned           miss[VSIZE],i, xn, c;
+  uint_t             msk = (1ull << b)-1,_in[P4D_MAX], inx[P4D_MAX*2];
+  unsigned long long xmap[P4D_MAX/64] = { 0 };  
+  unsigned           miss[P4D_MAX],i, xn, c;
   #define MISS { miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++; }
   for(xn = i = 0; i != n&~3; ) { MISS; MISS; MISS; MISS; }
   while(i != n) MISS;
@@ -186,20 +176,12 @@ unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
     #endif
     for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i]; out += PAD8(n); 	
     out = TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  	 	        					
-    out = TEMPLATE2(BITPACK, USIZE)(_in,  
-      #ifndef P4SIMD
-     n, 
-      #endif
-    out,  b);			
+    out = TEMPLATE2(BITPACK, USIZE)(_in, n,  out, b);  
     #if EXCEP > 0
   } 
   else { 															
     *out++ = xn; 
-    out = TEMPLATE2(BITPACK, USIZE)(_in,  
-      #ifndef P4SIMD
-     n, 
-      #endif
-      out,  b);		
+    out = TEMPLATE2(BITPACK, USIZE)(_in, n, out,  b);
     out = TEMPLATE2(vbenc, USIZE)(inx, xn, out); 				
     for(i = 0; i != xn; ++i) *out++ = miss[i]; 							
   }	  
@@ -219,7 +201,7 @@ unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsign
 
 /*unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) {
   uint_t *ip;
-  for(ip = in; ip < in+n; ip += VSIZE) { unsigned l = (in+n) - ip; l = min(l, VSIZE);      
+  for(ip = in; ip < in+n; ip += P4D_MAX) { unsigned l = (in+n) - ip; l = min(l, P4D_MAX);      
     out = TEMPLATE2(P4ENC, USIZE)(ip, l, out);;                           
   }
 }*/

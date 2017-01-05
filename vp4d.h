@@ -71,13 +71,14 @@ unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, unsigned
 unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
 unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned start, unsigned b, unsigned bx);
 
+#define P4D_MAX 256
+
 //---------------- Direct Access functions to compressed TurboPFor array p4encx16/p4encx32 -------------------------------------------------------
 #define P4D_PAD8(_x_) 		( (((_x_)+8-1)/8) )
 #define P4D_B(_x_)  		(((_x_) >> 1) & 0x3f)
 #define P4D_XB(_x_)  		(((_x_) & 1)?((_x_) >> 8):0)
 #define P4D_ININC(_in_, _x_) _in_ += 1+(_x_ & 1)
 
-#define P4D_MAX 256  // vbencx maximum integers
 static inline unsigned p4bits(unsigned char *__restrict in, int *bx) { unsigned i = ctou16(in); *bx = P4D_XB(i); return P4D_B(i); }
 
 struct p4 {
@@ -123,7 +124,7 @@ static ALWAYS_INLINE unsigned short p4geqx16(struct p4 *p4, unsigned char *in, u
 static ALWAYS_INLINE unsigned       p4geqx32(struct p4 *p4, unsigned char *in, unsigned b, unsigned       val) { do p4->oval += p4getx32(p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
 //static ALWAYS_INLINE uint64_t       p4geq64(struct p4 *p4, unsigned char *__restrict in, unsigned b, uint64_t       val) { do p4->oval += p4getx64(p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
 
-/* like p4dec32 but using direct access. This is only a demo showing direct access usage. Use p4dec32 instead for decompressing entire blocks */
+/* DO NOT USE : like p4dec32 but using direct access. This is only a demo showing direct access usage. Use p4dec32 instead for decompressing entire blocks */
 unsigned char *p4decx32(  unsigned char *in, unsigned n, unsigned *out);  // unsorted
 unsigned char *p4f0decx32(unsigned char *in, unsigned n, unsigned *out, unsigned start); // FOR increasing 
 unsigned char *p4fdecx32( unsigned char *in, unsigned n, unsigned *out, unsigned start); // FOR strictly increasing
