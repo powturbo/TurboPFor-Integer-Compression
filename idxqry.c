@@ -160,9 +160,9 @@ static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v
 	  #endif
       #ifdef _TURBOPFOR
     unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1d128v32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4dd1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpack128v32( p,              &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   v->didno        = bno;
@@ -209,9 +209,9 @@ static ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) {
 	  #endif
       #ifdef _TURBOPFOR
     unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1d128v32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4dd1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpack128v32( p,              &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   dids[v->didnum] = INT_MAX; 
@@ -261,9 +261,9 @@ static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) {
 	  #endif
       #ifdef _TURBOPFOR
     unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1d128v32(      p, v->didnum-1, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4dd1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpack128v32( p,              &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   dids[v->didnum] = v->ldid&INT_MAX; v->didno = 0; goto a;
