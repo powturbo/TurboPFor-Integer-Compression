@@ -31,7 +31,7 @@
 
 #define VSTI(ip, i, iv, parm)
 #define IPP(ip, i, iv) _mm256_loadu_si256(ip++)
-#include __FILE__ 
+#include "bitpack256v.c" 
   
 unsigned char *bitpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(256*b); BITPACK256V32(in, b, out, 0); return pout; }
 #undef VSTI 
@@ -41,7 +41,7 @@ unsigned char *bitpack256v32(unsigned       *__restrict in, unsigned n, unsigned
 #if 0
 #define VSTI(__ip, __i, __iv, __sv) v = _mm256_loadu_si256(__ip++); DELTA256x32(v,__sv, __iv) //__sv = v
 #define IPP(ip, i, __iv) __iv
-#include __FILE__  
+#include "bitpack256v.c"  
 
 unsigned char *bitdpack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
   __m256i v; //,sv = _mm256_set1_epi32(start),zv = _mm256_setzero_si256();
