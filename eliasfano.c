@@ -90,7 +90,7 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #undef EFANODEC
 
 //----------------------
-#define EFSIMD
+#define VSIZE 128
 #define BITPACK bitpack128v
 #define BITUNPACK bitunpack128v
 #define EF_INC 1
@@ -100,10 +100,6 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #define USIZE 32
 #include __FILE__
 #undef USIZE
-
-/*#define USIZE 16
-#include __FILE__
-#undef USIZE*/
 
 #undef EF_INC
 #undef EFANOENC
@@ -117,14 +113,11 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #define USIZE 32
 #include __FILE__
 #undef USIZE
-#undef EFSIMD
-
-/*#define USIZE 16
-#include __FILE__
-#undef USIZE*/
+#undef VSIZE
 
   #else //--------------------------------------------- implementation ---------------------------------------------------------------
 #define uint_t TEMPLATE3(uint, USIZE, _t)
+
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
 
@@ -145,11 +138,7 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
   }
   while(i < n) pa[i] = EFE(in,i,start) & x, ++i;
   *out = lb+1; 
-  op = TEMPLATE2(BITPACK,USIZE)(pa, 
-           #ifndef EFSIMD       
-         n, 
-           #endif
-   out+1, lb);
+  op = TEMPLATE2(BITPACK,USIZE)(pa, n, out+1, lb);
   
   memset(op, 0, hl);
   for(i = 0; i != n&~3; ) {
@@ -163,7 +152,9 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
 }
 
 unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
-  if(!n) return in;
+
+  if(!n) return out; 
+
   unsigned char *ip = in;  																										
   unsigned      i,j,lb   = *ip++;           	
   bit_t         b; 
@@ -181,11 +172,7 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
 	return ip; 
   }
   
-  ip = TEMPLATE2(BITUNPACK,USIZE)(ip, 
-           #ifndef EFSIMD       
-         n, 
-           #endif
-       out, --lb);
+  ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
   for(i=j=0;; j += sizeof(bit_t)*8) 
     for(b = *(bit_t *)(ip+(j>>3)); ; ) { 
 	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
