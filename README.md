@@ -10,7 +10,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **For/PFor/PForDelta**
  - **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
-  Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
+ - Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
  - Compress 70 times faster and decompress up to 4 times faster than OptPFD
  - :new: **(2017) TurboPFor AVX2, now 50%! more faster!!!!**
  - :new: **(2017) TurboPFor Hybrid, better compression and more faster**
