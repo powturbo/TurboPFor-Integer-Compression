@@ -41,13 +41,13 @@
 #define  BITPACK  bitpack
 
 #define USIZE 16
-#include __FILE__
+#include "vp4c.c"
 
 #define USIZE 32
-#include __FILE__
+#include "vp4c.c"
 
 #define USIZE 64
-#include __FILE__
+#include "vp4c.c"
 
 #define EXCEP 0             // Direct access
 #define _P4BITS _p4bitsx
@@ -55,10 +55,10 @@
 #define  P4ENC   p4encx
 
 #define USIZE 16
-#include __FILE__
+#include "vp4c.c"
 
 #define USIZE 32
-#include __FILE__
+#include "vp4c.c"
 
 #undef _P4ENC
 #undef  P4ENC
@@ -76,7 +76,7 @@
 //#define  P4NENC   p4dnencv
 #define  BITPACK   bitpack128v
 #define USIZE 32
-#include __FILE__
+#include "vp4c.c"
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
@@ -88,7 +88,7 @@
 #define  P4ENC     p4enc256v
 #define  BITPACK   bitpack256v
 #define USIZE 32
-#include __FILE__
+#include "vp4c.c"
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
