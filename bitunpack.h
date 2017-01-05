@@ -73,33 +73,33 @@ unsigned char *bitfunpack16(  const unsigned char *__restrict in, unsigned n, un
 
 // ---------------- SIMD : unpack a bit packed integer array -------------------------------------------------------------------------------
 // SIMD unpack a 128/256 bitpacked integer array. Return value = end of packed buffer in
-unsigned char *bitunpack128v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b);
-unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b); 
-unsigned char *bitd1unpack128v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitunpack128v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b);
+unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitd1unpack128v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
-unsigned char *bitunpack256v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b);
-unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b); 
-unsigned char *bitd1unpack256v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitunpack256v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b);
+unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitd1unpack256v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
-unsigned char *bitunpack128h32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b);
-unsigned char *bitzunpack128h32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitdunpack128h32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b); 
-unsigned char *bitd1unpack128h32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitunpack128h32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b);
+unsigned char *bitzunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitd1unpack128h32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
 // internal TurboPFor functions: masked unpack
-unsigned char *_bitunpack128v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
-unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
-unsigned char *_bitd1unpack128v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitunpack128v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitd1unpack128v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
-unsigned char *_bitunpack128h32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
-unsigned char *_bitdunpack128h32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
-unsigned char *_bitd1unpack128h32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitunpack128h32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitd1unpack128h32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
-unsigned char *_bitunpack256v32(  const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
-unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
-unsigned char *_bitd1unpack256v32(const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitunpack256v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitd1unpack256v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
 #ifdef __cplusplus
 }
