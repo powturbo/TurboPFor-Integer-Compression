@@ -39,15 +39,15 @@
 #define VBDGETGEQ vbdgetgeq
 
 #define USIZE 32
-#include __FILE__
+#include "vint.c"
 #undef USIZE
  
 #define USIZE 64
-#include __FILE__
+#include "vint.c"
 #undef USIZE
 
 #define USIZE 16
-#include __FILE__
+#include "vint.c"
 #undef USIZE
 
 #define VDELTA 1
@@ -57,15 +57,15 @@
 #define VBDGETGEQ vbd1getgeq
 
 #define USIZE 32
-#include __FILE__
+#include "vint.c"
 #undef USIZE
  
 #define USIZE 64
-#include __FILE__
+#include "vint.c"
 #undef USIZE
 
 #define USIZE 16
-#include __FILE__
+#include "vint.c"
 #undef USIZE
 
   #else
