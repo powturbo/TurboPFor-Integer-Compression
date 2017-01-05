@@ -2,15 +2,15 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 ======================================
 + **TurboPFor: The new synonym for "integer compression"**
  - 100% C (C++ headers), as simple as memcpy
- - :+1: **Java** Critical Native Interface. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
+ - :+1: **Java** Critical Natives. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
  - :sparkles: **FULL** range 16/32/64 bits
- - No other "Integer Compression" compress or decompress faster with better compression
- - Direct Access is several times faster than other libraries
- - :sparkles: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
+ - No other "Integer Compression" compress/decompress faster
+ - Direct Access several times faster than other libraries
+ - :sparkles: Integrated (SIMD) delta/Zigzag for sorted/unsorted arrays
 <p>
 + **For/PFor/PForDelta**
- - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme w./ **direct access**.
-  Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
+ - **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
+  Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
  - Compress 70 times faster and decompress up to 4 times faster than OptPFD
  - :new: **(2017) TurboPFor AVX2, now 50%! more faster!!!!**
  - :new: **(2017) TurboPFor Hybrid, better compression and more faster**
