@@ -135,9 +135,9 @@ int main(int argc, char *argv[]) {
 			#endif
             #ifdef _TURBOPFOR
           *op++ = bx; 
-		  op = n==129?_p4dec128v32(    ip+1, n-1, op, b, bx):_p4dec32(   ip+1, n-1, op, b, bx);
+		  op = n==129?_p4dec128v32(  ip+1, n-1, op, b, bx):_p4dec32(   ip+1, n-1, op, b, bx);
             #else
-		  op = n==129?bitpack128v32( ip+1, op, b)    :bitpack32(ip+1, n-1, op, b);
+		  op = n==129?bitpack128v32( ip+1, n-1, op, b)    :bitpack32(ip+1, n-1, op, b);
             #endif
         }
 		ip += n;	
