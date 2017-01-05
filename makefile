@@ -3,7 +3,7 @@
 # git clone --recursive git://github.com/powturbo/TurboPFor.git 
 # make
 #
-# Minimum make: "make NCODEC2=1 NCODEC3=1 NTRANFORM=1" to compile only TurboPFor
+# Minimum make: "make NCODEC1=1 NCODEC2=1 NTRANFORM=1" to compile only TurboPFor
 
 # Linux: "export CC=clang" "export CXX=clang". windows mingw: "set CC=gcc" "set CXX=g++" or uncomment the CC,CXX lines
 CC ?= gcc
@@ -16,14 +16,21 @@ DDEBUG=-DNDEBUG -s
 
 MARCH=-march=native
 #MARCH=-march=broadwell
+
+ifeq ($(NSIMD),1)
+DEFS+=-DNSIMD
+NCODEC1=1
+NCODEC2=1
+else
+NSIMD=0
+endif
+
 ifeq ($(AVX2),1)
 MARCH+=-mavx2 -mbmi2
 else
-#NAVX2=0
 AVX2=0
-DEFS+=-DNAVX2
 endif
- 
+
 #----------------------------------------------
 ifeq ($(OS),Windows_NT)
   UNAME := Windows
@@ -39,7 +46,6 @@ endif
 
 ifeq ($(STATIC),1)
 LDFLAGS+=-static
-NMEMSIZE=1
 endif
 
 LBITS := $(shell getconf LONG_BIT)
@@ -76,16 +82,6 @@ ifeq ($(LZTURBO),1)
 DEFS+=-DLZTURBO
 endif
 
-#------------- 
-# disable peak memory calculation
-ifeq ($(NMEMSIZE),1)
-DEFS+=-DNMEMSIZE
-else
-ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS += -ldl
-endif
-endif
-
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DNDEBUG -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
 CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
 
@@ -94,15 +90,17 @@ all: icbench idxcr idxqry idxseg
 cpp: vp4c.c
 	$(CC) $(MARCH) -E vp4c.c
 
-
 bitpack.o: bitpack.c bitpack.h bitpack64_.h
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c bitpack.c
 
 varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h 
-	$(CC) -O2 $(CFLAGS) $(MARCH) -c -funroll-loops -std=c99 ext/varintg8iu.c
+	$(CC) -O2 $(CFLAGS) $(MARCH) -c -std=c99 ext/varintg8iu.c
 
 idxqryp.o: idxqry.c
 	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
+
+vp4c.o: vp4c.c
+	$(CC) -O3 $(CFLAGS) -DP4NSIMD -c vp4c.c -o vp4c.o
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
@@ -166,16 +164,19 @@ endif
 
 endif
 
-OB+=bitutil.o vint.o bitpack.o bitunpack.o eliasfano.o vsimple.o vp4d.o vp4c.o bitpack128v.o bitunpack128v.o $(TRANSP) ext/simple8b.o transpose.o 
+OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o 
+#------------------------
+ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o 
 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------
-ICLIB=bitpack.o bitunpack.o bitunpack128v.o vint.o vp4d.o bitutil.o bitpack128v.o
+ifeq ($(NSIMD),0)
+ICLIB+=bitpack128v.o bitunpack128v.o
 
 ifeq ($(AVX2),1)
-OB+=bitpack256v.o bitunpack256v.o 
-ICLIB+=bitpack256v.o bitunpack256v.o 
+ICLIB+=bitpack256v.o bitunpack256v.o vp4c256v.o vp4d256v.o
 endif
-
+endif
+#---------------------
+OB+=$(ICLIB)
 
 icbench: $(OB) icbench.o plugins.o 
 	$(CXX) $^ $(LDFLAGS) -o icbench
