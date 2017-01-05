@@ -48,6 +48,10 @@
 #include "vp4d.h"
 #include "idx.h"
 
+#ifdef NSIMD
+#define bitd1unpack128v32 bitd1unpack32
+#endif
+
 //#define STATS
 //------------------------------------- index file (created by idxcr) -------------------------------------------------------------
 typedef struct {         	
@@ -258,10 +262,10 @@ static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) {
   if(v->didnum > 1) {															STAT(st_blk++);
   	  #ifndef SKIP_S
     unsigned b = *p++; 
-	  #endif
+	  #endif     
       #ifdef _TURBOPFOR
-    unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+    unsigned bx = *p++;       
+	p = v->didnum == 129?p4d1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4d1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
     p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
