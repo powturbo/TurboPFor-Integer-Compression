@@ -35,7 +35,7 @@
 #define IPPB( __ip,__x, __parm)
 #define SRC( __ip,__x) (*__ip++)
 #define SRC1(__ip,__x) (*(__ip))
-#include __FILE__
+#include "bitpack.c"
  
 unsigned char *bitpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; } 
 unsigned char *bitpack16(unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; }
@@ -47,7 +47,7 @@ unsigned char *bitpack64(uint64_t           *__restrict in, unsigned n, unsigned
 #define IPPB( __ip,__x, __parm) as = *__ip-start; start=*__ip++
 #define SRC( __ip,__x) as
 #define SRC1(__ip,__x) (*__ip - start)
-#include __FILE__
+#include "bitpack.c"
 
 unsigned char *bitdpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
@@ -57,7 +57,7 @@ unsigned char *bitdpack32(unsigned       *__restrict in, unsigned n, unsigned ch
 #define IPPB( __ip,__x, __parm) as = *__ip-start-1; start=*__ip++
 #define SRC( __ip,__x) as
 #define SRC1(__ip,__x) (*__ip - start-1)
-#include __FILE__
+#include "bitpack.c"
 unsigned char *bitd1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
 #undef SRC
@@ -67,7 +67,7 @@ unsigned char *bitd1pack32(unsigned       *__restrict in, unsigned n, unsigned c
 #define IPPB( __ip,__x, __parm) as = *__ip++-start
 #define SRC( __ip,__x) as
 #define SRC1(__ip,__x) (*__ip - start)
-#include __FILE__
+#include "bitpack.c"
 unsigned char *bitfpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
 #undef SRC
@@ -76,7 +76,7 @@ unsigned char *bitfpack32(unsigned       *__restrict in, unsigned n, unsigned ch
 #define IPPB( __ip,__x, __parm) as = *__ip++-start++-1
 #define SRC( __ip,__x) as
 #define SRC1(__ip,__x) (*__ip - start-1)
-#include __FILE__
+#include "bitpack.c"
 unsigned char *bitf1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
 #undef SRC
@@ -85,7 +85,7 @@ unsigned char *bitf1pack32(unsigned       *__restrict in, unsigned n, unsigned c
 #define IPPB( __ip,__x, __parm) as = zigzagenc32(*__ip-start); start=*__ip++
 #define SRC( __ip,__x) as
 #define SRC1(__ip,__x) zigzagenc32(*__ip - start)
-#include __FILE__
+#include "bitpack.c"
 
 unsigned char *bitzpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
 #undef IPPB
