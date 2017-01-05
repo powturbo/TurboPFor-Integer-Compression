@@ -22,10 +22,6 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //  "Integer Compression" TurboPfor  (see vp4dd.h for decompression) 
- 
-#define P4EB(_b_) (_b_ << 1)
-#define P4EBX(_b_, _bx_) (_bx_ << 8 | _b_ << 1 | 1) 
-#define P4SAVE(_out_, _b_, _bx_) do { if(!_bx_) *_out_++ = P4EB(_b_);else *(unsigned short *)_out_ = P4EBX(_b_, _bx_), _out_ += 2; } while(0)
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,8 +34,8 @@ unsigned char *p4enc128v32( unsigned       *__restrict in, unsigned n, unsigned 
 unsigned char *p4enc256v32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out); // SIMD (Vertical bitpacking)
 unsigned char *p4enc64(     uint64_t       *__restrict in, unsigned n, unsigned char *__restrict out);
 
-unsigned char *p4encx16(     unsigned short *__restrict in, unsigned n, unsigned char *__restrict out);// Direct access 
-unsigned char *p4encx32(     unsigned       *__restrict in, unsigned n, unsigned char *__restrict out);
+unsigned char *p4encx16(    unsigned short *__restrict in, unsigned n, unsigned char *__restrict out);// Direct access 
+unsigned char *p4encx32(    unsigned       *__restrict in, unsigned n, unsigned char *__restrict out);
 
 // same as p4denc, but with b and bx as parameters. Call after _p4d16,_p4d32,_p4d64
 unsigned char *_p4enc16(    unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
@@ -54,3 +50,10 @@ unsigned _p4bits64(         uint64_t       *__restrict in, unsigned n, unsigned 
 #ifdef __cplusplus
 }
 #endif
+
+#define P4D_MAX 256
+
+#define P4EB(_b_) (_b_ << 1)
+#define P4EBX(_b_, _bx_) (_bx_ << 8 | _b_ << 1 | 1) 
+#define P4SAVE(_out_, _b_, _bx_) do { if(!_bx_) *_out_++ = P4EB(_b_);else *(unsigned short *)_out_ = P4EBX(_b_, _bx_), _out_ += 2; } while(0)
+
