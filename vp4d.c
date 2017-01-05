@@ -100,6 +100,8 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef  P4DELTA
 
 // SIMD -------------
+  #ifndef NSIMD
+    #ifdef __SSE2__
 #define P4DELTA(a) 
 #define  VSIZE 128
 #define _P4DEC        _p4dec128v
@@ -125,6 +127,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #include __FILE__
 #undef  BITUNDD
 #undef  P4DELTA
+    #endif
 
     #ifdef __AVX2__
 #define  VSIZE 256
@@ -151,7 +154,8 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #include __FILE__
 #undef  BITUNDD
     #endif  
-  
+  #endif  
+
 #undef USIZE
 #else
 #define uint_t TEMPLATE3(uint, USIZE, _t)
