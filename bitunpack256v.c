@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   "Integer Compression" SIMD Bit Packing
+//  "Integer Compression" AVX2 Bit Packing
   #ifndef VSTO  
 #include <stdio.h>
   
