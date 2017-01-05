@@ -45,15 +45,15 @@ unsigned char *bitzpack32( unsigned              *__restrict in, unsigned n, uns
 
 //-------------------------------------- SIMD ------------------------------------------------------------------------------------------
 // Pack array with 128 unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
-unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned char *__restrict out				  , unsigned b);
-unsigned char *bitdpack128v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1pack128v32(unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitdpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
-unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned char *__restrict out				  , unsigned b);
-unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1pack256v32(unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitd1pack256v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
 #ifdef __cplusplus
 }
