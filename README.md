@@ -1,17 +1,15 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
 + **TurboPFor: The new synonym for "integer compression"**
- - 100% C (C++ compatible headers), w/o inline assembly
- - Usage as simple as memcpy
+ - 100% C (C++ headers), as simple as memcpy
  - :+1: **Java** Critical Native Interface. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
- - :sparkles: **FULL** range 16/32/64 bits integer lists and Floating point
+ - :sparkles: **FULL** range 16/32/64 bits
  - No other "Integer Compression" compress or decompress faster with better compression
  - Direct Access is several times faster than other libraries
  - :sparkles: Integrated (SIMD) differential/Zigzag encoding/decoding for sorted/unsorted integer lists
- - Compress better and faster than special binary compressors like blosc
 <p>
 + **For/PFor/PForDelta**
- - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme with **direct access** or bulk decoding.
+ - **Novel** **"TurboPFor"** (Patched Frame-of-Reference,PFor/PForDelta) scheme w./ **direct access**.
   Outstanding compression and speed. More efficient than **ANY** other fast "integer compression" scheme.
  - Compress 70 times faster and decompress up to 4 times faster than OptPFD
  - :new: **(2017) TurboPFor AVX2, now 50%! more faster!!!!**
@@ -21,18 +19,14 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
  - :new: **(2017) TurboPack AVX2, now more faster. Decoding 10 Billions intergers/seconds**
  - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
- - Bit Packing with **Direct/Random Access** without decompressing entire blocks
- - Access any single bit packed entry with **zero decompression**
- - :sparkles: **Direct Update** of individual bit packed entries
- - Reducing **Cache Pollution**
+ - **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 <p>
 + **Variable byte**
- - :sparkles: Scalar **"Variable Byte"** faster and more efficient than **ANY** other (incl. SIMD MaskedVByte) implementation
- - :new: **(2017) new scheme w. better compression and 30% more faster**
+ - :sparkles: Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
+ - :new: **(2017) new scheme : better compression and 30% faster**
 <p>
 + **Simple family**
  - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
-   or other "simple family" implementation
 <p>
 + **Elias fano**
  - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD
@@ -41,7 +35,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
 <p>
 + **Inverted Index ...do less, go fast!**
- - Direct Access to compressed *frequency* and *position* data in inverted index with zero decompression
+ - Direct Access to compressed *frequency* and *position* data w/ zero decompression
  - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%)!. 
  - **Novel** Implicit skips with zero extra overhead
  - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
@@ -50,10 +44,9 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Integer Compression Benchmark:
-- Realistic and practical "integer compression" benchmark with **large** integer arrays.
-- No **PURE** cache benchmark
+- Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
 
-##### - Synthetic data (2017): 
+##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
    Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
@@ -88,7 +81,7 @@ CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
-(*) optimzed for large block size
+(*) codec efficient only for large block size
 
 MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier.<br>
@@ -336,4 +329,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  04 JAN 2017
+Last update:  05 JAN 2017
