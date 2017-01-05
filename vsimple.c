@@ -57,15 +57,15 @@ static SV_LIM64;
 #define VSENC vsenc
 #define VSDEC vsdec
 #define USIZE 16
-#include __FILE__
+#include "vsimple.c"
 #undef USIZE
 
 #define USIZE 32
-#include __FILE__
+#include "vsimple.c"
 #undef USIZE
 
 #define USIZE 64
-#include __FILE__
+#include "vsimple.c"
 #undef USIZE
 
   #else
