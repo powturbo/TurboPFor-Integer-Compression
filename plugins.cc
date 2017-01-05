@@ -225,10 +225,7 @@ unsigned char *for_selectx( unsigned char *__restrict in, unsigned n, unsigned *
 #include "transpose.h"
 #include "vp4c.h"
 #include "vp4d.h"
-/* like p4dec32 but using direct access. This is only a demo showing direct access usage. Use p4dec32 instead for decompressing entire blocks */
-unsigned char *p4decx32(  unsigned char *in, unsigned n, unsigned *out);  // unsorted
-unsigned char *p4f0decx32(unsigned char *in, unsigned n, unsigned *out, unsigned start); // FOR increasing 
-unsigned char *p4fdecx32( unsigned char *in, unsigned n, unsigned *out, unsigned start); // FOR strictly increasing
+
   #endif
   
   #if C_ZLIB
