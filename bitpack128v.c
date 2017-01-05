@@ -33,7 +33,7 @@
 #define IPP(ip, i, iv) _mm_loadu_si128(ip++)
 #include __FILE__ 
   
-unsigned char *bitpack128v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(128*b); BITPACK128V32(in, b, out, 0); return pout; }
+unsigned char *bitpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(128*b); BITPACK128V32(in, b, out, 0); return pout; }
 //unsigned char *bitpack128v16(unsigned short *__restrict in, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(n*b); BITPACK128V32(in, n, b, out, 0); return pout; }
 #undef VSTI 
 #undef IPP
@@ -43,7 +43,7 @@ unsigned char *bitpack128v32(unsigned       *__restrict in, unsigned char *__res
 #define IPP(ip, i, __iv) __iv
 #include __FILE__ 
 
-unsigned char *bitdpack128v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
+unsigned char *bitdpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v,sv = _mm_set1_epi32(start);
   BITPACK128V32(in, b, out, sv); 
   return pout;
@@ -53,7 +53,7 @@ unsigned char *bitdpack128v32(unsigned       *__restrict in, unsigned char *__re
 //------------------------------------------------------------------------------------------------------------------------------
 #define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = _mm_sub_epi32(DELTA128x32(v,__sv),cv); __sv = v
 
-unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
+unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   BITPACK128V32(in, b, out, sv); return pout; 
 }
@@ -61,7 +61,7 @@ unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned char *__r
 //------------------------------------------------------------------------------------------------------------------------------
 #define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = DELTA128x32(v,__sv); __sv = v; __iv = ZIGZAG128x32(__iv)
 
-unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
+unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   BITPACK128V32(in, b, out, sv); 
   return pout; 
