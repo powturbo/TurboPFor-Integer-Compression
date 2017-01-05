@@ -178,6 +178,9 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
   		make AVX2=1
 
+        Minimum build w/ TurboPFor scalar functions
+        make NSIMD=1
+
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
   + benchmark groups of "integer compression" functions <br />
