@@ -343,7 +343,7 @@ static unsigned char shuffles[256][8] __attribute__((aligned(32))) = {
 }  
 #define BITUNPACK0(_parm_) _parm_ = _mm256_setzero_si256()
 
-unsigned char *bitunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned b) {
+unsigned char *bitunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b) {
   const unsigned char *ip = in+PAD8(256*b);
   __m256i sv; 
   BITUNPACK256V32(in, b, out, sv);
@@ -359,7 +359,7 @@ unsigned char *bitunpack256v32( const unsigned char *__restrict in, unsigned *__
 #define BITUNPACK0(_parm_)
 #include "bitunpack256v.c" 
 
-unsigned char *_bitunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
+unsigned char *_bitunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
   const unsigned char *ip = in+PAD8(256*b); unsigned xm; __m256i sv, zv = _mm256_setzero_si256(), tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
   BITUNPACK256V32(in, b, out, sv); 
   return (unsigned char *)ip; 
@@ -374,7 +374,7 @@ unsigned char *_bitunpack256v32( const unsigned char *__restrict in, unsigned *_
   
 #define BITUNPACK0(_parm_)
  
-unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b) {
+unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
   const unsigned char *ip = in+PAD8(256*b); 
   __m256i sv = _mm256_set1_epi32(start), zv = _mm256_setzero_si256(); 
   BITUNPACK256V32(in, b, out, sv); 
@@ -389,7 +389,7 @@ unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned *_
 
 #define BITUNPACK0(_parm_)
 
-unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b) { 
+unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { 
   const unsigned char *ip = in+PAD8(256*b); 
   __m256i sv = _mm256_set1_epi32(start), zv = _mm256_setzero_si256();
   BITUNPACK256V32(in, b, out, sv);
@@ -410,7 +410,7 @@ unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned *_
  
 #define BITUNPACK0(_parm_)
  
-unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
+unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
   const unsigned char *ip = in+PAD8(256*b); unsigned xm;
   __m256i sv = _mm256_set1_epi32(start),zv = _mm256_setzero_si256(), tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
   BITUNPACK256V32(in, b, out, sv); 
@@ -427,7 +427,7 @@ unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned *
 
 #define BITUNPACK0(_parm_) _parm_ = _mm256_add_epi32(_parm_, cv); cv = _mm256_set1_epi32(8)
 
-unsigned char *bitd1unpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b) {
+unsigned char *bitd1unpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
   const unsigned char *ip = in+PAD8(256*b);
   __m256i sv = _mm256_set1_epi32(start), cv = _mm256_set_epi32(8,7,6,5,4,3,2,1),zv = _mm256_setzero_si256();
   BITUNPACK256V32(in, b, out, sv);
@@ -444,7 +444,7 @@ unsigned char *bitd1unpack256v32( const unsigned char *__restrict in, unsigned *
 
 #define BITUNPACK0(_parm_) mv = _mm256_set1_epi32(0) //_parm_ = _mm_setzero_si128()
 
-unsigned char *_bitd1unpack256v32( const unsigned char *__restrict in, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
+unsigned char *_bitd1unpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
   const unsigned char *ip = in+PAD8(256*b); unsigned xm;
   __m256i sv = _mm256_set1_epi32(start), cv = _mm256_set_epi32(8,7,6,5,4,3,2,1),zv = _mm256_setzero_si256(),tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
   BITUNPACK256V32(in, b, out, sv);
