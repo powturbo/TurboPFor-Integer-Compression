@@ -72,7 +72,6 @@ unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, unsigned
 unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned start, unsigned b, unsigned bx);
 
 #define P4D_MAX 256
-
 //---------------- Direct Access functions to compressed TurboPFor array p4encx16/p4encx32 -------------------------------------------------------
 #define P4D_PAD8(_x_) 		( (((_x_)+8-1)/8) )
 #define P4D_B(_x_)  		(((_x_) >> 1) & 0x3f)
