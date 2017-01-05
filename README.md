@@ -185,7 +185,6 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 ##### - Synthetic data (use ZIPF parameter):
   + benchmark groups of "integer compression" functions <br />
 
-
         ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
         ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100M ZIPF
 
