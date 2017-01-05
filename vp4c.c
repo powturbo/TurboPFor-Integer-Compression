@@ -22,7 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //   "Integer Compression" Turbo PFor/PforDelta 
-  #ifndef USIZE
+#ifndef USIZE
 #include <stdint.h>
  
 #include "conf.h"
@@ -66,7 +66,9 @@
 
 #undef _P4BITS
 
+  #ifndef NSIMD
 #define EXCEP 1 // 
+    #ifdef __SSE2__
 //-- SIMD: Vertical bitpacking
 #define VSIZE 128 
 #define _P4ENC    _p4enc128v
@@ -78,8 +80,9 @@
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
+    #endif
 
-#ifdef __AVX2__
+    #ifdef __AVX2__
 #define VSIZE 256
 #define _P4ENC    _p4enc256v
 #define  P4ENC     p4enc256v
@@ -89,17 +92,19 @@
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
-#endif
+    #endif
+  #endif
 
 #undef USIZE
-  #else
+
+#else
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
 
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
 #define VSC(a)
-    #ifdef _P4BITS 							
+  #ifdef _P4BITS 							
 unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
   uint_t *ip; int b=0,r; int i,ml,l; 
   unsigned x, bx, cnt[USIZE+1] = {0}, _vb[USIZE*2+5] = {0}, *vb=&_vb[USIZE],fx=0, b64=(n+7)/8;
@@ -152,7 +157,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
     #endif
   return b;
 } 
-    #endif
+  #endif
  
 unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
   if(!bx) 
@@ -206,7 +211,7 @@ unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsign
   }
 }*/
 #pragma clang diagnostic pop
-  #endif
+#endif
 /*
 111 : 32 bits = bitpack            b=32   if bits=0x1f EOB
 000 : bitpack = bitpack no exp     b=0..5
