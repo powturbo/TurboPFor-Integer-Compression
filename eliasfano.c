@@ -23,7 +23,7 @@
 **/
 
 //    eliasfano.c - "Integer Compression" Elias Fano
-  #ifndef USIZE //------------------------------------ functions ----------------------------------------------------------------- 
+#ifndef USIZE
 #include <stdint.h>
 #include <string.h>
   #ifdef __SSE2__
@@ -90,6 +90,7 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #undef EFANODEC
 
 //----------------------
+  #ifndef NSIMD 
 #define VSIZE 128
 #define BITPACK bitpack128v
 #define BITUNPACK bitunpack128v
@@ -105,7 +106,7 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #undef EFANOENC
 #undef EFANODEC
 
-//------------------------------------------
+    #ifdef __SSE2__
 #define EF_INC 0
 #define EFANOENC efanoenc128v
 #define EFANODEC efanodec128v
@@ -114,8 +115,10 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #include __FILE__
 #undef USIZE
 #undef VSIZE
+    #endif
+  #endif
 
-  #else //--------------------------------------------- implementation ---------------------------------------------------------------
+#else //--------------------------------------------- implementation ---------------------------------------------------------------
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
 #pragma clang diagnostic push 
@@ -186,4 +189,4 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
   e:return ip + PAD8((EFE(out,n-1,start)>>lb)+n); 
 }
 #pragma clang diagnostic pop
-  #endif
+#endif
