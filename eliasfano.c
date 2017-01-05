@@ -54,11 +54,11 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #define EFANODEC efano1dec
 
 #define USIZE 32
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE
 
 /*#define USIZE 16
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE*/
 
 #undef EF_INC
@@ -71,15 +71,15 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #define EFANODEC efanodec
 
 #define USIZE 32
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE
 
 #define USIZE 64
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE
 
 /*#define USIZE 16
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE*/
 
 #undef BITPACK
@@ -99,7 +99,7 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #define EFANODEC efano1dec128v
 
 #define USIZE 32
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE
 
 #undef EF_INC
@@ -112,7 +112,7 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 #define EFANODEC efanodec128v
 
 #define USIZE 32
-#include __FILE__
+#include "eliasfano.c"
 #undef USIZE
 #undef VSIZE
     #endif
