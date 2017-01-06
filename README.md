@@ -45,6 +45,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    
 ### Integer Compression Benchmark:
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
+- CPU: Skylake i7-6700 3.7GHz gcc 6.2 single thread 
 
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
@@ -53,9 +54,6 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
         ./icbench -a1.5 -m0 -M255 -n100M ZIPF
 	
-CPU: Skylake i7-6700 w/ only 3.7GHz gcc 6.2 single thread 
-
-
 |C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name|
 |--------:|-----:|--------:|----------:|----------:|--------------|
 |62939886| 15.7| 5.04|**397**|**2311**|**TurboPFor256**|
