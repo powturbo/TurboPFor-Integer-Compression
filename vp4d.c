@@ -28,8 +28,8 @@
 #include "conf.h"
 #include "bitunpack.h"
 #include "bitutil.h"
-#include "vp4d.h"
 #include "vint.h"				//#include "vsimple.h"
+#include "vp4d.h"
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
@@ -60,8 +60,11 @@ static ALIGNED(char, shuffles[16][16], 16) = {
   #endif
  
 #define P4DELTA(a)
+#define P4DELTA_(a)
 #define _P4DEC      _p4dec
 #define  P4DEC       p4dec
+#define  P4NDEC      p4ndec
+#define  P4NDECS     p4dec
 #define  BITUNPACK   bitunpack  // unpack only
 #define  BITUNPACKD  bitunpack  // integrated unpack
 #define _BITUNPACKD  bitunpack  // integrated pfor
@@ -79,8 +82,11 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #undef  P4DECX
 
 #define P4DELTA(a) ,a
+#define P4DELTA_(a) a
 #define _P4DEC      _p4ddec			//delta0
 #define  P4DEC       p4ddec
+#define  P4NDEC      p4nddec
+#define  P4NDECS     p4ddec
 #define  BITUNPACKD  bitdunpack
 #define _BITUNPACKD _bitdunpack
 #define  BITUNDD     bitund
@@ -88,6 +94,8 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 
 #define _P4DEC      _p4d1dec        //delta1
 #define  P4DEC       p4d1dec
+#define  P4NDEC      p4nd1dec
+#define  P4NDECS     p4d1dec
 #define  BITUNPACKD  bitd1unpack
 #define _BITUNPACKD  bitd1unpack
 #define  BITUNDD     bitund1
@@ -102,18 +110,24 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 // SIMD -------------
   #ifndef NSIMD
     #ifdef __SSSE3__
-#define P4DELTA(a) 
 #define  VSIZE 128
+#define P4DELTA(a)
+#define P4DELTA_(a)
 #define _P4DEC        _p4dec128v
 #define  P4DEC         p4dec128v
+#define  P4NDEC        p4ndec128v
+#define  P4NDECS       p4dec
 #define  BITUNPACK     bitunpack128v
 #define  BITUNPACKD    bitunpack128v
 #define  _BITUNPACKD  _bitunpack128v
 #include "vp4d.c"
 
 #define P4DELTA(a) ,a
+#define P4DELTA_(a) a
 #define _P4DEC        _p4ddec128v
 #define  P4DEC         p4ddec128v
+#define  P4NDEC        p4nddec128v
+#define  P4NDECS       p4ddec
 #define  BITUNPACKD    bitdunpack128v
 #define  _BITUNPACKD  _bitdunpack128v
 #define  BITUNDD       bitund
@@ -121,6 +135,8 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 
 #define _P4DEC        _p4d1dec128v
 #define  P4DEC         p4d1dec128v
+#define  P4NDEC        p4nd1dec128v
+#define  P4NDECS       p4d1dec
 #define  BITUNPACKD    bitd1unpack128v
 #define  _BITUNPACKD  _bitd1unpack128v
 #define  BITUNDD       bitund1
@@ -130,17 +146,24 @@ static ALIGNED(char, shuffles[16][16], 16) = {
     #endif
 
     #ifdef __AVX2__
+#define P4DELTA(a) 
+#define P4DELTA_(a) 
 #define  VSIZE 256
 #define _P4DEC        _p4dec256v
 #define  P4DEC         p4dec256v
+#define  P4NDEC        p4ndec256v
+#define  P4NDECS       p4dec
 #define  BITUNPACK     bitunpack256v
 #define  BITUNPACKD    bitunpack256v
 #define  _BITUNPACKD  _bitunpack256v
 #include "vp4d.c"
 
-#define P4DELTA 
+#define P4DELTA(a) ,a
+#define P4DELTA_(a) a
 #define _P4DEC        _p4ddec256v
 #define  P4DEC         p4ddec256v
+#define  P4NDEC        p4nddec256v
+#define  P4NDECS       p4ddec
 #define  BITUNPACKD    bitdunpack256v
 #define  _BITUNPACKD  _bitdunpack256v
 #define  BITUNDD       bitund
@@ -148,6 +171,8 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 
 #define _P4DEC        _p4d1dec256v
 #define  P4DEC         p4d1dec256v
+#define  P4NDEC        p4nd1dec256v
+#define  P4NDECS       p4d1dec
 #define  BITUNPACKD    bitd1unpack256v
 #define  _BITUNPACKD  _bitd1unpack256v
 #define  BITUNDD       bitund1
@@ -206,7 +231,7 @@ unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n
     #endif
 }
 
-unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  
+unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  if(!n) return in; 
   unsigned b = *in++,bx,i;
   
   if(likely(!(b & 0x80))) {
@@ -219,20 +244,39 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
     bx = *in++;
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b); 
     in = TEMPLATE2(vbdec,     USIZE)(in, bx, ex);
-    for(i = 0; i != (bx & ~3); i += 4) { 
+    for(i = 0; i != (bx & ~7); i += 8) { 
 	  out[in[i  ]] |= ex[i  ] << b;
 	  out[in[i+1]] |= ex[i+1] << b;
 	  out[in[i+2]] |= ex[i+2] << b;
 	  out[in[i+3]] |= ex[i+3] << b;
+	  out[in[i+4]] |= ex[i+4] << b;
+	  out[in[i+5]] |= ex[i+5] << b;
+	  out[in[i+6]] |= ex[i+6] << b;
+	  out[in[i+7]] |= ex[i+7] << b;
 	}
 	for(;i < bx; i++) 
 	  out[in[i]] |= ex[i] << b;
     in += bx;
       #ifdef BITUNDD
-  TEMPLATE2(BITUNDD, USIZE)(out, n, start);
+    TEMPLATE2(BITUNDD, USIZE)(out, n, start);
 	  #endif
     return in;
   }
+}
+
+#ifdef VSIZE
+  #define CSIZE VSIZE
+#else
+  #define CSIZE 128
+#endif
+
+unsigned char *TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  
+  uint_t *op;
+  for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {             __builtin_prefetch(in+512);  
+    in = TEMPLATE2(P4DEC, USIZE)(in, CSIZE, op P4DELTA(start));                         
+    P4DELTA_(start = op[CSIZE-1]); 											
+  }
+  return TEMPLATE2(P4NDECS, USIZE)(in, n&(CSIZE-1), op P4DELTA(start)); 
 }
 
     #ifdef P4DECX  
@@ -263,7 +307,7 @@ unsigned char *TEMPLATE2(p4decx, USIZE)(unsigned char *in, unsigned n, uint_t *_
   return in + PAD8(n*b);
 }
 
-unsigned char *TEMPLATE2(p4fdecx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out, unsigned start) {
+unsigned char *TEMPLATE2(p4fdecx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out, uint_t start) {
   unsigned b,i; 
   struct p4 p4; 
   p4ini(&p4, &in, n, &b);
@@ -275,7 +319,7 @@ unsigned char *TEMPLATE2(p4fdecx, USIZE)(unsigned char *in, unsigned n, uint_t *
   return in + PAD8(n*b);
 }
 
-unsigned char *TEMPLATE2(p4f0decx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out, unsigned start) {
+unsigned char *TEMPLATE2(p4f0decx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out, uint_t start) {
   unsigned b,i; 
   struct p4 p4; 
   p4ini(&p4, &in, n, &b);
