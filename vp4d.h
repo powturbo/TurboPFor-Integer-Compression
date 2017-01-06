@@ -42,8 +42,7 @@ unsigned char *_p4dec64(      unsigned char *__restrict in, unsigned n, uint64_t
 unsigned char *p4dec16(       unsigned char *__restrict in, unsigned n, unsigned short *__restrict out);
 unsigned char *p4dec32(       unsigned char *__restrict in, unsigned n, unsigned       *__restrict out);  
 unsigned char *p4dec128v32(   unsigned char *__restrict in, unsigned n, unsigned       *__restrict out);  // SIMD (Vertical BitPacking)
-unsigned char *p4dec256v32(   unsignegit add README.md && git commit -m "Readme" && git push origin master
-d char *__restrict in, unsigned n, unsigned       *__restrict out);  
+unsigned char *p4dec256v32(   unsigned char *__restrict in, unsigned n, unsigned       *__restrict out);  
 unsigned char *p4dec64(       unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out);
 //------ Delta decoding --------------------------- Return value = end of packed input buffer in ---------------------------
 //-- Increasing integer lists. out[i] = out[i-1] + in[i]          	   
