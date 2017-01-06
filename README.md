@@ -2,7 +2,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 ======================================
 + **TurboPFor: The new synonym for "integer compression"**
  - 100% C (C++ headers), as simple as memcpy
- - :+1: **Java** Critical Natives. Access TurboPFor **incl. SIMD!** from Java as fast as calling from C
+ - :+1: **Java** Critical Natives. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
  - :sparkles: **FULL** range 16/32/64 bits
  - No other "Integer Compression" compress/decompress faster
  - Direct Access several times faster than other libraries
