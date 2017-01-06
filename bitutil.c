@@ -96,6 +96,12 @@ unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uns
   return bsr64(b);
 }
 
+unsigned bitdelta16(unsigned short *in, unsigned n, unsigned short *out, unsigned short start, unsigned inc) {
+  typeof(in[0]) b = 0,*op = out;
+  BITDELTA(in, n, inc, start, b |= _x; *op++ = _x);
+  return bsr16(b);
+}
+
 unsigned bit32(unsigned *in, unsigned n) {
   typeof(in[0]) b;
   BITSIZE32(in, n, b);
