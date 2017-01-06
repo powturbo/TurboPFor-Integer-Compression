@@ -1,0 +1,30 @@
+[submodule "ext/libfor"]
+	path = ext/libfor
+	url = https://github.com/cruppstahl/libfor.git
+[submodule "ext/lz4"]
+	path = ext/lz4
+	url = https://github.com/Cyan4973/lz4.git
+[submodule "ext/bitshuffle"]
+	path = ext/bitshuffle
+	url = https://github.com/kiyo-masui/bitshuffle.git
+[submodule "ext/c-blosc2"]
+	path = ext/c-blosc2
+	url = https://github.com/Blosc/c-blosc2.git
+[submodule "ext/LittleIntPacker"]
+	path = ext/LittleIntPacker
+	url = https://github.com/lemire/LittleIntPacker.git
+[submodule "ext/streamvbyte"]
+	path = ext/streamvbyte
+	url = https://github.com/lemire/streamvbyte.git
+[submodule "ext/libvbyte"]
+	path = ext/libvbyte
+	url = https://github.com/cruppstahl/libvbyte.git
+[submodule "ext/MaskedVByte"]
+	path = ext/MaskedVByte
+	url = https://github.com/lemire/MaskedVByte.git
+[submodule "ext/simdcomp"]
+	path = ext/simdcomp
+	url = https://github.com/lemire/simdcomp.git
+[submodule "ext/FastPFor"]
+	path = ext/FastPFor
+	url = https://github.com/lemire/FastPFor
