@@ -162,8 +162,9 @@ unsigned bit32(     unsigned *in, unsigned n);
 
 //------------- Delta for sorted integer array ----------------------------------------------------
 //-- transform sorted integer array to delta array. inc = increment: out[i] = in[i] - in[i-1] - inc
-unsigned bitdelta32(unsigned *in, unsigned n, unsigned *out, unsigned start, unsigned inc);
-unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
+unsigned bitdelta16(unsigned short *in, unsigned n, unsigned short *out, unsigned short start, unsigned inc);
+unsigned bitdelta32(unsigned       *in, unsigned n, unsigned       *out, unsigned       start, unsigned inc);
+unsigned bitdelta64(uint64_t       *in, unsigned n, uint64_t       *out, uint64_t       start, unsigned inc);
 
 //-- get delta maximum bit length of the non decreasing integer array. out[i] = in[i] - in[i-1]
 unsigned bitd32(    unsigned *in, unsigned n, unsigned start);  
