@@ -39,42 +39,64 @@ public class jic {
   public native static int vsdec32(       byte[] in, int n,  int[] out);
 
   // TurboPFor: PFor/PForDelta
-  public native static int p4denc32(       int[] in, int n, byte[] out);
-  public native static int p4ddec32(      byte[] in, int n,  int[] out);
+  // Single block: n limited to 128/256
+  public native static int p4enc32(            int[] in, int n, byte[] out);
+  public native static int p4dec32(           byte[] in, int n,  int[] out);
 
-  public native static int p4dencv32(      int[] in, int n, byte[] out);
-  public native static int p4ddecv32(     byte[] in, int n,  int[] out);
+  public native static int p4enc128v32(        int[] in, int n, byte[] out);
+  public native static int p4dec128v32(       byte[] in, int n,  int[] out);
+  public native static int p4enc256v32(        int[] in, int n, byte[] out);
+  public native static int p4dec256v32(       byte[] in, int n,  int[] out);
 
-  public native static int p4dddec32(     byte[] in, int n,  int[] out, int start);
-  public native static int p4dddecv32(    byte[] in, int n,  int[] out, int start);
+  public native static int p4ddec32(          byte[] in, int n,  int[] out, int start);
+  public native static int p4ddec128v32(      byte[] in, int n,  int[] out, int start);
+  public native static int p4ddec256v32(      byte[] in, int n,  int[] out, int start);
 
-  public native static int p4dd1dec32(    byte[] in, int n,  int[] out, int start);
-  public native static int p4dd1decv32(   byte[] in, int n,  int[] out, int start);
-
-  // bitpack
-  public native static int bitpack32(      int[] in, int n, byte[] out, int b);
-  public native static int bitunpack32(   byte[] in, int n,  int[] out, int b);
-
-  public native static int bitdpack32(     int[] in, int n, byte[] out, int start, int b);
-  public native static int bitdunpack32(  byte[] in, int n,  int[] out, int start, int b);
+  public native static int p4d1dec32(         byte[] in, int n,  int[] out, int start);
+  public native static int p4d1dec128v32(     byte[] in, int n,  int[] out, int start);
+  public native static int p4d1dec256v32(     byte[] in, int n,  int[] out, int start);
   
-  public native static int bitd1pack32(    int[] in, int n, byte[] out, int start, int b);
-  public native static int bitd1unpack32( byte[] in, int n,  int[] out, int start, int b);
+  // n unlimited
+  public native static int p4nenc32(          int[] in, int n, byte[] out);
+  public native static int p4ndec32(         byte[] in, int n,  int[] out);
 
-  // bitpack SIMD 
-  public native static int bitpackv32(     int[] in, int n, byte[] out, int b);
-  public native static int bitunpackv32(  byte[] in, int n,  int[] out, int b);
+  public native static int p4nenc128v32(      int[] in, int n, byte[] out);
+  public native static int p4ndec128v32(     byte[] in, int n,  int[] out);
+  public native static int p4nenc256v32(      int[] in, int n, byte[] out);
+  public native static int p4ndec256v32(     byte[] in, int n,  int[] out);
 
-  public native static int bitdpackv32(    int[] in, int n, byte[] out, int start, int b);
-  public native static int bitdunpackv32( byte[] in, int n,  int[] out, int start, int b);
+  public native static int p4nddec32(        byte[] in, int n,  int[] out, int start);
+  public native static int p4nddec128v32(    byte[] in, int n,  int[] out, int start);
+  public native static int p4nddec256v32(    byte[] in, int n,  int[] out, int start);
+
+  public native static int p4nd1dec32(       byte[] in, int n,  int[] out, int start);
+  public native static int p4nd1dec128v32(   byte[] in, int n,  int[] out, int start);
+  public native static int p4nd1dec256v32(   byte[] in, int n,  int[] out, int start);
   
-  public native static int bitd1packv32(   int[] in, int n, byte[] out, int start, int b);
-  public native static int bitd1unpackv32(byte[] in, int n,  int[] out, int start, int b);
+  // bitpack scalar
+  public native static int bitpack32(         int[] in, int n, byte[] out, int b);
+  public native static int bitunpack32(      byte[] in, int n,  int[] out, int b);
+
+  public native static int bitdpack32(        int[] in, int n, byte[] out, int start, int b);
+  public native static int bitdunpack32(     byte[] in, int n,  int[] out, int start, int b);
+  
+  public native static int bitd1pack32(    	  int[] in, int n, byte[] out, int start, int b);
+  public native static int bitd1unpack32( 	 byte[] in, int n,  int[] out, int start, int b);
+
+  // bit packing SIMD: single block limited to 128/256 integers
+  public native static int bitpack128v32(     int[] in, int n, byte[] out, int b);
+  public native static int bitunpack128v32(  byte[] in, int n,  int[] out, int b);
+
+  public native static int bitdpack128v32(    int[] in, int n, byte[] out, int start, int b);
+  public native static int bitdunpack128v32( byte[] in, int n,  int[] out, int start, int b);
+  
+  public native static int bitd1pack128v32(   int[] in, int n, byte[] out, int start, int b);
+  public native static int bitd1unpack128v32(byte[] in, int n,  int[] out, int start, int b);
 
   // bitutil
-  public native static int bit32(         int[] in, int n);
-  public native static int bitd32(        int[] in, int n, int start);
-  public native static int bitd132(       int[] in, int n, int start);
+  public native static int bit32(   int[] in, int n);
+  public native static int bitd32(  int[] in, int n, int start);
+  public native static int bitd132( int[] in, int n, int start);
 
   static {
     try {
