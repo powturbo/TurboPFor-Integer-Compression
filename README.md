@@ -118,16 +118,15 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 | 8.594.342.216| 35.9|11.50|1307|1594|libfor|
 |23.918.861.764|100.0|32.00|1456|1481|Copy|
 
-
+Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
-| 3.214.763.689| 13.44| 4.30| 339.90| 837.69|**VSimple 64Ki**|
+| 3.164.940.562| 13.2|**4.23**|**314.13**|**1456**|**TurboPFor 64Ki**|
+| 3.273.213.464| 13.7| 4.38|**349.38**|**1723.98**|**TurboPFor256 64Ki**|
 | 3.958.888.197| 16.55| 5.30| 279.19| 618.60|[lz4](#lz4)+DT 64Ki|
 | 6.074.995.117| 25.40| 8.13| 494.70| 729.97|[blosc_lz4](#blosc) 64Ki| 
 | 8.773.150.644| 36.68|11.74| 637.83|1301.05|blosc_lz 64Ki|
 
-
-Ki=1024 Integers. 64Ki = 256k bytes<br>
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" tested w/ lz4 compressor+vectorized shuffle
 
@@ -331,4 +330,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  05 JAN 2017
+Last update:  06 JAN 2017
