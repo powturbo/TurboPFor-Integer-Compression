@@ -36,7 +36,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data w/ zero decompression
- - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (~10-15%)!. 
+ - :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
  - **Novel** Implicit skips with zero extra overhead
  - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
