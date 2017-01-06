@@ -26,7 +26,14 @@
 #include <stdio.h>
 #include "bitpack.h"
 #include "bitutil.h" 
- 
+
+#define BITNPACK(in, n, out, csize, usize) { uint_t *ip; \
+  for(ip = in,in_=in+n; ip < _in;) { unsigned iplen = in_ - ip; if(iplen > csize) iplen = cize;		__builtin_prefetch(ip+512);\
+    unsigned b; BITSIZE32(in, n, b); *out++ = b; out = TEMPLATE2(bitpack, usize)(ip, csize, out);    					\
+	iplen += csize;\
+  } return out;\
+}
+
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
@@ -43,6 +50,10 @@ unsigned char *bitpack64(uint64_t           *__restrict in, unsigned n, unsigned
 #undef IPPB 
 #undef SRC
 #undef SRC1
+
+/*unsigned char *bitnpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } 
+unsigned char *bitnpack16(unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned short *ip; BITNPACK(in, n, out, 128, 16); } 
+unsigned char *bitnpack64(uint64_t           *__restrict in, unsigned n, unsigned char *__restrict out) { uint64_t *ip;       BITNPACK(in, n, out, 128, 64); }*/
 
 #define IPPB( __ip,__x, __parm) as = *__ip-start; start=*__ip++
 #define SRC( __ip,__x) as
@@ -91,6 +102,14 @@ unsigned char *bitzpack32(unsigned       *__restrict in, unsigned n, unsigned ch
 #undef IPPB
 #undef SRC
 #undef SRC1
+
+/*unsigned char *bitndpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } 
+unsigned char *bitnd1pack32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } 
+unsigned char *bitnfpack16(unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned short *ip; BITNPACK(in, n, out, 128, 16); } 
+unsigned char *bitnf1pack64(uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out) { uint64_t *ip;       BITNPACK(in, n, out, 128, 64); }
+unsigned char *bitnzpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } */
+
+
 //-----------------------------------------------------------------------------------------------
 #pragma clang diagnostic pop
   #else
