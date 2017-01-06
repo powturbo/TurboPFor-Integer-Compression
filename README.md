@@ -119,6 +119,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 |23.918.861.764|100.0|32.00|1456|1481|Copy|
 
 Block size: 64Ki = 256k bytes. Ki=1024 Integers
+
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
 | 3.164.940.562| 13.2|**4.23**|**314.13**|**1456**|**TurboPFor 64Ki**|
