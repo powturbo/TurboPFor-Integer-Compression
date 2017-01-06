@@ -75,9 +75,6 @@ unsigned char *p4nenc128v32(  unsigned       *__restrict in, unsigned n, unsigne
 unsigned char *p4nenc256v32(  unsigned       *__restrict in, unsigned n, unsigned char *__restrict out); 
 unsigned char *p4nenc64(      uint64_t       *__restrict in, unsigned n, unsigned char *__restrict out);
 
-unsigned char *p4nencx16(     unsigned short *__restrict in, unsigned n, unsigned char *__restrict out);// Direct access 
-unsigned char *p4nencx32(     unsigned       *__restrict in, unsigned n, unsigned char *__restrict out);
-
 unsigned char *pn4denc16(     unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start);
 unsigned char *pn4denc32(     unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start);
 unsigned char *pn4denc128v32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start); // SIMD (Vertical bitpacking)
