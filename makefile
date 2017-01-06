@@ -88,7 +88,7 @@ CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS
 all: icbench idxcr idxqry idxseg
 
 cpp: vp4c.c
-	$(CC) $(MARCH) -E vp4c.c
+	$(CC) -mavx2 $(MARCH) -E vp4c.c
 
 bitpack.o: bitpack.c bitpack.h bitpack64_.h
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c bitpack.c
@@ -98,9 +98,6 @@ varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h
 
 idxqryp.o: idxqry.c
 	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
-
-vp4c.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) -DP4NSIMD -c vp4c.c -o vp4c.o
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
@@ -172,7 +169,7 @@ ifeq ($(NSIMD),0)
 ICLIB+=bitpack128v.o bitunpack128v.o
 
 ifeq ($(AVX2),1)
-ICLIB+=bitpack256v.o bitunpack256v.o vp4c256v.o vp4d256v.o
+ICLIB+=bitpack256v.o bitunpack256v.o
 endif
 endif
 #---------------------
