@@ -249,7 +249,12 @@ void plugsprt(void) {
   struct plugg *pg; 
   printf("Codec group:\n");
   for(pg = plugg; pg < plugg+PLUGGSIZE; pg++) 
-    printf("%-16s %s %s\n", pg->id, pg->desc);
+    printf("%-16s %s %s\n", pg->id, pg->desc, pg->s);
+
+  printf("\nPlugins:\n");
+  for(gs = plugs; gs->id >= 0; gs++) 
+    if(gs->codec)
+      { printf("%s %s\n", gs->s, gs->lev?gs->lev:""); fflush(stdout);}
 }
 
 void plugsprtv(FILE *f, int fmt) {
