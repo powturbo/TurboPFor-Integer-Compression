@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2015
+    Copyright (C) powturbo 2013-2017
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -60,20 +60,22 @@ class jicbench {
     int b=0, bnum = 125000000; // 16 billions integers. 64 GB
     for (int i = 0; i < bnum; ++i) { 
       //ic.vbenc32(in,  128, out);				 
-      //ic.vbennc32(in, 128, out);
+      //ic.vsenc32(in,  128, out);				 
+      //ic.p4nenc32(in, 128, out);
 
       b = ic.bit32(in, 128);
-      ic.bitpackv32(  in, 128, out, b);
+      ic.bitpack128v32(  in, 128, out, b);
     }
 
     long t = System.currentTimeMillis() - t0;    
     System.out.println("encode time'" + t + "'");
     t0 = System.currentTimeMillis();	
     for (int i = 0; i < bnum; ++i) { 
-      //ic.vbenc32(out,  128, cpy);				 
+      //ic.vbenc32(out, 128, cpy);				 
       //ic.vsenc32(out, 128, cpy);
+      //ic.p4nenc32(in, 128, out);
 
-      ic.bitunpackv32(out, 128, cpy, b);
+      ic.bitunpack128v32(out, 128, cpy, b);
     }
 
     for (int i = 0; i < 128; ++i) { 
