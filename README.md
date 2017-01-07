@@ -208,6 +208,11 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
         ./icbench file
 
+  - Text file: 1 integer per line (Example:[ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data)
+
+
+        ./icbench -eBENCH -fts ts.txt
+        ./icbench -eBENCH -ft  lat.txt
 
 
   - Multiblock sorted (unique) data file like gov2 file from [DocId data set](#DocId data set)
