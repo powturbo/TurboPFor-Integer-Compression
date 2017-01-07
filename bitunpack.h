@@ -52,6 +52,7 @@ static ALWAYS_INLINE void      bitsetx32(const unsigned char *__restrict in, uns
 // ---------------- DFOR : integrated bitpacking, for delta packed SORTED array (Ex. DocId in inverted index) -------------------------------
 // start < out[0] < out[1] < ... < out[n-2] < out[n-1] < (1<<N)-1,    N=32,16
 // out[0] = start + in[0] + 1;  out[1] = out[0] + in[1] + 1; ... ;  out[i] = out[i-1] + in[i] +  1
+unsigned char *bitd1unpack64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t start, unsigned b);
 unsigned char *bitd1unpack32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1unpack16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
 
@@ -59,6 +60,7 @@ unsigned char *bitd1unpack16( const unsigned char *__restrict in, unsigned n, un
 // out[0] = start + in[0];  out[1] = out[0] + in[1]; ... ;  out[i] = out[i-1] + in[i]
 unsigned char *bitdunpack32(  const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 unsigned char *bitdunpack16(  const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned start, unsigned b);
+unsigned char *bitdunpack64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t start, unsigned b);
 
 unsigned char *bitzunpack32(  const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start, unsigned b);
 
