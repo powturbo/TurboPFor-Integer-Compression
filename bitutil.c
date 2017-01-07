@@ -171,8 +171,9 @@ unsigned bitd132(unsigned *in, unsigned n, unsigned start) {
   return bsr32(b); 
 }
 
-void bitund32( unsigned *p, unsigned n, unsigned x) { BITUNDELTA(p, n, x, 0); }
-void bitund64( uint64_t *p, unsigned n, uint64_t x) { BITUNDELTA(p, n, x, 0); }
+void bitund16( unsigned short *p, unsigned n, unsigned x) { BITUNDELTA(p, n, x, 0); }
+void bitund32( unsigned       *p, unsigned n, unsigned x) { BITUNDELTA(p, n, x, 0); }
+void bitund64( uint64_t       *p, unsigned n, uint64_t x) { BITUNDELTA(p, n, x, 0); }
 
 void bitund132(unsigned *p, unsigned n, unsigned x) { 
     #ifdef __SSE2__
@@ -192,6 +193,15 @@ void bitund132(unsigned *p, unsigned n, unsigned x) {
   BITUNDELTA(p, n, x, 1); 
     #endif
 }
+
+void bitund116(unsigned short *p, unsigned n, unsigned x) { 
+  BITUNDELTA(p, n, x, 1); 
+}
+
+void bitund164(uint64_t *p, unsigned n, unsigned x) { 
+  BITUNDELTA(p, n, x, 1); 
+}
+
 
 void bitundx32(unsigned *p, unsigned n, unsigned x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
 void bitundx64(uint64_t *p, unsigned n, uint64_t x, unsigned inc) { BITUNDELTA(p, n, x, inc); }
