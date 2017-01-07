@@ -56,16 +56,16 @@ unsigned char *p4d1enc64(    uint64_t       *__restrict in, unsigned n, unsigned
 unsigned char *p4d1encx16(   unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start);// Direct access 
 unsigned char *p4d1encx32(   unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start);
 
-// same as p4enc, but with b and bx as parameters. Call after _p4d16,_p4d32,_p4d64
-unsigned char *_p4enc16(     unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
-unsigned char *_p4enc32(     unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); 
-unsigned char *_p4enc128v32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical bitpacking)
-unsigned char *_p4enc256v32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); 
-unsigned char *_p4enc64(     uint64_t       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
+// same as p4enc, but with b and bx as parameters. Call after _p4bitsXX
+ALWAYS_INLINE unsigned char *_p4enc16(     unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4enc32(     unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); 
+ALWAYS_INLINE unsigned char *_p4enc128v32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical bitpacking)
+ALWAYS_INLINE unsigned char *_p4enc256v32( unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); 
+ALWAYS_INLINE unsigned char *_p4enc64(     uint64_t       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
 // calculate the best bit sizes b and bx, return b. 
-unsigned _p4bits16(          unsigned short *__restrict in, unsigned n, unsigned *pbx);
-unsigned _p4bits32(          unsigned       *__restrict in, unsigned n, unsigned *pbx);
-unsigned _p4bits64(          uint64_t       *__restrict in, unsigned n, unsigned *pbx);
+ALWAYS_INLINE unsigned _p4bits16(          unsigned short *__restrict in, unsigned n, unsigned *pbx);
+ALWAYS_INLINE unsigned _p4bits32(          unsigned       *__restrict in, unsigned n, unsigned *pbx);
+ALWAYS_INLINE unsigned _p4bits64(          uint64_t       *__restrict in, unsigned n, unsigned *pbx);
 
 //************************** n unlimited ************************************************************************************
 // compress integer array with n values to the buffer out. Return value = end of compressed buffer out
