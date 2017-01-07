@@ -100,13 +100,54 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define _BITUNPACKD  bitd1unpack
 #define  BITUNDD     bitund1
 #include "vp4d.c"
-                                 
+
+
+#define USIZE 16
+#define _P4DEC      _p4ddec			//delta0
+#define  P4DEC       p4ddec
+#define  P4NDEC      p4nddec
+#define  P4NDECS     p4ddec
+#define  BITUNPACKD  bitdunpack
+#define _BITUNPACKD _bitdunpack
+#define  BITUNDD     bitund
+#include "vp4d.c"
+
+#define _P4DEC      _p4d1dec        //delta1
+#define  P4DEC       p4d1dec
+#define  P4NDEC      p4nd1dec
+#define  P4NDECS     p4d1dec
+#define  BITUNPACKD  bitd1unpack
+#define _BITUNPACKD  bitd1unpack
+#define  BITUNDD     bitund1
+#include "vp4d.c"
+
+#define USIZE 64
+#define _P4DEC      _p4ddec			//delta0
+#define  P4DEC       p4ddec
+#define  P4NDEC      p4nddec
+#define  P4NDECS     p4ddec
+#define  BITUNPACKD  bitdunpack
+#define _BITUNPACKD _bitdunpack
+#define  BITUNDD     bitund
+#include "vp4d.c"
+
+#define _P4DEC      _p4d1dec        //delta1
+#define  P4DEC       p4d1dec
+#define  P4NDEC      p4nd1dec
+#define  P4NDECS     p4d1dec
+#define  BITUNPACKD  bitd1unpack
+#define _BITUNPACKD  bitd1unpack
+#define  BITUNDD     bitund1
+#include "vp4d.c"
+
+                         
 #undef _P4DEC
 #undef  P4DEC
 #undef  BITUNPACK
 #undef  BITUNDD
 #undef  P4DELTA
 
+#define USIZE 32
 // SIMD -------------
   #ifndef NSIMD
     #ifdef __SSSE3__
@@ -185,9 +226,13 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #else
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
-unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
+#pragma GCC push_options
+#pragma GCC optimize ("align-functions=16")
+
+ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
   uint_t ex[P4D_MAX+8];
-  if(!(b & 1)) return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b>>1);
+  if(!(b & 1)) 
+    return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b>>1);
 
   b >>= 1;
     #ifdef VSIZE 
@@ -273,7 +318,31 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
 unsigned char *TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  
   uint_t *op;
   for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {             __builtin_prefetch(in+512);  
-    in = TEMPLATE2(P4DEC, USIZE)(in, CSIZE, op P4DELTA(start));                         
+    unsigned b = *in++,bx,i;
+  
+    if(likely(!(b & 0x80))) {
+      if(b & 1)
+	    bx = *in++;
+      in = TEMPLATE2(_P4DEC, USIZE)(in, CSIZE, op P4DELTA(start), b, bx );
+    } else {  
+      uint_t ex[P4D_MAX+8]; 
+	  b  = (b & 0x7f)>>1;
+      bx = *in++;
+      in = TEMPLATE2(BITUNPACK, USIZE)(in, CSIZE, op, b); 
+      in = TEMPLATE2(vbdec,     USIZE)(in, bx, ex);
+      for(i = 0; i != (bx & ~3); i += 4) { 
+	    op[in[i  ]] |= ex[i  ] << b;
+	    op[in[i+1]] |= ex[i+1] << b;
+	    op[in[i+2]] |= ex[i+2] << b;
+	    op[in[i+3]] |= ex[i+3] << b;
+ 	  }
+	  for(;i < bx; i++) 
+	    op[in[i]] |= ex[i] << b;
+      in += bx;
+        #ifdef BITUNDD
+      TEMPLATE2(BITUNDD, USIZE)(op, CSIZE, start);
+	    #endif
+    }															//   in = TEMPLATE2(P4DEC, USIZE)(in, CSIZE, op P4DELTA(start));                         
     P4DELTA_(start = op[CSIZE-1]); 											
   }
   return TEMPLATE2(P4NDECS, USIZE)(in, n&(CSIZE-1), op P4DELTA(start)); 
