@@ -27,14 +27,14 @@
  
 #include "conf.h"
 #include "bitpack.h"
-#include "vint.h"		//#include "vsimple.h"
+#include "vint.h"		
 #include "bitutil.h"
 #include "vp4c.h"
 #undef P4DELTA
 
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 //------------------------------------------
-#define EXCEP 1 // Hybrid TurboPFor : 1=Variable byte (2=Vsimple, not used)
+#define EXCEP 1 // Hybrid TurboPFor : 1=Variable byte 
 #define _P4BITS _p4bits
 
 //-- Scalar
@@ -43,18 +43,18 @@
 #define  P4NENC   p4nenc
 #define  BITPACK  bitpack
 
-#define USIZE 16
-#include "vp4c.c"
-
 #define USIZE 32
 #include "vp4c.c"
 
 #define USIZE 64
 #include "vp4c.c"
 
+#define USIZE 16
+#include "vp4c.c"
+
 #define P4DELTA 0
 #define  P4DENC   p4denc
-#define  P4NENC   p4dnenc
+#define  P4NENC   p4ndenc
 #define  P4NENCS  p4denc
 
 #define USIZE 16
@@ -68,7 +68,7 @@
 
 #define P4DELTA 1
 #define  P4DENC   p4d1enc
-#define  P4NENC   p4d1nenc
+#define  P4NENC   p4nd1enc
 #define  P4NENCS  p4d1enc
 
 #define USIZE 16
@@ -167,61 +167,55 @@
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
 
+#pragma GCC push_options
+#pragma GCC optimize ("align-functions=16")
+
 #define uint_t TEMPLATE3(uint, USIZE, _t)
+
 #ifdef VSIZE
   #define CSIZE VSIZE
 #else
   #define CSIZE 128
 #endif
 
-#define VSC(a)
-
   #ifndef P4DELTA
 
-  #ifdef _P4BITS 							
-unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-  uint_t *ip; int b=0,r; int i,ml,l; 
-  unsigned x, bx, cnt[USIZE+1] = {0}, _vb[USIZE*2+5] = {0}, *vb=&_vb[USIZE],fx=0, b64=(n+7)/8;
-    #if EXCEP >= 2
-  unsigned long long smap[USIZE+1][P4D_MAX/64]={0},xmap[P4D_MAX/64]={0}; unsigned c; 
-    #endif
+    #ifdef _P4BITS 	
+ALWAYS_INLINE unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
+    #if EXCEP == 1
+  unsigned _vb[USIZE*2+5] = {0}, *vb=&_vb[USIZE];
+	#endif
+  unsigned cnt[USIZE+1] = {0}, x, bx, bmp8=(n+7)/8;
+  uint_t *ip, u=0; 
+  int b,i,ml,l,fx=0;
 	
-  #define CNTE { ++cnt[r=TEMPLATE2(bsr, USIZE)(*ip)]; VSC(c = ip-in; smap[r][c>>6] |= (1ull << (c&0x3f))); b |= *ip++; }
-  for(ip = in; ip != in+(n&~3); ) { CNTE; CNTE; CNTE; CNTE; }
-  while(ip != in+n) CNTE;
+  #define CNTE(i) { ++cnt[TEMPLATE2(bsr, USIZE)(ip[i])], u |= ip[i]; }
+  for(ip = in; ip != in+(n&~3); ip+=4) { CNTE(0); CNTE(1); CNTE(2); CNTE(3); }
+  for(;ip != in+n;ip++) CNTE(0);
 
-  b  = TEMPLATE2(bsr, USIZE)(b);
+  b  = TEMPLATE2(bsr, USIZE)(u);
   bx = b; 
   ml = PAD8(n*b)+1; x = cnt[b];
  
     #if EXCEP == 1
-#define VBB(_x_,_b_) vb[_b_-7]+=_x_; vb[_b_-15]+=_x_*2; vb[_b_-19]+=_x_*3; vb[_b_-25]+=_x_*4;
+  #define VBB(_x_,_b_) vb[_b_-7]+=_x_; vb[_b_-15]+=_x_*2; vb[_b_-19]+=_x_*3; vb[_b_-25]+=_x_*4;
   int vv = x; VBB(x,b); 
-    #elif EXCEP == 2
-  for(c = 0; c < (n+63)/64;c++) xmap[c] = smap[b][c];
     #else
-  ml -= 2+b64;
+  ml -= 2+bmp8;
 	#endif
   for(i = b-1; i >= 0; --i) { 
       #if EXCEP == 1
-        l = PAD8(n*i) + 2+b64 + PAD8(x*(bx-i)); 
+        l = PAD8(n*i) + 2+bmp8 + PAD8(x*(bx-i)); 
     int v = PAD8(n*i) + 2 + x + vv, vx = 0; 
-	x += cnt[i]; vv+=cnt[i]+vb[i]; VBB(cnt[i],i);
-    if(v < l) l=v,vx=1; if(unlikely(l < ml)) ml=l,b=i,fx=vx; 
-	  #elif EXCEP == 2
-	uint_t tin[P4D_MAX],*tp=tin;
-	for(ip=in,c = 0; c < (n+63)/64;c++,ip+=64) {
-      unsigned long long z = xmap[c];
-      while(z) { unsigned x = ctz64(z); *tp++ = ip[x]; z ^= (1ull<<x); }
-	}
-	unsigned char out[2048],*op = TEMPLATE2(vsenc, USIZE)(tin, n, out); unsigned vv = op - out;
-        l = PAD8(n*i) + PAD8(x*(bx-i))+2+b64; 
-    int v = PAD8(n*i) + 2 + x + vv, vx = 0; 
-    if(v < l) l=v,vx=1; if(unlikely(l < ml)) ml=l,b=i,fx=vx; 
-	x += cnt[i]; 
-    for(c = 0; c < (n+63)/64;c++) xmap[c] |= smap[i][c];
+	x  += cnt[i]; 
+    vv +=cnt[i]+vb[i]; 
+    VBB(cnt[i],i);
+    int fi = l < ml;  ml = fi?l:ml; b = fi?i:b; fx=fi?0:fx;
+        fi = v < ml;  ml = fi?v:ml; b = fi?i:b; fx=fi?1:fx;
       #else 
-    l = PAD8(n*i) + PAD8(x*(bx-i)); x += cnt[i]; unlikely(l < ml)?(ml=l,b=i):(ml=ml,b=b);
+    l = PAD8(n*i) + PAD8(x*(bx-i)); 
+    x += cnt[i]; 
+    unlikely(l < ml)?(ml=l,b=i):(ml=ml,b=b);
 	  #endif
   } 																						//fx = 0;
     #if EXCEP > 0
@@ -231,9 +225,9 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
     #endif
   return b;
 } 
-  #endif
+   #endif
  
-unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
+ALWAYS_INLINE unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
   if(!bx) 
     return TEMPLATE2(BITPACK, USIZE)(in, n,	out, b);
 
@@ -281,13 +275,18 @@ unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsign
 unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) {
   uint_t *ip; 
   for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
-    out = TEMPLATE2(P4ENC, USIZE)(ip, CSIZE, out);    					
+    unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(ip, CSIZE, &bx); 									
+      #if EXCEP > 0
+    if(bx <= USIZE) { P4SAVE(out, b, bx); } else *out++= 0x80|b<<1;									
+      #else
+    P4SAVE(out, b, bx); 
+      #endif
+    out = TEMPLATE2(_P4ENC, USIZE)(ip, CSIZE, out, b, bx);  // out = TEMPLATE2(P4ENC, USIZE)(ip, CSIZE, out);    					
   }                   
   return TEMPLATE2(p4enc, USIZE)(ip, n&(CSIZE-1), out); 
 }
-
   #else
-unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { if(!n) return out;
+ALWAYS_INLINE unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { if(!n) return out;
   uint_t _in[P4D_MAX+8];
   TEMPLATE2(bitdelta, USIZE)(in, n, _in, start, P4DELTA);
   return TEMPLATE2(P4ENC, USIZE)(_in, n, out);
@@ -295,18 +294,21 @@ unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
 
 unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
   uint_t *ip;
-
-  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	//__builtin_prefetch(ip+512);
+  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
     uint_t _in[P4D_MAX+8];
     TEMPLATE2(bitdelta, USIZE)(ip, CSIZE, _in, start, P4DELTA);
-    out = TEMPLATE2(P4ENC, USIZE)(_in, CSIZE, out);                
+    unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
+      #if EXCEP > 0
+    if(bx <= USIZE) { P4SAVE(out, b, bx); } else *out++= 0x80|b<<1;									
+      #else
+    P4SAVE(out, b, bx); 
+      #endif
+    out = TEMPLATE2(_P4ENC, USIZE)(_in, CSIZE, out, b, bx);  // out = TEMPLATE2(P4ENC, USIZE)(_in, CSIZE, out);                
     start = ip[CSIZE-1]; 					
   }                   
   return TEMPLATE2(P4NENCS, USIZE)(ip, n&(CSIZE-1), out, start); 
 }
   #endif
-
-
 
 #pragma clang diagnostic pop
 #endif
