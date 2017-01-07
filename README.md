@@ -216,6 +216,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 
   - Multiblock sorted (unique) data file like gov2 file from [DocId data set](#DocId data set)
+    Block format: [n: #of Ids] [Id1] [Id2] ... [IdN] (32 bits Ids)
 
 
         ./icbench -fS -r gov2.sorted
