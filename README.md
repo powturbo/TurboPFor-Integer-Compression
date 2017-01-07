@@ -208,14 +208,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
         ./icbench file
 
-  - Text file: 1 integer per line (Example:[ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data)
+  - Text file: 1 integer per line. (Example:[ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
 
         ./icbench -eBENCH -fts ts.txt
         ./icbench -eBENCH -ft  lat.txt
 
 
-  - Multiblocks of 32 bits elements. Example gov2 from [DocId data set](#DocId data set))
+  - Multiblocks of 32 bits elements. (Example gov2 from [DocId data set](#DocId data set))
     Block format: [n: #of Ids] [Id1] [Id2] ... [IdN]
 
 
