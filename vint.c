@@ -277,11 +277,11 @@ uint_t TEMPLATE2(VBDGETX, USIZE)(unsigned char  *__restrict in, unsigned idx, ui
 
 unsigned TEMPLATE2(VBDGETGEQ, USIZE)(unsigned char **__restrict in, unsigned n, unsigned idx, uint_t *key, uint_t start ) { 
   unsigned i=0;
-  unsigned char *ip;
+  unsigned char *ip=*in;
   uint_t x;
     #if USIZE < 64
   if(!idx) {
-    unsigned long long u; _vbget64(in, u, ;); x = u>>1; start += x+1;
+    unsigned long long u; _vbget64(ip, u, ;); x = u>>1; start += x+1;
     if((u & 1) && start == *key) { *in = ip; return 0; }
     i++; 
   }
