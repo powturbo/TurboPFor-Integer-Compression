@@ -1124,10 +1124,10 @@ unsigned befgen(unsigned char **_in, int fmt, unsigned isize, FILE *fi) {
  #define LSIZE 1024
   char s[LSIZE+1]; 
   switch(fmt) {
-    case T_TXT:
+    case T_TXT:															if(verbose) printf("reading text file\n");	
       while(fgets(s, LSIZE, fi)) {
-        s[strlen(s) - 1] = 0;										
-        unsigned long long u = strtoull(s, NULL, 10) - mdelta;
+        s[strlen(s) - 1] = 0;					                      //printf("%5s,", s);					
+        unsigned long long u = strtoull(s, NULL, 10) - mdelta;   
         IPUSH(in,n,isize,nmax,u);		
       }  
       break;
