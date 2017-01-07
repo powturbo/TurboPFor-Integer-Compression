@@ -11,7 +11,7 @@ CXX ?= g++
 #CC=clang
 #CXX=clang++
 
-DDEBUG=-DNDEBUG -s
+DDEBUG=-DNDEBUG 
 #DDEBUG=-g
 
 MARCH=-march=native
@@ -101,6 +101,12 @@ idxqryp.o: idxqry.c
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
+
+vp4c.o: vp4c.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vp4c.c
+
+vp4d.o: vp4d.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vp4d.c
 
 #-------------------------------------------------------------------
 ifeq ($(NCODEC1), 0)
