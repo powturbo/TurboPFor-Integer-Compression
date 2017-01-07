@@ -33,10 +33,10 @@ extern "C" {
 // decompress a previously (with p4enc32) 32/64 bits packed array. Return value = end of packed buffer in 
 //-- scalar. (see p4getx32 for direct access)
 // b and bx specified (not stored within the compressed stream header)
-unsigned char *_p4dec16(      unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b, unsigned bx);
-unsigned char *_p4dec32(      unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned bx);
-unsigned char *_p4dec128v32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
-unsigned char *_p4dec64(      unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4dec16(      unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4dec32(      unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4dec128v32(  unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+ALWAYS_INLINE unsigned char *_p4dec64(      unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b, unsigned bx);
 
 // 
 unsigned char *p4dec16(       unsigned char *__restrict in, unsigned n, unsigned short *__restrict out);
@@ -47,11 +47,11 @@ unsigned char *p4dec64(       unsigned char *__restrict in, unsigned n, uint64_t
 //------ Delta decoding --------------------------- Return value = end of packed input buffer in ---------------------------
 //-- Increasing integer lists. out[i] = out[i-1] + in[i]          	   
 // b and bx specified
-unsigned char *_p4ddec16(     unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned bx);
-unsigned char *_p4ddec32(     unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
-unsigned char *_p4ddec128v32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
-unsigned char *_p4ddec256v32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
-unsigned char *_p4ddec64(     unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4ddec16(     unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4ddec32(     unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4ddec128v32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4ddec256v32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4ddec64(     unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, unsigned bx);
 
 // Low level: n limited to P4D_MAX
 unsigned char *p4ddec16(      unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
@@ -62,11 +62,11 @@ unsigned char *p4ddec64(      unsigned char *__restrict in, unsigned n, uint64_t
 
 //-- Strictly increasing (never remaining constant or decreasing) integer lists. out[i] = out[i-1] + in[i] +  1
 // b and bx specified (see idxcr.c/idxqry.c for an example)
-unsigned char *_p4d1dec16(    unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned bx);
-unsigned char *_p4d1dec32(    unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
-unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
-unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
-unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4d1dec16(    unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4d1dec32(    unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx);
+ALWAYS_INLINE unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+ALWAYS_INLINE unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+ALWAYS_INLINE unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, unsigned bx);
 
 // Low level: n limited to P4D_MAX
 unsigned char *p4d1dec16(     unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
