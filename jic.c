@@ -28,9 +28,7 @@
 #include "vint.h"
 #include "vsimple.h"
 #include "bitpack.h"
-#include "bitunpack.h"
-#include "vp4c.h"
-#include "vp4d.h"
+#include "vp4.h"
 
 #include "jic.h"
 
