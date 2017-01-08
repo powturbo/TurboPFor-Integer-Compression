@@ -26,10 +26,10 @@
 #include <stdint.h>
 
 #include "conf.h"
-#include "bitunpack.h"
 #include "bitutil.h"
+#include "bitpack.h"
 #include "vint.h"				//#include "vsimple.h"
-#include "vp4d.h"
+#include "vp4.h"
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
