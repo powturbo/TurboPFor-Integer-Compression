@@ -29,7 +29,7 @@
 #include "bitpack.h"
 #include "vint.h"		
 #include "bitutil.h"
-#include "vp4c.h"
+#include "vp4.h"
 #undef P4DELTA
 
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
