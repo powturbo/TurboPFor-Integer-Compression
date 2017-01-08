@@ -25,6 +25,3 @@
 [submodule "ext/FastPFor"]
 	path = ext/FastPFor
 	url = https://github.com/lemire/FastPFor
-[submodule "c-blosc"]
-	path = c-blosc
-	url = https://github.com/Blosc/c-blosc.git
