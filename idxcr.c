@@ -35,8 +35,8 @@
 
 #include "conf.h"
 #include "vint.h"
-#include "vp4c.h"
 #include "bitpack.h"
+#include "vp4.h"
 #include "idx.h"
 
 #ifdef NSIMD
