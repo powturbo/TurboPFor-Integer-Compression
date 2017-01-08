@@ -2000,3 +2000,42 @@
   BITUNBLK128V32_64(ip, 31, op, parm);\
 }
 
+#define BITUNPACK128V32(__ip, __nbits, __op, _parm_) { __m128i mv,*_ov=(__m128i *)__op,*_iv=(__m128i *)__ip; \
+  switch(__nbits&0x3f) {\
+    case  0: BITUNPACK0(_parm_);               BITUNPACK128V32_0( _iv, _ov, _parm_); break;\
+    case  1: mv = _mm_set1_epi32((1u<< 1)-1);  BITUNPACK128V32_1( _iv, _ov, _parm_); break;\
+    case  2: mv = _mm_set1_epi32((1u<< 2)-1);  BITUNPACK128V32_2( _iv, _ov, _parm_); break;\
+    case  3: mv = _mm_set1_epi32((1u<< 3)-1);  BITUNPACK128V32_3( _iv, _ov, _parm_); break;\
+    case  4: mv = _mm_set1_epi32((1u<< 4)-1);  BITUNPACK128V32_4( _iv, _ov, _parm_); break;\
+    case  5: mv = _mm_set1_epi32((1u<< 5)-1);  BITUNPACK128V32_5( _iv, _ov, _parm_); break;\
+    case  6: mv = _mm_set1_epi32((1u<< 6)-1);  BITUNPACK128V32_6( _iv, _ov, _parm_); break;\
+    case  7: mv = _mm_set1_epi32((1u<< 7)-1);  BITUNPACK128V32_7( _iv, _ov, _parm_); break;\
+    case  8: mv = _mm_set1_epi32((1u<< 8)-1);  BITUNPACK128V32_8( _iv, _ov, _parm_); break;\
+    case  9: mv = _mm_set1_epi32((1u<< 9)-1);  BITUNPACK128V32_9( _iv, _ov, _parm_); break;\
+    case 10: mv = _mm_set1_epi32((1u<<10)-1);  BITUNPACK128V32_10(_iv, _ov, _parm_); break;\
+    case 11: mv = _mm_set1_epi32((1u<<11)-1);  BITUNPACK128V32_11(_iv, _ov, _parm_); break;\
+    case 12: mv = _mm_set1_epi32((1u<<12)-1);  BITUNPACK128V32_12(_iv, _ov, _parm_); break;\
+    case 13: mv = _mm_set1_epi32((1u<<13)-1);  BITUNPACK128V32_13(_iv, _ov, _parm_); break;\
+    case 14: mv = _mm_set1_epi32((1u<<14)-1);  BITUNPACK128V32_14(_iv, _ov, _parm_); break;\
+    case 15: mv = _mm_set1_epi32((1u<<15)-1);  BITUNPACK128V32_15(_iv, _ov, _parm_); break;\
+    case 16: mv = _mm_set1_epi32((1u<<16)-1);  BITUNPACK128V32_16(_iv, _ov, _parm_); break;\
+    case 17: mv = _mm_set1_epi32((1u<<17)-1);  BITUNPACK128V32_17(_iv, _ov, _parm_); break;\
+    case 18: mv = _mm_set1_epi32((1u<<18)-1);  BITUNPACK128V32_18(_iv, _ov, _parm_); break;\
+    case 19: mv = _mm_set1_epi32((1u<<19)-1);  BITUNPACK128V32_19(_iv, _ov, _parm_); break;\
+    case 20: mv = _mm_set1_epi32((1u<<20)-1);  BITUNPACK128V32_20(_iv, _ov, _parm_); break;\
+    case 21: mv = _mm_set1_epi32((1u<<21)-1);  BITUNPACK128V32_21(_iv, _ov, _parm_); break;\
+    case 22: mv = _mm_set1_epi32((1u<<22)-1);  BITUNPACK128V32_22(_iv, _ov, _parm_); break;\
+    case 23: mv = _mm_set1_epi32((1u<<23)-1);  BITUNPACK128V32_23(_iv, _ov, _parm_); break;\
+    case 24: mv = _mm_set1_epi32((1u<<24)-1);  BITUNPACK128V32_24(_iv, _ov, _parm_); break;\
+    case 25: mv = _mm_set1_epi32((1u<<25)-1);  BITUNPACK128V32_25(_iv, _ov, _parm_); break;\
+    case 26: mv = _mm_set1_epi32((1u<<26)-1);  BITUNPACK128V32_26(_iv, _ov, _parm_); break;\
+    case 27: mv = _mm_set1_epi32((1u<<27)-1);  BITUNPACK128V32_27(_iv, _ov, _parm_); break;\
+    case 28: mv = _mm_set1_epi32((1u<<28)-1);  BITUNPACK128V32_28(_iv, _ov, _parm_); break;\
+    case 29: mv = _mm_set1_epi32((1u<<29)-1);  BITUNPACK128V32_29(_iv, _ov, _parm_); break;\
+    case 30: mv = _mm_set1_epi32((1u<<30)-1);  BITUNPACK128V32_30(_iv, _ov, _parm_); break;\
+    case 31: mv = _mm_set1_epi32((1u<<31)-1);  BITUNPACK128V32_31(_iv, _ov, _parm_); break;\
+    case 32: mv = _mm_set1_epi32((1ull<<32)-1);BITUNPACK128V32_32(_iv, _ov, _parm_); break;\
+	case 33 ... 63: break;\
+  }\
+}    
+
