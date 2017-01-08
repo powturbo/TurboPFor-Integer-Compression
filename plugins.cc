@@ -53,7 +53,6 @@
 #define CODEC0 1
   #endif
 
-
   #ifdef NCODEC1
 #define CODEC1 0
   #else
@@ -63,13 +62,24 @@
   #ifdef NCODEC2
 #define CODEC2 0
   #else
-#define CODEC2 0
+#define CODEC2 1
+  #endif
+
+  #ifdef LZTURBO
+#define C_LZTURBO    CODEC2
+  #else	
+#define C_LZTURBO    0
   #endif
 
   #ifdef NTRANSFORM
 #define TRANSFORM 0
   #else
 #define TRANSFORM 1
+  #endif
+  #ifdef BLOSC
+#define C_C_BLOSC    CODEC2
+  #else	
+#define C_C_BLOSC    0
   #endif
 
 enum { 
@@ -100,18 +110,13 @@ enum {
   TB_PACK256H,		
   TB_PACK256V,		
   TB_ELIASFANOV, 	
-
 #define C_BITSHUFFLE	CODEC1
   P_BITSHUFFLE,
-#define C_C_BLOSC		CODEC2
-  BS_LZ,
-  BS_LZ4, 
-  BS_ZLIB,
-  BS_LZ_1,
-  BS_LZ4_S1, 
-  BS_LZ4_1, 
-  BS_ZLIB_1,
-  BS_SHUFFLE, 	
+  P_BS_LZ,
+  P_BS_LZ4, 
+  P_BS_ZLIB,
+//P_BS_ZSTD,
+  P_BS_SHUFFLE, 	
 #define C_FASTPFOR		CODEC1
   FP_VBYTE,
   FP_FASTPFOR,
@@ -167,7 +172,7 @@ enum {
   TB_TP4V_32, 	
   TB_ZIGZAG_32, 	
   TB_DELTA_32, 	
-#define C_LZTURBO       CODEC2
+#define C_LZTURBO       0
   P_LZT,
   P_VSHUF,
   
@@ -185,8 +190,10 @@ enum {
 
 //-------------------------------------------------------------------------------
   #if C_C_BLOSC
-#include "ext/c-blosc2/blosc/shuffle.h"
-#include "ext/c-blosc2/blosc/blosc.h"
+#include "ext/c-blosc/blosc/shuffle.h"
+#include "ext/c-blosc/blosc/blosc.h"
+//#include "ext/c-blosc2/blosc/shuffle.h"
+//#include "ext/c-blosc2/blosc/blosc.h"
   #endif
 
   #if C_FASTPFOR
@@ -236,12 +243,10 @@ unsigned char *for_selectx( unsigned char *__restrict in, unsigned n, unsigned *
 #include "vint.h"       
 #include "vsimple.h"
 #include "bitpack.h"
-#include "bitunpack.h"
 #include "eliasfano.h"
 #include "bitutil.h"
 #include "transpose.h"
-#include "vp4c.h"
-#include "vp4d.h"
+#include "vp4.h"
 
   #endif
   
@@ -405,6 +410,9 @@ struct plugs plugs[] = {
   { SC_FORDA,	 	"SC_ForDA", 		C_SIMDCOMP, 	"",	"Simdcomp",				"",	"", 										"", 0,BLK_V128},
 
 // { CL_FASTPFORD1,	"CL.SIMDPFORD1", 	C_SIMDCOMP, 	"",	"Simdcomp",				"",	"", 										"", 0,BLK_V128},
+  { P_BS_LZ,  		"blosc_lz",			C_C_BLOSC, 			"",	"blosc",					"BSD license",		"https://github.com/Blosc/c-blosc", 						    "1,2,3,4,5,6,7,8,9", 0,BLK_SIZE }, 
+  { P_BS_LZ4,  		"blosc_lz4",		C_C_BLOSC, 			"",	"blosc",					"BSD license",		"https://github.com/Blosc/c-blosc", 						    "1,2,3,4,5,6,7,8,9", 0,BLK_SIZE }, 
+  { P_BS_ZLIB,  	"blosc_zlib",		C_C_BLOSC, 			"",	"blosc",					"BSD license",		"https://github.com/Blosc/c-blosc", 						    "1,2,3,4,5,6,7,8,9", 0,BLK_SIZE }, 
 
   { LF_FOR,			"LibFor_For", 		C_SIMDCOMP, 	"",	"LibFor",				"",	"", 										"", 0,BLK_V128},
   { LF_FORX,		"LibFor_ForDA",		C_SIMDCOMP, 	"",	"LibFor",				"",	"", 										"", 0,BLK_V128},
@@ -426,15 +434,15 @@ struct plugs plugs[] = {
   { LZ4_S1,  		"lz4_bitshufle",	C_LZ4, 			"",	"lz4+bitshuffle",					"BSD license",		"https://github.com/Cyan4973/lz4", 						    "", 0,BLK_SIZE }, 
   { LZ4_S4,  		"lz4_tp4",			C_LZ4, 			"",	"lz4+Nibble transpose",					"BSD license",		"https://github.com/Cyan4973/lz4", 							"", 0,BLK_SIZE }, 
   { LZ4_S8,  		"lz4_tp8",			C_LZ4, 			"",	"lz+byte transpose",					"BSD license",		"https://github.com/Cyan4973/lz4", 							"", 0,BLK_SIZE }, 
-  { P_ZLIB, 		"zlib", 			C_ZLIB, 		"1.2.8","zlib",					"zlib license",		"http://zlib.net\thttps://github.com/madler/zlib", 			"", 0,BLK_SIZE },
+  { P_ZLIB, 		"zlib", 			C_ZLIB, 		"","zlib",					"zlib license",		"http://zlib.net\thttps://github.com/madler/zlib", 			"", 0,BLK_SIZE },
 // { P_ZSTD, 		"zstd", 		C_ZSTD,		"1.0.0","ZSTD",					"BSD license+Patents","https://github.com/facebook/zstd", 													"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22" },
   //-----------------------------------------------------------------------------------	  
-  { P_MCPY, 		"memcpy", 			C_MEMCPY, 		".",		"memcpy",		"------------",		"--------------------------------------",   "" },
-  { P_COPY, 		"copy",		    	C_MEMCPY,  		".",		"copy",		"",					"",											"" },
+  { P_MCPY, 		"memcpy", 			C_MEMCPY, 		"",		"memcpy",		"------------",		"--------------------------------------",   "" },
+  { P_COPY, 		"copy",		    	C_MEMCPY,  		"",		"copy",		"",					"",											"" },
   //----- Transform --------------
 
   { P_BITSHUFFLE, 	"BitShuffle", 		C_TURBOPFOR,	"",	"BitShuffle",			"",	"", 															"", 0,BLK_SIZE }, 
-  { BS_SHUFFLE, 		"Blosc_Shuffle",	C_C_BLOSC,		"",	"Blosc",				"",	"https://github.com/Blosc/c-blosc2", 							"", 0,BLK_SIZE }, 
+  { P_BS_SHUFFLE, 	"Blosc_Shuffle",	C_C_BLOSC,		"",	"Blosc",				"",	"https://github.com/Blosc/c-blosc2", 							"", 0,BLK_SIZE }, 
 
 //{ P_MYCODEC, 	"mycodec",			C_MYCODEC, 	"0",		"My codec",				"           ",		"",																						"" },
     #ifdef LZTURBO
@@ -450,7 +458,10 @@ struct plugs plugs[] = {
 #define _TP_BITS 1     // transpose bits (4,8,16,32,64)
 
 //--------------------------------------- TurboPFor ----------------------------
-  #if C_BITSHUFFLE      
+  #if C_C_BLOSC  
+#define   BITSHUFFLE(in,n,out)   bitshuffle(   1, n, (unsigned char *)in, out, NULL) 
+#define BITUNSHUFFLE(in,n,out)   bitunshuffle( 1, n, (unsigned char *)in, (unsigned char *)out,NULL)
+  #else    
 #define   BITSHUFFLE(in,n,out)   bshuf_bitshuffle(in, out, (n)/4, 4, 0);  memcpy((char *)out+((n)&(~31)),(char *)in+((n)&(~31)),(n)&31)
 #define BITUNSHUFFLE(in,n,out)   bshuf_bitunshuffle(in, out, (n)/4, 4, 0);memcpy((char *)out+((n)&(~31)),(char *)in+((n)&(~31)),(n)&31)
   #endif 
@@ -521,10 +532,10 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
 
 int codini(size_t insize, int codec) {
   switch(codec) {
-      #if C_C_BLOSC2
-    case BS_LZ4:  blosc_init(); blosc_set_nthreads(1); blosc_set_compressor(BLOSC_LZ4_COMPNAME);break;
-    case BS_ZLIB: blosc_init(); blosc_set_nthreads(1); blosc_set_compressor(BLOSC_ZLIB_COMPNAME); break;
-    case BS_LZ:   blosc_init(); blosc_set_nthreads(1); blosc_set_compressor(BLOSC_BLOSCLZ_COMPNAME); break;
+      #if C_C_BLOSC
+    case P_BS_LZ4:  blosc_init(); blosc_set_nthreads(1); blosc_set_compressor(BLOSC_LZ4_COMPNAME);break;
+    case P_BS_ZLIB: blosc_init(); blosc_set_nthreads(1); blosc_set_compressor(BLOSC_ZLIB_COMPNAME); break;
+    case P_BS_LZ:   blosc_init(); blosc_set_nthreads(1); blosc_set_compressor(BLOSC_BLOSCLZ_COMPNAME); break;
       #endif     
       #if C_VARINTG8IU
     case P_VARINTG8IU: VarIntG8IU();
@@ -656,18 +667,17 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       #endif
  
       #if C_C_BLOSC
-    case BS_LZ:
-    case BS_LZ4: 
-    case BS_ZLIB:    return out + blosc_compress(1/*clevel*/, BLOSC_SHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
-    case BS_LZ_1:
-    case BS_LZ4_1: 
-    case BS_ZLIB_1:  return out + blosc_compress(1/*clevel*/, BLOSC_DELTA, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
+    case P_BS_LZ:    
+    case P_BS_LZ4:    
+    case P_BS_ZLIB: return out + blosc_compress(lev, BLOSC_SHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
+    //case P_BS_ZLIB_1:  return out + blosc_compress(lev, BLOSC_SHUFFLE/*BLOSC_DELTA*/, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
       #endif
 
       #if C_LZ4
         #if C_BITSHUFFLE      
     case LZ4_S1: { bitdelta32(in, n, (unsigned *)out, -inc, inc);  BITSHUFFLE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
         #endif
+    case LZ4_  : return out + LZ4_compress((char *)in, (char *)out, n*4);
     case LZ4_S4: { bitdelta32(in, n, (unsigned *)out, -inc, inc); transposen4((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
     case LZ4_S8: { bitdelta32(in, n, (unsigned *)out, -inc, inc);   TRANSPOSE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
       #endif
@@ -792,6 +802,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
         #if C_BITSHUFFLE      
     case LZ4_S1: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -inc, inc); break;       
         #endif     
+    case LZ4_  : in += LZ4_decompress_fast((char *)in, (char *)out, n*4); break;       
     case LZ4_S4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposen4(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -inc, inc); break;       
     case LZ4_S8: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitundx32(out, n, -inc, inc); break;       
       #endif     
@@ -802,12 +813,9 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
       #endif
 
       #if C_C_BLOSC
-    case BS_LZ:
-    case BS_LZ4:
-    case BS_ZLIB:
-    case BS_LZ_1:
-    case BS_LZ4_1:
-    case BS_ZLIB_1: { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
+    case P_BS_LZ:
+    case P_BS_LZ4:
+    case P_BS_ZLIB: { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
       #endif
 
       #if C_LZTURBO
@@ -953,11 +961,11 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_TP4V_32:     transposen4( (unsigned char *)in, n*4, out);   return out + n*4;
       #endif
       #if C_C_BLOSC      
-    case BS_SHUFFLE:     shuffle( 4, n*4, (unsigned char *)in, out); return out + n*4;
+    case P_BS_SHUFFLE:     shuffle( 4, n*4, (unsigned char *)in, out); return out + n*4;
       #endif
 
       #if C_BITSHUFFLE      
-    case P_BITSHUFFLE:   bshuf_bitshuffle(in, out, n, 4, 0); return out + n*4;    
+    case P_BITSHUFFLE:   BITSHUFFLE( (unsigned char *)in, n*4, out);/* bshuf_bitshuffle(in, out, n, 4, 0);*/ return out + n*4;    
       #endif
  
       // --------- transpose + lz77 ----------------------------------------
@@ -981,17 +989,16 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
         #if C_BITSHUFFLE      
     case LZ4_S1:  BITSHUFFLE( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
 	    #endif
+    case LZ4_  : return out + LZ4_compress((char *)in, (char *)out, n*4);
     case LZ4_S4: transposen4( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
     case LZ4_S8:   TRANSPOSE( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
       #endif
 	  
       #if C_C_BLOSC
-    case BS_LZ:
-    case BS_LZ4: 
-    case BS_ZLIB:  return out + blosc_compress(1/*clevel*/, BLOSC_SHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
-    case BS_LZ_1:
-    case BS_LZ4_S1: 
-    case BS_ZLIB_1:  return out + blosc_compress(1/*clevel*/, BLOSC_BITSHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
+    case P_BS_LZ:
+    case P_BS_LZ4: 
+    case P_BS_ZLIB:  return out + blosc_compress(lev, BLOSC_SHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
+    //return out + blosc_compress(1/*clevel*/, BLOSC_BITSHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
       #endif
 	  
       #if C_ZLIB
@@ -1132,11 +1139,11 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_TP4V_32: untransposen4( (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
 	  #endif
       #if C_C_BLOSC
-    case BS_SHUFFLE:  unshuffle( 4, n*4, (unsigned char *)in, (unsigned char *)out); return in + n*4;
+    case P_BS_SHUFFLE:  unshuffle( 4, n*4, (unsigned char *)in, (unsigned char *)out); return in + n*4;
       #endif
 		
       #if C_BITSHUFFLE      
-    case P_BITSHUFFLE:  bshuf_bitunshuffle(in, out, n, 4, 0); return in + n*4;
+    case P_BITSHUFFLE:  BITUNSHUFFLE(in, n*4, (unsigned char *)out); /*bshuf_bitunshuffle(in, out, n, 4, 0);*/ return in + n*4;
       #endif
  
       //---------- transpose + lz77 ----------------------
@@ -1160,17 +1167,15 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
         #if C_BITSHUFFLE      
     case LZ4_S1:     in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); break;/*bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); */ 
         #endif
+    case LZ4_  : in += LZ4_decompress_fast((char *)in, (char *)out, n*4); break;       
     case LZ4_S4:     in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposen4(sbuf, n*4, (unsigned char *)out); break;
     case LZ4_S8:     in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); break;/*bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); */ 
       #endif
 	  
-      #if C_BLOSC
-    case BS_LZ:
-    case BS_LZ4:
-    case BS_ZLIB:
-    case BS_LZ_1:
-    case BS_LZ4_1:
-    case BS_ZLIB_1: { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
+      #if C_C_BLOSC
+    case P_BS_LZ:    
+    case P_BS_LZ4:    
+    case P_BS_ZLIB:  { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
       #endif
 	  
       #if C_ZLIB
@@ -1184,7 +1189,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
 
 char *codver(int codec, char *v, char *s) {
   switch(codec) {  
-      #if C_C_BLOSC2
+      #if C_C_BLOSC
     return BLOSC_VERSION_STRING;
       #endif 
 	  #if C_LZ4
