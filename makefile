@@ -40,7 +40,7 @@ CFLAGS+=-D__int64_t=int64_t
 else
   UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS+=-lpthread -lrt
+LDFLAGS+=-lpthread -lrt -lz
 endif
 endif
 
@@ -78,8 +78,8 @@ else
 NTRANSFORM=0
 endif
 
-ifeq ($(LZTURBO),1)
-DEFS+=-DLZTURBO
+ifeq ($(BLOSC),1)
+DEFS+=-DBLOSC
 endif
 
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DNDEBUG -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
@@ -87,8 +87,8 @@ CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS
 
 all: icbench idxcr idxqry idxseg
 
-cpp: vp4c.c
-	$(CC) -mavx2 $(MARCH) -E vp4c.c
+cpp: bitpackv.c
+	$(CC) -mavx2 $(MARCH) -E bitpackv.c
 
 bitpack.o: bitpack.c bitpack.h bitpack64_.h
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c bitpack.c
@@ -156,26 +156,36 @@ else
 endif
 
 OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o  
-OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o 
 
 ifeq ($(BLOSC),1)
 LDFLAGS+=-lpthread 
-CFLAGS+=-Iext/ -DSHUFFLE_SSE2_ENABLED
-OB+=ext/c-blosc2/blosc/blosc.o ext/c-blosc2/blosc/blosclz.o ext/c-blosc2/blosc/schunk.o ext/c-blosc2/blosc/delta.o ext/c-blosc2/blosc/shuffle.o ext/c-blosc2/blosc/shuffle-generic.o ext/c-blosc2/blosc/shuffle-sse2.o \
-ext/c-blosc2/blosc/bitshuffle-generic.o ext/c-blosc2/blosc/bitshuffle-sse2.o
+#ext/c-blosc/blosc/libblosc.a
+CFLAGS+=-Iext/ -DSHUFFLE_SSE2_ENABLED -DBLOSC -DPREFER_EXTERNAL_LZ4=ON -DHAVE_ZLIB -DHAVE_LZ4 -DHAVE_LZ4HC
+OB+=ext/c-blosc/blosc/blosc.o ext/c-blosc/blosc/blosclz.o ext/c-blosc/blosc/shuffle.o ext/c-blosc/blosc/shuffle-generic.o ext/c-blosc/blosc/shuffle-sse2.o \
+ext/c-blosc/blosc/bitshuffle-generic.o ext/c-blosc/blosc/bitshuffle-sse2.o
+
+#OB+=ext/c-blosc2/blosc/delta.o ext/c-blosc2/blosc/schunk.o 
+else
+OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o 
 endif
 
 endif
+
+ifeq ($(LZTURBO),1)
+DEFS+=-DLZTURBO
+OB+=../dev/lz/lz8c.o ../dev/lz/lzbc.o 
+endif
+
 
 OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o 
 #------------------------
 ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o 
 
 ifeq ($(NSIMD),0)
-ICLIB+=bitpack128v.o bitunpack128v.o
+ICLIB+=bitpackv.o bitunpackv.o
 
 ifeq ($(AVX2),1)
-ICLIB+=bitpack256v.o bitunpack256v.o
+#ICLIB+=bitpack256v.o bitunpack256v.o
 endif
 endif
 #---------------------
