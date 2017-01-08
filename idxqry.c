@@ -44,8 +44,8 @@
 
 #include "conf.h"
 #include "vint.h"
-#include "bitunpack.h"
-#include "vp4d.h"
+#include "bitpack.h"
+#include "vp4.h"
 #include "idx.h"
 
 #ifdef NSIMD
