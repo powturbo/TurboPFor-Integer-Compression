@@ -26,7 +26,7 @@
   #ifndef BPI
 #include "conf.h"
 #include "bitutil.h"
-#include "bitunpack.h"
+#include "bitpack.h"
 #define PAD8(__x) (((__x)+7)/8)
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
