@@ -203,12 +203,12 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icbench -p2 -S2 -Q3 file.tbb 
 
 ##### - Data files:
-  - Raw 32 bits binary data file (see option "-f" for other formats)
+  - Raw 32 bits binary data file [Test data](https://github.com/ot/partitioned_elias_fano/tree/master/test/test_data)
 
 
         ./icbench file
 
-  - Text file: 1 integer per line. (Example:[ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
+  - Text file: 1 integer per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
 
         ./icbench -eBENCH -fts ts.txt
@@ -293,12 +293,12 @@ In general encoding/decoding functions are of the form:
 
 header files to use with documentation:<br />
 
-| header file|Integer Compression functions|
+| c/c++ header file|Integer Compression functions|
 |------------|-----------------------------|
 |vint.h|variable byte|
 |vsimple.h|variable simple|
-|vp4c.h, vp4d.h|TurboPFor|
-|bitpack.h bitunpack.h|Bit Packing, For, +Direct Access|
+|vp4.h|TurboPFor|
+|bitpack.h|Bit Packing, For, +Direct Access|
 |eliasfano.h|Elias Fano|
 
 ### Environment:
@@ -335,4 +335,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  06 JAN 2017
+Last update:  08 JAN 2017
