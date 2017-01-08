@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-// bitpack include 
+//  bitpack include 
 #define BITBLK32_1(ip, i, op, parm) { ; register uint32_t w;;\
   IPPB(ip, i*32+ 0, parm); w  = (uint32_t)SRC(ip, i*32+ 0)      ;\
   IPPB(ip, i*32+ 1, parm); w |= (uint32_t)SRC(ip, i*32+ 1) <<  1;\
