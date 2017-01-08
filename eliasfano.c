@@ -32,7 +32,6 @@
 
 #include "conf.h"
 #include "bitpack.h"
-#include "bitunpack.h"
 #include "bitutil.h"
 #include "eliasfano.h"
   #ifdef __SSE42__
