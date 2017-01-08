@@ -105,16 +105,6 @@ static inline int ctz32(unsigned           x) { unsigned      z = 0; _BitScanRev
 #define ctz16(_x_) ctz32(_x_)
 #define clz16(_x_) (clz32(_x_)-16)
 
-  #ifdef __AVX2__
-//#include <x86intrin.h>
-#include <immintrin.h>
-#define bzhi64(_u_, _b_) _bzhi_u64(_u_, _b_)
-#define bzhi32(_u_, _b_) _bzhi_u32(_u_, _b_)
-  #else
-#define bzhi64(_u_, _b_) ((_u_) & ((1ull<<(_b_))-1))
-#define bzhi32(_u_, _b_) ((_u_) & ((1u  <<(_b_))-1))
-  #endif
-
 //--------------- Unaligned memory access -------------------------------------
 /*# || defined(i386) || defined(_X86_) || defined(__THW_INTEL)*/
   #if defined(__i386__) || defined(__x86_64__) || \
