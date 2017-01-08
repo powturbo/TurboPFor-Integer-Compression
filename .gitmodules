@@ -7,9 +7,6 @@
 [submodule "ext/bitshuffle"]
 	path = ext/bitshuffle
 	url = https://github.com/kiyo-masui/bitshuffle.git
-[submodule "ext/c-blosc2"]
-	path = ext/c-blosc2
-	url = https://github.com/Blosc/c-blosc2.git
 [submodule "ext/LittleIntPacker"]
 	path = ext/LittleIntPacker
 	url = https://github.com/lemire/LittleIntPacker.git
@@ -28,3 +25,6 @@
 [submodule "ext/FastPFor"]
 	path = ext/FastPFor
 	url = https://github.com/lemire/FastPFor
+[submodule "c-blosc"]
+	path = c-blosc
+	url = https://github.com/Blosc/c-blosc.git
