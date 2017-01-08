@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-// bitunpack include 
+//  bitunpack include 
 #define BITUNBLK32_0(ip, i, op, parm) { \
   DST(op,i*0+ 0, 0, parm);\
   DST(op,i*0+ 1, 0, parm);\
