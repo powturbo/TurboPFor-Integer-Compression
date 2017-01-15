@@ -34,7 +34,6 @@
 
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 //------------------------------------------
-#define EXCEP 1 // Hybrid TurboPFor : 1=Variable byte 
 #define _P4BITS _p4bits
 
 //-- Scalar
@@ -43,19 +42,28 @@
 #define  P4NENC   p4nenc
 #define  BITPACK  bitpack
 
+#define USIZE 8
+#include "vp4c.c"
+
+#define EXCEP 1 // Hybrid TurboPFor : 0=fixed bit packing, 1=fixed BP+Variable byte 
+#define USIZE 16
+#include "vp4c.c"
+
 #define USIZE 32
 #include "vp4c.c"
 
 #define USIZE 64
 #include "vp4c.c"
 
-#define USIZE 16
-#include "vp4c.c"
-
 #define P4DELTA 0
 #define  P4DENC   p4denc
 #define  P4NENC   p4ndenc
 #define  P4NENCS  p4denc
+
+#undef EXCEP
+#define USIZE 8
+#include "vp4c.c"
+#define EXCEP 1
 
 #define USIZE 16
 #include "vp4c.c"
@@ -70,6 +78,11 @@
 #define  P4DENC   p4d1enc
 #define  P4NENC   p4nd1enc
 #define  P4NENCS  p4d1enc
+
+#undef EXCEP
+#define USIZE 8
+#include "vp4c.c"
+#define EXCEP 1
 
 #define USIZE 16
 #include "vp4c.c"
@@ -87,6 +100,11 @@
 #define _P4ENC  _p4encx
 #define  P4ENC   p4encx
 #define  P4NENC  p4nencx
+
+#undef EXCEP
+#define USIZE 8
+#include "vp4c.c"
+#define EXCEP 1
 
 #define USIZE 16
 #include "vp4c.c"
@@ -272,7 +290,7 @@ unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsign
   return TEMPLATE2(_P4ENC, USIZE)(in, n, out, b, bx);
 }
 
-unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) {
+unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
   uint_t *ip; 
   for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
     unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(ip, CSIZE, &bx); 									
@@ -292,7 +310,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, uns
   return TEMPLATE2(P4ENC, USIZE)(_in, n, out);
 }
 
-unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
+unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out, uint_t start) {
   uint_t *ip;
   for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
     uint_t _in[P4D_MAX+8];
