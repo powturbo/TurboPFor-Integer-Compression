@@ -1,4 +1,4 @@
-# powturbo  (c) Copyright 2013-2016
+# powturbo  (c) Copyright 2013-2017
 # ----------- Downloading + Compiling ----------------------
 # git clone --recursive git://github.com/powturbo/TurboPFor.git 
 # make
@@ -87,11 +87,23 @@ CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS
 
 all: icbench idxcr idxqry idxseg
 
-cpp: bitpackv.c
-	$(CC) -mavx2 $(MARCH) -E bitpackv.c
+cpp: $(CPPF)
+	$(CC) -mavx2 $(MARCH) -E $(CPPF)
 
-bitpack.o: bitpack.c bitpack.h bitpack64_.h
-	$(CC) -O2 $(CFLAGS) $(MARCH) -c bitpack.c
+bitpack.o: bitpack.c bitpack.h bitpack_.h
+	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -Wdiscarded-qualifiers -falign-loops=32 -c bitpack.c
+
+bitunpack.o: bitunpack.c bitunpack_.h
+	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -Wdiscarded-qualifiers -falign-loops=32  -c bitunpack.c
+
+vsimple.o: vsimple.c
+	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
+	
+vp4c.o: vp4c.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vp4c.c
+
+vp4d.o: vp4d.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vp4d.c
 
 varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h 
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c -std=c99 ext/varintg8iu.c
@@ -99,14 +111,9 @@ varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h
 idxqryp.o: idxqry.c
 	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
 
-vsimple.o: vsimple.c
-	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
+#vint.o: vint.c
+#	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vint.c
 
-vp4c.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vp4c.c
-
-vp4d.o: vp4d.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vp4d.c
 
 #-------------------------------------------------------------------
 ifeq ($(NCODEC1), 0)
@@ -182,11 +189,7 @@ OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o
 ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o 
 
 ifeq ($(NSIMD),0)
-ICLIB+=bitpackv.o bitunpackv.o
-
-ifeq ($(AVX2),1)
-#ICLIB+=bitpack256v.o bitunpack256v.o
-endif
+ICLIB+=bitunpack128h.o
 endif
 #---------------------
 OB+=$(ICLIB)
