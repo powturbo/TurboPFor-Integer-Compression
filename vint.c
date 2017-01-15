@@ -161,6 +161,7 @@ unsigned char *TEMPLATE2(vbzdec, USIZE)(unsigned char *__restrict in, unsigned n
 	  #if UN > 4
     VBZD; VBZD; VBZD; VBZD;
       #endif
+											__builtin_prefetch(in+16*USIZE, 0);	
   }
   while(op != out+n) VBZD; 
 
@@ -254,6 +255,7 @@ unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n
 	  #if UN > 4
     VBDD(4); VBDD(5); VBDD(6); VBDD(7); 	  
       #endif
+												__builtin_prefetch(in+16*USIZE, 0);
   }
   for(;op != out+n;op++) VBDD(0);
   return in;
