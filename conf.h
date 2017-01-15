@@ -43,7 +43,6 @@
 static inline int    __bsr32(               int x) {             asm("bsr  %1,%0" : "=r" (x) : "rm" (x) ); return x; }
 static inline int      bsr32(               int x) { int b = -1; asm("bsrl %1,%0" : "+r" (b) : "rm" (x) ); return b + 1; }
 static inline int      bsr64(unsigned long long x) { return x?64 - __builtin_clzll(x):0; }
-#define bsr16(_x_)     bsr32(_x_)
 
 static inline unsigned rol32(unsigned x, int s) { asm ("roll %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
 static inline unsigned ror32(unsigned x, int s) { asm ("rorl %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
@@ -102,7 +101,11 @@ static inline int ctz32(unsigned           x) { unsigned      z = 0; _BitScanRev
 #define strncasecmp _strnicmp
   #endif 
 
+#define bsr8(_x_)  bsr32(_x_)
+#define bsr16(_x_) bsr32(_x_)
+#define ctz8(_x_)  ctz32(_x_)
 #define ctz16(_x_) ctz32(_x_)
+#define clz8(_x_)  (clz32(_x_)-8)
 #define clz16(_x_) (clz32(_x_)-16)
 
 //--------------- Unaligned memory access -------------------------------------
