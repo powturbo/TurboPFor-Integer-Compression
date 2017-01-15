@@ -91,10 +91,10 @@ cpp: $(CPPF)
 	$(CC) -mavx2 $(MARCH) -E $(CPPF)
 
 bitpack.o: bitpack.c bitpack.h bitpack_.h
-	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -Wdiscarded-qualifiers -falign-loops=32 -c bitpack.c
+	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -falign-loops=32 -c bitpack.c
 
 bitunpack.o: bitunpack.c bitunpack_.h
-	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -Wdiscarded-qualifiers -falign-loops=32  -c bitunpack.c
+	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -falign-loops=32  -c bitunpack.c
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
