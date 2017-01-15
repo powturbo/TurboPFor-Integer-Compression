@@ -2,8 +2,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 ======================================
 + **TurboPFor: The new synonym for "integer compression"**
  - 100% C (C++ headers), as simple as memcpy
- - :+1: **Java** Critical Natives. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
- - :sparkles: **FULL** range 16/32/64 bits
+ - :+1: **Java** Critical Natives Interface. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
+ - :sparkles: **FULL** range 8/16/32/64 bits lists
  - No other "Integer Compression" compress/decompress faster
  - Direct Access several times faster than other libraries
  - :sparkles: Integrated (SIMD) delta/Zigzag for sorted/unsorted arrays
@@ -18,7 +18,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 + **Bit Packing**
  - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
  - :new: **(2017) TurboPack AVX2, now more faster. Decoding 10 Billions intergers/seconds (40Gb/s**
- - Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+ - :new: **(2017) more faster**. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 <p>
 + **Variable byte**
@@ -67,7 +67,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
 |99910930| 25.0| 7.99|**3290**|**2968**|**TurboPackV**|
-|99910930| 25.0| 7.99|2122|2347|**TurboPack**|
+|99910930| 25.0| 7.99|2367|2351|**TurboPack**|
 |99910930| 25.0| 7.99|2105|2219|**TurboFor**|
 |100332929| 25.1| 8.03|**3580**|**2998**|**TurboPack256V**|
 |101015650| 25.3| 8.08|2380|2371|**TurboVByte**|
@@ -96,15 +96,15 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
 |-----------:|------:|-----:|-------:|-------:|---------------------|
-| 3.321.663.893| 13.9| 4.44|**328**|**1452**|**TurboPFor**| 
+| 3.321.663.893| 13.9| 4.44|**330**|**1522**|**TurboPFor**| 
 | 3.339.730.557| 14.0| 4.47|   8| 536|PC.OptPFD|
-| 3.350.717.959| 14.0| 4.48|**365**|**1744**|**TurboPFor256**| 
+| 3.350.717.959| 14.0| 4.48|**365**|**1752**|**TurboPFor256**| 
 | 3.501.671.314| 14.6| 4.68| 314| 710|**VSimple**|
 | 3.768.146.467| 15.8| 5.04|**807**| 913|**EliasFanoV**|
 | 3.822.161.885| 16.0| 5.11| 143| 611|PC.Simple16|
 | 4.521.326.518| 18.9| 6.05| 209| 824|Simple-8b|
 | 4.649.671.427| 19.4| 6.22|771|962|**TurboVbyte**|
-| 4.953.768.342| 20.7| 6.63|1397|1467|**TurboPack**|
+| 4.953.768.342| 20.7| 6.63|**1431**|**2005**|**TurboPack**|
 | 4.955.740.045| 20.7| 6.63|**1766**|**2567**|**TurboPackV**|
 | 5.205.324.760|21.8| 6.96|1738|2372|SC.SIMDPack128|
 | 5.393.769.503| 22.5| 7.21|**2261**|**2715**|**TurboPackV256**|
@@ -335,4 +335,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  08 JAN 2017
+Last update:  15 JAN 2017
