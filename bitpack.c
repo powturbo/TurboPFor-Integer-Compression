@@ -21,250 +21,223 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     bitpack.c - "Integer Compression" bit packing 
-  #ifndef IPPB
+//  "Integer Compression" bit packing 
 #include <stdio.h>
 #include "bitpack.h"
 #include "bitutil.h" 
-
-#define BITNPACK(in, n, out, csize, usize) { uint_t *ip; \
-  for(ip = in,in_=in+n; ip < _in;) { unsigned iplen = in_ - ip; if(iplen > csize) iplen = cize;		__builtin_prefetch(ip+512);\
-    unsigned b; BITSIZE32(in, n, b); *out++ = b; out = TEMPLATE2(bitpack, usize)(ip, csize, out);    					\
-	iplen += csize;\
-  } return out;\
-}
+#define PAD8(_x_) ( (((_x_)+8-1)/8) )
 
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
-#define PAD8(__x) ( (((__x)+8-1)/8) )
+typedef unsigned char *(*BITPACK_F8)( uint8_t  *__restrict out, unsigned n, const unsigned char *__restrict in);
+typedef unsigned char *(*BITPACK_D8)( uint8_t  *__restrict out, unsigned n, const unsigned char *__restrict in, uint8_t start);
+typedef unsigned char *(*BITPACK_F16)(uint16_t *__restrict out, unsigned n, const unsigned char *__restrict in);
+typedef unsigned char *(*BITPACK_D16)(uint16_t *__restrict out, unsigned n, const unsigned char *__restrict in, uint16_t start);
+typedef unsigned char *(*BITPACK_F32)(uint32_t *__restrict out, unsigned n, const unsigned char *__restrict in);
+typedef unsigned char *(*BITPACK_D32)(uint32_t *__restrict out, unsigned n, const unsigned char *__restrict in, uint32_t start);
+typedef unsigned char *(*BITPACK_F64)(uint64_t *__restrict out, unsigned n, const unsigned char *__restrict in);
+typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, const unsigned char *__restrict in, uint64_t start);
+   
+#define PREFETCH(_ip_) __builtin_prefetch(_ip_+768)//#define PREFETCH(ip)
 
-#define IPPB( __ip,__x, __parm)
-#define SRC( __ip,__x) (*__ip++)
-#define SRC1(__ip,__x) (*(__ip))
-#include "bitpack.c"
+#if 0
+#define IP( _ip_,_x_) *_ip_++
+#define IPI(_ip_)
+#else
+#define IP( _ip_,_x_) _ip_[_x_]
+#define IPI(_ip_) _ip_ += 32
+#endif
+
+#define IPB(_ip_,_x_, _parm_)
+#define IPW(_ip_,_x_) 			v
+
+#define IPV(_ip_,_x_) 			IP(_ip_,_x_)
+#define IPX(_ip_,_x_)  		   (v = IP(_ip_,_x_))
+#define IPP(_ip_,_x_, _parm_)
+#define _BITPACK_ bitpack
+#include "bitpack_.h"
+
+#define DELTA
  
-unsigned char *bitpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; } 
-unsigned char *bitpack16(unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); BITPACK32(in, n, nb, out, 0); return pout; }
-unsigned char *bitpack64(uint64_t           *__restrict in, unsigned n, unsigned char *__restrict out, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); BITPACK64(in, n, nb, out, 0); return pout; }
-#undef IPPB 
-#undef SRC
-#undef SRC1
+#define IPB(_ip_,_x_, _parm_)   v = IP(_ip_,_x_) - start; start = IP(_ip_,_x_)
+#define IPV(_ip_,_x_) 		    v
+#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start)
+#define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_) 	
+#define _BITPACK_ bitdpack
+#include "bitpack_.h"
 
-/*unsigned char *bitnpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } 
-unsigned char *bitnpack16(unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned short *ip; BITNPACK(in, n, out, 128, 16); } 
-unsigned char *bitnpack64(uint64_t           *__restrict in, unsigned n, unsigned char *__restrict out) { uint64_t *ip;       BITNPACK(in, n, out, 128, 64); }*/
+#define IPB(_ip_,_x_, _parm_)    
+#define IPV(_ip_,_x_) 			IP(_ip_,_x_) - start
+#define IPX(_ip_,_x_)  		    (v = IP(_ip_,_x_) - start)
+#define IPP(_ip_,_x_, _parm_)
+#define _BITPACK_ bitfpack
+#include "bitpack_.h"
 
-#define IPPB( __ip,__x, __parm) as = *__ip-start; start=*__ip++
-#define SRC( __ip,__x) as
-#define SRC1(__ip,__x) (*__ip - start)
-#include "bitpack.c"
+#define IPB( _ip_,_x_, _parm_) 	v = IP(_ip_,_x_) - start - 1; start = IP(_ip_,_x_)
+#define IPV( _ip_,_x_) 			v
+#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start - 1)
+#define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
+#define _BITPACK_ bitd1pack
+#include "bitpack_.h"
 
-unsigned char *bitdpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
-#undef IPPB
-#undef SRC
-#undef SRC1
+#define IPB(_ip_,_x_, _parm_) 	v = zigzagenc32(IP(_ip_,_x_) - start)
+#define IPV(_ip_,_x_) 			v
+#define IPX(_ip_,_x_) 		   (v = zigzagenc32(IP(_ip_,_x_) - start))
+#define IPP(_ip_,_x_, _parm_) 	start = IP(_ip_,_x_)
+#define _BITPACK_ bitzpack
+#include "bitpack_.h"
 
-#define IPPB( __ip,__x, __parm) as = *__ip-start-1; start=*__ip++
-#define SRC( __ip,__x) as
-#define SRC1(__ip,__x) (*__ip - start-1)
-#include "bitpack.c"
-unsigned char *bitd1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
-#undef IPPB
-#undef SRC
-#undef SRC1
+#define IPI(_ip_) _ip_ += 32; start += 32
+#define IPB(_ip_,_x_, _parm_)    
+#define IPV(_ip_,_x_) 			(IP(_ip_,_x_) - start - (_x_) - 1)
+#define IPX(_ip_,_x_)  		    (v = IP(_ip_,_x_) - start - (_x_) - 1)
+#define IPP(_ip_,_x_, _parm_)
+#define _BITPACK_ bitf1pack
+#include "bitpack_.h"
+#undef IPI
 
-//------------------------------
-#define IPPB( __ip,__x, __parm) as = *__ip++-start
-#define SRC( __ip,__x) as
-#define SRC1(__ip,__x) (*__ip - start)
-#include "bitpack.c"
-unsigned char *bitfpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
-#undef IPPB
-#undef SRC
-#undef SRC1
+#define BITNPACK(in, n, out, csize, usize) { ip=in;\
+  /*if(usize <= 32)\
+    for(; ip < in+(n&~(csize*4-1)); ) { __builtin_prefetch(ip+512); unsigned char *p=ip; unsigned u,b;\
+      TEMPLATE2(BITSIZE,usize)(ip, csize, b); u  = b;     out = TEMPLATE2(bitpacka, usize)[b](ip, csize, out); ip+=csize;\
+      TEMPLATE2(BITSIZE,usize)(ip, csize, b); u |= b<<6;  out = TEMPLATE2(bitpacka, usize)[b](ip, csize, out); ip+=csize;\
+      TEMPLATE2(BITSIZE,usize)(ip, csize, b); u |= b<<12; out = TEMPLATE2(bitpacka, usize)[b](ip, csize, out); ip+=csize;\
+      TEMPLATE2(BITSIZE,usize)(ip, csize, b); u |= b<<18; out = TEMPLATE2(bitpacka, usize)[b](ip, csize, out); ip+=csize;\
+      ctou32(p) = p[3]<<24 | u&0xffffff;\
+    }*/\
+  for(in+=n; ip < in;) { unsigned iplen = in - ip; if(iplen > csize) iplen = csize;		__builtin_prefetch(ip+512);\
+    unsigned b; TEMPLATE2(BITSIZE,usize)(ip, csize, b); *out++ = b; out = TEMPLATE2(bitpacka, usize)[b](ip, csize, out); \
+	ip += csize;\
+  } return out;\
+}
 
-#define IPPB( __ip,__x, __parm) as = *__ip++-start++-1
-#define SRC( __ip,__x) as
-#define SRC1(__ip,__x) (*__ip - start-1)
-#include "bitpack.c"
-unsigned char *bitf1pack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
-#undef IPPB
-#undef SRC
-#undef SRC1
+#define BITNDPACK(in, n, out, csize, usize, _start_, _bitd_, _bitpacka_) {\
+  for(ip = in,in+=n; ip < in;) { unsigned iplen = in - ip; if(iplen > csize) iplen = csize;		__builtin_prefetch(ip+512);\
+    typeof(in[0]) _in[csize+8];\
+    unsigned b = TEMPLATE2(_bitd_, usize)(ip, csize, _start_);\
+    *out++ = b; out = TEMPLATE2(_bitpacka_, usize)[b](ip, csize, out, _start_);\
+	ip += csize;\
+    start = ip[-1];\
+  } return out;\
+}
 
-#define IPPB( __ip,__x, __parm) as = zigzagenc32(*__ip-start); start=*__ip++
-#define SRC( __ip,__x) as
-#define SRC1(__ip,__x) zigzagenc32(*__ip - start)
-#include "bitpack.c"
+unsigned char *bitnpack8(   uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) { uint8_t  *ip; BITNPACK(in, n, out, 128,  8); } 
+unsigned char *bitnpack16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip; BITNPACK(in, n, out, 128, 16); } 
+unsigned char *bitnpack32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip; BITNPACK(in, n, out, 128, 32); } 
+unsigned char *bitnpack64(  uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip; BITNPACK(in, n, out, 128, 64); }
 
-unsigned char *bitzpack32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned nb) { unsigned char *pout = out+PAD8(n*nb); unsigned as; BITPACK32(in, n, nb, out, start); return pout; } 
-#undef IPPB
-#undef SRC
-#undef SRC1
+unsigned char *bitndpack8(  uint8_t  *__restrict in, size_t n, unsigned char *__restrict out, uint8_t  start) { uint8_t  *ip; BITNDPACK(in, n, out, 128,  8, start, bitd, bitdpacka); } 
+unsigned char *bitndpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out, uint16_t start) { uint16_t *ip; BITNDPACK(in, n, out, 128, 16, start, bitd, bitdpacka); } 
+unsigned char *bitndpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out, uint32_t start) { uint32_t *ip; BITNDPACK(in, n, out, 128, 32, start, bitd, bitdpacka); } 
+unsigned char *bitndpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out, uint64_t start) { uint64_t *ip; BITNDPACK(in, n, out, 128, 64, start, bitd, bitdpacka); }
 
-/*unsigned char *bitndpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } 
-unsigned char *bitnd1pack32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } 
-unsigned char *bitnfpack16(unsigned short     *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned short *ip; BITNPACK(in, n, out, 128, 16); } 
-unsigned char *bitnf1pack64(uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out) { uint64_t *ip;       BITNPACK(in, n, out, 128, 64); }
-unsigned char *bitnzpack32(unsigned           *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned *ip;       BITNPACK(in, n, out, 128, 32); } */
+unsigned char *bitnd1pack8( uint8_t  *__restrict in, size_t n, unsigned char *__restrict out, uint8_t  start) { uint8_t  *ip; BITNDPACK(in, n, out, 128,  8, start, bitd1, bitd1packa); } 
+unsigned char *bitnd1pack16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out, uint16_t start) { uint16_t *ip; BITNDPACK(in, n, out, 128, 16, start, bitd1, bitd1packa); } 
+unsigned char *bitnd1pack32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out, uint32_t start) { uint32_t *ip; BITNDPACK(in, n, out, 128, 32, start, bitd1, bitd1packa); } 
+unsigned char *bitnd1pack64(uint64_t *__restrict in, size_t n, unsigned char *__restrict out, uint64_t start) { uint64_t *ip; BITNDPACK(in, n, out, 128, 64, start, bitd1, bitd1packa); }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+#ifdef __SSE2__
+#include <emmintrin.h>
 
-//-----------------------------------------------------------------------------------------------
+#define OPPE(__op)
+#define IPPE(__op)
+
+#define PAD8(__x) (((__x)+8-1)/8)
+
+#define VSTI(ip, i, iv, parm)
+#define IPP(ip, i, iv) _mm_loadu_si128(ip++)
+#include "bitpack_.h" 
+  
+unsigned char *bitpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(128*b); BITPACK128V32(in, b, out, 0); return pout; }
+#undef VSTI 
+#undef IPP
+
+//------------------------------------------------------------------------------------------------------------------------------
+#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = DELTA128x32(v,__sv); __sv = v
+#define IPP(ip, i, __iv) __iv
+#include "bitpack_.h" 
+
+unsigned char *bitdpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
+  __m128i v,sv = _mm_set1_epi32(start);
+  BITPACK128V32(in, b, out, sv); 
+  return pout;
+}
+#undef VSTI
+
+//------------------------------------------------------------------------------------------------------------------------------
+#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = _mm_sub_epi32(DELTA128x32(v,__sv),cv); __sv = v
+
+unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
+  __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
+  BITPACK128V32(in, b, out, sv); return pout; 
+}
+#undef VSTI
+//------------------------------------------------------------------------------------------------------------------------------
+#define VSTI(__ip, __i, __iv, __sv) v = _mm_loadu_si128(__ip++); __iv = DELTA128x32(v,__sv); __sv = v; __iv = ZIGZAG128x32(__iv)
+
+unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
+  __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
+  BITPACK128V32(in, b, out, sv); 
+  return pout; 
+}
+#undef VSTI
+#undef IPP
+#endif
+
+#ifdef __AVX2__
+#include <immintrin.h>
+
+#define OPPE(__op)
+#define IPPE(__op)
+
+#define PAD8(__x) (((__x)+8-1)/8)
+#define OPPE(__op)
+#define IPPE(__op)
+
+#define VSTI(ip, i, iv, parm)
+#define IPP(ip, i, iv) _mm256_loadu_si256(ip++)
+#include "bitpack_.h" 
+//#include "bitpack.h"
+//#include "bitutil.h"
+ 
+unsigned char *bitpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(256*b); BITPACK256V32(in, b, out, 0); return pout; }
+#undef VSTI 
+#undef IPP
+
+//------------------------------------------------------------------------------------------------------------------------------
+#if 0
+#define VSTI(__ip, __i, __iv, __sv) v = _mm256_loadu_si256(__ip++); DELTA256x32(v,__sv, __iv) //__sv = v
+#define IPP(ip, i, __iv) __iv
+#include "bitpack_.h"  
+
+unsigned char *bitdpack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
+  __m256i v; //,sv = _mm256_set1_epi32(start),zv = _mm256_setzero_si256();
+  __m128i sv = _mm_set1_epi32(start);
+  BITPACK256V32(in, b, out, sv);
+  return pout;
+}
+#undef VSTI
+
+//------------------------------------------------------------------------------------------------------------------------------
+#define VSTI(__ip, __i, __iv, __sv) v = _mm256_loadu_si256(__ip++); __iv = _mm256_sub_epi32(DELTA256x32(v,__sv),cv); __sv = v
+
+unsigned char *bitd1pack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
+  __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
+  //BITPACK256V32(in, b, out, sv); return pout; 
+}
+#undef VSTI
+//------------------------------------------------------------------------------------------------------------------------------
+#define VSTI(__ip, __i, __iv, __sv) v = _mm256_loadu_si256(__ip++); __iv = DELTA256x32(v,__sv); __sv = v; __iv = ZIGZAG256x32(__iv)
+
+unsigned char *bitzpack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
+  __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
+  //BITPACK256V32(in, b, out, sv); 
+  return pout; 
+}
+#endif
+#undef VSTI
+#endif
+
 #pragma clang diagnostic pop
-  #else
-#include <stdint.h>
-#define USE_BITPACK 64
-#define SRCI(__ip)
-
-  #if USE_BITPACK == 64
-#include "bitpack64_.h"
-#define BITPACK32(__ip, __n, __nbits, __op, __parm) { typeof(__ip[0]) *_ipe=(__ip)+(__n);/*((__n+31)&0xffffffe0u)*/;\
-  switch(__nbits) {\
-    case  0:__ip = _ipe; break;\
-    case  1:do BITPACK64_1( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  2:do BITPACK64_2( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  3:do BITPACK64_3( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  4:do BITPACK64_4( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  5:do BITPACK64_5( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  6:do BITPACK64_6( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  7:do BITPACK64_7( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  8:do BITPACK64_8( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  9:do BITPACK64_9( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case 10:do BITPACK64_10(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 11:do BITPACK64_11(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 12:do BITPACK64_12(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 13:do BITPACK64_13(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 14:do BITPACK64_14(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 15:do BITPACK64_15(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 16:do BITPACK64_16(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 17:do BITPACK64_17(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 18:do BITPACK64_18(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 19:do BITPACK64_19(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 20:do BITPACK64_20(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 21:do BITPACK64_21(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 22:do BITPACK64_22(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 23:do BITPACK64_23(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 24:do BITPACK64_24(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 25:do BITPACK64_25(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 26:do BITPACK64_26(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 27:do BITPACK64_27(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 28:do BITPACK64_28(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 29:do BITPACK64_29(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 30:do BITPACK64_30(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 31:do BITPACK64_31(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 32:do BITPACK64_32(__ip, __op, __parm) while(__ip < _ipe);\
-  }\
-}
-
-#define BITPACK64(__ip, __n, __nbits, __op, __parm) { typeof(__ip[0]) *_ipe=(__ip)+(__n);/*((__n+31)&0xffffffe0u)*/;\
-  switch(__nbits) {\
-    case  0:__ip = _ipe; break;\
-    case  1:do BITPACK64_1( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  2:do BITPACK64_2( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  3:do BITPACK64_3( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  4:do BITPACK64_4( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  5:do BITPACK64_5( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  6:do BITPACK64_6( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  7:do BITPACK64_7( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  8:do BITPACK64_8( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  9:do BITPACK64_9( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case 10:do BITPACK64_10(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 11:do BITPACK64_11(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 12:do BITPACK64_12(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 13:do BITPACK64_13(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 14:do BITPACK64_14(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 15:do BITPACK64_15(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 16:do BITPACK64_16(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 17:do BITPACK64_17(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 18:do BITPACK64_18(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 19:do BITPACK64_19(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 20:do BITPACK64_20(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 21:do BITPACK64_21(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 22:do BITPACK64_22(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 23:do BITPACK64_23(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 24:do BITPACK64_24(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 25:do BITPACK64_25(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 26:do BITPACK64_26(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 27:do BITPACK64_27(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 28:do BITPACK64_28(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 29:do BITPACK64_29(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 30:do BITPACK64_30(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 31:do BITPACK64_31(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 32:do BITPACK64_32(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 33:do BITPACK64_33(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 34:do BITPACK64_34(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 35:do BITPACK64_35(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 36:do BITPACK64_36(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 37:do BITPACK64_37(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 38:do BITPACK64_38(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 39:do BITPACK64_39(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 40:do BITPACK64_40(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 41:do BITPACK64_41(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 42:do BITPACK64_42(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 43:do BITPACK64_43(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 44:do BITPACK64_44(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 45:do BITPACK64_45(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 46:do BITPACK64_46(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 47:do BITPACK64_47(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 48:do BITPACK64_48(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 49:do BITPACK64_49(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 50:do BITPACK64_50(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 51:do BITPACK64_51(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 52:do BITPACK64_52(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 53:do BITPACK64_53(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 54:do BITPACK64_54(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 55:do BITPACK64_55(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 56:do BITPACK64_56(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 57:do BITPACK64_57(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 58:do BITPACK64_58(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 59:do BITPACK64_59(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 60:do BITPACK64_60(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 61:do BITPACK64_61(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 62:do BITPACK64_62(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 63:do BITPACK64_63(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 64:do BITPACK64_64(__ip, __op, __parm) while(__ip < _ipe);\
-  }\
-}
-
-  #else
-#include "bitpack32_.h" // Not included in the github package
-#define BITPACK32(__ip, __n, __nbits, __op, __parm) do { typeof(__ip[0]) *_ipe=(__ip)+(__n);/*((__n+31)&0xffffffe0u)*/;\
-  switch(__nbits) {\
-    case  0:__ip = _ipe; break;\
-    case  1:do BITPACK32_1( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  2:do BITPACK32_2( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  3:do BITPACK32_3( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  4:do BITPACK32_4( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  5:do BITPACK32_5( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  6:do BITPACK32_6( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  7:do BITPACK32_7( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  8:do BITPACK32_8( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case  9:do BITPACK32_9( __ip, __op, __parm) while(__ip < _ipe); break;\
-    case 10:do BITPACK32_10(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 11:do BITPACK32_11(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 12:do BITPACK32_12(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 13:do BITPACK32_13(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 14:do BITPACK32_14(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 15:do BITPACK32_15(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 16:do BITPACK32_16(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 17:do BITPACK32_17(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 18:do BITPACK32_18(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 19:do BITPACK32_19(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 20:do BITPACK32_20(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 21:do BITPACK32_21(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 22:do BITPACK32_22(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 23:do BITPACK32_23(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 24:do BITPACK32_24(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 25:do BITPACK32_25(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 26:do BITPACK32_26(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 27:do BITPACK32_27(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 28:do BITPACK32_28(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 29:do BITPACK32_29(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 30:do BITPACK32_30(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 31:do BITPACK32_31(__ip, __op, __parm) while(__ip < _ipe); break;\
-    case 32:do BITPACK32_32(__ip, __op, __parm) while(__ip < _ipe);\
-  }\
-} while(0)
-  #endif
-  #endif
