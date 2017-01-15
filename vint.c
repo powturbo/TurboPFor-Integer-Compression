@@ -80,10 +80,12 @@ unsigned char *TEMPLATE2(vbdec, USIZE)(unsigned char  *__restrict in, unsigned n
   OVERFLOWD(in, n, out, VB_MAX);
 
   #define VBE(_i_) TEMPLATE2(_vbget, USIZE)(in, x, op[_i_] = x)
-  for(op = out; op != out+(n&~(UN-1)); op += UN) { VBE(0); VBE(1); VBE(2); VBE(3); __builtin_prefetch(in+8*USIZE, 0);
+  for(op = out; op != out+(n&~(UN-1)); op += UN) { 					
+    VBE(0); VBE(1); VBE(2); VBE(3); 
 	  #if UN > 4
     VBE(4); VBE(5); VBE(6); VBE(7);	  
       #endif
+													__builtin_prefetch(in+16*USIZE, 0); 
   }
   while(op != out+n) 
     TEMPLATE2(_vbget, USIZE)(in, x, *op++ = x );
@@ -246,14 +248,14 @@ unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n
 	return in;
   }
     #endif
-  #define VBDD { TEMPLATE2(_vbget, USIZE)(in, x, x+=VDELTA); *op++ = (start += x); }
-  for(op = out; op != out+(n&~(UN-1)); ) { 
-    VBDD; VBDD; VBDD; VBDD; 
+  #define VBDD(i) { TEMPLATE2(_vbget, USIZE)(in, x, x+=VDELTA); op[i] = (start += x); }
+  for(op = out; op != out+(n&~(UN-1)); op+=UN) { 
+    VBDD(0); VBDD(1); VBDD(2); VBDD(3); 
 	  #if UN > 4
-    VBDD; VBDD; VBDD; VBDD; 	  
+    VBDD(4); VBDD(5); VBDD(6); VBDD(7); 	  
       #endif
   }
-  while(op != out+n) VBDD;
+  while(op != out+n) VBDD(0);
   return in;
 }
 #undef VBDD
