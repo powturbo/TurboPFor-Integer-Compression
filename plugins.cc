@@ -101,12 +101,13 @@ enum {
   TB_VS_S4,   
   TB_VS_S8,
 
+#define C_TURBOPFORH    0
+  TB_PACK128H,		
 #define C_TURBOPFORV	CODEC0V
   TB_PFOR128,    	
   TB_PFOR256,
   TB_PFORN128,    	
   TB_PFORN256,
-  TB_PACK128H,		
   TB_PACK128V,		
   TB_PACK256H,		
   TB_PACK256V,		
@@ -368,7 +369,7 @@ struct plugs plugs[] = {
   { TB_FOR,			"TurboFor", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V128 }, 
   { TB_FORDA, 		"TurboForDA", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V128 }, 
   { TB_PACK128V, 	"TurboPackV", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V128 }, 
-  { TB_PACK128H, 	"TurboPackH", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V128 }, 
+//  { TB_PACK128H, 	"TurboPackH", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V128 }, 
   { TB_PACK256V, 	"TurboPack256V",	C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V256 }, 
   { TB_PACK256H, 	"TurboPack256H",	C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						"", 0,BLK_V256 }, 
   { TB_PACK,		"TurboPack", 		C_TURBOPFOR,	"",	"TurboPFor",			"",	"https://github.com/powturbo/TurboPFor", 						""/*, 0,BLK_V128*/ }, 
@@ -763,7 +764,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
 	    #endif
 	  #endif
 
-	  #if C_TURBOPFORV
+	  #if C_TURBOPFORH
     case TB_PACK128H:    VBGET32(in, x);*out = x; b = *in++;
       if(n <= 128) {                                      return inc?bitd1unpack32(    in, n-1, out+1, x, b):bitdunpack32(     in, n-1, out+1, x, b); } 
       else {                                              return inc?bitd1unpack128h32(in, n-1, out+1, x, b):bitdunpack128h32( in, n-1, out+1, x, b); }
@@ -1069,8 +1070,12 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_PACK256V:   if(b < 0) b = *in++; return n != 256?bitunpack32(in, n, out, b):bitunpack256v32(in, n, out, b);
         #endif
     case TB_ELIASFANOV:    					 return in;
-    case TB_PACK128H:   if(b < 0) b = *in++; return n != 128?bitunpack32(in, n, out, b):bitunpack128h32(in, n, out, b);
+
     case TB_PACK128V:   if(b < 0) b = *in++; return n != 128?bitunpack32(in, n, out, b):bitunpack128v32(in, n, out, b);
+      #endif
+
+	  #if C_TURBOPFORH
+    case TB_PACK128H:   if(b < 0) b = *in++; return n != 128?bitunpack32(in, n, out, b):bitunpack128h32(in, n, out, b);
       #endif
 
       #if C_FASTPFOR
