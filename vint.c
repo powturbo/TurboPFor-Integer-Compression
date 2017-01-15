@@ -255,7 +255,7 @@ unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n
     VBDD(4); VBDD(5); VBDD(6); VBDD(7); 	  
       #endif
   }
-  while(op != out+n) VBDD(0);
+  for(;op != out+n;op++) VBDD(0);
   return in;
 }
 #undef VBDD
