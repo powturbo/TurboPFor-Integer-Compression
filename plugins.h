@@ -22,6 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //	   TurboPFor: plugins.h - settings 
+#define PG_DLT    // delta
 
 struct plugs { 
   int  id; 
@@ -29,6 +30,10 @@ struct plugs {
   int  codec; 
   char *ver,*name,*lic,*url,*lev; 
   unsigned flag,blksize; 
+};
+
+struct plugg { 
+  char id[17],*desc,*s; 
 };
 
   #ifdef __cplusplus
