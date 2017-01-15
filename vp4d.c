@@ -61,6 +61,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
  
 #define P4DELTA(a)
 #define P4DELTA_(a)
+
 #define _P4DEC      _p4dec
 #define  P4DEC       p4dec
 #define  P4NDEC      p4ndec
@@ -69,10 +70,10 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  BITUNPACKD  bitunpack  // integrated unpack
 #define _BITUNPACKD  bitunpack  // integrated pfor
 
-#define USIZE 64
-#include "vp4d.c"
+#define  P4DECX  // direct access no 64 bits
 
-#define  P4DECX  // direct access
+#define USIZE 8
+#include "vp4d.c"
 
 #define USIZE 16
 #include "vp4d.c"
@@ -81,8 +82,12 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #include "vp4d.c"
 #undef  P4DECX
 
+#define USIZE 64
+#include "vp4d.c"
+
 #define P4DELTA(a) ,a
 #define P4DELTA_(a) a
+
 #define _P4DEC      _p4ddec			//delta0
 #define  P4DEC       p4ddec
 #define  P4NDEC      p4nddec
@@ -90,45 +95,16 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  BITUNPACKD  bitdunpack
 #define _BITUNPACKD _bitdunpack
 #define  BITUNDD     bitund
+#define USIZE 8
 #include "vp4d.c"
-
-#define _P4DEC      _p4d1dec        //delta1
-#define  P4DEC       p4d1dec
-#define  P4NDEC      p4nd1dec
-#define  P4NDECS     p4d1dec
-#define  BITUNPACKD  bitd1unpack
-#define _BITUNPACKD  bitd1unpack
-#define  BITUNDD     bitund1
-#include "vp4d.c"
-
 
 #define USIZE 16
-#define _P4DEC      _p4ddec			//delta0
-#define  P4DEC       p4ddec
-#define  P4NDEC      p4nddec
-#define  P4NDECS     p4ddec
-#define  BITUNPACKD  bitdunpack
-#define _BITUNPACKD _bitdunpack
-#define  BITUNDD     bitund
 #include "vp4d.c"
 
-#define _P4DEC      _p4d1dec        //delta1
-#define  P4DEC       p4d1dec
-#define  P4NDEC      p4nd1dec
-#define  P4NDECS     p4d1dec
-#define  BITUNPACKD  bitd1unpack
-#define _BITUNPACKD  bitd1unpack
-#define  BITUNDD     bitund1
+#define USIZE 32
 #include "vp4d.c"
 
 #define USIZE 64
-#define _P4DEC      _p4ddec			//delta0
-#define  P4DEC       p4ddec
-#define  P4NDEC      p4nddec
-#define  P4NDECS     p4ddec
-#define  BITUNPACKD  bitdunpack
-#define _BITUNPACKD _bitdunpack
-#define  BITUNDD     bitund
 #include "vp4d.c"
 
 #define _P4DEC      _p4d1dec        //delta1
@@ -138,9 +114,18 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  BITUNPACKD  bitd1unpack
 #define _BITUNPACKD  bitd1unpack
 #define  BITUNDD     bitund1
+#define USIZE 8
 #include "vp4d.c"
 
-                         
+#define USIZE 16
+#include "vp4d.c"
+
+#define USIZE 32
+#include "vp4d.c"
+
+#define USIZE 64
+#include "vp4d.c"
+                        
 #undef _P4DEC
 #undef  P4DEC
 #undef  BITUNPACK
@@ -283,7 +268,9 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
     if(b & 1)
 	  bx = *in++;
     return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx );
-  } else {  
+  }
+    #if USIZE > 8  
+  else {  
     uint_t ex[P4D_MAX+8]; 
 	b  = (b & 0x7f)>>1;
     bx = *in++;
@@ -307,6 +294,7 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
 	  #endif
     return in;
   }
+    #endif
 }
 
 #ifdef VSIZE
@@ -315,7 +303,7 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   #define CSIZE 128
 #endif
 
-unsigned char *TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  
+unsigned char *TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *__restrict out P4DELTA(uint_t start) ) {  
   uint_t *op;
   for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {             __builtin_prefetch(in+512);  
     unsigned b = *in++,bx,i;
@@ -324,7 +312,9 @@ unsigned char *TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, unsigned n
       if(b & 1)
 	    bx = *in++;
       in = TEMPLATE2(_P4DEC, USIZE)(in, CSIZE, op P4DELTA(start), b, bx );
-    } else {  
+    } 
+      #if USIZE > 8  
+	else {  
       uint_t ex[P4D_MAX+8]; 
 	  b  = (b & 0x7f)>>1;
       bx = *in++;
@@ -342,7 +332,8 @@ unsigned char *TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, unsigned n
         #ifdef BITUNDD
       TEMPLATE2(BITUNDD, USIZE)(op, CSIZE, start);
 	    #endif
-    }															//   in = TEMPLATE2(P4DEC, USIZE)(in, CSIZE, op P4DELTA(start));                         
+    }															//   in = TEMPLATE2(P4DEC, USIZE)(in, CSIZE, op P4DELTA(start));   
+      #endif	
     P4DELTA_(start = op[CSIZE-1]); 											
   }
   return TEMPLATE2(P4NDECS, USIZE)(in, n&(CSIZE-1), op P4DELTA(start)); 
