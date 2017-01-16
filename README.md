@@ -291,6 +291,13 @@ In general encoding/decoding functions are of the form:
   b      : number of bits. Only for bit unpacking functions<br />
   start  : previous value. Only for integrated delta decoding functions
 
+  **Simple high level functions:** 
+  >**size_t compressed_size = encode( unsigned *in, size_t n, char *out)**<br />
+  compressed_size : number of bytes written into compressed buffer out<br />
+   
+  >**size_t compressed_size = decode( char *in, size_t n, unsigned *out)**<br />
+  compressed_size : number of bytes read from compressed in<br />
+  
 header files to use with documentation:<br />
 
 | c/c++ header file|Integer Compression functions|
@@ -335,4 +342,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  15 JAN 2017
+Last update:  16 JAN 2017
