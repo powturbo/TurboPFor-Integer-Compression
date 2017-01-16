@@ -293,10 +293,10 @@ In general encoding/decoding functions are of the form:
 
   **Simple high level functions:** 
   >**size_t compressed_size = encode( unsigned *in, size_t n, char *out)**<br />
-  compressed_size : number of bytes written into compressed buffer out<br />
+  compressed_size : number of bytes written into compressed output buffer out<br />
    
   >**size_t compressed_size = decode( char *in, size_t n, unsigned *out)**<br />
-  compressed_size : number of bytes read from compressed in<br />
+  compressed_size : number of bytes read from compressed input buffer in<br />
   
 header files to use with documentation:<br />
 
