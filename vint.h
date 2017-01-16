@@ -83,10 +83,12 @@ extern unsigned char _vtab32_[];
 #define vbxput64(_op_, _x_) { unsigned long long _x = _x_; _vbxput64(_op_, _x, ;); }
 #define vbxput32(_op_, _x_) { register unsigned  _x = _x_; _vbxput32(_op_, _x, ;); }
 #define vbxput16(_op_, _x_)   vbxput32(_op_, _x_)
+#define vbxput8(  _op_, _x_)  (*_op_++ = _x_)
 
 #define vbxget64(_ip_, _x_) _vbxget64(_ip_, _x_, ;)
 #define vbxget32(_ip_, _x_) _vbxget32(_ip_, _x_, ;)
 #define vbxget16(_ip_, _x_)  vbxget32(_ip_,_x_)
+#define vbxget8(_ip_, _x_)       (_x_ = *_ip_++)
 //---------------------------------------------------------------------------
 #define VB_SIZE 64
 #define VB_MAX 254
@@ -159,10 +161,12 @@ static inline unsigned vbvlen64(unsigned x) { return _vbvlen64(x); }
 #define vbput64(_op_, _x_) { unsigned long long _x = _x_; _vbput64(_op_, _x, ;); }
 #define vbput32(_op_, _x_) { register unsigned  _x = _x_; _vbput32(_op_, _x, ;); }
 #define vbput16(_op_, _x_)   vbput32(_op_, _x_)
+#define vbput8(_op_, _x_)    (*_op_++ = _x_)
 
 #define vbget64(_ip_, _x_)     _vbget64(_ip_, _x_, ;)
 #define vbget32(_ip_, _x_)     _vbget32(_ip_, _x_, ;)
 #define vbget16(_ip_, _x_)      vbget32(_ip_,_x_)
+#define vbget8(_ip_, _x_)       (_x_ = *_ip_++)
 
 //----------------------------- Variable byte: array functions -----------------------------------------------------------------------
 // Encoding/DEcoding: Return value = end of compressed output/input buffer out/in

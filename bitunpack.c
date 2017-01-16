@@ -26,6 +26,7 @@
 #include "conf.h" 
 #include "bitutil.h" 
 #include "bitpack.h"
+#include "vint.h"
 #define PAD8(_x_) (((_x_)+7)/8)
 
 #pragma GCC push_options
@@ -82,33 +83,39 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 #undef OPI
 
 #define BITNUNPACK(in, n, out, csize, usize) {\
+  unsigned char *ip = in;\
   for(op = out,out+=n; op < out;) { unsigned oplen = out - op; if(oplen > csize) oplen = csize;		__builtin_prefetch(in+512);\
-    unsigned b = *in++; in = TEMPLATE2(bitunpacka, usize)[b](in, csize, op);\
+    unsigned b = *ip++; ip = TEMPLATE2(bitunpacka, usize)[b](ip, csize, op);\
 	op += csize;\
-  } return in;\
+  } \
+  return ip - in;\
 }
 
-#define BITNDUNPACK(in, n, out, csize, usize, _start_, _bitunpacka_) {\
-  for(op = out,out+=n; op < out;) { unsigned oplen = out - op; if(oplen > csize) oplen = csize;		__builtin_prefetch(in+512);\
-    unsigned b = *in++; in = TEMPLATE2(_bitunpacka_, usize)[b](in, csize, op, _start_);\
+#define BITNDUNPACK(in, n, out, csize, usize, _bitunpacka_) {\
+  if(!n) return 0;\
+  unsigned char *ip = in;\
+  TEMPLATE2(vbxget, usize)(ip, start); \
+  *out++ = start;\
+  for(--n,op = out,out+=n; op < out;) { unsigned oplen = out - op; if(oplen > csize) oplen = csize;		__builtin_prefetch(ip+512);\
+    unsigned b = *ip++; ip = TEMPLATE2(_bitunpacka_, usize)[b](ip, csize, op, start);\
 	op += csize;\
     start = op[-1];\
-  } return in;\
+  } return ip - in;\
 }
-unsigned char *bitnunpack8(   unsigned char *__restrict in, size_t n, uint8_t  *__restrict out) { uint8_t  *op; BITNUNPACK(in, n, out, 128,  8); } 
-unsigned char *bitnunpack16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op; BITNUNPACK(in, n, out, 128, 16); } 
-unsigned char *bitnunpack32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op; BITNUNPACK(in, n, out, 128, 32); } 
-unsigned char *bitnunpack64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op; BITNUNPACK(in, n, out, 128, 64); } 
+size_t bitnunpack8(   unsigned char *__restrict in, size_t n, uint8_t  *__restrict out) { uint8_t  *op; BITNUNPACK(in, n, out, 128,  8); } 
+size_t bitnunpack16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op; BITNUNPACK(in, n, out, 128, 16); } 
+size_t bitnunpack32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op; BITNUNPACK(in, n, out, 128, 32); } 
+size_t bitnunpack64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op; BITNUNPACK(in, n, out, 128, 64); } 
 
-unsigned char *bitndunpack8(  unsigned char *__restrict in, size_t n, uint8_t  *__restrict out, uint8_t  start) { uint8_t  *op; BITNDUNPACK(in, n, out, 128,  8, start, bitdunpacka); } 
-unsigned char *bitndunpack16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out, uint16_t start) { uint16_t *op; BITNDUNPACK(in, n, out, 128, 16, start, bitdunpacka); } 
-unsigned char *bitndunpack32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out, uint32_t start) { uint32_t *op; BITNDUNPACK(in, n, out, 128, 32, start, bitdunpacka); } 
-unsigned char *bitndunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restrict out, uint64_t start) { uint64_t *op; BITNDUNPACK(in, n, out, 128, 64, start, bitdunpacka); } 
+size_t bitndunpack8(  unsigned char *__restrict in, size_t n, uint8_t  *__restrict out) { uint8_t  *op,start; BITNDUNPACK(in, n, out, 128,  8, bitdunpacka); } 
+size_t bitndunpack16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; BITNDUNPACK(in, n, out, 128, 16, bitdunpacka); } 
+size_t bitndunpack32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; BITNDUNPACK(in, n, out, 128, 32, bitdunpacka); } 
+size_t bitndunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op,start; BITNDUNPACK(in, n, out, 128, 64, bitdunpacka); } 
 
-unsigned char *bitnd1unpack8( unsigned char *__restrict in, size_t n, uint8_t  *__restrict out, uint8_t  start) { uint8_t  *op; BITNDUNPACK(in, n, out, 128,  8, start, bitd1unpacka); } 
-unsigned char *bitnd1unpack16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out, uint16_t start) { uint16_t *op; BITNDUNPACK(in, n, out, 128, 16, start, bitd1unpacka); } 
-unsigned char *bitnd1unpack32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out, uint32_t start) { uint32_t *op; BITNDUNPACK(in, n, out, 128, 32, start, bitd1unpacka); } 
-unsigned char *bitnd1unpack64(unsigned char *__restrict in, size_t n, uint64_t *__restrict out, uint64_t start) { uint64_t *op; BITNDUNPACK(in, n, out, 128, 64, start, bitd1unpacka); } 
+size_t bitnd1unpack8( unsigned char *__restrict in, size_t n, uint8_t  *__restrict out) { uint8_t  *op,start; BITNDUNPACK(in, n, out, 128,  8, bitd1unpacka); } 
+size_t bitnd1unpack16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; BITNDUNPACK(in, n, out, 128, 16, bitd1unpacka); } 
+size_t bitnd1unpack32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; BITNDUNPACK(in, n, out, 128, 32, bitd1unpacka); } 
+size_t bitnd1unpack64(unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op,start; BITNDUNPACK(in, n, out, 128, 64, bitd1unpacka); } 
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 #ifdef __SSE2__

@@ -67,6 +67,7 @@
 typedef unsigned long long tm_t;
 #define TM_T 1000000.0
 #define TM_MAX (1ull<<63)
+#if 1
   #ifdef _WIN32
 #include <windows.h>
 static LARGE_INTEGER tps;
@@ -76,6 +77,9 @@ static tm_t tminit() { QueryPerformanceFrequency(&tps); tm_t t0=tmtime(),ts; whi
 static   tm_t tmtime(void)    { struct timespec tm; clock_gettime(CLOCK_MONOTONIC, &tm); return (tm_t)tm.tv_sec*1000000ull + tm.tv_nsec/1000; }
 static   tm_t tminit()        { tm_t t0=tmtime(),ts; while((ts = tmtime())==t0); return ts; }
   #endif
+#else
+#include "time_r.h"
+#endif
 //---------------------------------------- bench ----------------------------------------------------------------------
 #define TM_MAX (1ull<<63)
 
@@ -942,7 +946,7 @@ int becomp(unsigned char *_in, unsigned _inlen, unsigned char *_out, unsigned ou
       op = codcomp(ip, iplen, op, oe-op, id, lev, prm, ifmt);
 	  ip += iplen; 
       if(op > _out+outsize) 
-	    die("Overflow error %llu, %u in lib=%d\n", outsize, (int)(ptrdiff_t)(op - _out), id);                                                      
+	    die("Compress overflow error %llu, %u in lib=%d\n", outsize, (int)(ptrdiff_t)(op - _out), id);                                                      
     }
   }
   TMEND(_inlen);                   //  printf("cnt=%d, csize=%d\n", cnt, csize);  
@@ -958,9 +962,9 @@ int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outl
   for(ip = _in, out = _out; out < _out+_outlen;) {
     unsigned outlen=_outlen,bs; 
     if(mode) {  
-	  vbget32(ip, outlen); 	      									  //outlen      = ctou32(ip);  ip  += 4;  											              
+	  vbget32(ip, outlen); 	      									  	  //outlen      = ctou32(ip);  ip  += 4;  											              
       ctou32(out) = outlen;      out += 4;
-	  outlen *= 4;													      if(out+outlen >_out+_outlen) die("FATAL: overflow error %d ", outlen); 
+	  outlen *= 4;													      if(out+outlen >_out+_outlen) die("FATAL: decompress overflow output error %d ", outlen); 
     }
     for(op = out, out += outlen; op < out; ) { 
       unsigned oplen = out - op; 

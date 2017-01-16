@@ -290,18 +290,20 @@ unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsign
   return TEMPLATE2(_P4ENC, USIZE)(in, n, out, b, bx);
 }
 
-unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
+size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
+  if(!n) return 0;
+  unsigned char *op = out; 
   uint_t *ip; 
   for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
     unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(ip, CSIZE, &bx); 									
       #if EXCEP > 0
-    if(bx <= USIZE) { P4SAVE(out, b, bx); } else *out++= 0x80|b<<1;									
+    if(bx <= USIZE) { P4SAVE(op, b, bx); } else *op++= 0x80|b<<1;									
       #else
-    P4SAVE(out, b, bx); 
+    P4SAVE(op, b, bx); 
       #endif
-    out = TEMPLATE2(_P4ENC, USIZE)(ip, CSIZE, out, b, bx);  // out = TEMPLATE2(P4ENC, USIZE)(ip, CSIZE, out);    					
+    op = TEMPLATE2(_P4ENC, USIZE)(ip, CSIZE, op, b, bx);  // op = TEMPLATE2(P4ENC, USIZE)(ip, CSIZE, op);    					
   }                   
-  return TEMPLATE2(p4enc, USIZE)(ip, n&(CSIZE-1), out); 
+  return TEMPLATE2(p4enc, USIZE)(ip, n&(CSIZE-1), op) - out; 
 }
   #else
 ALWAYS_INLINE unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { if(!n) return out;
@@ -310,21 +312,25 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, uns
   return TEMPLATE2(P4ENC, USIZE)(_in, n, out);
 }
 
-unsigned char *TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out, uint_t start) {
-  uint_t *ip;
-  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
+size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
+  if(!n) return out;
+  unsigned char *op = out; 
+  uint_t *ip, start = *in++;
+  
+  TEMPLATE2(vbxput, USIZE)(op, start);
+  for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
     uint_t _in[P4D_MAX+8];
     TEMPLATE2(bitdelta, USIZE)(ip, CSIZE, _in, start, P4DELTA);
     unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
       #if EXCEP > 0
-    if(bx <= USIZE) { P4SAVE(out, b, bx); } else *out++= 0x80|b<<1;									
+    if(bx <= USIZE) { P4SAVE(op, b, bx); } else *op++= 0x80|b<<1;									
       #else
-    P4SAVE(out, b, bx); 
+    P4SAVE(op, b, bx); 
       #endif
-    out = TEMPLATE2(_P4ENC, USIZE)(_in, CSIZE, out, b, bx);  // out = TEMPLATE2(P4ENC, USIZE)(_in, CSIZE, out);                
+    op = TEMPLATE2(_P4ENC, USIZE)(_in, CSIZE, op, b, bx);  // op = TEMPLATE2(P4ENC, USIZE)(_in, CSIZE, op);                
     start = ip[CSIZE-1]; 					
   }                   
-  return TEMPLATE2(P4NENCS, USIZE)(ip, n&(CSIZE-1), out, start); 
+  return TEMPLATE2(P4NENCS, USIZE)(ip, n&(CSIZE-1), op, start) - out; 
 }
   #endif
 
