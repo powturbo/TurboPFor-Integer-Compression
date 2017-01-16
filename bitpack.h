@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 #include <stdint.h>
+#include <stddef.h>
 
 //******************** Bit Packing High Level API - n unlimited ***************************************************
 size_t bitnpack8(     uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 

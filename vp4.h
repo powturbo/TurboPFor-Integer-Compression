@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 #include <stdint.h>
+#include <stddef.h>
 //************************************************ High level API - n unlimited ****************************************************
 // Compress integer array with n values to the buffer out. 
 // Return value = number of bytes written to compressed buffer out
