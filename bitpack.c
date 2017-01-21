@@ -22,6 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //  "Integer Compression" bit packing 
+
 #include <stdio.h>
 #include "bitpack.h"
 #include "bitutil.h" 
