@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  "Integer Compression" variable byte include header 
+// "Integer Compression" variable byte include header 
 #ifndef VINT_H
 #define VINT_H
 #include <stdint.h>
