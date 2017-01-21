@@ -63,7 +63,6 @@ size_t bitnd1unpack32(unsigned char *__restrict in, size_t n, uint32_t *__restri
 size_t bitnd1unpack64(unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
 
 //******** Bit Packing Low level API ****************************************************************
-
 // bipackNN: Pack array with n unsigned (NN bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
 unsigned char *bitpack8(    uint8_t  *__restrict in, unsigned n, const unsigned char *__restrict out , unsigned b);
 unsigned char *bitpack16(   uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , unsigned b);
