@@ -103,8 +103,8 @@ public class jic {
   public native static int bitd1pack32(    	  int[] in, int n, byte[] out, int start, int b);
   public native static int bitd1unpack32( 	 byte[] in, int n,  int[] out, int start, int b);
 
-  //********* bit packing SIMD: single block limited to 128/256 integers
-  // High level API
+  //********* bit packing SIMD
+  // High level API: n unlimited
   public native static int bitnpack128v32(     int[] in, int n, byte[] out);
   public native static int bitnunpack128v32(  byte[] in, int n,  int[] out);
 
@@ -124,7 +124,7 @@ public class jic {
   public native static int bitnd1pack256v32(   int[] in, int n, byte[] out);
   public native static int bitnd1unpack256v32(byte[] in, int n,  int[] out);
 
-  // Low level API
+  // Low level API - single block limited to 128/256 integers
   public native static int bitpack128v32(     int[] in, int n, byte[] out, int b);
   public native static int bitunpack128v32(  byte[] in, int n,  int[] out, int b);
 
