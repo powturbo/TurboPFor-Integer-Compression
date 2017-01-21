@@ -1218,15 +1218,14 @@ void printfile(char *finame, int xstdout, int fmt, char *rem) {
 void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
   if(!n) 
     n = 25000000;
-  unsigned      *in  = malloc(n*4+OVD); if(!in)  die("malloc err=%u", n*4);
-  unsigned char *out = malloc(n*5+OVD); if(!out) die("malloc err=%u", n*5);
+  unsigned      *in  = malloc(n*4+OVD); 	if(!in)  die("malloc err=%u", n*4);
+  unsigned char *out = malloc(n*5+OVD); 	if(!out) die("malloc err=%u", n*5);
   unsigned      *cpy = malloc(n*4+OVD),b,i; if(!cpy) die("malloc err=%u", n*4);
   char s[33]; 
   s[0] = 0;                                                              	printf("bittest: %u-%u, n=%d\n", rm, rx, n); fflush(stdout);
-  for(b = rm; b <= min(rx,32); b++) {
-    srand(time(NULL));	                                                    sprintf(s,"b=%d", b);        
+  for(b = rm; b <= min(rx,32); b++) {    /*srand(time(NULL));*/	            sprintf(s,"b=%d", b);        
     for(i = 0; i < n; i++) 
-      in[i] = (unsigned)rand() & ((1ull << b)-1);
+      in[i] = /*(unsigned)rand() &*/ ((1ull << b)-1);
     if(ifmt >= 0) 
       for(in[0]=0,i = 1; i < n; i++) { 
         unsigned long long v = (unsigned long long)in[i-1] + in[i] + ifmt; 			if(v >= (1ull<<32)) die("overflow generating sorted array at %d,%x+%x->v=%llx\n", i, in[i], in[i-1], v ); 
@@ -1572,5 +1571,5 @@ int main(int argc, char* argv[]) {
         fprintf(fo, "%s\t%"PRId64"\t%"PRId64"\t%.6f\t%.6f\t%s\t%d\t%s\t%"PRId64"\t%"PRId64"\t%s\n", finame, totinlen, g->len, g->td, g->tc, g->s, g->lev, g->prm[0]?g->prm:"?", g->memc, g->memd, g->tms[0]?g->tms:tms);
     fclose(fo);
     printfile(s, 0, FMT_TEXT, rem);
-  } }
-
+  } 
+}
