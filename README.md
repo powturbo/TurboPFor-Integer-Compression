@@ -5,8 +5,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :+1: **Java** Critical Natives Interface. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
  - :sparkles: **FULL** range 8/16/32/64 bits lists
  - No other "Integer Compression" compress/decompress faster
- - Direct Access several times faster than other libraries
- - :sparkles: Integrated (SIMD) delta/Zigzag for sorted/unsorted arrays
+ - :sparkles: Direct Access, integrated (SIMD) delta/Zigzag for sorted/unsorted arrays
 <p>
 + **For/PFor/PForDelta**
  - **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
@@ -45,7 +44,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    
 ### Integer Compression Benchmark:
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
-- CPU: Skylake i7-6700 3.7GHz gcc 6.2 single thread 
+- CPU: Skylake i7-6700 3.4GHz gcc 6.2 single thread 
 
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
@@ -342,4 +341,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  16 JAN 2017
+Last update:  21 JAN 2017
