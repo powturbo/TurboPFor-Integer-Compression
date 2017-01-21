@@ -46,6 +46,12 @@ unsigned char *efanodec128v32( unsigned char *__restrict in, unsigned n, unsigne
 unsigned char *efano1enc128v32(unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
 unsigned char *efano1dec128v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
 
+unsigned char *efanoenc256v32( unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
+unsigned char *efanodec256v32( unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+
+unsigned char *efano1enc256v32(unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
+unsigned char *efano1dec256v32(unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned start);
+
 #ifdef __cplusplus
 }
 #endif
