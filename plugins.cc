@@ -100,8 +100,11 @@ enum {
   TB_VS_S1,
   TB_VS_S4,   
   TB_VS_S8,
-
-#define C_TURBOPFORH    1
+  #ifdef TURBOPFORH
+#define C_TURBOPFORH    CODEC0V
+  #else
+#define C_TURBOPFORH    0
+  #endif
   TB_PACK128H,		
 #define C_TURBOPFORV	CODEC0V
   TB_PFOR128,    	
