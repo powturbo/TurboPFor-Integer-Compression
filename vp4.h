@@ -82,7 +82,7 @@ size_t p4nd1dec64(    unsigned char *__restrict in, size_t n, uint64_t *__restri
 //************** Low level API - n limited to 128/256 ***************************************
 #define P4D_MAX 256
 
-// -------------- TurboPFor: Encode 
+// -------------- TurboPFor: Encode ------------
 //#include <assert.h>
 // Low level API: Single block n limited 
 //compress integer array with n values to the buffer out. Return value = end of compressed buffer out
