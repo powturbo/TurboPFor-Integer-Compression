@@ -34,17 +34,21 @@
 #include "bitpack.h"
 #include "bitutil.h"
 #include "eliasfano.h"
-  #ifdef __SSE42__
-static inline unsigned long long blsr(unsigned long long x) { unsigned long long r; asm ("blsrq %1, %0" : "=r" (r) : "r" (x)); return r; }  
-  #else
-static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1); } 
-//#define blsr(_x_) (_x_ & (_x_ - 1))
-  #endif
- 
-#define bit_t unsigned long long
-#define EFE(__x,__i,__start) ((__x[__i] - __start)-(__i)*EF_INC)
- 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
+
+  #ifdef __SSE42__
+#include <nmmintrin.h>
+#define bslr32(x) _blsr_u32(x)
+#define bslr64(x) _blsr_u64(x)
+  #else
+//static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1); } 
+#define blsr32(_x_) ((_x_) & ((_x_) - 1))
+#define blsr64(_x_) ((_x_) & ((_x_) - 1))
+  #endif
+#define blsr8(_x_)  blsr32(_x_)
+#define blsr16(_x_) blsr32(_x_)
+ 
+#define EFE(__x,__i,__start) ((__x[__i] - __start)-(__i)*EF_INC)
 
 #define BITPACK bitpack
 #define BITUNPACK bitunpack
@@ -90,30 +94,38 @@ static inline unsigned long long blsr(unsigned long long x) { return x & (x - 1)
 
 //----------------------
   #ifndef NSIMD 
+    #ifdef __SSE2__
 #define VSIZE 128
-#define BITPACK bitpack128v
+
+#define BITPACK   bitpack128v
 #define BITUNPACK bitunpack128v
 #define EF_INC 1
-#define EFANOENC efano1enc128v
-#define EFANODEC efano1dec128v
+#define EFANOENC  efano1enc128v
+#define EFANODEC  efano1dec128v
 
 #define USIZE 32
 #include "eliasfano.c"
-#undef USIZE
 
-#undef EF_INC
-#undef EFANOENC
-#undef EFANODEC
-
-    #ifdef __SSE2__
 #define EF_INC 0
-#define EFANOENC efanoenc128v
-#define EFANODEC efanodec128v
+#define EFANOENC  efanoenc128v
+#define EFANODEC  efanodec128v
 
-#define USIZE 32
 #include "eliasfano.c"
-#undef USIZE
-#undef VSIZE
+    #endif
+	
+    #ifdef __AVX2__
+#define VSIZE 256
+#define BITPACK bitpack256v
+#define BITUNPACK bitunpack256v
+#define EF_INC 1
+#define EFANOENC efano1enc256v
+#define EFANODEC efano1dec256v
+#include "eliasfano.c"
+
+#define EF_INC 0
+#define EFANOENC efanoenc256v
+#define EFANODEC efanodec256v
+#include "eliasfano.c"
     #endif
   #endif
 
@@ -154,12 +166,10 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
 }
 
 unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
-
-  if(!n) return out; 
-
+  if(!n) return in;
   unsigned char *ip = in;  																										
   unsigned      i,j,lb   = *ip++;           	
-  bit_t         b; 
+  uint64_t       b; 
    
   if(!lb) { 
       #if defined(__SSE2__) && USIZE == 32
@@ -175,17 +185,20 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
   }
   
   ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
-  for(i=j=0;; j += sizeof(bit_t)*8) 
-    for(b = *(bit_t *)(ip+(j>>3)); ; ) { 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 	   
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr(b); i++; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; i++; 	   
-	  if(unlikely(i >= n)) goto e; b = blsr(b);
+  for(i=j=0;; j += sizeof(uint64_t)*8) {											__builtin_prefetch(ip+256);
+    for(b = ctou64(ip+(j>>3)); ; ) { 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
+	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC;
+	  if(unlikely(++i >= n)) 
+        goto e; 
+      b = blsr64(b);
 	}
+  }
   e:return ip + PAD8((EFE(out,n-1,start)>>lb)+n); 
 }
+
 #pragma clang diagnostic pop
 #endif
