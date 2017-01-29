@@ -306,20 +306,20 @@ In general encoding/decoding functions are of the form:
 
 ### Function syntax:
  - {vb | p4 | bit | vs}[d | d1 | f | fm | z ]{enc/dec | pack/unpack}[| 128V | 256V][8 | 16 | 32 | 64]:<br />
-   prefix = vb:  variable byte 
-            p4:  turbopfor
-			vs:  variable simple
-			bit: bit packing
+   prefix = vb:  variable byte<br />
+            p4:  turbopfor<br />
+			vs:  variable simple<br />
+			bit: bit packing<br />
 		
-   d:  delta encoding for increasing integer lists (sorted w/ duplicate)
-   d1: delta encoding for strictly increasing integer lists (sorted unique)
-   f : FOR encoding for sorted integer lists
-   fm: FOR encoding for unsorted integer lists
-   z:  ZigZag encoding for unsorted integer lists
+   d:  delta encoding for increasing integer lists (sorted w/ duplicate)<br />
+   d1: delta encoding for strictly increasing integer lists (sorted unique)<br />
+   f : FOR encoding for sorted integer lists<br />
+   fm: FOR encoding for unsorted integer lists<br />
+   z:  ZigZag encoding for unsorted integer lists<br />
    
-   enc/pack:  encode
-   dec/unpack:decode
-   XX : integer size (8/16/32/64
+   enc/pack:  encode<br />
+   dec/unpack:decode<br />
+   XX : integer size (8/16/32/64<br />
    
 header files to use with documentation:<br />
 
