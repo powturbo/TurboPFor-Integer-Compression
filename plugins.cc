@@ -389,9 +389,9 @@ struct plugs plugs[] = {
   { TB_PFDA,		"TurboPForDA", 		C_TURBOPFOR,	BLK_V128,0,"","PFor direct access" }, 
   
   { TB_FOR,			"TurboFor", 		C_TURBOPFOR,	BLK_V128,0,"","FOR" }, 
-  { TB_FORDA, 		"TurboForDA", 		C_TURBOPFOR,	BLK_V128,0,"","FOR direct access" }, 
   { TB_FOR128V,		"TurboForV", 		C_TURBOPFOR,	BLK_V128,0,"","FOR (SIMD)" }, 
   { TB_FOR256V,		"TurboFor256V", 	C_TURBOPFOR,	BLK_V256,0,"","FOR (AVX2)" }, 
+  { TB_FORDA, 		"TurboForDA", 		C_TURBOPFOR,	BLK_V128,0,"","FOR direct access" }, 
 
   { TB_BP,			"TurboPack", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar)" }, 
   { TB_BPN,			"TurboPackN", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar) large blocks" }, 
@@ -477,8 +477,8 @@ struct plugs plugs[] = {
 };
 
 struct plugg plugg[] = {
-  { "TURBOPFOR","TURBOPFOR",  					"TurboPFor/TurboPFor256/TurboPackV256/TurboPackV/TurboVByte/TurboPack/TurboForDA/EliasFano/VSimple" },
-  { "DEFAULT",	"Default",  					"TurboPFor/TurboPFor256/TurboPackV256/TurboPackV/TurboVByte/TurboPack" },
+  { "TURBOPFOR","TURBOPFOR",  					"TurboPFor/TurboPFor256/TurboPack256V/TurboPackV/TurboVByte/TurboPack/TurboForDA/EliasFano/VSimple" },
+  { "DEFAULT",	"Default",  					"TurboPFor/TurboPFor256/TurboPack256V/TurboPackV/TurboVByte/TurboPack" },
   { "BENCH",	"Benchmark",  					"TurboPFor/TurboPackV/TurboVByte/TurboPack/QMX/FP.SimdFastPfor/FP.SimdOptPFor/MaskedVbyte/StreamVbyte" },
   { "EFFICIENT","Efficient",					"TurboPFor/vsimple/turbovbyte" },
 
@@ -491,7 +491,6 @@ struct plugg plugg[] = {
   { "" }
 };
 
-#define _TRANSFORM     // Transform functions : transpose,zigzag
 #define _TP_BITS 1     // transpose bits (4,8,16,32,64)
 
   #if C_C_BLOSC  
@@ -572,7 +571,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
   unsigned *in = (unsigned *)_in, n = (_n+3) / 4, i, pa[BLK_SIZE+2048], x, b;
   
   switch(codec) {	  
-    case TB_VSIMPLE: x = *in++; bitdelta32( in, --n, pa, x, inc);
+    case TB_VSIMPLE: x = *in++; bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);			return vsenc32(         pa, n, out);
     case TB_VBYTE:   x = *in++; --n; vbxput32(out, x);			return inc?vbd1enc32(   in, n, out, x   ):vbdenc32(     in, n, out, x);
     case TB_EF:      x = *in++; --n; vbxput32(out, x);			return inc?efano1enc32( in, n, out, x+1 ):efanoenc32(   in, n, out, x);
@@ -612,10 +611,10 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_EF256V: x = *in++; --n;  vbxput32(out, x);         
       if(inc)  													return n == 256?efano1enc256v32(in, n, out, x+1 ):efano1enc32(  in, n, out, x+1);
       else     													return n == 256?efanoenc256v32( in, n, out, x   ):efanoenc32(   in, n, out, x  );
-    case TB_PF256V: x = *in++; bitdelta32( in, --n, pa, x, inc);
+    case TB_PF256V: x = *in++; bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);       	return n == 256?p4enc256v32(    pa, n, out      ):p4enc32(      pa, n, out);
     case TB_PFN256V:         									return out+(inc?p4nd1enc256v32( in, n, out      ):p4ndenc256v32(in, n, out));
-    case TB_BP256V: x = *in++;bitdelta32( in, --n, pa, x, inc);
+    case TB_BP256V: x = *in++;bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);*out++=b; return n == 256?bitpack256v32(  pa, n, out, b   ):bitpack32(    pa, n, out,b);
   /*case TB_BP256V:   x = *in++;                 --n;
       if(inc) { b = bitd132(in, n, x); vbxput32(out, x); *out++=b; return n == 256?bitd1pack256v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
@@ -624,13 +623,13 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       #endif
 	//-------- External libs ----------   
       #if C_SIMPLE8B  
-    case AM_SIMPLE8B: b = bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); if(b>28) die("simple-8b overflow.bits size>28\n");
+    case AM_SIMPLE8B: b = bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); if(b>28) die("simple-8b overflow.bits size>28\n");
 																return vs8benc(  pa, n, out);
       #endif  
     case P_COPY:                                                return u32enc( in, n, (unsigned *)out);
     case P_MCPY: 	   	memcpy(out, _in, _n); 					return out+_n;
 	  #if C_FASTPFOR
-    case FP_VBYTE:      bitdelta32( in, n, pa, -inc, inc);      return vbyteenc( pa, n, (unsigned *)out); 
+    case FP_VBYTE:      bitdenc32( in, n, pa, -inc, inc);      return vbyteenc( pa, n, (unsigned *)out); 
       #endif
 
 	  #if C_MASKEDVBYTE
@@ -643,29 +642,29 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       #endif
 
 	  #if C_POLYCOM
-    case PC_VBYTE:          bitdelta32( in,     n, pa, -inc, inc);return vbpolyenc(pa, n, out);
-    case PC_SIMPLE16:   b = bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]);                    if(b>28) die("simple16 overflow.bits size>28\n");
+    case PC_VBYTE:          bitdenc32( in,     n, pa, -inc, inc);return vbpolyenc(pa, n, out);
+    case PC_SIMPLE16:   b = bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]);                    if(b>28) die("simple16 overflow.bits size>28\n");
 															    return vs16enc(  pa, n, (unsigned *)out); 
-    case PC_OPTPFD: b = bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]);						if(b>28) die("optp4 overflow.bits size>28\n");
+    case PC_OPTPFD: b = bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]);						if(b>28) die("optp4 overflow.bits size>28\n");
 																return optpfdenc32(pa, n, out);
-      /*b = bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]);                                                     if(b>28) die("optp4 overflow.bits size>28\n");
+      /*b = bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]);                                                     if(b>28) die("optp4 overflow.bits size>28\n");
       if(n < 128)                                                                           return vbyteenc(  pa, n, (unsigned *)out);
       else {                                                                                return out + OPT4(pa, n, (unsigned *)out); }*/
       #endif
 
 	  #if C_QMX
-  //case P_QMX:  { bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); unsigned char *q = qmx_enc(pa, n, out+4); *(unsigned *)out = q - (out+4); return q; }
-    case P_QMX:  { bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx    qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }
-    case P_QMX2: { bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx_v2 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }
-    case P_QMX3: { bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx_v3 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }
-    case P_QMX4: { bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx_v4 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }	 
+  //case P_QMX:  { bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); unsigned char *q = qmx_enc(pa, n, out+4); *(unsigned *)out = q - (out+4); return q; }
+    case P_QMX:  { bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx    qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }
+    case P_QMX2: { bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx_v2 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }
+    case P_QMX3: { bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx_v3 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }
+    case P_QMX4: { bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); ANT_compress_qmx_v4 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)pa, (uint64_t)n); ctou32(out)=r; return out+4+r; }	 
 	  #endif  
 
       #if C_SIMDCOMP				  
     case SC_FOR:
     case SC_FORDA:  x = *in++; b = bitf32( in, --n, x); vbxput32(out, x); *out++=b; 	   return (unsigned char *)simdpackFOR_length(x, in, n, (__m128i *)out, b);
     case SC_SIMDPACK128:                                                                                   
-      if(n < 129) { bitdelta32( in, n, pa, -inc, inc);                                     return vbyteenc((unsigned *)pa, n, (unsigned *)out); }
+      if(n < 129) { bitdenc32( in, n, pa, -inc, inc);                                     return vbyteenc((unsigned *)pa, n, (unsigned *)out); }
       else { b = simdmaxbitsd1(in[0], in+1);               vbxput32(out, in[0]); *out++=b; return simdpackwithoutmaskd1n(in+1, n-1, (unsigned *)out, in[0], b); }   
 	  #endif																					  else {                                   simdpackFOR(in[0], (in+1),    (__m128i *)out, b); return out + simdpackFOR_compressedbytes(n, b); } 
 
@@ -674,24 +673,24 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       #endif  
 	  
       #if C_VARINTG8IU
-    case P_VARINTG8IU:     bitdelta32( in, n, pa, -inc, inc);                                  return vintg8enc(pa, n, out);
+    case P_VARINTG8IU:     bitdenc32( in, n, pa, -inc, inc);                                  return vintg8enc(pa, n, out);
       #endif
       // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:b = bitzigzag32(in, n, (unsigned *)out,  0); return out + n*4;
-    case TB_TP8_32:   bitdelta32(in, n, (unsigned *)sbuf, -inc, inc); _transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case TB_TP8V_32:  bitdelta32(in, n, (unsigned *)sbuf, -inc, inc); TRANSPOSE(   (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case TB_TP4V_32:  bitdelta32(in, n, (unsigned *)sbuf, -inc, inc); transposen4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case TB_DELTA_32: bitdelta32(in, n, (unsigned *)out,  -inc, inc); return out + n*4; 
+    case TB_ZIGZAG_32:b = bitzenc32(in, n, (unsigned *)out,  0, 0); return out + n*4;
+    case TB_TP8_32:   bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); _transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
+    case TB_TP8V_32:  bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); TRANSPOSE(   (unsigned char *)sbuf, n*4, out); return out + n*4;
+    case TB_TP4V_32:  bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); transposen4( (unsigned char *)sbuf, n*4, out); return out + n*4;
+    case TB_DELTA_32: bitdenc32(in, n, (unsigned *)out,  -inc, inc); return out + n*4; 
       #endif
 
       // --------- delta + transpose + lz77 ----------------------------------------------------------------------------------------
       #if C_LZTURBO
-    case P_LZT10:{ bitdelta32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20:{ bitdelta32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22:{ bitdelta32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
-    case P_VSHUF:{ bitdelta32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); unsigned char *p = mheenc(sbuf, n*4,    MH_BLK, out+4, out+n*4+MH_BLK); ctou32(out) = p-(out+4); return p; }
-    //case P_VSHUF:{ bitdelta32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); unsigned char *p=vsenc32(pa, n, sbuf); p = mheenc(sbuf, p-sbuf, MH_BLK, out+4, out+n*4+1024); ctou32(out) = p-(out+4); return p; }
+    case P_LZT10:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZT20:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
+    case P_LZT22:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
+    case P_VSHUF:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); unsigned char *p = mheenc(sbuf, n*4,    MH_BLK, out+4, out+n*4+MH_BLK); ctou32(out) = p-(out+4); return p; }
+    //case P_VSHUF:{ bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); unsigned char *p=vsenc32(pa, n, sbuf); p = mheenc(sbuf, p-sbuf, MH_BLK, out+4, out+n*4+1024); ctou32(out) = p-(out+4); return p; }
       #endif
 	  
       #if C_C_BLOSC
@@ -703,16 +702,16 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
 
       #if C_LZ4
         #if C_BITSHUFFLE      
-    case LZ4_S1: { bitdelta32(in, n, (unsigned *)out, -inc, inc);  BITSHUFFLE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
+    case LZ4_S1: { bitdenc32(in, n, (unsigned *)out, -inc, inc);  BITSHUFFLE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
         #endif
     case LZ4_  : return out + LZ4_compress((char *)in, (char *)out, n*4);
-    case LZ4_S4: { bitdelta32(in, n, (unsigned *)out, -inc, inc); transposen4((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
-    case LZ4_S8: { bitdelta32(in, n, (unsigned *)out, -inc, inc);   TRANSPOSE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
+    case LZ4_S4: { bitdenc32(in, n, (unsigned *)out, -inc, inc); transposen4((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
+    case LZ4_S8: { bitdenc32(in, n, (unsigned *)out, -inc, inc);   TRANSPOSE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
       #endif
 	    
       #if C_ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { bitdelta32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+      { bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
   }
   return out;
@@ -722,7 +721,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
   unsigned *out = (unsigned *)_out, n = (outlen+3) / 4,x,b; 	
   
   switch(codec) { 
-    case TB_VSIMPLE:vbxget32(in, x);*out++ = x; --n; 			in = vsdec32(                 in, n, out); bitundn32(out, n, x+inc, inc); return in;
+    case TB_VSIMPLE:vbxget32(in, x);*out++ = x; --n; 			in = vsdec32(                 in, n, out); bitddecn32(out, n, x+inc, inc); return in;
     case TB_EF:	    vbxget32(in, x);*out++ = x; --n;     		return inc?efano1dec32(       in, n, out, x+1 ):efanodec32(      in, n, out, x);
     case TB_VBYTE: 	vbxget32(in, x);*out++ = x; --n; 	   		return inc?vbd1dec32(         in, n, out, x   ):vbddec32(        in, n, out, x);
 
@@ -765,7 +764,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
       else {                                              		return n==256?bitdunpack256v32( in, n, out, x, b):bitdunpack32(  in, n, out, x, b); }
     /*case TB_BP256V:vbxget32(in, x);*out = x; --n; b = *in++;
       if(n <= 256)                                       		return inc?bitd1unpack32(   in, n-1, out+1, x, b):bitdunpack32(  in, n-1, out+1, x, b);
-      else { 													in = bitunpack256v32(     in,      out+1,    b);bitundn32(out, n, -inc, inc); } break;*/
+      else { 													in = bitunpack256v32(     in,      out+1,    b);bitddecn32(out, n, -inc, inc); } break;*/
 	    #endif
 	  #endif
 
@@ -780,11 +779,11 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case P_MCPY: 	  memcpy(_out, in, _n); 		  	  		return _out+_n;
 
       #if C_SIMPLE8B  
-    case AM_SIMPLE8B: vbxget32(in, x);*out++ = x; --n; in = vs8bdec(in, n, out); bitundn32(out, n, x+inc, inc); break;
+    case AM_SIMPLE8B: vbxget32(in, x);*out++ = x; --n; in = vs8bdec(in, n, out); bitddecn32(out, n, x+inc, inc); break;
 	  #endif
 
 	  #if C_FASTPFOR
-    case FP_VBYTE:    in = vbytedec(  in, n,   out);            bitundn32(out, n, -inc, inc); break;
+    case FP_VBYTE:    in = vbytedec(  in, n,   out);            bitddecn32(out, n, -inc, inc); break;
 	  #endif
 	  
       #if C_LIBFOR
@@ -797,24 +796,24 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
       #endif
 
 	  #if C_POLYCOM
-    case PC_VBYTE:                              in = vbpolydec(          in, n,   out);          bitundn32(out, n, -inc, inc); break;
-    case PC_SIMPLE16: vbxget32(in, x); *out = x; in = vs16dec((unsigned *)in, n-1, out+1);      bitundn32(out, n, -inc, inc); break;
-    case PC_OPTPFD:   vbxget32(in, x); *out = x; in = optpfddec32(in,n-1,out+1); bitundn32(out+1, n-1, x, inc); break;
+    case PC_VBYTE:                              in = vbpolydec(          in, n,   out);          bitddecn32(out, n, -inc, inc); break;
+    case PC_SIMPLE16: vbxget32(in, x); *out = x; in = vs16dec((unsigned *)in, n-1, out+1);      bitddecn32(out, n, -inc, inc); break;
+    case PC_OPTPFD:   vbxget32(in, x); *out = x; in = optpfddec32(in,n-1,out+1); bitddecn32(out+1, n-1, x, inc); break;
       /*if(n < 129)                          in = vbytedec(in, n, out);
       else {      _VBGET32(in, x, *out = x); unsigned all_array[2048]; in = (unsigned char *)detailed_p4_decode(out+1, (unsigned *)in, all_array); }
-                                                                                            bitundn32(out, n, -inc, inc); break;*/
+                                                                                            bitddecn32(out, n, -inc, inc); break;*/
 	  #endif
-    //case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; in = qmx_dec(in+4, l, out+1, n-1); bitundn32(out+1, n-1, x, inc); break; }   
+    //case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; in = qmx_dec(in+4, l, out+1, n-1); bitddecn32(out+1, n-1, x, inc); break; }   
       #if C_QMX    										//case P_QMX: return qmx_dec(in+4, ctou32(in), out, n); 
-	case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx  qmx;   qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitundn32(out+1, n-1, x, inc); return in+4+ctou32(in);} 
-    case P_QMX2: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v2 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitundn32(out+1, n-1, x, inc); return in+4+ctou32(in);}
-    case P_QMX3: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v3 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitundn32(out+1, n-1, x, inc); return in+4+ctou32(in);}
-    case P_QMX4: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v4 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitundn32(out+1, n-1, x, inc); return in+4+ctou32(in);}	 
+	case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx  qmx;   qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitddecn32(out+1, n-1, x, inc); return in+4+ctou32(in);} 
+    case P_QMX2: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v2 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitddecn32(out+1, n-1, x, inc); return in+4+ctou32(in);}
+    case P_QMX3: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v3 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitddecn32(out+1, n-1, x, inc); return in+4+ctou32(in);}
+    case P_QMX4: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v4 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitddecn32(out+1, n-1, x, inc); return in+4+ctou32(in);}	 
       #endif
  	  
 	  #if C_SIMDCOMP
     case SC_SIMDPACK128:
-      if(n < 129) { in = vbytedec(in, n, out);               bitundn32(out, n, -inc, inc); }
+      if(n < 129) { in = vbytedec(in, n, out);               bitddecn32(out, n, -inc, inc); }
       else {        vbxget32(in, x);*out = x; b = *in++; in = simdunpackd1n((uint32_t *)in, n-1, out+1, out[0], b); } break;
 	  
     case SC_FOR:    vbxget32(in, x);*out = x; b = *in++; if(n < 129) return (unsigned char *)simdunpackFOR_length(x, (const __m128i *)in, n-1, (unsigned *)(out+1), b); else { simdunpackFOR(x, (const __m128i *)in, (unsigned *)(out+1), b); return in + simdpackFOR_compressedbytes(n-1, b); }
@@ -826,29 +825,29 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
 	  #endif  
 	  
       #if C_VARINTG8IU
-    case P_VARINTG8IU:                              in = vintg8dec(          in, n,   out);          bitundn32(out, n, -inc, inc); break;    
+    case P_VARINTG8IU:                              in = vintg8dec(          in, n,   out);          bitddecn32(out, n, -inc, inc); break;    
       #endif   
 					//---------- transpose + lz77 ----------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:memcpy(out, in, n*4); bitunzigzag32(out, n, 0); return in + n*4;
-    case TB_TP8_32:   _untranspose4((unsigned char *)in, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); return in + n*4;
-    case TB_TP8V_32:  UNTRANSPOSE(  (unsigned char *)in, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); return in + n*4;
-    case TB_TP4V_32:  untransposen4((unsigned char *)in, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); return in + n*4;
-    case TB_DELTA_32: memcpy(out, in, n*4); bitundn32(out, n, -inc, inc); return in + n*4;
+    case TB_ZIGZAG_32:memcpy(out, in, n*4); bitzdec32(out, n, 0); return in + n*4;
+    case TB_TP8_32:   _untranspose4((unsigned char *)in, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); return in + n*4;
+    case TB_TP8V_32:  UNTRANSPOSE(  (unsigned char *)in, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); return in + n*4;
+    case TB_TP4V_32:  untransposen4((unsigned char *)in, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); return in + n*4;
+    case TB_DELTA_32: memcpy(out, in, n*4); bitddecn32(out, n, -inc, inc); return in + n*4;
       #endif
                      //---------- delta + transpose + lz77 ----------------------
       #if C_LZ4
         #if C_BITSHUFFLE      
-    case LZ4_S1: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); break;       
+    case LZ4_S1: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); break;       
         #endif     
     case LZ4_  : in += LZ4_decompress_fast((char *)in, (char *)out, n*4); break;       
-    case LZ4_S4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposen4(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); break;       
-    case LZ4_S8: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); break;       
+    case LZ4_S4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposen4(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); break;       
+    case LZ4_S8: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); break;       
       #endif     
 
       #if C_ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); } break;
+      { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
       #endif
 
       #if C_C_BLOSC
@@ -858,13 +857,13 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
       #endif
 
       #if C_LZTURBO
-    case P_LZT10: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz);  UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); } break;
+    case P_LZT10: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz);  UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
     case P_LZT20:
-    case P_LZT22: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz);  UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); } break;
-    //case P_VSHUF: vbxget32(in, x);*out = x; in += ansdecompress( in, (n-1)*4, sbuf); vsdec32( sbuf, n-1, out+1); bitundn32(out, n, -inc, inc); break;
+    case P_LZT22: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz);  UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
+    //case P_VSHUF: vbxget32(in, x);*out = x; in += ansdecompress( in, (n-1)*4, sbuf); vsdec32( sbuf, n-1, out+1); bitddecn32(out, n, -inc, inc); break;
 
-    case P_VSHUF:  { unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitundn32(out, n, -inc, inc); } break;
-    //case P_VSHUF:  { vbxget32(in, x);*out = x; unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); vsdec32(sbuf, n-1, out+1); bitundn32(out+1, n-1, x, inc); } break;
+    case P_VSHUF:  { unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
+    //case P_VSHUF:  { vbxget32(in, x);*out = x; unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); vsdec32(sbuf, n-1, out+1); bitddecn32(out+1, n-1, x, inc); } break;
       #endif
   } 
   return in;
@@ -878,9 +877,11 @@ unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_BP:     x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return bitzpack32(in, n, out, x, b);
     case TB_BPN:    x = *in++; --n; vbxput32(out, x);           					return out+bitnzpack32(in, n, out);
 	  #if C_TURBOPFORV
+    case TB_PF128V: x = *in++; --n; vbxput32(out, x);                               return n == 128?p4zenc128v32(in, n, out, x):p4zenc32(in, n, out, x);
+    case TB_PFN128V:    										                    return out+p4nzenc128v32( in, n, out );
     case TB_BP128V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 128?bitzpack128v32(in, n, out, x, b):bitzpack32(in, n, out, x, b);
         #ifdef __AVX2__
-    //case TB_BP256V: b = bitz32(in, n, x); *out++=b; return n == 256?bitzpack256v32(in, n, out, x, b ):bitzpack32(in, n, out,x, b);
+    //case TB_BP256V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 256?bitzpack256v32(in, n, out, x, b):bitzpack32(in, n, out,x, b);
         #endif 
       #endif
   }
@@ -890,16 +891,17 @@ unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int
 unsigned char *coddecompz(unsigned char *in, unsigned _n, unsigned char *_out, int outlen, int codec, int lev, char *prm, int inc) { 
   unsigned *out = (unsigned *)_out, n = (outlen+3) / 4,x,b; 	
   
-  
   switch(codec) { 
     case TB_VBYTE: vbxget32(in, x); *out++ = x; --n; 			return vbzdec32(in, n, out, x);
     case TB_BP:    vbxget32(in, x); *out++ = x; --n; b = *in++; return bitzunpack32(in, n, out, x, b);
     case TB_BPN:   vbxget32(in, x); *out++ = x; --n;            return in+bitnzunpack32(in, n, out);
 
 	  #if C_TURBOPFORV
+    case TB_PFN128V:       							  		    return in+p4nzdec128v32(in, n, out);
+    case TB_PF128V:vbxget32(in, x); *out++ = x; --n;            return n == 128?p4zdec128v32(in, n, out, x):p4zdec32(in, n, out, x);
     case TB_BP128V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 128?bitzunpack128v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
         #ifdef __AVX2__
-    //case TB_BP256V: b = *in++; return n == 256?bitzunpack256v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
+    //case TB_BP256V: vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 256?bitzunpack256v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
 	    #endif
 	  #endif
   } 
@@ -1043,7 +1045,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 	  
       // --------- transform ----------------------------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:  bitzigzag32(in, n, (unsigned *)out, 0);      return out + n*4;
+    case TB_ZIGZAG_32:  bitzenc32(in, n, (unsigned *)out, 0,0);      return out + n*4;
     case TB_TP8_32:     _transpose4( (unsigned char *)in, n*4, out); return out + n*4;
     case TB_TP8V_32:    TRANSPOSE( (unsigned char *)in, n*4, out);   return out + n*4;
     case TB_TP4V_32:    transposen4( (unsigned char *)in, n*4, out); return out + n*4;
@@ -1231,7 +1233,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
       #endif
       //---------- transform ----------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:  memcpy(out, in, n*4); bitunzigzag32(out, n, 0); 				return in + n*4;
+    case TB_ZIGZAG_32:  memcpy(out, in, n*4); bitzdec32(out, n, 0); 				return in + n*4;
     case TB_TP8_32:    _untranspose4(  (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
     case TB_TP8V_32:    UNTRANSPOSE( (unsigned char *)in, n*4, (unsigned char *)out); 	return in + n*4;
     case TB_TP4V_32:    untransposen4( (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
