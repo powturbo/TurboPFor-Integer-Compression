@@ -319,7 +319,7 @@ In general encoding/decoding functions are of the form:
    
    enc/pack:  encode<br />
    dec/unpack:decode<br />
-   XX : integer size (8/16/32/64<br />
+   XX : integer size (8/16/32/64)<br />
    
 header files to use with documentation:<br />
 
