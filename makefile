@@ -189,7 +189,7 @@ OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o
 ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o 
 
 ifeq ($(NSIMD),0)
-#ICLIB+=bitunpack128h.o
+ICLIB+=bitunpack128h.o
 endif
 #---------------------
 OB+=$(ICLIB)
@@ -198,7 +198,7 @@ icbench: $(OB) icbench.o plugins.o
 	$(CXX) $^ $(LDFLAGS) -o icbench
 
 .c.o:
-	$(CC) -O3 $(MARCH) $(CFLAGS) $< -c -o $@  
+	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@  
 
 .cc.o:
 	$(CXX) -O3 $(MARCH) $(CXXFLAGS)  $< -c -o $@ 
