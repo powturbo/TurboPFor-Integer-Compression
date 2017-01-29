@@ -154,8 +154,8 @@ static inline uint64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x
 #define BITZERO32(   _out_, _n_, _start_)        BITFORSET_(_out_, _n_, _start_, 0)
   #endif
 
-#define DELTR( _in_, _n_, _mode_,      _out_) { unsigned _v; for(      _out_[0]=_in_[0],_v = 1;     _v < _n_; _v++) _out_[_v] = (_in_[_v] - _out_[0]) -   _v*_mode_; }
-#define DELTRB(_in_, _n_, _mode_, _b_, _out_) { unsigned _v; for(_b_=0,_out_[0]=_in_[0],_v = 1;     _v < _n_; _v++) _out_[_v] = (_in_[_v] - _out_[0]) -   _v*_mode_, _b_ |= _out_[_v]; _b_ = bsr32(_b_); }
+#define DELTR( _in_, _n_, _start_, _inc_,      _out_) { unsigned _v; for(      _v = 0; _v < _n_; _v++) _out_[_v] = _in_[_v] - (_start_) - _v*(_inc_) - (_inc_); }
+#define DELTRB(_in_, _n_, _start_, _inc_, _b_, _out_) { unsigned _v; for(_b_=0,_v = 0; _v < _n_; _v++) _out_[_v] = _in_[_v] - (_start_) - _v*(_inc_) - (_inc_), _b_ |= _out_[_v]; _b_ = bsr32(_b_); }
 
 #ifdef __cplusplus
 extern "C" {
@@ -187,27 +187,29 @@ unsigned bitdelta32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uns
 unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
 
 //-- in-place reverse delta transform 
-void bitund8(   	uint8_t  *p, unsigned n, uint8_t start); // non decreasing 
-void bitund16(  	uint16_t *p, unsigned n, uint16_t start);
-void bitund32(  	uint32_t *p, unsigned n, uint32_t start);
-void bitund64(      uint64_t *p, unsigned n, uint64_t start);
+void bitund8(   	 uint8_t  *p, unsigned n, uint8_t start); // non decreasing 
+void bitund16(  	 uint16_t *p, unsigned n, uint16_t start);
+void bitund32(  	 uint32_t *p, unsigned n, uint32_t start);
+void bitund64(       uint64_t *p, unsigned n, uint64_t start);
 
-void bitund18(      uint8_t  *p, unsigned n, uint8_t  start); // non strictly decreasing
-void bitund116(     uint16_t *p, unsigned n, uint16_t start);
-void bitund132(     uint32_t *p, unsigned n, uint32_t start);
-void bitund164(     uint64_t *p, unsigned n, uint64_t start);
+void bitund18(       uint8_t  *p, unsigned n, uint8_t  start); // non strictly decreasing
+void bitund116(      uint16_t *p, unsigned n, uint16_t start);
+void bitund132(      uint32_t *p, unsigned n, uint32_t start);
+void bitund164(      uint64_t *p, unsigned n, uint64_t start);
 
-void bitundn8( 		uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc); // increment
-void bitundn16(		uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
-void bitundn32(		uint32_t *p, unsigned n, uint32_t start, uint32_t inc);
-void bitundn64(		uint64_t *p, unsigned n, uint64_t start, uint64_t inc);
+void bitundn8( 		 uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc); // increment
+void bitundn16(		 uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
+void bitundn32(		 uint32_t *p, unsigned n, uint32_t start, uint32_t inc);
+void bitundn64(		 uint64_t *p, unsigned n, uint64_t start, uint64_t inc);
 
 //------------- FOR array bit length: out[i] = in[i] - start -------------------------------------
-unsigned bitf32(    uint32_t *in, unsigned n, uint32_t start);  // sorted
-unsigned bitf132(   uint32_t *in, unsigned n, uint32_t start);
+unsigned bitf32(     uint32_t *in, unsigned n, uint32_t start);  // sorted
+unsigned bitf132(    uint32_t *in, unsigned n, uint32_t start);
 
-unsigned bitfm32(   uint32_t *in, unsigned n, uint32_t *pmin);  // unsorted
-unsigned bitf1m32(  uint32_t *in, unsigned n, uint32_t *pmin);
+unsigned bitfm8(     uint8_t  *in, unsigned n, uint8_t  *pmin);  // unsorted
+unsigned bitfm16(    uint16_t *in, unsigned n, uint16_t *pmin);  
+unsigned bitfm32(    uint32_t *in, unsigned n, uint32_t *pmin);  
+unsigned bitfm64(    uint64_t *in, unsigned n, uint64_t *pmin);  
 
 //------------- Zigzag encoding for unsorted integer lists: out[i] = in[i] - in[i-1] -------------
 
