@@ -32,7 +32,7 @@ unsigned bit32(uint32_t *in, unsigned n) { uint32_t b; BITSIZE32(in, n, b);     
 unsigned bit64(uint64_t *in, unsigned n) { uint64_t b; BITSIZE_( in, n, b, 64); return b; }
 
 //---------------- Delta ----------------------------------------
-#define BITDELTA(_p_,_n_, _inc_, _start_, _act_) {\
+#define BITDENC(_p_,_n_, _inc_, _start_, _act_) {\
   typeof(_p_[0]) _x, *_p;\
   for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p+=4) {\
 	_x = _p[0]-_start_-_inc_; _start_ = _p[0]; _act_;\
@@ -45,7 +45,7 @@ unsigned bit64(uint64_t *in, unsigned n) { uint64_t b; BITSIZE_( in, n, b, 64); 
   }\
 }
 
-/*#define BITDELTA(_p_,_n_, _inc_, _start_, _act_) {\
+/*#define BITDENC(_p_,_n_, _inc_, _start_, _act_) {\
   typeof(_p_[0]) _x, *_p; int i;\
   for(_p = _p_+_n_, i = n&(4-1); i > 0; i--) { --_p; _p[i] -= _p[i-1]; } 
   while(_p != _p_) {\
@@ -78,16 +78,16 @@ unsigned bitd32(uint32_t *in, unsigned n, uint32_t start) {
   }
     #else
   typeof(in[0]) b = 0;
-  BITDELTA(in,n, 0, start, b |= _x);
+  BITDENC(in,n, 0, start, b |= _x);
     #endif
   return bsr32(b); 
 }
 
-unsigned bitd8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0; BITDELTA(in, n, 0, start, b |= _x); return bsr8(b); }
-unsigned bitd16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0; BITDELTA(in, n, 0, start, b |= _x); return bsr16(b); }
-unsigned bitd64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0; BITDELTA(in, n, 0, start, b |= _x); return bsr64(b); }
+unsigned bitd8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0; BITDENC(in, n, 0, start, b |= _x); return bsr8(b); }
+unsigned bitd16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0; BITDENC(in, n, 0, start, b |= _x); return bsr16(b); }
+unsigned bitd64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0; BITDENC(in, n, 0, start, b |= _x); return bsr64(b); }
 
-unsigned bitdelta32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc) {
+unsigned bitdenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc) {
     #ifdef __SSE2__
   unsigned *ip,b,*op = out; 
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(inc), dv;
@@ -107,14 +107,14 @@ unsigned bitdelta32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uns
   }
     #else
   typeof(in[0]) b = 0,*op = out;
-  BITDELTA(in, n, inc, start, b |= _x;*op++ = _x);
+  BITDENC(in, n, inc, start, b |= _x;*op++ = _x);
     #endif
   return bsr32(b);
 }
 
-unsigned bitdelta8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc) { uint8_t  b = 0,*op = out; BITDELTA(in, n, inc, start, b |= _x; *op++ = _x); return bsr8(b);}
-unsigned bitdelta16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc) { uint16_t b = 0,*op = out; BITDELTA(in, n, inc, start, b |= _x; *op++ = _x); return bsr16(b);}
-unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc) { uint64_t b = 0,*op = out; BITDELTA(in, n, inc, start, b |= _x; *op++ = _x); return bsr64(b);}
+unsigned bitdenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc) { uint8_t  b = 0,*op = out; BITDENC(in, n, inc, start, b |= _x; *op++ = _x); return bsr8(b);}
+unsigned bitdenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc) { uint16_t b = 0,*op = out; BITDENC(in, n, inc, start, b |= _x; *op++ = _x); return bsr16(b);}
+unsigned bitdenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc) { uint64_t b = 0,*op = out; BITDENC(in, n, inc, start, b |= _x; *op++ = _x); return bsr64(b);}
 
 unsigned bitd132(uint32_t *in, unsigned n, uint32_t start) {
     #ifdef __SSE2__
@@ -134,17 +134,17 @@ unsigned bitd132(uint32_t *in, unsigned n, uint32_t start) {
   }
     #else
   uint32_t b = 0; 
-  BITDELTA(in, n, 1, start, b |= _x);
+  BITDENC(in, n, 1, start, b |= _x);
 	#endif
   return bsr32(b); 
 }
 
-unsigned bitd18( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0; BITDELTA(in, n, 1, start, b |= _x); return bsr8(b); }
-unsigned bitd116(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0; BITDELTA(in, n, 1, start, b |= _x); return bsr16(b); }
-unsigned bitd164(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0; BITDELTA(in, n, 1, start, b |= _x); return bsr64(b); }
+unsigned bitd18( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0; BITDENC(in, n, 1, start, b |= _x); return bsr8(b); }
+unsigned bitd116(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0; BITDENC(in, n, 1, start, b |= _x); return bsr16(b); }
+unsigned bitd164(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0; BITDENC(in, n, 1, start, b |= _x); return bsr64(b); }
 
 // -- undelta: in-place prefix sum ---------------
-#define BITUNDELTA(_p_, _n_, _start_, _inc_) {\
+#define BITDDEC(_p_, _n_, _start_, _inc_) {\
   typeof(_p_[0]) *_p;\
   for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) {\
     _p[0] = (_start_ += _p[0] + _inc_);\
@@ -156,12 +156,12 @@ unsigned bitd164(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0; BIT
     _p[0] = (_start_ += _p[0] + _inc_);\
 }
 
-void bitund8(  uint8_t  *p, unsigned n, uint8_t  start) { BITUNDELTA(p, n, start, 0); }
-void bitund16( uint16_t *p, unsigned n, uint16_t start) { BITUNDELTA(p, n, start, 0); }
-void bitund32( uint32_t *p, unsigned n, uint32_t start) { BITUNDELTA(p, n, start, 0); }
-void bitund64( uint64_t *p, unsigned n, uint64_t start) { BITUNDELTA(p, n, start, 0); }
+void bitddec8(  uint8_t  *p, unsigned n, uint8_t  start) { BITDDEC(p, n, start, 0); }
+void bitddec16( uint16_t *p, unsigned n, uint16_t start) { BITDDEC(p, n, start, 0); }
+void bitddec32( uint32_t *p, unsigned n, uint32_t start) { BITDDEC(p, n, start, 0); }
+void bitddec64( uint64_t *p, unsigned n, uint64_t start) { BITDDEC(p, n, start, 0); }
 
-void bitund132(unsigned *p, unsigned n, unsigned start) { 
+void bitd1dec32(unsigned *p, unsigned n, unsigned start) { 
     #ifdef __SSE2__
   __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
   unsigned *ip;
@@ -176,25 +176,25 @@ void bitund132(unsigned *p, unsigned n, unsigned start) {
 	ip++; 
   }
     #else
-  BITUNDELTA(p, n, start, 1); 
+  BITDDEC(p, n, start, 1); 
     #endif
 }
 
-void bitund18( uint8_t  *p, unsigned n, uint8_t  start) { BITUNDELTA(p, n, start, 1); } 
-void bitund116(uint16_t *p, unsigned n, uint16_t start) { BITUNDELTA(p, n, start, 1); }
-void bitund164(uint64_t *p, unsigned n, uint64_t start) { BITUNDELTA(p, n, start, 1); }
+void bitd1dec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDDEC(p, n, start, 1); } 
+void bitd1dec16(uint16_t *p, unsigned n, uint16_t start) { BITDDEC(p, n, start, 1); }
+void bitd1dec64(uint64_t *p, unsigned n, uint64_t start) { BITDDEC(p, n, start, 1); }
 
-void bitundn8( uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc) { BITUNDELTA(p, n, start, inc); }
-void bitundn16(uint16_t *p, unsigned n, uint16_t start, uint16_t inc) { BITUNDELTA(p, n, start, inc); }
-void bitundn32(uint32_t *p, unsigned n, uint32_t start, uint32_t inc) { BITUNDELTA(p, n, start, inc); }
-void bitundn64(uint64_t *p, unsigned n, uint64_t start, uint64_t inc) { BITUNDELTA(p, n, start, inc); }
+void bitddecn8( uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc) { BITDDEC(p, n, start, inc); }
+void bitddecn16(uint16_t *p, unsigned n, uint16_t start, uint16_t inc) { BITDDEC(p, n, start, inc); }
+void bitddecn32(uint32_t *p, unsigned n, uint32_t start, uint32_t inc) { BITDDEC(p, n, start, inc); }
+void bitddecn64(uint64_t *p, unsigned n, uint64_t start, uint64_t inc) { BITDDEC(p, n, start, inc); }
 
 //------------------- For ------------------------------
 unsigned bitf32(  uint32_t *in, unsigned n, uint32_t start) { return n?bsr32(in[n-1] - start    ):0; }
 unsigned bitf132( uint32_t *in, unsigned n, uint32_t start) { return n?bsr32(in[n-1] - start - n):0; }
 
 //----------------------------- zigzag --------------------------------------------------------
-#define BITZIGZAG(_p_,_n_, _start_, _act_) {\
+#define BITZENC(_p_,_n_, _start_, _act_) {\
   typeof(_p_[0]) *_p;\
   for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
 	_x = ((int)(*_p)-(int)_start_); _x = (_x << 1) ^ (_x >> (sizeof(_x)*8-1)); _start_ = *_p++; _act_;\
@@ -207,7 +207,7 @@ unsigned bitf132( uint32_t *in, unsigned n, uint32_t start) { return n?bsr32(in[
   }\
 }
 
-#define BITUNZIGZAG(_p_, _n_, _start_) {\
+#define BITZDEC(_p_, _n_, _start_) {\
   typeof(_p_[0]) *_p, _z;\
   for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
     _z = *_p; *_p = (_start_ += (_z >> 1 ^ -(_z & 1))); _p++;\
@@ -243,16 +243,16 @@ unsigned bitz32(unsigned *in, unsigned n, unsigned start) {
     #else
   typeof(in[0]) b = 0; 
   int _x; 
-  BITZIGZAG(in, n, start, b |= (unsigned)_x);
+  BITZENC(in, n, start, b |= (unsigned)_x);
     #endif
   return bsr32(b);
 }
 
-unsigned bitz8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0, _x; BITZIGZAG(in, n, start, b |= (uint8_t )_x); return bsr8( b); }
-unsigned bitz16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0, _x; BITZIGZAG(in, n, start, b |= (uint16_t)_x); return bsr16(b); }
-unsigned bitz64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0, _x; BITZIGZAG(in, n, start, b |= (uint64_t)_x); return bsr64(b); }
+unsigned bitz8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0, _x; BITZENC(in, n, start, b |= (uint8_t )_x); return bsr8( b); }
+unsigned bitz16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0, _x; BITZENC(in, n, start, b |= (uint16_t)_x); return bsr16(b); }
+unsigned bitz64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0, _x; BITZENC(in, n, start, b |= (uint64_t)_x); return bsr64(b); }
 
-unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
+unsigned bitzenc32(unsigned *in, unsigned n, unsigned *out, unsigned start, uint32_t inc) {
     #ifdef __SSE2__
   unsigned *ip,b,*op = out; 
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
@@ -276,12 +276,12 @@ unsigned bitzigzag32(unsigned *in, unsigned n, unsigned *out, unsigned start) {
     #else
   typeof(in[0]) b = 0, *op = out; 
   int _x; 
-  BITZIGZAG(in, n, start, b |= (unsigned)_x; *op++ = _x);
+  BITZENC(in, n, start, b |= (unsigned)_x; *op++ = _x);
     #endif
   return bsr32(b);
 }
 
-void bitunzigzag32(unsigned *p, unsigned n, unsigned start) { 
+void bitzdec32(unsigned *p, unsigned n, unsigned start) { 
     #ifdef __SSE2__
   __m128i sv = _mm_set1_epi32(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   unsigned *ip;
@@ -297,20 +297,20 @@ void bitunzigzag32(unsigned *p, unsigned n, unsigned start) {
 	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
   }
     #else
-  BITUNZIGZAG(p, n, start);
+  BITZDEC(p, n, start);
     #endif
 }
 
-unsigned bitzigzag8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start) { uint8_t  b = 0,*op = out; int8_t  _x; BITZIGZAG(in, n, start, b |= (uint8_t)_x; *op++ = _x);  return bsr8(b);  }
-unsigned bitzigzag16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start) { uint16_t b = 0,*op = out; int16_t _x; BITZIGZAG(in, n, start, b |= (uint16_t)_x; *op++ = _x); return bsr16(b); }
-unsigned bitzigzag64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start) { uint64_t b = 0,*op = out; int64_t _x; BITZIGZAG(in, n, start, b |= (uint64_t)_x; *op++ = _x); return bsr32(b); }
+unsigned bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  inc) { uint8_t  b = 0,*op = out; int8_t  _x; BITZENC(in, n, start, b |= (uint8_t)_x; *op++ = _x);  return bsr8(b);  }
+unsigned bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t inc) { uint16_t b = 0,*op = out; int16_t _x; BITZENC(in, n, start, b |= (uint16_t)_x; *op++ = _x); return bsr16(b); }
+unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t inc) { uint64_t b = 0,*op = out; int64_t _x; BITZENC(in, n, start, b |= (uint64_t)_x; *op++ = _x); return bsr32(b); }
 
-void bitunzigzag8( uint8_t  *p, unsigned n, uint8_t  start) { BITUNZIGZAG(p, n, start); }
-void bitunzigzag16(uint16_t *p, unsigned n, uint16_t start) { BITUNZIGZAG(p, n, start); }
-void bitunzigzag64(uint64_t *p, unsigned n, uint64_t start) { BITUNZIGZAG(p, n, start); }
+void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(p, n, start); }
+void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { BITZDEC(p, n, start); }
+void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(p, n, start); }
 
 //-------------- For --------------------------
-#define BITMINMAX(_p_,_n_, __mi, __mx) {\
+#define BITFM(_p_,_n_, __mi, __mx) {\
   typeof(_p_[0]) _x, *_p;\
   for(_p = _p_, __mi = __mx = 0; _p != _p_+(_n_&~(4-1)); ) {\
 	if(*_p < __mi) __mi = *_p; if(*_p > __mx) __mx = *_p; _p++; \
@@ -323,10 +323,10 @@ void bitunzigzag64(uint64_t *p, unsigned n, uint64_t start) { BITUNZIGZAG(p, n, 
   }\
 }
 
-unsigned bitfm8( uint8_t  *in, unsigned n, uint8_t  *pmin) { uint8_t  mi,mx; BITMINMAX(in, n, mi, mx); *pmin = mi; return bsr8( mx - mi); }
-unsigned bitfm16(uint16_t *in, unsigned n, uint16_t *pmin) { uint16_t mi,mx; BITMINMAX(in, n, mi, mx); *pmin = mi; return bsr16(mx - mi); }
-unsigned bitfm32(uint32_t *in, unsigned n, uint32_t *pmin) { uint32_t mi,mx; BITMINMAX(in, n, mi, mx); *pmin = mi; return bsr32(mx - mi); }
-unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BITMINMAX(in, n, mi, mx); *pmin = mi; return bsr64(mx - mi); }
+unsigned bitfm8( uint8_t  *in, unsigned n, uint8_t  *pmin) { uint8_t  mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr8( mx - mi); }
+unsigned bitfm16(uint16_t *in, unsigned n, uint16_t *pmin) { uint16_t mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr16(mx - mi); }
+unsigned bitfm32(uint32_t *in, unsigned n, uint32_t *pmin) { uint32_t mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr32(mx - mi); }
+unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr64(mx - mi); }
 
 //------------------- De-/Compose Floating Point -----------------------------------------
 void bitdouble(double *in, unsigned n, int *expo, uint64_t *mant) {
@@ -338,7 +338,7 @@ void bitdouble(double *in, unsigned n, int *expo, uint64_t *mant) {
   }
 }
 
-void bitundouble(int *expo, uint64_t *mant, unsigned n, double *out) {
+void bitddecouble(int *expo, uint64_t *mant, unsigned n, double *out) {
   double *op; 
   uint64_t u;
   for(op = out; op < out+n; ) {
