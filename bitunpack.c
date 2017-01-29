@@ -263,6 +263,19 @@ unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n
   BITUNPACK128V32(in, b, out, sv); 
   return (unsigned char *)ip; 
 }
+
+#define VEXP(_i_, _ov_)         if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) ); pex += popcnt32(m)
+#define VSTO( _op_, _i_, _ov_, _sv_)   VEXP( _i_, _ov_); _ov_ = UNZIGZAG128x32(_ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VEXP0(_i_, _ov_)        if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_shuffle_epi8(_mm_loadu_si128((__m128i*)pex),_mm_load_si128((__m128i*)shuffles[m]) ); pex += popcnt32(m)
+#define VSTO0(_op_, _i_, _ov_, _sv_)   VEXP0( _i_, _ov_); _ov_ = UNZIGZAG128x32(_ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_)
+unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
+  const unsigned char *ip = in+PAD8(128*b); unsigned m;
+  __m128i sv = _mm_set1_epi32(start);
+  BITUNPACK128V32(in, b, out, sv); 
+  return (unsigned char *)ip; 
+}
   #endif
 
 #define VSTO(_op_, i, _ov_, __sv) SCANI128x32(_ov_,__sv,cv); _mm_storeu_si128(_op_++, __sv);
