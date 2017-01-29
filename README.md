@@ -306,10 +306,10 @@ In general encoding/decoding functions are of the form:
 
 ### Function syntax:
  - {vb | p4 | bit | vs}[d | d1 | f | fm | z ]{enc/dec | pack/unpack}[| 128V | 256V][8 | 16 | 32 | 64]:<br />
-   prefix = vb:  variable byte<br />
-            p4:  turbopfor<br />
-			vs:  variable simple<br />
-			bit: bit packing<br />
+   vb:  variable byte<br />
+   p4:  turbopfor<br />
+   vs:  variable simple<br />
+   bit: bit packing<br />
 		
    d:  delta encoding for increasing integer lists (sorted w/ duplicate)<br />
    d1: delta encoding for strictly increasing integer lists (sorted unique)<br />
