@@ -28,7 +28,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 <p>
 + **Elias fano**
- - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD
+ - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 <p>
 + **Transform**
  - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
@@ -192,12 +192,23 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
      -number of integers = 100.000.000<br />
      -integer range from 0 to 255<br />*
   
-  + individual function test (ex. Copy TurboPack TurboPFor)<br />
+  + Unsorted lists: individual function test (ex. Copy TurboPack TurboPFor)<br />
 
 
         ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor/turbopack256v ZIPF
 
-  + Generate interactive html plot for browsing
+  + Unsorted lists: Zigzag encoding w/ option **-fz** or FOR encoding<br />
+
+
+        ./icbench -fz -eturbovbyte/turbopackv ZIPF
+        ./icbench -eturbofor/turboforv ZIPF
+
+  + Sorted lists: differential coding w/ option **-fs** (increasing) or **-fS** (strictly increasing)<br />
+
+
+        ./icbench -fs -eturbopack/turbopfor/turbopfor256v ZIPF
+
+  + Generate interactive "file.html" plot for browsing
 
         ./icbench -p2 -S2 -Q3 file.tbb 
 
@@ -341,4 +352,4 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  21 JAN 2017
+Last update:  27 JAN 2017
