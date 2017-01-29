@@ -325,7 +325,7 @@ header files to use with documentation:<br />
 
 | c/c++ header file|Integer Compression functions| examples |
 |------------|-----------------------------|-----------------|
-|vint.h|variable byte| vbenc32/vbdec32 vbd1enc32/vbd1dec32 vbzenc32/vbzdec32 |
+|vint.h|variable byte| vbenc32/vbdec32 vbdenc32/vbddec32 vbzenc32/vbzdec32 |
 |vsimple.h|variable simple| vsenc64/vsdec64 |
 |vp4.h|TurboPFor|  p4enc32/p4dec32 p4denc32/p4ddec32 p4zenc32/p4zdec32 |
 |bitpack.h|Bit Packing, For, +Direct Access| bitpack256v32/bitunpack256v32 bitforenc64/bitfordec64|
