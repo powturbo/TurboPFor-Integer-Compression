@@ -166,10 +166,11 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
 }
 
 unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
-  if(!n) return in;
+  if(!n) 
+	return in;
   unsigned char *ip = in;  																										
-  unsigned      i,j,lb   = *ip++;           	
-  uint64_t       b; 
+  unsigned      i,j,lb = *ip++;           	
+  uint64_t      b,x; 
    
   if(!lb) { 
       #if defined(__SSE2__) && USIZE == 32
@@ -185,14 +186,13 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
   }
   
   ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
-  for(i=j=0;; j += sizeof(uint64_t)*8) {											__builtin_prefetch(ip+256);
+  #define EFD(i) if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i;
+  
+  for(i=j=0;; j += sizeof(uint64_t)*8) {											//__builtin_prefetch(ip+256);
     for(b = ctou64(ip+(j>>3)); ; ) { 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
-	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; 
+	  EFD(i); EFD(i); EFD(i); EFD(i); 
 	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC;
-	  if(unlikely(++i >= n)) 
+	  if(unlikely(++i >= n))
         goto e; 
       b = blsr64(b);
 	}
