@@ -96,7 +96,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  P4NDECS     p4ddec
 #define  BITUNPACKD  bitdunpack
 #define _BITUNPACKD _bitdunpack
-#define  BITUNDD     bitund
+#define  BITUNDD     bitddec
 #define USIZE 8
 #include "vp4d.c"
 
@@ -115,7 +115,26 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  P4NDECS     p4d1dec
 #define  BITUNPACKD  bitd1unpack
 #define _BITUNPACKD  bitd1unpack
-#define  BITUNDD     bitund1
+#define  BITUNDD     bitd1dec
+#define USIZE 8
+#include "vp4d.c"
+
+#define USIZE 16
+#include "vp4d.c"
+
+#define USIZE 32
+#include "vp4d.c"
+
+#define USIZE 64
+#include "vp4d.c"
+
+#define _P4DEC      _p4zdec			//zigzag0
+#define  P4DEC       p4zdec
+#define  P4NDEC      p4nzdec
+#define  P4NDECS     p4zdec
+#define  BITUNPACKD  bitzunpack
+#define _BITUNPACKD _bitzunpack
+#define  BITUNDD     bitzdec
 #define USIZE 8
 #include "vp4d.c"
 
@@ -162,7 +181,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  P4NDECS       p4ddec
 #define  BITUNPACKD    bitdunpack128v
 #define  _BITUNPACKD  _bitdunpack128v
-#define  BITUNDD       bitund
+#define  BITUNDD       bitddec
 #include "vp4d.c"
 
 #define _P4DEC        _p4d1dec128v
@@ -171,8 +190,18 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  P4NDECS       p4d1dec
 #define  BITUNPACKD    bitd1unpack128v
 #define  _BITUNPACKD  _bitd1unpack128v
-#define  BITUNDD       bitund1
+#define  BITUNDD       bitd1dec
 #include "vp4d.c"
+
+#define _P4DEC        _p4zdec128v
+#define  P4DEC         p4zdec128v
+#define  P4NDEC        p4nzdec128v
+#define  P4NDECS       p4zdec
+#define  BITUNPACKD    bitzunpack128v
+#define  _BITUNPACKD  _bitzunpack128v
+#define  BITUNDD       bitzdec
+#include "vp4d.c"
+
 #undef  BITUNDD
 #undef  P4DELTA
 #undef  DELTA
@@ -201,7 +230,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  P4NDECS       p4ddec
 #define  BITUNPACKD    bitdunpack256v
 #define  _BITUNPACKD  _bitdunpack256v
-#define  BITUNDD       bitund
+#define  BITUNDD       bitddec
 #include "vp4d.c"
 
 #define _P4DEC        _p4d1dec256v
@@ -210,7 +239,7 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #define  P4NDECS       p4d1dec
 #define  BITUNPACKD    bitd1unpack256v
 #define  _BITUNPACKD  _bitd1unpack256v
-#define  BITUNDD       bitund1
+#define  BITUNDD       bitd1dec
 #include "vp4d.c"
 #undef  BITUNDD
     #endif  
