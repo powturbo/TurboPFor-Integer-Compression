@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
       for(_op = op, ip = in, ep = ip+num; ip < ep; ) {
         unsigned n = min(ep-ip, BLK_DIDNUM), b = 0,bx;					    if(op+5*n > out+outsize) die("output buffer too small\n"); 
         if(n > 1) { 
-		  DELTA(ip, n, b); //bitdelta32( in+1, --n, pa, in[0], mode);
+		  DELTA(ip, n, b); //bitdenc32( in+1, --n, pa, in[0], mode);
 		    #ifdef _TURBOPFOR 
 		  b = _p4dec32(ip+1, n-1, &bx);
 	        #endif
