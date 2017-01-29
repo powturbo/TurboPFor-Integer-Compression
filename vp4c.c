@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  "Integer Compression" Turbo PFor/PforDelta 
+//  "TurboPFor: Integer Compression" Turbo PFor/PforDelta 
 #ifndef USIZE
 #include <stdint.h>
  
@@ -35,6 +35,7 @@
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 //------------------------------------------
 #define _P4BITS _p4bits
+#define  P4BITS _p4bits
 
 //-- Scalar
 #define _P4ENC   _p4enc
@@ -60,11 +61,11 @@
 #define  P4NENC   p4ndenc
 #define  P4NENCS  p4denc
 
-#undef EXCEP
+#define EXCEP 0
 #define USIZE 8
 #include "vp4c.c"
-#define EXCEP 1
 
+#define EXCEP 1
 #define USIZE 16
 #include "vp4c.c"
 
@@ -79,11 +80,11 @@
 #define  P4NENC   p4nd1enc
 #define  P4NENCS  p4d1enc
 
-#undef EXCEP
+#define EXCEP 0
 #define USIZE 8
 #include "vp4c.c"
-#define EXCEP 1
 
+#define EXCEP 1
 #define USIZE 16
 #include "vp4c.c"
 
@@ -96,15 +97,14 @@
 #undef P4DELTA
 
 #define EXCEP 0             // Direct access
+#define  P4BITS _p4bitsx
 #define _P4BITS _p4bitsx
 #define _P4ENC  _p4encx
 #define  P4ENC   p4encx
 #define  P4NENC  p4nencx
 
-#undef EXCEP
 #define USIZE 8
 #include "vp4c.c"
-#define EXCEP 1
 
 #define USIZE 16
 #include "vp4c.c"
@@ -117,6 +117,7 @@
 #undef  BITPACK 
 
 #undef _P4BITS
+#define P4BITS _p4bits
 
   #ifndef NSIMD
 
@@ -211,18 +212,18 @@ ALWAYS_INLINE unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned
   for(ip = in; ip != in+(n&~3); ip+=4) { CNTE(0); CNTE(1); CNTE(2); CNTE(3); }
   for(;ip != in+n;ip++) CNTE(0);
 
-  b  = TEMPLATE2(bsr, USIZE)(u);
+  b  = TEMPLATE2(bsr, USIZE)(u);									
   bx = b; 
-  ml = PAD8(n*b)+1; x = cnt[b];
+  ml = PAD8(n*b)+1; x = cnt[b];												
  
-    #if EXCEP == 1
+    #if EXCEP > 0
   #define VBB(_x_,_b_) vb[_b_-7]+=_x_; vb[_b_-15]+=_x_*2; vb[_b_-19]+=_x_*3; vb[_b_-25]+=_x_*4;
   int vv = x; VBB(x,b); 
     #else
   ml -= 2+bmp8;
 	#endif
   for(i = b-1; i >= 0; --i) { 
-      #if EXCEP == 1
+      #if EXCEP > 0
         l = PAD8(n*i) + 2+bmp8 + PAD8(x*(bx-i)); 
     int v = PAD8(n*i) + 2 + x + vv, vx = 0; 
 	x  += cnt[i]; 
@@ -233,14 +234,15 @@ ALWAYS_INLINE unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned
       #else 
     l = PAD8(n*i) + PAD8(x*(bx-i)); 
     x += cnt[i]; 
-    unlikely(l < ml)?(ml=l,b=i):(ml=ml,b=b);
+    int fi = l < ml; 												
+	ml = fi?l:ml; b = fi?i:b;
 	  #endif
-  } 																						//fx = 0;
+  } 																			//fx = 0;
     #if EXCEP > 0
   *pbx = fx?(USIZE+1):(bx - b);
     #else
   *pbx = bx - b;
-    #endif
+    #endif																		
   return b;
 } 
    #endif
@@ -281,21 +283,23 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, uns
 }
 
 unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) { if(!n) return out;
-  unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(in, n, &bx); 									
+  unsigned bx, b = TEMPLATE2(P4BITS, USIZE)(in, n, &bx); 									
     #if EXCEP > 0
   if(bx <= USIZE) { P4SAVE(out, b, bx); } else *out++= 0x80|b<<1;									
     #else
-  P4SAVE(out, b, bx); 
+   P4SAVE(out, b, bx); 
     #endif
   return TEMPLATE2(_P4ENC, USIZE)(in, n, out, b, bx);
 }
 
 size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
-  if(!n) return 0;
+  if(!n) 
+    return 0;
+
   unsigned char *op = out; 
   uint_t *ip; 
-  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
-    unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(ip, CSIZE, &bx); 									
+  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { __builtin_prefetch(ip+512);
+    unsigned bx, b = TEMPLATE2(P4BITS, USIZE)(ip, CSIZE, &bx); 									
       #if EXCEP > 0
     if(bx <= USIZE) { P4SAVE(op, b, bx); } else *op++= 0x80|b<<1;									
       #else
@@ -313,7 +317,9 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, uns
 }
 
 size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
-  if(!n) return out;
+  if(!n) 
+    return out;
+
   unsigned char *op = out; 
   uint_t *ip, start = *in++;
   
@@ -336,12 +342,11 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
 
 #pragma clang diagnostic pop
 #endif
-/*
+/*TODO
 111 : 32 bits = bitpack            b=32   if bits=0x1f EOB
 000 : bitpack = bitpack no exp     b=0..5
 001 : vbyte                        b=0..5
 010 : exp equ.                     b=0..5 b,bitpack
 011 : bp. equal                    b=0..5 b,exp.
-1XX : EOB
+1XX : EOB                          last block
 */
-
