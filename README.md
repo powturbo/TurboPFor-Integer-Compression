@@ -305,7 +305,7 @@ In general encoding/decoding functions are of the form:
   compressed_size : number of bytes read from compressed input buffer in<br />
 
 ### Function syntax:
- - {vb | p4 | bit | vs}[d | d1 | f | fm | z ]{enc/dec | pack/unpack}[| 128V | 256V][8 | 16 | 32 | 64]: 
+ - {vb | p4 | bit | vs}[d | d1 | f | fm | z ]{enc/dec | pack/unpack}[| 128V | 256V][8 | 16 | 32 | 64]:<br />
    prefix = vb:  variable byte 
             p4:  turbopfor
 			vs:  variable simple
