@@ -355,31 +355,39 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
   }
   return TEMPLATE2(P4NDECS, USIZE)(ip, n&(CSIZE-1), op P4DELTA(start)) - in; 
 }
-
+ 
     #ifdef P4DECX  
 unsigned char *TEMPLATE2(p4decx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out) {
   unsigned b,i; 
+
   struct p4 p4; 
   p4ini(&p4, &in, n, &b);
+  
+  if(unlikely(p4.isx)) {  
+	#define ITX(k) out[i+k] = TEMPLATE2(p4getx, USIZE)(&p4, in, i+k, b); 
+    for(i = 0; i != n&~3; i += 4) { ITX(0); ITX(1); ITX(2); ITX(3); }
+    for(     ; i != n;    i++   )   ITX(0);
+  } else { 
+	#define ITY(k) out[i+k] = TEMPLATE2(bitgetx, USIZE)(in, i+k, b);
+    for(i = 0; i != n&~3; i += 4) { ITY(0); ITY(1); ITY(2); ITY(3); }
+    for(     ; i != n; i++) ITY(0);
+  }
+  return in + PAD8(n*b);
+}
 
-  if(unlikely(p4.i & 1)) {
-    for(i = 0; i != n&~3; i+=4) {
-      out[i  ] = TEMPLATE2(p4getx, USIZE)(&p4, in, i  , b);  
-      out[i+1] = TEMPLATE2(p4getx, USIZE)(&p4, in, i+1, b);  
-      out[i+2] = TEMPLATE2(p4getx, USIZE)(&p4, in, i+2, b);  
-      out[i+3] = TEMPLATE2(p4getx, USIZE)(&p4, in, i+3, b);  
-    }
-    for(     ; i != n; i++) 
-      out[i  ] = TEMPLATE2(p4getx, USIZE)(&p4, in, i  , b);  
+unsigned char *TEMPLATE2(p4f1decx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out, uint_t start) {
+  unsigned b,i; 
+  struct p4 p4; 
+
+  p4ini(&p4, &in, n, &b);
+  if(unlikely(p4.isx)) {
+	#define ITX(k) out[i+k] = TEMPLATE2(p4getx, USIZE)(&p4, in, (i+k), b)+start+i+k+1; 
+    for(i = 0; i != n&~3; i+=4) { ITX(0); ITX(1); ITX(2); ITX(3); }
+    for(     ; i != n; i++) ITX(0);
   } else {
-    for(i = 0; i != n&~3; i+=4) {
-      out[i  ] = TEMPLATE2(_bitgetx, USIZE)(in,  i   *b, b); 
-      out[i+1] = TEMPLATE2(_bitgetx, USIZE)(in, (i+1)*b, b); 
-      out[i+2] = TEMPLATE2(_bitgetx, USIZE)(in, (i+2)*b, b); 
-      out[i+3] = TEMPLATE2(_bitgetx, USIZE)(in, (i+3)*b, b); 
-    }
-    for(     ; i != n; i++) 
-      out[i  ] = TEMPLATE2(_bitgetx, USIZE)(in,  i   *b, b); 
+	#define ITY(k) out[i+k] = TEMPLATE2(bitgetx, USIZE)(in, (i+k), b)+start+i+k+1;
+    for(i = 0; i != n&~3; i += 4) { ITY(0); ITY(1); ITY(2); ITY(3); }
+    for(     ; i != n; i++) ITY(0);
   }
   return in + PAD8(n*b);
 }
@@ -389,24 +397,16 @@ unsigned char *TEMPLATE2(p4fdecx, USIZE)(unsigned char *in, unsigned n, uint_t *
   struct p4 p4; 
   p4ini(&p4, &in, n, &b);
 
-  if(unlikely(p4.i & 1)) {
-    for(i = 0; i < n; i++) 
-      out[i] = TEMPLATE2(p4getx, USIZE)(&p4, in, i, b)+start+i+1;  
-  } else for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, i*b, b)+start+i+1;
-  return in + PAD8(n*b);
-}
-
-unsigned char *TEMPLATE2(p4f0decx, USIZE)(unsigned char *in, unsigned n, uint_t *__restrict out, uint_t start) {
-  unsigned b,i; 
-  struct p4 p4; 
-  p4ini(&p4, &in, n, &b);
-
-  if(unlikely(p4.i & 1)) {
-    for(i = 0; i < n; i++) 
-      out[i] = TEMPLATE2(p4getx, USIZE)(&p4, in, i, b)+start;//   return p4.ex + PAD8((p4.cum[P4DN-1] + popcnt64(p4.xmap[P4DN-1]))*p4.bx);
-  } else for(i = 0; i < n; i++) out[i] = TEMPLATE2(_bitgetx, USIZE)(in, i*b, b)+start;
+  if(unlikely(p4.isx)) {
+	#define ITX(k) out[i+k] = TEMPLATE2(p4getx, USIZE)(&p4, in, i+k, b)+start; 
+    for(i = 0; i != n&~3; i+=4) { ITX(0); ITX(1); ITX(2); ITX(3); }
+    for(     ; i != n; i++) ITX(0);
+  } else {
+	#define ITY(k) out[i+k] = TEMPLATE2(bitgetx, USIZE)(in, (i+k), b)+start; 
+    for(i = 0; i != n&~3; i+=4) { ITY(0); ITY(1); ITY(2); ITY(3); }
+    for(     ; i != n; i++) ITY(0);
+  }
   return in + PAD8(n*b);
 }
     #endif
-
 #endif
