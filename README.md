@@ -16,8 +16,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **Bit Packing**
  - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
- - :new: ** TurboPack AVX2, now more faster. Decoding 10 Billions intergers/seconds (40Gb/s)**
- - :new: ** more faster**. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+ - :new: **TurboPack AVX2**, now more faster. **Decoding 10 Billions intergers/seconds (40Gb/s)**
+ - :new: **more faster**. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 <p>
 + **Variable byte**
