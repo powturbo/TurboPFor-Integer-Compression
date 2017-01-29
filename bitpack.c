@@ -214,8 +214,6 @@ unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigne
 #define VSTI(ip, i, iv, parm)
 #define IPP(ip, i, iv) _mm256_loadu_si256(ip++)
 #include "bitpack_.h" 
-//#include "bitpack.h"
-//#include "bitutil.h"
  
 unsigned char *bitpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(256*b); BITPACK256V32(in, b, out, 0); return pout; }
 #undef VSTI 
