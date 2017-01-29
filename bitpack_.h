@@ -4766,79 +4766,81 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
   BITBLK256V32_32(ip, 31, op, parm);  IPPE(ip); OPPE(op += 32*4/sizeof(op[0]));\
 }
 
-#define BITPACK128V32(__pip, __nbits, __pop, __parm) { __m128i *__ip=(__m128i *)__pip,*__op=(__m128i *)__pop;\
-  switch(__nbits) {\
+//#include "bitpack_0.h"
+#define BITPACK128V32(_ip_, _nbits_, _op_, __parm) { __m128i *_ip=(__m128i *)_ip_,*_op=(__m128i *)_op_;\
+  switch(_nbits_) {\
     case  0:  										   break;\
-    case  1:{  BITPACK128V32_1( __ip, __op, __parm); } break;\
-    case  2:{  BITPACK128V32_2( __ip, __op, __parm); } break;\
-    case  3:{  BITPACK128V32_3( __ip, __op, __parm); } break;\
-    case  4:{  BITPACK128V32_4( __ip, __op, __parm); } break;\
-    case  5:{  BITPACK128V32_5( __ip, __op, __parm); } break;\
-    case  6:{  BITPACK128V32_6( __ip, __op, __parm); } break;\
-    case  7:{  BITPACK128V32_7( __ip, __op, __parm); } break;\
-    case  8:{  BITPACK128V32_8( __ip, __op, __parm); } break;\
-    case  9:{  BITPACK128V32_9( __ip, __op, __parm); } break;\
-    case 10:{  BITPACK128V32_10(__ip, __op, __parm); } break;\
-    case 11:{  BITPACK128V32_11(__ip, __op, __parm); } break;\
-    case 12:{  BITPACK128V32_12(__ip, __op, __parm); } break;\
-    case 13:{  BITPACK128V32_13(__ip, __op, __parm); } break;\
-    case 14:{  BITPACK128V32_14(__ip, __op, __parm); } break;\
-    case 15:{  BITPACK128V32_15(__ip, __op, __parm); } break;\
-    case 16:{  BITPACK128V32_16(__ip, __op, __parm); } break;\
-    case 17:{  BITPACK128V32_17(__ip, __op, __parm); } break;\
-    case 18:{  BITPACK128V32_18(__ip, __op, __parm); } break;\
-    case 19:{  BITPACK128V32_19(__ip, __op, __parm); } break;\
-    case 20:{  BITPACK128V32_20(__ip, __op, __parm); } break;\
-    case 21:{  BITPACK128V32_21(__ip, __op, __parm); } break;\
-    case 22:{  BITPACK128V32_22(__ip, __op, __parm); } break;\
-    case 23:{  BITPACK128V32_23(__ip, __op, __parm); } break;\
-    case 24:{  BITPACK128V32_24(__ip, __op, __parm); } break;\
-    case 25:{  BITPACK128V32_25(__ip, __op, __parm); } break;\
-    case 26:{  BITPACK128V32_26(__ip, __op, __parm); } break;\
-    case 27:{  BITPACK128V32_27(__ip, __op, __parm); } break;\
-    case 28:{  BITPACK128V32_28(__ip, __op, __parm); } break;\
-    case 29:{  BITPACK128V32_29(__ip, __op, __parm); } break;\
-    case 30:{  BITPACK128V32_30(__ip, __op, __parm); } break;\
-    case 31:{  BITPACK128V32_31(__ip, __op, __parm); } break;\
-    case 32:{  BITPACK128V32_32(__ip, __op, __parm); } break;\
+    case  1:{  BITPACK128V32_1( _ip, _op, __parm); } break;\
+    case  2:{  BITPACK128V32_2( _ip, _op, __parm); } break;\
+    case  3:{  BITPACK128V32_3( _ip, _op, __parm); } break;\
+    case  4:{  BITPACK128V32_4( _ip, _op, __parm); } break;\
+    case  5:{  BITPACK128V32_5( _ip, _op, __parm); } break;\
+    case  6:{  BITPACK128V32_6( _ip, _op, __parm); } break;\
+    case  7:{  BITPACK128V32_7( _ip, _op, __parm); } break;\
+    case  8:{  BITPACK128V32_8( _ip, _op, __parm); } break;\
+    case  9:{  BITPACK128V32_9( _ip, _op, __parm); } break;\
+    case 10:{  BITPACK128V32_10(_ip, _op, __parm); } break;\
+    case 11:{  BITPACK128V32_11(_ip, _op, __parm); } break;\
+    case 12:{  BITPACK128V32_12(_ip, _op, __parm); } break;\
+    case 13:{  BITPACK128V32_13(_ip, _op, __parm); } break;\
+    case 14:{  BITPACK128V32_14(_ip, _op, __parm); } break;\
+    case 15:{  BITPACK128V32_15(_ip, _op, __parm); } break;\
+    case 16:{  BITPACK128V32_16(_ip, _op, __parm); } break;\
+    case 17:{  BITPACK128V32_17(_ip, _op, __parm); } break;\
+    case 18:{  BITPACK128V32_18(_ip, _op, __parm); } break;\
+    case 19:{  BITPACK128V32_19(_ip, _op, __parm); } break;\
+    case 20:{  BITPACK128V32_20(_ip, _op, __parm); } break;\
+    case 21:{  BITPACK128V32_21(_ip, _op, __parm); } break;\
+    case 22:{  BITPACK128V32_22(_ip, _op, __parm); } break;\
+    case 23:{  BITPACK128V32_23(_ip, _op, __parm); } break;\
+    case 24:{  BITPACK128V32_24(_ip, _op, __parm); } break;\
+    case 25:{  BITPACK128V32_25(_ip, _op, __parm); } break;\
+    case 26:{  BITPACK128V32_26(_ip, _op, __parm); } break;\
+    case 27:{  BITPACK128V32_27(_ip, _op, __parm); } break;\
+    case 28:{  BITPACK128V32_28(_ip, _op, __parm); } break;\
+    case 29:{  BITPACK128V32_29(_ip, _op, __parm); } break;\
+    case 30:{  BITPACK128V32_30(_ip, _op, __parm); } break;\
+    case 31:{  BITPACK128V32_31(_ip, _op, __parm); } break;\
+    case 32:{  BITPACK128V32_32(_ip, _op, __parm); } break;\
   }\
 }
 
-#define BITPACK256V32(__pip, __nbits, __pop, __parm) { __m256i *__ip=(__m256i *)__pip,*__op=(__m256i *)__pop;\
-  switch(__nbits) {\
+#define BITPACK256V32(_ip_, _nbits_, _op_, __parm) { __m256i *_ip=(__m256i *)_ip_,*_op=(__m256i *)_op_;\
+  switch(_nbits_) {\
     case  0:  										   break;\
-    case  1:{  BITPACK256V32_1( __ip, __op, __parm); } break;\
-    case  2:{  BITPACK256V32_2( __ip, __op, __parm); } break;\
-    case  3:{  BITPACK256V32_3( __ip, __op, __parm); } break;\
-    case  4:{  BITPACK256V32_4( __ip, __op, __parm); } break;\
-    case  5:{  BITPACK256V32_5( __ip, __op, __parm); } break;\
-    case  6:{  BITPACK256V32_6( __ip, __op, __parm); } break;\
-    case  7:{  BITPACK256V32_7( __ip, __op, __parm); } break;\
-    case  8:{  BITPACK256V32_8( __ip, __op, __parm); } break;\
-    case  9:{  BITPACK256V32_9( __ip, __op, __parm); } break;\
-    case 10:{  BITPACK256V32_10(__ip, __op, __parm); } break;\
-    case 11:{  BITPACK256V32_11(__ip, __op, __parm); } break;\
-    case 12:{  BITPACK256V32_12(__ip, __op, __parm); } break;\
-    case 13:{  BITPACK256V32_13(__ip, __op, __parm); } break;\
-    case 14:{  BITPACK256V32_14(__ip, __op, __parm); } break;\
-    case 15:{  BITPACK256V32_15(__ip, __op, __parm); } break;\
-    case 16:{  BITPACK256V32_16(__ip, __op, __parm); } break;\
-    case 17:{  BITPACK256V32_17(__ip, __op, __parm); } break;\
-    case 18:{  BITPACK256V32_18(__ip, __op, __parm); } break;\
-    case 19:{  BITPACK256V32_19(__ip, __op, __parm); } break;\
-    case 20:{  BITPACK256V32_20(__ip, __op, __parm); } break;\
-    case 21:{  BITPACK256V32_21(__ip, __op, __parm); } break;\
-    case 22:{  BITPACK256V32_22(__ip, __op, __parm); } break;\
-    case 23:{  BITPACK256V32_23(__ip, __op, __parm); } break;\
-    case 24:{  BITPACK256V32_24(__ip, __op, __parm); } break;\
-    case 25:{  BITPACK256V32_25(__ip, __op, __parm); } break;\
-    case 26:{  BITPACK256V32_26(__ip, __op, __parm); } break;\
-    case 27:{  BITPACK256V32_27(__ip, __op, __parm); } break;\
-    case 28:{  BITPACK256V32_28(__ip, __op, __parm); } break;\
-    case 29:{  BITPACK256V32_29(__ip, __op, __parm); } break;\
-    case 30:{  BITPACK256V32_30(__ip, __op, __parm); } break;\
-    case 31:{  BITPACK256V32_31(__ip, __op, __parm); } break;\
-    case 32:{  BITPACK256V32_32(__ip, __op, __parm); } break;\
+    case  1:{  BITPACK256V32_1( _ip, _op, __parm); } break;\
+    case  2:{  BITPACK256V32_2( _ip, _op, __parm); } break;\
+    case  3:{  BITPACK256V32_3( _ip, _op, __parm); } break;\
+    case  4:{  BITPACK256V32_4( _ip, _op, __parm); } break;\
+    case  5:{  BITPACK256V32_5( _ip, _op, __parm); } break;\
+    case  6:{  BITPACK256V32_6( _ip, _op, __parm); } break;\
+    case  7:{  BITPACK256V32_7( _ip, _op, __parm); } break;\
+    case  8:{  BITPACK256V32_8( _ip, _op, __parm); } break;\
+    case  9:{  BITPACK256V32_9( _ip, _op, __parm); } break;\
+    case 10:{  BITPACK256V32_10(_ip, _op, __parm); } break;\
+    case 11:{  BITPACK256V32_11(_ip, _op, __parm); } break;\
+    case 12:{  BITPACK256V32_12(_ip, _op, __parm); } break;\
+    case 13:{  BITPACK256V32_13(_ip, _op, __parm); } break;\
+    case 14:{  BITPACK256V32_14(_ip, _op, __parm); } break;\
+    case 15:{  BITPACK256V32_15(_ip, _op, __parm); } break;\
+    case 16:{  BITPACK256V32_16(_ip, _op, __parm); } break;\
+    case 17:{  BITPACK256V32_17(_ip, _op, __parm); } break;\
+    case 18:{  BITPACK256V32_18(_ip, _op, __parm); } break;\
+    case 19:{  BITPACK256V32_19(_ip, _op, __parm); } break;\
+    case 20:{  BITPACK256V32_20(_ip, _op, __parm); } break;\
+    case 21:{  BITPACK256V32_21(_ip, _op, __parm); } break;\
+    case 22:{  BITPACK256V32_22(_ip, _op, __parm); } break;\
+    case 23:{  BITPACK256V32_23(_ip, _op, __parm); } break;\
+    case 24:{  BITPACK256V32_24(_ip, _op, __parm); } break;\
+    case 25:{  BITPACK256V32_25(_ip, _op, __parm); } break;\
+    case 26:{  BITPACK256V32_26(_ip, _op, __parm); } break;\
+    case 27:{  BITPACK256V32_27(_ip, _op, __parm); } break;\
+    case 28:{  BITPACK256V32_28(_ip, _op, __parm); } break;\
+    case 29:{  BITPACK256V32_29(_ip, _op, __parm); } break;\
+    case 30:{  BITPACK256V32_30(_ip, _op, __parm); } break;\
+    case 31:{  BITPACK256V32_31(_ip, _op, __parm); } break;\
+    case 32:{  BITPACK256V32_32(_ip, _op, __parm); } break;\
   }\
 }
+
 
