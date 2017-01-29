@@ -181,26 +181,26 @@ unsigned bitd132(   uint32_t *in, unsigned n, uint32_t start);
 unsigned bitd164(   uint64_t *in, unsigned n, uint64_t start);
 
 //-- transform sorted integer array to delta array. inc = increment: out[i] = in[i] - in[i-1] - inc
-unsigned bitdelta8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc);
-unsigned bitdelta16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc);
-unsigned bitdelta32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc);
-unsigned bitdelta64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
+unsigned bitdenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc);
+unsigned bitdenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc);
+unsigned bitdenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc);
+unsigned bitdenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
 
 //-- in-place reverse delta transform 
-void bitund8(   	 uint8_t  *p, unsigned n, uint8_t start); // non decreasing 
-void bitund16(  	 uint16_t *p, unsigned n, uint16_t start);
-void bitund32(  	 uint32_t *p, unsigned n, uint32_t start);
-void bitund64(       uint64_t *p, unsigned n, uint64_t start);
+void bitddec8(   	 uint8_t  *p, unsigned n, uint8_t start); // non decreasing 
+void bitddec16(  	 uint16_t *p, unsigned n, uint16_t start);
+void bitddec32(  	 uint32_t *p, unsigned n, uint32_t start);
+void bitddec64(       uint64_t *p, unsigned n, uint64_t start);
 
-void bitund18(       uint8_t  *p, unsigned n, uint8_t  start); // non strictly decreasing
-void bitund116(      uint16_t *p, unsigned n, uint16_t start);
-void bitund132(      uint32_t *p, unsigned n, uint32_t start);
-void bitund164(      uint64_t *p, unsigned n, uint64_t start);
+void bitd1dec8(       uint8_t  *p, unsigned n, uint8_t  start); // non strictly decreasing
+void bitd1dec16(      uint16_t *p, unsigned n, uint16_t start);
+void bitd1dec32(      uint32_t *p, unsigned n, uint32_t start);
+void bitd1dec64(      uint64_t *p, unsigned n, uint64_t start);
 
-void bitundn8( 		 uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc); // increment
-void bitundn16(		 uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
-void bitundn32(		 uint32_t *p, unsigned n, uint32_t start, uint32_t inc);
-void bitundn64(		 uint64_t *p, unsigned n, uint64_t start, uint64_t inc);
+void bitddecn8( 		 uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc); // increment
+void bitddecn16(		 uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
+void bitddecn32(		 uint32_t *p, unsigned n, uint32_t start, uint32_t inc);
+void bitddecn64(		 uint64_t *p, unsigned n, uint64_t start, uint64_t inc);
 
 //------------- FOR array bit length: out[i] = in[i] - start -------------------------------------
 unsigned bitf32(     uint32_t *in, unsigned n, uint32_t start);  // sorted
@@ -220,16 +220,16 @@ unsigned bitz32(     uint32_t *in, unsigned n, uint32_t start);
 unsigned bitz64(     uint64_t *in, unsigned n, uint64_t start);
 
 //-- Zigzag transform
-unsigned bitzigzag8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start);
-unsigned bitzigzag16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start);
-unsigned bitzigzag32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start);
-unsigned bitzigzag64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start);
+unsigned bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t inc);
+unsigned bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t inc);
+unsigned bitzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t inc);
+unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t inc);
 
 //-- Zigzag reverse transform
-void bitunzigzag8(   uint8_t  *p,  unsigned n, uint8_t  start);
-void bitunzigzag16(  uint16_t *p,  unsigned n, uint16_t start);
-void bitunzigzag32(  uint32_t *p,  unsigned n, uint32_t start);
-void bitunzigzag64(  uint64_t *p,  unsigned n, uint64_t start);
+void bitzdec8(   uint8_t  *p,  unsigned n, uint8_t  start);
+void bitzdec16(  uint16_t *p,  unsigned n, uint16_t start);
+void bitzdec32(  uint32_t *p,  unsigned n, uint32_t start);
+void bitzdec64(  uint64_t *p,  unsigned n, uint64_t start);
 
 //---- Floating point to Integer de-/composition ---------------------------------
 #define FMANT_BITS    16
@@ -247,7 +247,7 @@ void bitunzigzag64(  uint64_t *p,  unsigned n, uint64_t start);
 
 // De-/Compose floating point array to/from integer arrays (sign,exponent,mantissa) for using with "Integer Compression" functions ------------
 void bitdouble(  double *in, unsigned n, int *expo, uint64_t *mant);
-void bitundouble(                        int *expo, uint64_t *mant, unsigned n, double *out);
+void bitddecouble(                        int *expo, uint64_t *mant, unsigned n, double *out);
 void bitzdouble( double *in, unsigned n, int *expo, uint64_t *mant);
 void bitzundouble(                       int *expo, uint64_t *mant, unsigned n, double *out);
 void bitfloat(   float *in,  unsigned n, int *expo, unsigned *mant);
