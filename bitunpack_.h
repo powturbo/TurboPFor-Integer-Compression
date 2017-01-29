@@ -5622,6 +5622,7 @@ unsigned char *TEMPLATE2(_BITUNPACK_,64)( const unsigned char *__restrict in, un
   BITUNBLK256V32_32(ip, 31, op, parm);\
 }
 
+//#include "bitunpack_0.h"
 #define BITUNPACK128V32(__ip, __nbits, __op, _parm_) { __m128i mv,*_ov=(__m128i *)__op,*_iv=(__m128i *)__ip; \
   switch(__nbits&0x3f) {\
     case  0: BITUNPACK0(_parm_);               BITUNPACK128V32_0( _iv, _ov, _parm_); break;\
