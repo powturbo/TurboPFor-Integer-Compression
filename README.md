@@ -5,24 +5,24 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
  - :sparkles: **FULL** range 8/16/32/64 bits lists
  - No other "Integer Compression" compress/decompress faster
- - :sparkles: Direct Access, integrated (SIMD) delta/Zigzag for sorted/unsorted arrays
+ - :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Zigzag for sorted/unsorted arrays
 <p>
 + **For/PFor/PForDelta**
  - **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
  - Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
  - Compress 70 times faster and decompress up to 4 times faster than OptPFD
- - :new: **(2017) TurboPFor AVX2, now 50%! more faster!!!!**
- - :new: **(2017) TurboPFor Hybrid, better compression and more faster**
+ - :new: **TurboPFor AVX2, now 50%! more faster!!!!**
+ - :new: **TurboPFor Hybrid, better compression and more faster**
 <p>
 + **Bit Packing**
  - :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
- - :new: **(2017) TurboPack AVX2, now more faster. Decoding 10 Billions intergers/seconds (40Gb/s**
- - :new: **(2017) more faster**. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+ - :new: ** TurboPack AVX2, now more faster. Decoding 10 Billions intergers/seconds (40Gb/s)**
+ - :new: ** more faster**. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
  - **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 <p>
 + **Variable byte**
  - :sparkles: Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
- - :new: **(2017) new scheme : better compression and 30% faster**
+ - :new: **new scheme : better compression and 30% faster**
 <p>
 + **Simple family**
  - :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
@@ -39,7 +39,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - **Novel** Implicit skips with zero extra overhead
  - **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
  - more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- - :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a quad core PC.<br>
+ - :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a simple quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Integer Compression Benchmark:
@@ -187,47 +187,45 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
    >*Type "icbench -l1" for a list*
 
-
    >*-zipfian distribution alpha = 1.2 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
      -number of integers = 100.000.000<br />
      -integer range from 0 to 255<br />*
   
   + Unsorted lists: individual function test (ex. Copy TurboPack TurboPFor)<br />
 
-
         ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor/turbopack256v ZIPF
 
   + Unsorted lists: Zigzag encoding w/ option **-fz** or FOR encoding<br />
 
-
-        ./icbench -fz -eturbovbyte/turbopackv ZIPF
-        ./icbench -eturbofor/turboforv ZIPF
+        ./icbench -fz -eturbovbyte/turbopfor/turbopackv ZIPF
+        ./icbench -eturboforv ZIPF
 
   + Sorted lists: differential coding w/ option **-fs** (increasing) or **-fS** (strictly increasing)<br />
-
 
         ./icbench -fs -eturbopack/turbopfor/turbopfor256v ZIPF
 
   + Generate interactive "file.html" plot for browsing
-
-        ./icbench -p2 -S2 -Q3 file.tbb 
+  
+        ./icbench -p2 -S2 -Q3 file.tbb
+		
+  + Unit test: test function from bit size 0 to 32
+  
+        ./icbench -m0 -M32 -eturbpfor 
+        ./icbench -m0 -M8 -eturbopack -fs -n1M 
 
 ##### - Data files:
   - Raw 32 bits binary data file [Test data](https://github.com/ot/partitioned_elias_fano/tree/master/test/test_data)
-
 
         ./icbench file
 
   - Text file: 1 integer per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
-
         ./icbench -eBENCH -fts ts.txt
         ./icbench -eBENCH -ft  lat.txt
 
 
-  - Multiblocks of 32 bits elements. (Example gov2 from [DocId data set](#DocId data set))<br />
-    Block format: [n: #of Ids] [Id1] [Id2] ... [IdN]
-
+  - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId data set))<br />
+    Block format: [n1: #of Ids][Id1] [Id2]...[IdN] [n2: #of Ids][Id1][Id2]...[IdN]...
 
         ./icbench -fS -r gov2.sorted
 
@@ -282,7 +280,6 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 See benchmark "icbench" program for "integer compression" usage examples.
 In general encoding/decoding functions are of the form:
 
-
   >**char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
   endptr : set by encode to the next character in "out" after the encoded buffer<br />
   in     : input integer array<br />
@@ -290,7 +287,6 @@ In general encoding/decoding functions are of the form:
   out    : pointer to output buffer<br />
   b      : number of bits. Only for bit packing functions<br />
   start  : previous value. Only for integrated delta encoding functions
-
 
    
   >**char *endptr = decode( char *in, unsigned n, unsigned *out, [unsigned start], [int b])**<br />
@@ -307,16 +303,33 @@ In general encoding/decoding functions are of the form:
    
   >**size_t compressed_size = decode( char *in, size_t n, unsigned *out)**<br />
   compressed_size : number of bytes read from compressed input buffer in<br />
-  
+
+### Function syntax:
+ - (vb | p4 | bit | vs)[d | d1 | f | fm | z ](enc/dec | pack/unpack)[| 128V | 256V][8 | 16 | 32 | 64]: 
+   prefix = vb:  variable byte 
+            p4:  turbopfor
+			vs:  variable simple
+			bit: bit packing
+		
+   d:  delta encoding for increasing integer lists (sorted w/ duplicate)
+   d1: delta encoding for strictly increasing integer lists (sorted unique)
+   f : FOR encoding for sorted integer lists
+   fm: FOR encoding for unsorted integer lists
+   z:  ZigZag encoding for unsorted integer lists
+   
+   enc/pack:  encode
+   dec/unpack:decode
+   XX : integer size (8/16/32/64
+   
 header files to use with documentation:<br />
 
-| c/c++ header file|Integer Compression functions|
-|------------|-----------------------------|
-|vint.h|variable byte|
-|vsimple.h|variable simple|
-|vp4.h|TurboPFor|
-|bitpack.h|Bit Packing, For, +Direct Access|
-|eliasfano.h|Elias Fano|
+| c/c++ header file|Integer Compression functions| examples |
+|------------|-----------------------------|-----------------|
+|vint.h|variable byte| vbenc32/vbdec32 vbd1enc32/vbd1dec32 vbzenc32/vbzdec32 |
+|vsimple.h|variable simple| vsenc64/vsdec64 |
+|vp4.h|TurboPFor|  p4enc32/p4dec32 p4denc32/p4ddec32 p4zenc32/p4zdec32 |
+|bitpack.h|Bit Packing, For, +Direct Access| bitpack256v32/bitunpack256v32 bitforenc64/bitfordec64|
+|eliasfano.h|Elias Fano| efanoenc256v32/efanoc256v32 |
 
 ### Environment:
 ###### OS/Compiler (64 bits):
@@ -353,4 +366,3 @@ header files to use with documentation:<br />
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
 Last update:  29 JAN 2017
-
