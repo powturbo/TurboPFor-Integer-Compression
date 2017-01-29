@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//    "Integer Compression" Turbo PforDelta 
+//  "TurboPFor: Integer Compression" PFor/PForDelta  + Direct access
 #ifndef VP4_H_
 #define VP4_H_
 
@@ -89,8 +89,8 @@ size_t p4nd1dec64(    unsigned char *__restrict in, size_t n, uint64_t *__restri
 unsigned char *p4enc8(       uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out);
 unsigned char *p4enc16(      uint16_t *__restrict in, unsigned n, unsigned char *__restrict out);
 unsigned char *p4enc32(      uint32_t *__restrict in, unsigned n, unsigned char *__restrict out);
-unsigned char *p4enc128v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); // SIMD (Vertical bitpacking)
-unsigned char *p4enc256v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); // SIMD (Vertical bitpacking)
+unsigned char *p4enc128v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); // SSE (Vertical bitpacking)
+unsigned char *p4enc256v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); // AVX2 
 unsigned char *p4enc64(      uint64_t *__restrict in, unsigned n, unsigned char *__restrict out);
 
 unsigned char *p4encx8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out);// Direct access 
@@ -100,11 +100,11 @@ unsigned char *p4encx32(     uint32_t *__restrict in, unsigned n, unsigned char 
 unsigned char *p4denc8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);
 unsigned char *p4denc16(     uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4denc32(     uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
-unsigned char *p4denc128v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); // SIMD (Vertical bitpacking)
+unsigned char *p4denc128v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
 unsigned char *p4denc256v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); 
 unsigned char *p4denc64(     uint64_t *__restrict in, unsigned n, unsigned char *__restrict out, uint64_t start);
 
-unsigned char *p4dencx8(     uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);// Direct access 
+unsigned char *p4dencx8(     uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start); // Direct access 
 unsigned char *p4dencx16(    uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4dencx32(    unsigned *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
 
@@ -115,7 +115,7 @@ unsigned char *p4d1enc128v32(uint32_t *__restrict in, unsigned n, unsigned char 
 unsigned char *p4d1enc256v32(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); 
 unsigned char *p4d1enc64(    uint64_t *__restrict in, unsigned n, unsigned char *__restrict out, uint64_t start);
 
-unsigned char *p4d1encx8(    uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);// Direct access 
+unsigned char *p4d1encx8(    uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start); // Direct access 
 unsigned char *p4d1encx16(   uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4d1encx32(   uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
 
@@ -147,7 +147,6 @@ ALWAYS_INLINE unsigned char *_p4dec32(      unsigned char *__restrict in, unsign
 ALWAYS_INLINE unsigned char *_p4dec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
 ALWAYS_INLINE unsigned char *_p4dec64(      unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, unsigned b, unsigned bx);
 
-// 
 unsigned char *p4dec8(        unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out);
 unsigned char *p4dec16(       unsigned char *__restrict in, unsigned n, uint16_t *__restrict out);
 unsigned char *p4dec32(       unsigned char *__restrict in, unsigned n, uint32_t *__restrict out);  
@@ -201,7 +200,7 @@ static inline unsigned p4bits(unsigned char *__restrict in, int *bx) { unsigned 
 struct p4 {
   unsigned long long *xmap;
   unsigned char *ex;
-  unsigned i,bx,cum[P4D_MAX/64+1];
+  unsigned isx,bx,cum[P4D_MAX/64+1];
   int oval,idx;
 };
 
@@ -209,47 +208,48 @@ static unsigned long long p4xmap[P4D_MAX/64+1] = { 0 };
 
 // prepare direct access usage
 static inline void p4ini(struct p4 *p4, unsigned char **pin, unsigned n, unsigned *b) { unsigned char *in = *pin;
-  unsigned p4i = ctou16(in);
-  p4->i      = p4i;
-  *b         = P4D_B(p4i);
-  p4->bx     = P4D_XB(p4i); 										  //assert(n <= P4D_MAX);
+  unsigned p4i  = ctou16(in);
+  p4->isx       = p4i&1;
+  *b            = P4D_B(p4i);
+  p4->bx        = P4D_XB(p4i); 				//printf("p4i=%x,b=%d,bx=%d ", p4->i, *b, p4->bx);						  //assert(n <= P4D_MAX);
   *pin = p4->ex = ++in; 
-  if(p4i&1) { ++in;
-    p4->xmap = (unsigned long long *)in;
+  if(p4->isx) { 
+    ++in;
+    p4->xmap = (uint64_t *)in;
     unsigned num=0,j; 
-    for(j=0; j < n/64; j++) { p4->cum[j] = num; num += popcnt64(ctou64(in+j*8)); } //p4->cum[j] = num; 
+    for(j=0; j < n/64; j++) { p4->cum[j] = num; num += popcnt64(ctou64(in+j*8)); } 
     if(n & 0x3f) num += popcnt64(ctou64(in+j*8) & ((1ull<<(n&0x3f))-1) );
     unsigned char *p;
-    p4->ex = p = in + (n+7)/8;   				
-    *pin   = p = p4->ex+((num*p4->bx+7)/8); 
+    p4->ex = p = in + (n+7)/8; 				
+    *pin   = p = p4->ex+(((uint64_t)num*p4->bx+7)/8); 
   } else p4->xmap = p4xmap;
   p4->oval = p4->idx  = -1;
 }
 
-//---------- Get a single value with index "idx" from a "p4enc32" packed array
-static ALWAYS_INLINE uint8_t p4getx8(struct p4 *p4, unsigned char *in, unsigned idx, unsigned b) { unsigned bi, cl, u = _bitgetx8(in, idx*b, b);
-  if(/*(*p4->i&1) &&*/ unlikely(p4->xmap[bi = idx>>6] & (1ull<<(cl = (idx & 0x3f))))) u |= _bitgetx8(p4->ex, (p4->cum[bi] + popcnt64(p4->xmap[bi] & ~((~0ull)<<cl)))*p4->bx, p4->bx ) << b;
+//---------- Get a single value with index "idx" from a "p4encx32" packed array
+static ALWAYS_INLINE uint8_t  p4getx8( struct p4 *p4, unsigned char *in, unsigned idx, unsigned b) { unsigned bi, cl, u = bitgetx8( in, idx, b); 
+  if(p4->xmap[bi=idx>>6] & (1ull<<(cl=idx&63))) u += bitgetx8(p4->ex, p4->cum[bi] + popcnt64(p4->xmap[bi] & ~(~0ull<<cl)), p4->bx) << b;
   return u;
 }
 
-static ALWAYS_INLINE uint16_t p4getx16(struct p4 *p4, unsigned char *in, unsigned idx, unsigned b) { unsigned bi, cl, u = _bitgetx16(in, idx*b, b);
-  if(/*(*p4->i&1) &&*/ unlikely(p4->xmap[bi = idx>>6] & (1ull<<(cl = (idx & 0x3f))))) u |= _bitgetx16(p4->ex, (p4->cum[bi] + popcnt64(p4->xmap[bi] & ~((~0ull)<<cl)))*p4->bx, p4->bx ) << b;
+static ALWAYS_INLINE uint16_t p4getx16(struct p4 *p4, unsigned char *in, unsigned idx, unsigned b) { unsigned bi, cl, u = bitgetx16(in, idx, b); 
+  if(p4->xmap[bi=idx>>6] & (1ull<<(cl=idx&63))) u += bitgetx16(p4->ex, p4->cum[bi] + popcnt64(p4->xmap[bi] & ~(~0ull<<cl)), p4->bx) << b;
   return u;
 }
-static ALWAYS_INLINE uint32_t p4getx32(struct p4 *p4, unsigned char *in, unsigned idx, unsigned b) { unsigned bi, cl, u = _bitgetx32(in, idx*b, b),bx=p4->bx;																
-  if(/*(p4->i&1) &&*/ unlikely(p4->xmap[bi = idx>>6] & (1ull<<(cl = (idx & 0x3f))))) u |= _bitgetx32(p4->ex, (p4->cum[bi] + popcnt64(p4->xmap[bi] & ~((~0ull)<<cl)))*bx, p4->bx ) << b;
+static ALWAYS_INLINE uint32_t p4getx32(struct p4 *p4, unsigned char *in, unsigned idx, unsigned b) { unsigned bi, cl, u = bitgetx32(in, idx, b); 
+  if(p4->xmap[bi=idx>>6] & (1ull<<(cl=idx&63))) u += bitgetx32(p4->ex, p4->cum[bi] + popcnt64(p4->xmap[bi] & ~(~0ull<<cl)), p4->bx) << b;
   return u;
 }
 
 // Get the next single value greater of equal to val
+static ALWAYS_INLINE uint16_t p4geqx8( struct p4 *p4, unsigned char *in, unsigned b, uint8_t  val) { do p4->oval += p4getx8( p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
 static ALWAYS_INLINE uint16_t p4geqx16(struct p4 *p4, unsigned char *in, unsigned b, uint16_t val) { do p4->oval += p4getx16(p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
-static ALWAYS_INLINE uint32_t p4geqx32(struct p4 *p4, unsigned char *in, unsigned b, unsigned       val) { do p4->oval += p4getx32(p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
-//static ALWAYS_INLINE uint64_t       p4geq64(struct p4 *p4, unsigned char *__restrict in, unsigned b, uint64_t       val) { do p4->oval += p4getx64(p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
+static ALWAYS_INLINE uint32_t p4geqx32(struct p4 *p4, unsigned char *in, unsigned b, uint32_t val) { do p4->oval += p4getx32(p4, in, ++p4->idx, b)+1; while(p4->oval < val); return p4->oval; }
  
 /* DO NOT USE : like p4dec32 but using direct access. This is only a demo showing direct access usage. Use p4dec32 instead for decompressing entire blocks */
-unsigned char *p4decx32(  unsigned char *in, unsigned n, unsigned *out);  // unsorted
-unsigned char *p4f0decx32(unsigned char *in, unsigned n, unsigned *out, unsigned start); // FOR increasing 
-unsigned char *p4fdecx32( unsigned char *in, unsigned n, unsigned *out, unsigned start); // FOR strictly increasing
+unsigned char *p4decx32(   unsigned char *in, unsigned n, uint32_t *out);  // unsorted
+unsigned char *p4fdecx32(  unsigned char *in, unsigned n, uint32_t *out, uint32_t start); // FOR increasing 
+unsigned char *p4f1decx32( unsigned char *in, unsigned n, uint32_t *out, uint32_t start); // FOR strictly increasing
   #endif
 
 #ifdef __cplusplus
