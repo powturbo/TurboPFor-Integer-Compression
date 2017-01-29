@@ -22,31 +22,41 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //	   TurboPFor: plugins.h - settings 
-#define PG_DLT    // delta
+#define PG_DLT   0 // delta
+
+struct codecs { 
+  int  coid; 
+  char *name,*url,*ver; 
+};
 
 struct plugs { 
   int  id; 
-  char *s;
-  int  codec; 
-  char *ver,*name,*lic,*url,*lev; 
-  unsigned flag,blksize; 
+  char *name;
+  unsigned codec,blksize,flag; 
+  char *lev,*desc; 
 };
 
 struct plugg { 
-  char id[17],*desc,*s; 
+  char id[17],*desc,*name; 
 };
 
   #ifdef __cplusplus
 extern "C" {
   #endif
+extern struct codecs codecs[];
 extern struct plugs plugs[];
 int  codini(size_t insize, int codec);
 void codexit(int codec);
 int  codstart( unsigned char *in, int inlen, int codec);
 unsigned char *codcomp(   unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int b);
-unsigned char *codcomps(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc);
 unsigned char *coddecomp( unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int b);
+
+unsigned char *codcomps(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc);
 unsigned char *coddecomps(unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int inc);
+
+unsigned char *codcompz(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc);
+unsigned char *coddecompz(unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int inc);
+
 char *codver(int codec, char *v, char *s);
 void *_valloc(size_t size, int a);
 void _vfree(void *p, size_t size);
