@@ -42,6 +42,7 @@
 #define  P4ENC    p4enc
 #define  P4NENC   p4nenc
 #define  BITPACK  bitpack
+#define  BITDELTA bitdenc
 
 #define USIZE 8
 #include "vp4c.c"
@@ -94,6 +95,26 @@
 #define USIZE 64
 #include "vp4c.c"
 
+#define  BITDELTA  bitzenc
+#define  P4DENC   p4zenc
+#define  P4NENC   p4nzenc
+#define  P4NENCS  p4zenc
+
+#define EXCEP 0
+#define USIZE 8
+#include "vp4c.c"
+
+#define EXCEP 1
+#define USIZE 16
+#include "vp4c.c"
+
+#define USIZE 32
+#include "vp4c.c"
+
+#define USIZE 64
+#include "vp4c.c"
+#define  BITDELTA bitdenc
+
 #undef P4DELTA
 
 #define EXCEP 0             // Direct access
@@ -144,6 +165,15 @@
 #define  P4NENC    p4nd1enc128v
 #define  P4NENCS   p4d1enc
 #include "vp4c.c"
+
+#define P4DELTA 0
+#define  BITDELTA  bitzenc
+#define  P4DENC    p4zenc128v
+#define  P4NENC    p4nzenc128v
+#define  P4NENCS   p4zenc
+#include "vp4c.c"
+#define  BITDELTA bitdenc
+
 #undef P4DELTA
 
 #undef  _P4ENC    
@@ -312,7 +342,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   #else
 ALWAYS_INLINE unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { if(!n) return out;
   uint_t _in[P4D_MAX+8];
-  TEMPLATE2(bitdelta, USIZE)(in, n, _in, start, P4DELTA);
+  TEMPLATE2(BITDELTA, USIZE)(in, n, _in, start, P4DELTA);
   return TEMPLATE2(P4ENC, USIZE)(_in, n, out);
 }
 
@@ -326,7 +356,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   TEMPLATE2(vbxput, USIZE)(op, start);
   for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	__builtin_prefetch(ip+512);
     uint_t _in[P4D_MAX+8];
-    TEMPLATE2(bitdelta, USIZE)(ip, CSIZE, _in, start, P4DELTA);
+    TEMPLATE2(BITDELTA, USIZE)(ip, CSIZE, _in, start, P4DELTA);
     unsigned bx, b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
       #if EXCEP > 0
     if(bx <= USIZE) { P4SAVE(op, b, bx); } else *op++= 0x80|b<<1;									
