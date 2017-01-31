@@ -614,7 +614,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_PF256V: x = *in++; bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);       	return n == 256?p4enc256v32(    pa, n, out      ):p4enc32(      pa, n, out);
     case TB_PFN256V:         									return out+(inc?p4nd1enc256v32( in, n, out      ):p4ndenc256v32(in, n, out));
-    case TB_BP256V: x = *in++;bitdenc32( in, --n, pa, x, inc);
+    case TB_BP256V: x = *in++;b = bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);*out++=b; return n == 256?bitpack256v32(  pa, n, out, b   ):bitpack32(    pa, n, out,b);
   /*case TB_BP256V:   x = *in++;                 --n;
       if(inc) { b = bitd132(in, n, x); vbxput32(out, x); *out++=b; return n == 256?bitd1pack256v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
