@@ -22,8 +22,12 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //	   TurboPFor: plugins.h - settings 
-#define PG_DLT   0 // delta
-
+#define G_N  0x1 
+#define G_D0 0x2 
+#define G_D1 0x4 
+#define G_Z  0x8 
+#define G_D  (G_D1|G_D0)
+ 
 struct codecs { 
   int  coid; 
   char *name,*url,*ver; 
