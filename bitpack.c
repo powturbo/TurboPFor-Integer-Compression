@@ -83,6 +83,13 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define _BITPACK_ bitd1pack
 #include "bitpack_.h"
 
+/*#define IPB( _ip_,_x_, _parm_) 	v = IP(_ip_,_x_) - start - inc; start = IP(_ip_,_x_)
+#define IPV( _ip_,_x_) 			v
+#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start - inc)
+#define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
+#define _BITPACK_ bitepack
+#include "bitpack_.h"*/
+
 #define IPB(_ip_,_x_, _parm_) 	v = zigzagenc32(IP(_ip_,_x_) - start); start = IP(_ip_,_x_)
 #define IPV(_ip_,_x_) 			v
 #define IPX(_ip_,_x_) 		   (v = zigzagenc32(IP(_ip_,_x_) - start))
