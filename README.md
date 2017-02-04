@@ -129,13 +129,13 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
 ##### - Transpose/Shuffle
-|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |Lib|
-|----------:|-----:|----:|------:|------:|---------------------|------|
-|100000000|100.0|32.00|**1818.38**|**2186.15**|**TP8_32**|TurboPFor/byte transpose|
-|100000000|100.0|32.00|**1922.38**|1913.88|Blosc_Shuffle AVX2|Blosc AVX2|
-|100000000|100.0|32.00|1261.27|1776.29|TP4_32 SSE|TurboPFor/Nibble transpose|
-|100000000|100.0|32.00|1655.02|1571.47|Blosc Shuffle SSE|Blosc|
-|100000000|100.0|32.00| 788.85|843.42|BitShuffle AVX2|Bitshuffle|
+|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function|
+|----------:|-----:|----:|------:|------:|-----------------------------------|
+|100000000|100.0|32.00|**1818.38**|**2186.15**|**TP8_32** TurboPFor/byte transpose SSE|
+|100000000|100.0|32.00|**1922.38**|1913.88|Blosc_Shuffle AVX2|
+|100000000|100.0|32.00|1261.27|1776.29|**TP4_32** TurboPFor/Nibble transpose SSE|
+|100000000|100.0|32.00|1655.02|1571.47|Blosc Shuffle SSE|
+|100000000|100.0|32.00| 788.85|843.42|BitShuffle AVX2|
 
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
