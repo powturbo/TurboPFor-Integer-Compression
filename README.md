@@ -135,7 +135,8 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |100000000|100.0|32.00|**1922.38**|1913.88|Blosc_Shuffle AVX2|
 |100000000|100.0|32.00|1261.27|1776.29|**TP4_32** TurboPFor/Nibble transpose SSE|
 |100000000|100.0|32.00|1655.02|1571.47|Blosc Shuffle SSE|
-|100000000|100.0|32.00| 788.85|843.42|BitShuffle AVX2|
+|100000000|100.0|32.00|788.85|843.42|BitShuffle AVX2|
+|100000000|100.0|32.00|524.56|543.52|BitShuffle SSE|
 
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
