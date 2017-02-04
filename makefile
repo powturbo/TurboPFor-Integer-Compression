@@ -167,12 +167,20 @@ OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o
 ifeq ($(BLOSC),1)
 LDFLAGS+=-lpthread 
 #ext/c-blosc/blosc/libblosc.a
-CFLAGS+=-Iext/ -DSHUFFLE_SSE2_ENABLED -DBLOSC -DPREFER_EXTERNAL_LZ4=ON -DHAVE_ZLIB -DHAVE_LZ4 -DHAVE_LZ4HC
+CFLAGS+=-Iext/ -DSHUFFLE_SSE2_ENABLED -DBLOSC -DPREFER_EXTERNAL_LZ4=ON -DHAVE_LZ4 -DHAVE_LZ4HC
+#-DHAVE_ZLIB 
+ifeq ($(AVX2),1)
+CFLAGS+=-DSHUFFLE_AVX2_ENABLED
+OB+=ext/c-blosc/blosc/shuffle-avx2.o ext/c-blosc/blosc/bitshuffle-avx2.o
+endif
 OB+=ext/c-blosc/blosc/blosc.o ext/c-blosc/blosc/blosclz.o ext/c-blosc/blosc/shuffle.o ext/c-blosc/blosc/shuffle-generic.o ext/c-blosc/blosc/shuffle-sse2.o \
 ext/c-blosc/blosc/bitshuffle-generic.o ext/c-blosc/blosc/bitshuffle-sse2.o
 
 #OB+=ext/c-blosc2/blosc/delta.o ext/c-blosc2/blosc/schunk.o 
 else
+ifeq ($(AVX2),1)
+#CFLAGS+=-DUSEAVX2
+endif
 OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o 
 endif
 
@@ -188,8 +196,8 @@ OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o
 #------------------------
 ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o 
 
-ifeq ($(NSIMD),0)
-#ICLIB+=bitunpack128h.o
+ifeq ($(SIMDH),1)
+ICLIB+=bitunpack128h.o
 endif
 #---------------------
 OB+=$(ICLIB)
