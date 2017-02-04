@@ -128,6 +128,16 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
+##### - Transpose/Shuffle
+|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |Lib|
+|----------:|-----:|----:|------:|------:|---------------------|------|
+|100000000|100.0|32.00|**1818.38**|**2186.15**|**TP8_32**|TurboPFor/byte transpose|
+|100000000|100.0|32.00|**1922.38**|1913.88|Blosc_Shuffle AVX2|Blosc AVX2|
+|100000000|100.0|32.00|1261.27|1776.29|TP4_32 SSE|TurboPFor/Nibble transpose|
+|100000000|100.0|32.00|1655.02|1571.47|Blosc Shuffle SSE|Blosc|
+|100000000|100.0|32.00| 788.85|843.42|BitShuffle AVX2|Bitshuffle|
+
+
 ##### - Compressed Inverted Index Intersections with GOV2<br />
    GOV2: 426GB, 25 Millions documents, average doc. size=18k.
 
