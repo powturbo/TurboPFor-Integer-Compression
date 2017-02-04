@@ -226,11 +226,11 @@
 #else
   #define CSIZE 128
 #endif
-
+ 
   #ifndef P4DELTA
 
     #ifdef _P4BITS 	
-ALWAYS_INLINE unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
+unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
     #if EXCEP == 1
   unsigned _vb[USIZE*2+5] = {0}, *vb=&_vb[USIZE];
 	#endif
@@ -277,7 +277,7 @@ ALWAYS_INLINE unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned
 } 
    #endif
  
-ALWAYS_INLINE unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
+inline unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
   if(!bx) 
     return TEMPLATE2(BITPACK, USIZE)(in, n,	out, b);
 
