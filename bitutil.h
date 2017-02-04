@@ -63,7 +63,7 @@ static inline uint64_t       zigzagenc64(int64_t  x)       { return x << 1 ^ x >
 static inline uint64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
 
   #ifdef __AVX2__
-#include <emmintrin.h>
+#include <immintrin.h>
 #include <stdio.h>
 //#define DELTA256x32(_v_, _sv_,_iv_) ?
 
@@ -201,6 +201,21 @@ void bitddecn8( 		 uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc); // in
 void bitddecn16(		 uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
 void bitddecn32(		 uint32_t *p, unsigned n, uint32_t start, uint32_t inc);
 void bitddecn64(		 uint64_t *p, unsigned n, uint64_t start, uint64_t inc);
+
+uint8_t  bitdi8( uint8_t  *in, unsigned n, uint8_t  start);
+uint16_t bitdi16(uint16_t *in, unsigned n, uint16_t start);
+uint32_t bitdi32(uint32_t *in, unsigned n, uint32_t start);
+uint64_t bitdi64(uint64_t *in, unsigned n, uint64_t start);
+
+unsigned bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc);
+unsigned bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc);
+unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc);
+unsigned bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
+
+void bitdidec8(  uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc);
+void bitdidec16( uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
+void bitdidec32( uint32_t *p, unsigned n, uint32_t start, uint32_t inc);
+void bitdidec64( uint64_t *p, unsigned n, uint64_t start, uint64_t inc);
 
 //------------- FOR array bit length: out[i] = in[i] - start -------------------------------------
 unsigned bitf32(     uint32_t *in, unsigned n, uint32_t start);  // sorted
