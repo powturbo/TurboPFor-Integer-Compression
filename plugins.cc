@@ -90,11 +90,12 @@ enum {
   P_COPY,  
   
 #define C_TURBOPFOR		CODEC0
-  TB_PFDA,   						// actually not working w. mingw 
+  TB_PFDA,   						
   TB_FOR,    	
   TB_FORDA,  	
   TB_BP,		
   TB_BPN,		
+  TB_PDI,		
   TB_VBYTE,    
   TB_VSIMPLE,
   TB_EF, 	
@@ -387,6 +388,7 @@ struct plugs plugs[] = {
   { TB_PF256V, 		"TurboPFor256", 	C_TURBOPFOR,	BLK_V256,0,"","PFor (AVX2)" }, 
   { TB_PFN256V, 	"TurboPFor256N", 	C_TURBOPFOR,    0,    	 0,"","PFor (AVX2) large blocks" }, 
   { TB_PFDA,		"TurboPForDA", 		C_TURBOPFOR,	BLK_V128,0,"","PFor direct access" }, 
+  { TB_PDI,			"TurboPForDI", 		C_TURBOPFOR,	BLK_V128,0,"","PFord min" }, 
   
   { TB_FOR,			"TurboFor", 		C_TURBOPFOR,	BLK_V128,0,"","FOR" }, 
   { TB_FOR128V,		"TurboForV", 		C_TURBOPFOR,	BLK_V128,0,"","FOR (SIMD)" }, 
@@ -401,7 +403,7 @@ struct plugs plugs[] = {
   
   { TB_VBYTE, 		"TurboVByte", 		C_TURBOPFOR,	0,    	 0,"","Variable byte (scalar)" }, 
   { TB_VSIMPLE, 	"VSimple", 			C_TURBOPFOR,	0,    	 0,"","Variable simple (scalar)" }, 
-  { TB_EF, 			"EliasFano",		C_TURBOPFOR,	0,       PG_DLT,"","Elias fano (scalar)" }, 
+  { TB_EF, 			"EliasFano",		C_TURBOPFOR,	0,       0,"","Elias fano (scalar)" }, 
   { TB_EF128V, 		"EliasFanoV",		C_TURBOPFOR,	BLK_V128,0,"","Eliasfano  (SSE2)" }, 
   { TB_EF256V,		"EliasFano256V",	C_TURBOPFOR,	BLK_V256,0,"","Elias fano (AVX2" }, 
 
@@ -477,25 +479,26 @@ struct plugs plugs[] = {
 };
 
 struct plugg plugg[] = {
-  { "TURBOPFOR","TURBOPFOR",  					"TurboPFor/TurboPFor256/TurboPack256V/TurboPackV/TurboVByte/TurboPack/TurboForDA/EliasFano/VSimple" },
-  { "DEFAULT",	"Default",  					"TurboPFor/TurboPFor256/TurboPack256V/TurboPackV/TurboVByte/TurboPack" },
+  { "TURBOPFOR","TurboPFor library",  			"TurboPFor256V/TurboPack256V/TurboPFor256N/TurboPFor/TurboPackV/TurboVByte/TurboPack/TurboForDA/EliasFano/VSimple/TurboPForN/TurboPackN/TurboPForDI" },
+  { "DEFAULT",	"Default",  					"TurboPFor/TurboPackV/TurboVByte/TurboPack/TurboFor/TurboPForN/TurboPackN/TurboPForDI/TurboPFor256V/TurboPack256V/TurboPFor256N" },
   { "BENCH",	"Benchmark",  					"TurboPFor/TurboPackV/TurboVByte/TurboPack/QMX/FP.SimdFastPfor/FP.SimdOptPFor/MaskedVbyte/StreamVbyte" },
   { "EFFICIENT","Efficient",					"TurboPFor/vsimple/turbovbyte" },
+  { "TRANSFORM","transpose/shufle,delta,zigzag","TP8s_32/TP8_32/TP4_32/ZigZag_32/Delta_32/BitShuffle/Blosc_Shuffle" },
 
-  { "BITPACK",	"Bit Packing",  				"TurboPackV/TurboPack256V/TurboPackH/TurboPack/SC.SimdPack128/SC.SimdPack256" },
+  { "BITPACK",	"Bit Packing",  				"TurboPack256V/TurboPackV/TurboPackH/TurboPack/SC.SimdPack128/SC.SimdPack256" },
   { "VBYTE",	"Variable byte",				"TurboVByte/FP.VByte/PC.Vbyte/VarintG8IU/MaskedVbyte/StreamVbyte" },
   { "SIMPLE",	"Simple Family",				"simple8b/simple16/vsimple/qmx" },
-  { "LZ4",		"lz4+bitshufle/transpose 4/8",	"lz4_bitshuffle/lz4_tp4/lz4_tp8" },
   
-  { "LI",		"Little Integer",				"LI.Pack/LI.TurboPack/LI.SuperPack/LI.HorPack/LI.BMIPack256" },
+  { "LZ4",		"lz4+bitshufle/transpose 4,8",	"lz4_bitshufle/lz4_tp4/lz4_tp8" }, 
+  { "LI",		"Little Integer",				"LI_Pack/LI_TurboPack/LI_SuperPack/LI_HorPack" },
   { "" }
 };
 
 #define _TP_BITS 1     // transpose bits (4,8,16,32,64)
-
+//bitunshuffle(typesize, blocksize, tmp, dest, tmp2);
   #if C_C_BLOSC  
-#define   BITSHUFFLE(in,n,out)   bitshuffle(   1, n, (unsigned char *)in, out, NULL) 
-#define BITUNSHUFFLE(in,n,out)   bitunshuffle( 1, n, (unsigned char *)in, (unsigned char *)out,NULL)
+#define   BITSHUFFLE(in,n,out)   bitshuffle(   4, (n)/4, (unsigned char *)in, out, NULL)                    //crash
+#define BITUNSHUFFLE(in,n,out)   bitunshuffle( 4, (n)/4, (unsigned char *)in, (unsigned char *)out, NULL)
   #else    
 #define   BITSHUFFLE(in,n,out)   bshuf_bitshuffle(in, out, (n)/4, 4, 0);  memcpy((char *)out+((n)&(~31)),(char *)in+((n)&(~31)),(n)&31)
 #define BITUNSHUFFLE(in,n,out)   bshuf_bitunshuffle(in, out, (n)/4, 4, 0);memcpy((char *)out+((n)&(~31)),(char *)in+((n)&(~31)),(n)&31)
@@ -584,11 +587,15 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       else {    b = bitf32( in, n, x);  *out++=b;				return bitfpack32( in, n, out, x, b); }
 
     case TB_BP128H:
-    case TB_BP:      x = *in++; --n; vbxput32(out, x); 
+    case TB_BP:     x = *in++; --n; vbxput32(out, x); 
       if(inc) { b = bitd132(in, n, x);  *out++=b;				return bitd1pack32(in, n, out, x, b); }
       else {    b = bitd32( in, n, x);  *out++=b;				return bitdpack32( in, n, out, x, b); } 
     case TB_BPN:    											return out+(inc?bitnd1pack32(in, n, out):bitndpack32( in, n, out));
 	
+    case TB_PDI: { x = *in++; unsigned inc = bitdi32(in, --n, x); if(inc>(1<<27)) inc=1<<27; bitdienc32(in, n, pa, x, inc); 
+	    inc=inc<<5|(x&31); x>>=5; vbxput32(out, x); vbput32(out, inc); return p4enc32(pa, n, out);
+	  }
+
 	  #if C_TURBOPFORV
     case TB_EF128V:   x = *in++; --n; vbxput32(out, x);         
       if(inc)  													return n == 128?efano1enc128v32(in, n, out, x+1 ):efano1enc32(  in, n, out, x+1);
@@ -614,7 +621,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_PF256V: x = *in++; bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);       	return n == 256?p4enc256v32(    pa, n, out      ):p4enc32(      pa, n, out);
     case TB_PFN256V:         									return out+(inc?p4nd1enc256v32( in, n, out      ):p4ndenc256v32(in, n, out));
-    case TB_BP256V: x = *in++;b = bitdenc32( in, --n, pa, x, inc);
+    case TB_BP256V: x = *in++; b = bitdenc32( in, --n, pa, x, inc);
 	                                 vbxput32(out, x);*out++=b; return n == 256?bitpack256v32(  pa, n, out, b   ):bitpack32(    pa, n, out,b);
   /*case TB_BP256V:   x = *in++;                 --n;
       if(inc) { b = bitd132(in, n, x); vbxput32(out, x); *out++=b; return n == 256?bitd1pack256v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
@@ -732,6 +739,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_BP:     vbxget32(in, x);*out++ = x; --n; b = *in++; return inc?bitd1unpack32(     in, n, out, x, b):bitdunpack32(    in, n, out, x, b);
     case TB_BPN:               						  		    return in+(inc?bitnd1unpack32(in, n, out      ):bitndunpack32(   in, n, out));
 	
+    case TB_PDI: { vbxget32(in, x); uint32_t inc; vbget32(in, inc); x = x << 5 | (inc & 31); *out++ = x; --n; in = p4dec32(in, n, out); bitdidec32(out, n, x, inc>>5); break; }
 	  #if C_TURBOPFORV
     case TB_FOR128V:vbxget32(in, x);*out++ = x; --n; b = *in++;
 	  if(inc) {                                      	        return n==128?bitf1unpack128v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
@@ -908,6 +916,7 @@ unsigned char *coddecompz(unsigned char *in, unsigned _n, unsigned char *_out, i
   return in;
 }
 
+extern int verbose;
 unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int outsize, int codec, int lev, char *prm, int b) {
   unsigned *in = (unsigned *)_in, n = (_n+3) / 4, x;
   
@@ -917,7 +926,10 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_VSIMPLE: return vsenc32(  in, n, out);
 	
     case TB_PFDA:    return p4encx32( in, n, out);
-
+    //case TB_PFM:     bitfm32( in, n, &x); vbxput32(out, x); return p4denc32(in, n, out, x); 
+    case TB_PDI:     { unsigned pa[BLK_SIZE+2048],inc; bitfm32( in, n, &x); inc = bitdi32(in, n, x); if(verbose > 6 || verbose > 5 && inc) printf("#%d,%d ", x, inc); if(inc>(1<<27)) inc=1<<27; bitdienc32(in, n, pa, x, inc);
+	    inc=inc<<5|(x&31); x>>=5; vbxput32(out, x); vbput32(out, inc); return p4enc32(pa, n, out);
+	  }
     case TB_FOR :  
     case TB_FORDA:   b = bitfm32( in, n, &x); vbxput32(out, x); *out++=b; return bitfpack32( in, n, out, x, b); 
 
@@ -1045,10 +1057,11 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 	  
       // --------- transform ----------------------------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:  bitzenc32(in, n, (unsigned *)out, 0,0);      return out + n*4;
-    case TB_TP8_32:     _transpose4( (unsigned char *)in, n*4, out); return out + n*4;
-    case TB_TP8V_32:    TRANSPOSE( (unsigned char *)in, n*4, out);   return out + n*4;
-    case TB_TP4V_32:    transposen4( (unsigned char *)in, n*4, out); return out + n*4;
+    case TB_ZIGZAG_32:  bitzenc32(                    in, n, (unsigned *)out, 0,0); return out + n*4;
+    case TB_TP8_32:     _transpose4( (unsigned char *)in, n*4,           out);      return out + n*4;
+    case TB_TP8V_32:    TRANSPOSE(   (unsigned char *)in, n*4,           out);      return out + n*4;
+    case TB_TP4V_32:    transposen4( (unsigned char *)in, n*4,           out);      return out + n*4;
+    case TB_DELTA_32: 	bitdenc32(                    in, n, (unsigned *)out, 0,0); return out + n*4; 
       #endif
       #if C_C_BLOSC      
     case P_BS_SHUFFLE:  shuffle( 4, n*4, (unsigned char *)in, out); return out + n*4;
@@ -1095,7 +1108,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
       { n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif  
-    default : die("library '%d' not included\n", codec);
+    //default : die("library '%d' not included\n", codec);
   }
   return out;
 } 
@@ -1107,6 +1120,8 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_VSIMPLE:    				 		return vsdec32(  in, n, out); 
     case TB_EF:    					     		return in;
     case TB_PFDA :  							return p4decx32( in, n, out);
+    //case TB_PFM:    vbxget32(in, x); 			return p4ddec32( in, n, out, x); 
+    case TB_PDI: { vbxget32(in, x); uint32_t inc; vbget32(in, inc); x = x << 5 | (inc & 31); in = p4dec32(in, n, out); bitdidec32(out, n, x, inc>>5); break; }
 
     case TB_FOR:    vbxget32(in, x); b = *in++; return bitfunpack32( in, n, out, x, b);
     case TB_FORDA:  vbxget32(in, x); b = *in++; return bitfunpackx32(in, n, out, x, b);      
@@ -1125,7 +1140,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
         #ifdef __AVX2__
     case TB_FOR256V: vbxget32(in, x); b = *in++;return bitfunpack256v32( in, n, out, x, b);
 
-    case TB_PF256V : __builtin_prefetch(in+256); return n == 256?p4dec256v32(in, n, out):p4dec32(in, n, out);
+    case TB_PF256V : __builtin_prefetch(in+256);return n == 256?p4dec256v32(in, n, out):p4dec32(in, n, out);
     case TB_PFN256V :      				 		return in+p4ndec256v32(in, n, out);
     case TB_BP256V: if(b < 0) b = *in++; 		return n != 256?bitunpack32(in, n, out, b):bitunpack256v32(in, n, out, b);
         #endif
@@ -1237,6 +1252,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_TP8_32:    _untranspose4(  (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
     case TB_TP8V_32:    UNTRANSPOSE( (unsigned char *)in, n*4, (unsigned char *)out); 	return in + n*4;
     case TB_TP4V_32:    untransposen4( (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
+    case TB_DELTA_32: memcpy(out, in, n*4); bitddecn32(out, n, 0, 0); return in + n*4;
 	  #endif
       #if C_C_BLOSC
     case P_BS_SHUFFLE:  unshuffle( 4, n*4, (unsigned char *)in, (unsigned char *)out); 	return in + n*4;
@@ -1281,7 +1297,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
       { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); } break;
       #endif
-    default : 	  die("library '%d' not included\n", codec);
+    //default : 	  die("library '%d' not included\n", codec);
   }
   return in;        
 }
