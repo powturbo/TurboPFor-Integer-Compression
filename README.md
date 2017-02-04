@@ -129,6 +129,9 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
 ##### - Transpose/Shuffle
+        ./icbench -eTRANSFORM ZIPF
+	
+
 |Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function|
 |----------:|-----:|----:|------:|------:|-----------------------------------|
 |100000000|100.0|32.00|**1818.38**|**2186.15**|**TP8_32** TurboPFor/byte transpose SSE|
