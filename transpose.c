@@ -153,6 +153,7 @@ void TEMPLATE2(TRANSPOSE, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 	      #endif
 	    #endif
 	  #endif
+										__builtin_prefetch(ip+512);
   }	
   op = out+bsize*ESIZE; while(ip < in+n) *op++ = *ip++;
 }  
@@ -191,6 +192,7 @@ void TEMPLATE2(UNTRANSPOSE, ESIZE)(unsigned char *in, unsigned n, unsigned char 
 	      #endif
 	    #endif
 	  #endif
+								__builtin_prefetch(ip+512);	
   } 	
   ip = in+bsize*ESIZE; 
   while(op < out+n) 
@@ -304,6 +306,7 @@ void TEMPLATE2(TRANSPOSEV, 4)(unsigned char *in, unsigned n, unsigned char *out)
     _mm_storeu_si128((__m128i *)(op+(i+=bsize)), iv[2]);
     _mm_storeu_si128((__m128i *)(op+(i+=bsize)), iv[3]); 
       #endif
+																__builtin_prefetch(ip+512);
   } 
   _transpose4(in+v, n-v, out+v);
     #else
@@ -381,7 +384,7 @@ void TEMPLATE2(UNTRANSPOSEV, 4)(unsigned char *in, unsigned n, unsigned char *ou
     _mm_storeu_si128((__m128i *)op, _mm_unpacklo_epi16(ov[0], ov[2])); op += 16;
     _mm_storeu_si128((__m128i *)op, _mm_unpackhi_epi16(ov[0], ov[2])); op += 16;
     _mm_storeu_si128((__m128i *)op, _mm_unpacklo_epi16(ov[1], ov[3])); op += 16;
-    _mm_storeu_si128((__m128i *)op, _mm_unpackhi_epi16(ov[1], ov[3])); op += 16;
+    _mm_storeu_si128((__m128i *)op, _mm_unpackhi_epi16(ov[1], ov[3])); op += 16;			__builtin_prefetch(ip+512);
   } 
   _untranspose4(in+v, n-v, out+v);
     #else
