@@ -128,19 +128,19 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
-##### - Transpose/Shuffle
+##### - Transpose/Shuffle (no compression)
         ./icbench -eTRANSFORM ZIPF
 	
 
-|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function|
-|----------:|-----:|----:|------:|------:|-----------------------------------|
-|100000000|100.0|32.00|**2350**|**2283**|**TPbyte 4** TurboPFor Byte Transpose/shuffle AVX2|
-|100000000|100.0|32.00|**2196**|**2215**|**TPbyte 4** TurboPFor Byte Transpose(shuffle SSE|
-|100000000|100.0|32.00|1922|1914|Blosc_Shuffle AVX2|
-|100000000|100.0|32.00|1301|1865|**TPnibble 4** TurboPFor Nibble Transpose/shuffle SSE|
-|100000000|100.0|32.00|1655|1571|Blosc shuffle SSE|
-|100000000|100.0|32.00|789|843|Bitshuffle AVX2|
-|100000000|100.0|32.00|525|544|Bitshuffle SSE|
+|Size |C Time MI/s|D Time MI/s|Function|
+|----------:|------:|------:|-----------------------------------|
+|100000000|**2350**|**2283**|**TPbyte 4** TurboPFor Byte Transpose/shuffle AVX2|
+|100000000|**2196**|**2215**|**TPbyte 4** TurboPFor Byte Transpose(shuffle SSE|
+|100000000|1922|1914|Blosc_Shuffle AVX2|
+|100000000|1301|1865|**TPnibble 4** TurboPFor Nibble Transpose/shuffle SSE|
+|100000000|1655|1571|Blosc shuffle SSE|
+|100000000|789|843|Bitshuffle AVX2|
+|100000000|525|544|Bitshuffle SSE|
 
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
