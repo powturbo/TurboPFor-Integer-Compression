@@ -135,7 +135,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |Size |C Time MI/s|D Time MI/s|Function|
 |----------:|------:|------:|-----------------------------------|
 |100000000|**2350**|**2283**|**TPbyte 4** TurboPFor Byte Transpose/shuffle AVX2|
-|100000000|**2196**|**2215**|**TPbyte 4** TurboPFor Byte Transpose(shuffle SSE|
+|100000000|**2196**|**2215**|**TPbyte 4** TurboPFor Byte Transpose/shuffle SSE|
 |100000000|1922|1914|Blosc_Shuffle AVX2|
 |100000000|1301|1865|**TPnibble 4** TurboPFor Nibble Transpose/shuffle SSE|
 |100000000|1655|1571|Blosc shuffle SSE|
