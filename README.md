@@ -31,7 +31,11 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
  - :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 <p>
 + **Transform**
- - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle, Floating point<->Integer
+ - :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
+<p>
++ **Floating Point Compression**
+ - :new: (Differential) Finite Context Method FCM/DFCM floating point compression
+ - Using TurboPFor, more than 2 GB/s throughput
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data w/ zero decompression
@@ -380,4 +384,5 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  04 FEB 2017
+Last update:  26 FEB 2017
+
