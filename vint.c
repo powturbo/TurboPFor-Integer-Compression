@@ -72,12 +72,16 @@
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
     #if VDELTA == 0
-#define OVERFLOWD(in,n,out,vbmax)    if(*in == vbmax) { memcpy(out, in+1, n*(USIZE/8)); return in+1+n*(USIZE/8); }
-#define OVERFLOWE(in,n,out,op,vbmax) if(op > out + n*(USIZE/8)) { *out = vbmax; memcpy(out+1, in, n*(USIZE/8)); op = out+1+n*(USIZE/8); }
-
+//#if USIZE < 64
+#define OVERFLOWD(in,n,out,vbmax)    if(*in == (vbmax)) { memcpy(out, in+1, n*(USIZE/8)); return in+1+n*(USIZE/8); }
+#define OVERFLOWE(in,n,out,op,vbmax) if(op > out + n*(USIZE/8)) { *out = (vbmax); memcpy(out+1, in, n*(USIZE/8)); op = out+1+n*(USIZE/8); }
+//#else
+//#define OVERFLOWD(in,n,out,vbmax)    
+//#define OVERFLOWE(in,n,out,op,vbmax) 
+//#endif
 unsigned char *TEMPLATE2(vbdec, USIZE)(unsigned char  *__restrict in, unsigned n, uint_t *__restrict out) { 
   register uint_t x, *op; 
-  OVERFLOWD(in, n, out, VB_MAX);
+  OVERFLOWD(in, n, out, VB_MAX+1); 
 
   #define VBE(_i_) TEMPLATE2(_vbget, USIZE)(in, x, op[_i_] = x)
   for(op = out; op != out+(n&~(UN-1)); op += UN) { 					
@@ -109,7 +113,7 @@ unsigned char *TEMPLATE2(vbenc, USIZE)(uint_t *__restrict in, unsigned n, unsign
 	TEMPLATE2(_vbput, USIZE)(op, x, ;); 
   }
 
-  OVERFLOWE(in,n,out,op,VB_MAX);
+  OVERFLOWE(in,n,out,op,VB_MAX+1);
   return op;
 }
 #undef VBD
