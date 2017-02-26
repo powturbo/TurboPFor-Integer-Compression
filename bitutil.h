@@ -35,12 +35,12 @@
     _out_[_i] = _start_+_i*_inc_, ++_i;\
 } while(0)
 
-#define BITSIZE_(_in_, _n_, _b_, _usize_) { typeof(_in_[0]) *_ip;\
-  for(_b_=0,_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
-    _b_ |= _ip[0] | _ip[1] | _ip[2] | _ip[3];\
+#define BITSIZE_(_in_, _n_, _b_, _usize_) { typeof(_in_[0]) *_ip,_u=0;\
+  for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
+    _u |= _ip[0] | _ip[1] | _ip[2] | _ip[3];\
   while(_ip != _in_+_n_) \
-    _b_ |= *_ip++;\
-  _b_ = TEMPLATE2(bsr, _usize_)(_b_);\
+    _u |= *_ip++;\
+  _b_ = TEMPLATE2(bsr, _usize_)(_u);\
 }
 
 #define BITSIZE8( _in_, _n_, _b_) BITSIZE_(_in_, _n_, _b_,  8)
@@ -55,6 +55,8 @@ static inline unsigned short zigzagdec16(unsigned short x) { return x >> 1 ^ -(x
 
 static inline unsigned       zigzagenc31(int      x)       { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; } // for signed x
 static inline unsigned       zigzagdec31(unsigned x)       { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
+static inline unsigned long long zigzagenc63(long long          x) { x = (x << 2 | ((x>>62)&  2)) ^   x >> 63; return x; } // for signed x
+static inline unsigned long long zigzagdec63(unsigned long long x) { return (x >> 2 |  (x&  2)<<62 ) ^ -(x &   1); }
 
 static inline unsigned       zigzagenc32(int      x)       { return x << 1 ^   x >> 31; }
 static inline unsigned       zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
@@ -207,10 +209,10 @@ uint16_t bitdi16(uint16_t *in, unsigned n, uint16_t start);
 uint32_t bitdi32(uint32_t *in, unsigned n, uint32_t start);
 uint64_t bitdi64(uint64_t *in, unsigned n, uint64_t start);
 
-unsigned bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc);
-unsigned bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc);
-unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc);
-unsigned bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc);
+unsigned bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t inc);
+unsigned bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t inc);
+unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t inc);
+unsigned bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t inc);
 
 void bitdidec8(  uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc);
 void bitdidec16( uint16_t *p, unsigned n, uint16_t start, uint16_t inc);
@@ -246,27 +248,25 @@ void bitzdec16(  uint16_t *p,  unsigned n, uint16_t start);
 void bitzdec32(  uint32_t *p,  unsigned n, uint32_t start);
 void bitzdec64(  uint64_t *p,  unsigned n, uint64_t start);
 
-//---- Floating point to Integer de-/composition ---------------------------------
-#define FMANT_BITS    16
-#define DMANT_BITS    32
-#define DZMANT_BITS   36
+//------------- XOR encoding for unsorted integer lists: out[i] = in[i] - in[i-1] -------------
 
+//-- get maximum zigzag bit length integer array
+unsigned bitx8(      uint8_t  *in, unsigned n, uint8_t  start);
+unsigned bitx16(     uint16_t *in, unsigned n, uint16_t start);
+unsigned bitx32(     uint32_t *in, unsigned n, uint32_t start);
+unsigned bitx64(     uint64_t *in, unsigned n, uint64_t start);
 
-#define FLTEXPO(_u_,_mantbits_, _one_)  ( ((_u_) >> _mantbits_) & ( (_one_<<(sizeof(_u_)*8 - _mantbits_)) - 1 ) )
-#define FLTMANT(_u_,_mantbits_, _one_)    ((_u_) & ((_one_<<_mantbits_)-1)) 
+//-- Zigzag transform
+unsigned bitxenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start);
+unsigned bitxenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start);
+unsigned bitxenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start);
+unsigned bitxenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start);
 
-#define BITUNFLOAT(_expo_, _mant_, _u_, _mantbits_) _u_ = ((_expo_) << _mantbits_) | (_mant_)//>>1 | (_mant_)<<(sizeof(_u_)*8 - 1)
-
-/*#define BITFLOAT(_u_, _sgn_, _expo_, _mant_,      _mantbits_, _one_) _sgn_ = _u_ >> (sizeof(_u_)*8-1); _expo_ = EXPO(_u_,_mantbits_; _mant_ = _u_ & ((_one_<<_mantbits_)-1)
-#define BITUNFLOAT(   _sgn_, _expo_, _mant_, _u_, _mantbits_)        _u_ = (_sgn_) << (sizeof(_u_)*8-1) | (_expo_) << _mantbits_ | (_mant_) */
-
-// De-/Compose floating point array to/from integer arrays (sign,exponent,mantissa) for using with "Integer Compression" functions ------------
-void bitdouble(  double *in, unsigned n, int *expo, uint64_t *mant);
-void bitddecouble(                        int *expo, uint64_t *mant, unsigned n, double *out);
-void bitzdouble( double *in, unsigned n, int *expo, uint64_t *mant);
-void bitzundouble(                       int *expo, uint64_t *mant, unsigned n, double *out);
-void bitfloat(   float *in,  unsigned n, int *expo, unsigned *mant);
-void bitunfloat(                         int *expo, unsigned *mant, unsigned n, float *out);
+//-- Zigzag reverse transform
+void bitxdec8(   uint8_t  *p,  unsigned n, uint8_t  start);
+void bitxdec16(  uint16_t *p,  unsigned n, uint16_t start);
+void bitxdec32(  uint32_t *p,  unsigned n, uint32_t start);
+void bitxdec64(  uint64_t *p,  unsigned n, uint64_t start);
 
 #ifdef __cplusplus
 }
