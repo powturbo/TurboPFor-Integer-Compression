@@ -21,32 +21,61 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   transpose.h - byte transpose 
+//   transpose.h - Byte/Nibble transpose 
 #ifdef __cplusplus
 extern "C" {
 #endif
 // Transpose/Shuffle block for further compressing with lz77 or other compressors
-void transpose2    (unsigned char *in, unsigned n, unsigned char *out);
-void transpose3    (unsigned char *in, unsigned n, unsigned char *out);
-void transpose4    (unsigned char *in, unsigned n, unsigned char *out);
-void transpose8    (unsigned char *in, unsigned n, unsigned char *out);
-void transpose16   (unsigned char *in, unsigned n, unsigned char *out);
-void transpose     (unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
-
-void untranspose2  (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose3  (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose4  (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose8  (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose16 (unsigned char *in, unsigned n, unsigned char *out);
-void untranspose   (unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
-
-// scalar transpose
-void _transpose4   (unsigned char *in, unsigned n, unsigned char *out); 
-void _untranspose4 (unsigned char *in, unsigned n, unsigned char *out);  
+void tpenc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+void tpdec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
 // Nibble transpose
-void transposen4   (unsigned char *in, unsigned n, unsigned char *out);
-void untransposen4 (unsigned char *in, unsigned n, unsigned char *out);
+void tp4enc(     unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+void tp4dec(     unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+
+//---------- low level functions ----------------------------------
+void tpenc2(     unsigned char *in, unsigned n, unsigned char *out);
+void tpenc3(     unsigned char *in, unsigned n, unsigned char *out);
+void tpenc4(     unsigned char *in, unsigned n, unsigned char *out);
+void tpenc8(     unsigned char *in, unsigned n, unsigned char *out);
+void tpenc16(    unsigned char *in, unsigned n, unsigned char *out);
+
+void tpdec2(     unsigned char *in, unsigned n, unsigned char *out);
+void tpdec3(     unsigned char *in, unsigned n, unsigned char *out);
+void tpdec4(     unsigned char *in, unsigned n, unsigned char *out);
+void tpdec8(     unsigned char *in, unsigned n, unsigned char *out);
+void tpdec16(    unsigned char *in, unsigned n, unsigned char *out);
+
+void tpenc128v2( unsigned char *in, unsigned n, unsigned char *out);
+void tpdec128v2( unsigned char *in, unsigned n, unsigned char *out);
+void tpenc128v4( unsigned char *in, unsigned n, unsigned char *out);
+void tpdec128v4( unsigned char *in, unsigned n, unsigned char *out);
+void tpenc128v8( unsigned char *in, unsigned n, unsigned char *out);
+void tpdec128v8( unsigned char *in, unsigned n, unsigned char *out);
+
+void tpenc256v2( unsigned char *in, unsigned n, unsigned char *out);
+void tpdec256v2( unsigned char *in, unsigned n, unsigned char *out);
+void tpenc256v4( unsigned char *in, unsigned n, unsigned char *out);
+void tpdec256v4( unsigned char *in, unsigned n, unsigned char *out);
+void tpenc256v8( unsigned char *in, unsigned n, unsigned char *out);
+void tpdec256v8( unsigned char *in, unsigned n, unsigned char *out);
+
+void tp4enc4(unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec4(unsigned char *in, unsigned n, unsigned char *out);
+
+void tp4enc128v2( unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec128v2( unsigned char *in, unsigned n, unsigned char *out);
+void tp4enc128v4( unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec128v4( unsigned char *in, unsigned n, unsigned char *out);
+void tp4enc128v8( unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec128v8( unsigned char *in, unsigned n, unsigned char *out);
+
+void tp4enc256v2( unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec256v2( unsigned char *in, unsigned n, unsigned char *out);
+void tp4enc256v4( unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec256v4( unsigned char *in, unsigned n, unsigned char *out);
+void tp4enc256v8( unsigned char *in, unsigned n, unsigned char *out);
+void tp4dec256v8( unsigned char *in, unsigned n, unsigned char *out);
 
 #ifdef __cplusplus
 }
