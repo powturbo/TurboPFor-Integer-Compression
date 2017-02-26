@@ -44,9 +44,11 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define PREFETCH(_ip_) __builtin_prefetch(_ip_+768)//#define PREFETCH(ip)
 
 #if 0
+#define IP0(_ip_,_x_) *_ip_
 #define IP( _ip_,_x_) *_ip_++
 #define IPI(_ip_)
 #else
+#define IP0(_ip_,_x_) _ip_[_x_]
 #define IP( _ip_,_x_) _ip_[_x_]
 #define IPI(_ip_) _ip_ += 32
 #endif
@@ -62,7 +64,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 
 #define DELTA
  
-#define IPB(_ip_,_x_, _parm_)   v = IP(_ip_,_x_) - start; start = IP(_ip_,_x_)
+#define IPB(_ip_,_x_, _parm_)   v = IP0(_ip_,_x_) - start; start = IP(_ip_,_x_)
 #define IPV(_ip_,_x_) 		    v
 #define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start)
 #define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_) 	
@@ -76,7 +78,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define _BITPACK_ bitfpack
 #include "bitpack_.h"
 
-#define IPB( _ip_,_x_, _parm_) 	v = IP(_ip_,_x_) - start - 1; start = IP(_ip_,_x_)
+#define IPB( _ip_,_x_, _parm_) 	v = IP0(_ip_,_x_) - start - 1; start = IP(_ip_,_x_)
 #define IPV( _ip_,_x_) 			v
 #define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start - 1)
 #define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
