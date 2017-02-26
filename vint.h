@@ -118,11 +118,24 @@ extern unsigned char _vtab32_[];
   else { unsigned _b = _x_-VB_BA3; _x_ = ctou32(_ip_) & ((1u << 8 * _b << 24) - 1); _ip_ += 3 + _b; _act_;}\
 } while(0)
 
+
+
 #define _vblen64(_x_)  _vblen32(_x_)
 #define _vbvlen64(_x_) _vbvlen32(_x_)
-#define _vbput64(_op_, _x_, _act_) _vbput32(_op_, _x_, _act_)
-#define _vbget64(_ip_, _x_, _act_) _vbget32(_ip_, _x_, _act_)
-  	
+#define _vbput64(_op_, _x_, _act_) {\
+  if(likely((_x_) < VB_OFS1)){ *_op_++ = (_x_);																	_act_;}\
+  else if  ((_x_) < VB_OFS2) { ctou16(_op_) = bswap16((VB_OFS1<<8)+((_x_)-VB_OFS1));             _op_  += 2; /*(_x_) -= VB_OFS1; *_op_++ = VB_OFS1 + ((_x_) >> 8); *_op_++ = (_x_);*/ _act_; }\
+  else if  ((_x_) < VB_OFS3) { *_op_++ = VB_BA2 + (((_x_) -= VB_OFS2) >> 16); ctou16(_op_) = (_x_); _op_  += 2;  _act_;}\
+  else { unsigned _b = (bsr64((_x_))+7)/8; *_op_++ = VB_BA3 + (_b - 3);    ctou64(_op_) = (_x_); _op_  += _b; _act_;}\
+}
+
+#define _vbget64(_ip_, _x_, _act_) do { _x_ = *_ip_++;\
+       if(likely(_x_ < VB_OFS1)) { _act_ ;}\
+  else if(likely(_x_ < VB_BA2))  { _x_ = /*bswap16(ctou16(_ip_-1))*/ ((_x_<<8) + (*_ip_)) + (VB_OFS1 - (VB_OFS1 <<  8)); _ip_++; _act_;} \
+  else if(likely(_x_ < VB_BA3))  { _x_ = ctou16(_ip_) + ((_x_ - VB_BA2 ) << 16) + VB_OFS2; _ip_ += 2; _act_;}\
+  else { unsigned _b = _x_-VB_BA3; _x_ = ctou64(_ip_) & ((1ull << 8 * _b << 24) - 1); _ip_ += 3 + _b; _act_;}\
+} while(0)
+
 #ifdef _WIN32
 //#define fgetc_unlocked(_f_) 	 _fgetc_nolock(_f_)
 #define fputc_unlocked(_c_, _f_) fputc(_c_,_f_)
