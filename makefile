@@ -111,6 +111,15 @@ varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h
 idxqryp.o: idxqry.c
 	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
 
+transpose.o: transpose.c
+	$(CC) -O3 $(CFLAGS) -c transpose.c -o transpose.o
+
+transpose_sse.o: transpose.c
+	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c transpose.c -o transpose_sse.o
+
+transpose_avx2.o: transpose.c
+	$(CC) -O3 $(CFLAGS) -DAVX2_ON -march=haswell -mavx2 -c transpose.c -o transpose_avx2.o
+
 #vint.o: vint.c
 #	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vint.c
 
@@ -192,9 +201,13 @@ OB+=../dev/lz/lz8c.o ../dev/lz/lzbc.o
 endif
 
 
-OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o 
+OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o transpose_sse.o
+ifeq ($(AVX2),1)
+OB+=transpose_avx2.o 
+endif
+
 #------------------------
-ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o 
+ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o fp.o
 
 ifeq ($(SIMDH),1)
 ICLIB+=bitunpack128h.o
