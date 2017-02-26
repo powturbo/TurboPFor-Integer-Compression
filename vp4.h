@@ -109,6 +109,7 @@ unsigned char *p4enc64(      uint64_t *__restrict in, unsigned n, unsigned char 
 unsigned char *p4encx8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out);// Direct access 
 unsigned char *p4encx16(     uint16_t *__restrict in, unsigned n, unsigned char *__restrict out); 
 unsigned char *p4encx32(     uint32_t *__restrict in, unsigned n, unsigned char *__restrict out);
+unsigned char *p4encx64(     uint64_t *__restrict in, unsigned n, unsigned char *__restrict out);
 
 unsigned char *p4denc8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);
 unsigned char *p4denc16(     uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
