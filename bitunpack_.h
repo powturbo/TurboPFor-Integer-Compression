@@ -2856,7 +2856,72 @@
   BITUNBLK64_60(ip, 1, op, parm);  OPI(op, parm); ip += 60*4/sizeof(ip[0]);\
 }
 
-#define BITUNBLK64_61(ip, i, op, parm) {    uint64_t w0 = *(uint64_t *)(ip+(i*61+0)*8/sizeof(ip[0]));   uint64_t w1 = *(uint64_t *)(ip+(i*61+1)*8/sizeof(ip[0]));\
+#define BITUNBLK64_61(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*61+0)*8/sizeof(ip[0]));\
+  OUT(op,i*64+ 0, (w0 ) & 0x1fffffffffffffff, parm);  register uint64_t w1 = *(uint64_t *)(ip+(i*61+1)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 1, (w0 >> 61) | (w1 <<  3) & 0x1fffffffffffffff, parm);  register uint64_t w2 = *(uint64_t *)(ip+(i*61+2)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 2, (w1 >> 58) | (w2 <<  6) & 0x1fffffffffffffff, parm);  register uint64_t w3 = *(uint64_t *)(ip+(i*61+3)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 3, (w2 >> 55) | (w3 <<  9) & 0x1fffffffffffffff, parm);  register uint64_t w4 = *(uint64_t *)(ip+(i*61+4)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 4, (w3 >> 52) | (w4 << 12) & 0x1fffffffffffffff, parm);  register uint64_t w5 = *(uint64_t *)(ip+(i*61+5)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 5, (w4 >> 49) | (w5 << 15) & 0x1fffffffffffffff, parm);  register uint64_t w6 = *(uint64_t *)(ip+(i*61+6)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 6, (w5 >> 46) | (w6 << 18) & 0x1fffffffffffffff, parm);  register uint64_t w7 = *(uint64_t *)(ip+(i*61+7)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 7, (w6 >> 43) | (w7 << 21) & 0x1fffffffffffffff, parm);  register uint64_t w8 = *(uint64_t *)(ip+(i*61+8)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 8, (w7 >> 40) | (w8 << 24) & 0x1fffffffffffffff, parm);  register uint64_t w9 = *(uint64_t *)(ip+(i*61+9)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 9, (w8 >> 37) | (w9 << 27) & 0x1fffffffffffffff, parm);  register uint64_t w10 = *(uint64_t *)(ip+(i*61+10)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+10, (w9 >> 34) | (w10 << 30) & 0x1fffffffffffffff, parm);  register uint64_t w11 = *(uint64_t *)(ip+(i*61+11)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+11, (w10 >> 31) | (w11 << 33) & 0x1fffffffffffffff, parm);  register uint64_t w12 = *(uint64_t *)(ip+(i*61+12)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+12, (w11 >> 28) | (w12 << 36) & 0x1fffffffffffffff, parm);  register uint64_t w13 = *(uint64_t *)(ip+(i*61+13)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+13, (w12 >> 25) | (w13 << 39) & 0x1fffffffffffffff, parm);  register uint64_t w14 = *(uint64_t *)(ip+(i*61+14)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+14, (w13 >> 22) | (w14 << 42) & 0x1fffffffffffffff, parm);  register uint64_t w15 = *(uint64_t *)(ip+(i*61+15)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+15, (w14 >> 19) | (w15 << 45) & 0x1fffffffffffffff, parm);  register uint64_t w16 = *(uint64_t *)(ip+(i*61+16)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+16, (w15 >> 16) | (w16 << 48) & 0x1fffffffffffffff, parm);  register uint64_t w17 = *(uint64_t *)(ip+(i*61+17)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+17, (w16 >> 13) | (w17 << 51) & 0x1fffffffffffffff, parm);  register uint64_t w18 = *(uint64_t *)(ip+(i*61+18)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+18, (w17 >> 10) | (w18 << 54) & 0x1fffffffffffffff, parm);  register uint64_t w19 = *(uint64_t *)(ip+(i*61+19)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+19, (w18 >> 7) | (w19 << 57) & 0x1fffffffffffffff, parm);  register uint64_t w20 = *(uint64_t *)(ip+(i*61+20)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+20, (w19 >> 4) | (w20 << 60) & 0x1fffffffffffffff, parm);\
+  OUT(op,i*64+21, (w20 >>  1) & 0x1fffffffffffffff, parm);  register uint64_t w21 = *(uint64_t *)(ip+(i*61+21)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+22, (w20 >> 62) | (w21 <<  2) & 0x1fffffffffffffff, parm);  register uint64_t w22 = *(uint64_t *)(ip+(i*61+22)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+23, (w21 >> 59) | (w22 <<  5) & 0x1fffffffffffffff, parm);  register uint64_t w23 = *(uint64_t *)(ip+(i*61+23)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+24, (w22 >> 56) | (w23 <<  8) & 0x1fffffffffffffff, parm);  register uint64_t w24 = *(uint64_t *)(ip+(i*61+24)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+25, (w23 >> 53) | (w24 << 11) & 0x1fffffffffffffff, parm);  register uint64_t w25 = *(uint64_t *)(ip+(i*61+25)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+26, (w24 >> 50) | (w25 << 14) & 0x1fffffffffffffff, parm);  register uint64_t w26 = *(uint64_t *)(ip+(i*61+26)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+27, (w25 >> 47) | (w26 << 17) & 0x1fffffffffffffff, parm);  register uint64_t w27 = *(uint64_t *)(ip+(i*61+27)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+28, (w26 >> 44) | (w27 << 20) & 0x1fffffffffffffff, parm);  register uint64_t w28 = *(uint64_t *)(ip+(i*61+28)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+29, (w27 >> 41) | (w28 << 23) & 0x1fffffffffffffff, parm);  register uint64_t w29 = *(uint64_t *)(ip+(i*61+29)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+30, (w28 >> 38) | (w29 << 26) & 0x1fffffffffffffff, parm);  register uint64_t w30 = *(uint32_t *)(ip+(i*61+30)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+31, (w29 >> 35) | (w30 << 29) & 0x1fffffffffffffff, parm);;\
+}
+
+/*#define BITUNBLK64_61(ip, i, op, parm) {    uint64_t w0 = *(uint64_t *)(ip+(i*61+0)*8/sizeof(ip[0]));   uint64_t w1 = *(uint64_t *)(ip+(i*61+1)*8/sizeof(ip[0]));\
 \
   OUT(op,i*64+ 0, (w0 >> 64) | (w1 <<  0) & 0x1fffffffffffffff, parm);   uint64_t w2 = *(uint64_t *)(ip+(i*61+2)*8/sizeof(ip[0]));\
 \
@@ -2921,13 +2986,78 @@
   OUT(op,i*64+30, (w30 >> 64) | (w31 <<  0) & 0x1fffffffffffffff, parm);   uint64_t w32 = *(uint32_t *)(ip+(i*61+32)*8/sizeof(ip[0]));\
 \
   OUT(op,i*64+31, (w31 >> 64) | (w32 <<  0) & 0x1fffffffffffffff, parm);;\
-}
+}*/
 
 #define BITUNPACK64_61(ip,  op, parm) { \
   BITUNBLK64_61(ip, 0, op, parm);  OPI(op, parm); ip += 61*4/sizeof(ip[0]);\
 }
 
-#define BITUNBLK64_62(ip, i, op, parm) {    uint64_t w0 = *(uint64_t *)(ip+(i*31+0)*8/sizeof(ip[0]));   uint64_t w1 = *(uint64_t *)(ip+(i*31+1)*8/sizeof(ip[0]));\
+#define BITUNBLK64_62(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*31+0)*8/sizeof(ip[0]));\
+  OUT(op,i*32+ 0, (w0 ) & 0x3fffffffffffffff, parm);  register uint64_t w1 = *(uint64_t *)(ip+(i*31+1)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 1, (w0 >> 62) | (w1 <<  2) & 0x3fffffffffffffff, parm);  register uint64_t w2 = *(uint64_t *)(ip+(i*31+2)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 2, (w1 >> 60) | (w2 <<  4) & 0x3fffffffffffffff, parm);  register uint64_t w3 = *(uint64_t *)(ip+(i*31+3)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 3, (w2 >> 58) | (w3 <<  6) & 0x3fffffffffffffff, parm);  register uint64_t w4 = *(uint64_t *)(ip+(i*31+4)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 4, (w3 >> 56) | (w4 <<  8) & 0x3fffffffffffffff, parm);  register uint64_t w5 = *(uint64_t *)(ip+(i*31+5)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 5, (w4 >> 54) | (w5 << 10) & 0x3fffffffffffffff, parm);  register uint64_t w6 = *(uint64_t *)(ip+(i*31+6)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 6, (w5 >> 52) | (w6 << 12) & 0x3fffffffffffffff, parm);  register uint64_t w7 = *(uint64_t *)(ip+(i*31+7)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 7, (w6 >> 50) | (w7 << 14) & 0x3fffffffffffffff, parm);  register uint64_t w8 = *(uint64_t *)(ip+(i*31+8)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 8, (w7 >> 48) | (w8 << 16) & 0x3fffffffffffffff, parm);  register uint64_t w9 = *(uint64_t *)(ip+(i*31+9)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+ 9, (w8 >> 46) | (w9 << 18) & 0x3fffffffffffffff, parm);  register uint64_t w10 = *(uint64_t *)(ip+(i*31+10)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+10, (w9 >> 44) | (w10 << 20) & 0x3fffffffffffffff, parm);  register uint64_t w11 = *(uint64_t *)(ip+(i*31+11)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+11, (w10 >> 42) | (w11 << 22) & 0x3fffffffffffffff, parm);  register uint64_t w12 = *(uint64_t *)(ip+(i*31+12)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+12, (w11 >> 40) | (w12 << 24) & 0x3fffffffffffffff, parm);  register uint64_t w13 = *(uint64_t *)(ip+(i*31+13)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+13, (w12 >> 38) | (w13 << 26) & 0x3fffffffffffffff, parm);  register uint64_t w14 = *(uint64_t *)(ip+(i*31+14)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+14, (w13 >> 36) | (w14 << 28) & 0x3fffffffffffffff, parm);  register uint64_t w15 = *(uint64_t *)(ip+(i*31+15)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+15, (w14 >> 34) | (w15 << 30) & 0x3fffffffffffffff, parm);  register uint64_t w16 = *(uint64_t *)(ip+(i*31+16)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+16, (w15 >> 32) | (w16 << 32) & 0x3fffffffffffffff, parm);  register uint64_t w17 = *(uint64_t *)(ip+(i*31+17)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+17, (w16 >> 30) | (w17 << 34) & 0x3fffffffffffffff, parm);  register uint64_t w18 = *(uint64_t *)(ip+(i*31+18)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+18, (w17 >> 28) | (w18 << 36) & 0x3fffffffffffffff, parm);  register uint64_t w19 = *(uint64_t *)(ip+(i*31+19)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+19, (w18 >> 26) | (w19 << 38) & 0x3fffffffffffffff, parm);  register uint64_t w20 = *(uint64_t *)(ip+(i*31+20)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+20, (w19 >> 24) | (w20 << 40) & 0x3fffffffffffffff, parm);  register uint64_t w21 = *(uint64_t *)(ip+(i*31+21)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+21, (w20 >> 22) | (w21 << 42) & 0x3fffffffffffffff, parm);  register uint64_t w22 = *(uint64_t *)(ip+(i*31+22)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+22, (w21 >> 20) | (w22 << 44) & 0x3fffffffffffffff, parm);  register uint64_t w23 = *(uint64_t *)(ip+(i*31+23)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+23, (w22 >> 18) | (w23 << 46) & 0x3fffffffffffffff, parm);  register uint64_t w24 = *(uint64_t *)(ip+(i*31+24)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+24, (w23 >> 16) | (w24 << 48) & 0x3fffffffffffffff, parm);  register uint64_t w25 = *(uint64_t *)(ip+(i*31+25)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+25, (w24 >> 14) | (w25 << 50) & 0x3fffffffffffffff, parm);  register uint64_t w26 = *(uint64_t *)(ip+(i*31+26)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+26, (w25 >> 12) | (w26 << 52) & 0x3fffffffffffffff, parm);  register uint64_t w27 = *(uint64_t *)(ip+(i*31+27)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+27, (w26 >> 10) | (w27 << 54) & 0x3fffffffffffffff, parm);  register uint64_t w28 = *(uint64_t *)(ip+(i*31+28)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+28, (w27 >> 8) | (w28 << 56) & 0x3fffffffffffffff, parm);  register uint64_t w29 = *(uint64_t *)(ip+(i*31+29)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+29, (w28 >> 6) | (w29 << 58) & 0x3fffffffffffffff, parm);  register uint64_t w30 = *(uint64_t *)(ip+(i*31+30)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*32+30, (w29 >> 4) | (w30 << 60) & 0x3fffffffffffffff, parm);\
+  OUT(op,i*32+31, (w30 >>  2) , parm);;\
+}
+
+/*#define BITUNBLK64_62(ip, i, op, parm) {    uint64_t w0 = *(uint64_t *)(ip+(i*31+0)*8/sizeof(ip[0]));   uint64_t w1 = *(uint64_t *)(ip+(i*31+1)*8/sizeof(ip[0]));\
 \
   OUT(op,i*32+ 0, (w0 >> 64) | (w1 <<  0) & 0x3fffffffffffffff, parm);   uint64_t w2 = *(uint64_t *)(ip+(i*31+2)*8/sizeof(ip[0]));\
 \
@@ -2992,13 +3122,79 @@
   OUT(op,i*32+30, (w30 >> 64) | (w31 <<  0) & 0x3fffffffffffffff, parm);   uint64_t w32 = *(uint32_t *)(ip+(i*31+32)*8/sizeof(ip[0]));\
 \
   OUT(op,i*32+31, (w31 >> 64) | (w32 <<  0) & 0x3fffffffffffffff, parm);;\
-}
+}*/
 
 #define BITUNPACK64_62(ip,  op, parm) { \
   BITUNBLK64_62(ip, 0, op, parm);  OPI(op, parm); ip += 62*4/sizeof(ip[0]);\
 }
 
-#define BITUNBLK64_63(ip, i, op, parm) {    uint64_t w0 = *(uint64_t *)(ip+(i*63+0)*8/sizeof(ip[0]));   uint64_t w1 = *(uint64_t *)(ip+(i*63+1)*8/sizeof(ip[0]));\
+#define BITUNBLK64_63(ip, i, op, parm) {   register uint64_t w0 = *(uint64_t *)(ip+(i*63+0)*8/sizeof(ip[0]));\
+  OUT(op,i*64+ 0, (w0 ) & 0x7fffffffffffffff, parm);  register uint64_t w1 = *(uint64_t *)(ip+(i*63+1)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 1, (w0 >> 63) | (w1 <<  1) & 0x7fffffffffffffff, parm);  register uint64_t w2 = *(uint64_t *)(ip+(i*63+2)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 2, (w1 >> 62) | (w2 <<  2) & 0x7fffffffffffffff, parm);  register uint64_t w3 = *(uint64_t *)(ip+(i*63+3)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 3, (w2 >> 61) | (w3 <<  3) & 0x7fffffffffffffff, parm);  register uint64_t w4 = *(uint64_t *)(ip+(i*63+4)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 4, (w3 >> 60) | (w4 <<  4) & 0x7fffffffffffffff, parm);  register uint64_t w5 = *(uint64_t *)(ip+(i*63+5)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 5, (w4 >> 59) | (w5 <<  5) & 0x7fffffffffffffff, parm);  register uint64_t w6 = *(uint64_t *)(ip+(i*63+6)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 6, (w5 >> 58) | (w6 <<  6) & 0x7fffffffffffffff, parm);  register uint64_t w7 = *(uint64_t *)(ip+(i*63+7)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 7, (w6 >> 57) | (w7 <<  7) & 0x7fffffffffffffff, parm);  register uint64_t w8 = *(uint64_t *)(ip+(i*63+8)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 8, (w7 >> 56) | (w8 <<  8) & 0x7fffffffffffffff, parm);  register uint64_t w9 = *(uint64_t *)(ip+(i*63+9)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+ 9, (w8 >> 55) | (w9 <<  9) & 0x7fffffffffffffff, parm);  register uint64_t w10 = *(uint64_t *)(ip+(i*63+10)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+10, (w9 >> 54) | (w10 << 10) & 0x7fffffffffffffff, parm);  register uint64_t w11 = *(uint64_t *)(ip+(i*63+11)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+11, (w10 >> 53) | (w11 << 11) & 0x7fffffffffffffff, parm);  register uint64_t w12 = *(uint64_t *)(ip+(i*63+12)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+12, (w11 >> 52) | (w12 << 12) & 0x7fffffffffffffff, parm);  register uint64_t w13 = *(uint64_t *)(ip+(i*63+13)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+13, (w12 >> 51) | (w13 << 13) & 0x7fffffffffffffff, parm);  register uint64_t w14 = *(uint64_t *)(ip+(i*63+14)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+14, (w13 >> 50) | (w14 << 14) & 0x7fffffffffffffff, parm);  register uint64_t w15 = *(uint64_t *)(ip+(i*63+15)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+15, (w14 >> 49) | (w15 << 15) & 0x7fffffffffffffff, parm);  register uint64_t w16 = *(uint64_t *)(ip+(i*63+16)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+16, (w15 >> 48) | (w16 << 16) & 0x7fffffffffffffff, parm);  register uint64_t w17 = *(uint64_t *)(ip+(i*63+17)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+17, (w16 >> 47) | (w17 << 17) & 0x7fffffffffffffff, parm);  register uint64_t w18 = *(uint64_t *)(ip+(i*63+18)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+18, (w17 >> 46) | (w18 << 18) & 0x7fffffffffffffff, parm);  register uint64_t w19 = *(uint64_t *)(ip+(i*63+19)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+19, (w18 >> 45) | (w19 << 19) & 0x7fffffffffffffff, parm);  register uint64_t w20 = *(uint64_t *)(ip+(i*63+20)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+20, (w19 >> 44) | (w20 << 20) & 0x7fffffffffffffff, parm);  register uint64_t w21 = *(uint64_t *)(ip+(i*63+21)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+21, (w20 >> 43) | (w21 << 21) & 0x7fffffffffffffff, parm);  register uint64_t w22 = *(uint64_t *)(ip+(i*63+22)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+22, (w21 >> 42) | (w22 << 22) & 0x7fffffffffffffff, parm);  register uint64_t w23 = *(uint64_t *)(ip+(i*63+23)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+23, (w22 >> 41) | (w23 << 23) & 0x7fffffffffffffff, parm);  register uint64_t w24 = *(uint64_t *)(ip+(i*63+24)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+24, (w23 >> 40) | (w24 << 24) & 0x7fffffffffffffff, parm);  register uint64_t w25 = *(uint64_t *)(ip+(i*63+25)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+25, (w24 >> 39) | (w25 << 25) & 0x7fffffffffffffff, parm);  register uint64_t w26 = *(uint64_t *)(ip+(i*63+26)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+26, (w25 >> 38) | (w26 << 26) & 0x7fffffffffffffff, parm);  register uint64_t w27 = *(uint64_t *)(ip+(i*63+27)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+27, (w26 >> 37) | (w27 << 27) & 0x7fffffffffffffff, parm);  register uint64_t w28 = *(uint64_t *)(ip+(i*63+28)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+28, (w27 >> 36) | (w28 << 28) & 0x7fffffffffffffff, parm);  register uint64_t w29 = *(uint64_t *)(ip+(i*63+29)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+29, (w28 >> 35) | (w29 << 29) & 0x7fffffffffffffff, parm);  register uint64_t w30 = *(uint64_t *)(ip+(i*63+30)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+30, (w29 >> 34) | (w30 << 30) & 0x7fffffffffffffff, parm);  register uint64_t w31 = *(uint32_t *)(ip+(i*63+31)*8/sizeof(ip[0]));\
+\
+  OUT(op,i*64+31, (w30 >> 33) | (w31 << 31) & 0x7fffffffffffffff, parm);;\
+}
+
+/*#define BITUNBLK64_63(ip, i, op, parm) {    uint64_t w0 = *(uint64_t *)(ip+(i*63+0)*8/sizeof(ip[0]));   uint64_t w1 = *(uint64_t *)(ip+(i*63+1)*8/sizeof(ip[0]));\
 \
   OUT(op,i*64+ 0, (w0 >> 64) | (w1 <<  0) & 0x7fffffffffffffff, parm);   uint64_t w2 = *(uint64_t *)(ip+(i*63+2)*8/sizeof(ip[0]));\
 \
@@ -3063,7 +3259,7 @@
   OUT(op,i*64+30, (w30 >> 64) | (w31 <<  0) & 0x7fffffffffffffff, parm);   uint64_t w32 = *(uint32_t *)(ip+(i*63+32)*8/sizeof(ip[0]));\
 \
   OUT(op,i*64+31, (w31 >> 64) | (w32 <<  0) & 0x7fffffffffffffff, parm);;\
-}
+}*/
 
 #define BITUNPACK64_63(ip,  op, parm) { \
   BITUNBLK64_63(ip, 0, op, parm);  OPI(op, parm); ip += 63*4/sizeof(ip[0]);\
