@@ -253,12 +253,14 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #pragma GCC optimize ("align-functions=16")
 
 ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
-  uint_t ex[P4D_MAX+8];
-  if(!(b & 1)) 
+  uint_t ex[P4D_MAX+32];
+    #if USIZE == 64
+  b = ((b>>1)==63)?(64<<1):b;
+    #endif
+  if(!(b & 1))
     return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b>>1);
-
   b >>= 1;
-    #ifdef VSIZE 
+    #if defined(VSIZE) && USIZE < 64 
   unsigned char *pb = in;	
       #if VSIZE == 128  
   in = TEMPLATE2(bitunpack, USIZE)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx); 
@@ -267,7 +269,8 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
       #endif
   return TEMPLATE2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);	  
     #else
-  unsigned long long bb[P4D_MAX/64]; unsigned num=0,i,p4dn = (n+63)/64;
+  unsigned long long bb[P4D_MAX/64]; 
+  unsigned num=0,i,p4dn = (n+63)/64;
   for(i = 0; i < n/64; i++) { bb[i] = ctou64(in+i*8); num += popcnt64(bb[i]); }
   if(n & 0x3f) { bb[i] = ctou64(in+i*8) & ((1ull<<(n&0x3f))-1); num += popcnt64(bb[i]); }
   in = TEMPLATE2(bitunpack, USIZE)(in+PAD8(n), num, ex, bx);
@@ -287,10 +290,10 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     } _op+=64;
   }
       #else
-  unsigned k = 0; uint_t *_op=out,*op;
-  for(op=_op,i = 0; i < p4dn; i++) {
-	while(bb[i]) { unsigned x = ctz64(bb[i]); op[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); } _op += 8;
-  } 				
+  unsigned k = 0; 
+  uint_t *op;
+  for(op=out,i = 0; i < p4dn; i++,op += 64)
+	while(bb[i]) { unsigned x = ctz64(bb[i]); op[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); }
       #endif
       #ifdef BITUNDD
   TEMPLATE2(BITUNDD, USIZE)(out, n, start);
@@ -300,18 +303,18 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
 }
 
 unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  if(!n) return in; 
-  unsigned b = *in++,bx,i;
-  
+  unsigned b = *in++, bx, i;  
   if(likely(!(b & 0x80))) {
     if(b & 1)
 	  bx = *in++;
-    return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx );
+    return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx);
   }
     #if USIZE > 8  
-  else {  
-    uint_t ex[P4D_MAX+8]; 
-	b  = (b & 0x7f)>>1;
-    bx = *in++;
+  else {
+    uint_t ex[P4D_MAX+32]; 
+	b  = (b & 0x7f)>>1; 	
+    bx = *in++;                 
+
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b); 
     in = TEMPLATE2(vbdec,     USIZE)(in, bx, ex);
     for(i = 0; i != (bx & ~7); i += 8) { 
