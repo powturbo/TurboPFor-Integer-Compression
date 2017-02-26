@@ -221,10 +221,10 @@ uint16_t bitdi16(uint16_t *in, unsigned n, uint16_t start) { uint16_t i; BITDI(i
 uint32_t bitdi32(uint32_t *in, unsigned n, uint32_t start) { uint32_t i; BITDI(in, n, start, i); return i; }
 uint64_t bitdi64(uint64_t *in, unsigned n, uint64_t start) { uint64_t i; BITDI(in, n, start, i); return i; }
 
-unsigned bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, unsigned inc) { uint8_t  b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr8(b); }
-unsigned bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, unsigned inc) { uint16_t b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr16(b);}
-unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, unsigned inc) { uint32_t b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr32(b);}
-unsigned bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, unsigned inc) { uint64_t b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr64(b);}
+unsigned bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  inc) { uint8_t  b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr8(b); }
+unsigned bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t inc) { uint16_t b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr16(b);}
+unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t inc) { uint32_t b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr32(b);}
+unsigned bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t inc) { uint64_t b = 0,*op = out; BITDIE(in, n, start, inc, b |= _x; *op++ = _x); return bsr64(b);}
 
 void bitdidec8(  uint8_t  *p, unsigned n, uint8_t  start, uint8_t  inc) { BITDDEC(p, n, start, inc); }
 void bitdidec16( uint16_t *p, unsigned n, uint16_t start, uint16_t inc) { BITDDEC(p, n, start, inc); }
@@ -364,6 +364,42 @@ unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint
 void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(p, n, start); }
 void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { BITZDEC(p, n, start); }
 void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(p, n, start); }
+//----------------------- XOR ---------------------------------
+#define BITXENC(_p_,_n_, _start_, _act_) {\
+  typeof(_p_[0]) *_p;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
+	_x = (*_p)^_start_; _start_ = *_p++; _act_;\
+	_x = (*_p)^_start_; _start_ = *_p++; _act_;\
+	_x = (*_p)^_start_; _start_ = *_p++; _act_;\
+	_x = (*_p)^_start_; _start_ = *_p++; _act_;\
+  }\
+  while(_p != _p_+_n_) { \
+	_x = (*_p)^_start_;	_start_ = *_p++; _act_;\
+  }\
+}
+
+#define BITXDEC(_p_, _n_, _start_) {\
+  typeof(_p_[0]) *_p, _z;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); ) {\
+    _z = *_p; *_p = (_start_ ^= _z); _p++;\
+    _z = *_p; *_p = (_start_ ^= _z); _p++;\
+    _z = *_p; *_p = (_start_ ^= _z); _p++;\
+    _z = *_p; *_p = (_start_ ^= _z); _p++;\
+  }\
+  while(_p != _p_+_n_) {\
+    _z = *_p; *_p = (_start_ ^= _z); _p++;\
+  }\
+}
+
+unsigned bitxenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start) { uint8_t  b = 0,*op = out; int8_t  _x; BITXENC(in, n, start, b |= (uint8_t )_x; *op++ = _x); return bsr8(b);  }
+unsigned bitxenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start) { uint16_t b = 0,*op = out; int16_t _x; BITXENC(in, n, start, b |= (uint16_t)_x; *op++ = _x); return bsr16(b); }
+unsigned bitxenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start) { uint64_t b = 0,*op = out; int64_t _x; BITXENC(in, n, start, b |= (uint64_t)_x; *op++ = _x); return bsr32(b); }
+unsigned bitxenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start) { uint32_t b = 0,*op = out; uint32_t _x; BITXENC(in, n, start, b |= (uint32_t)_x; *op++ = _x); return bsr32(b); }
+
+void bitxdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITXDEC(p, n, start); }
+void bitxdec32(uint32_t  *p, unsigned n, uint32_t  start) { BITXDEC(p, n, start); }
+void bitxdec16(uint16_t *p, unsigned n, uint16_t start) { BITXDEC(p, n, start); }
+void bitxdec64(uint64_t *p, unsigned n, uint64_t start) { BITXDEC(p, n, start); }
 
 //-------------- For --------------------------
 #define BITFM(_p_,_n_, _mi_, _mx_) {\
@@ -383,55 +419,3 @@ unsigned bitfm8( uint8_t  *in, unsigned n, uint8_t  *pmin) { uint8_t  mi,mx; BIT
 unsigned bitfm16(uint16_t *in, unsigned n, uint16_t *pmin) { uint16_t mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr16(mx - mi); }
 unsigned bitfm32(uint32_t *in, unsigned n, uint32_t *pmin) { uint32_t mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr32(mx - mi); }
 unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BITFM(in, n, mi, mx); *pmin = mi; return bsr64(mx - mi); }
-
-//------------------- De-/Compose Floating Point -----------------------------------------
-void bitdouble(double *in, unsigned n, int *expo, uint64_t *mant) {
-  double *ip;
-  for(ip = in; ip < in+n; ip++) { 
-    uint64_t u = *(uint64_t *)ip; 
-    *expo++ = FLTEXPO(u, DMANT_BITS, 1ull); 
-    *mant++ = FLTMANT(u, DMANT_BITS, 1ull);
-  }
-}
-
-void bitddecouble(int *expo, uint64_t *mant, unsigned n, double *out) {
-  double *op; 
-  uint64_t u;
-  for(op = out; op < out+n; ) {
-    BITUNFLOAT( (int64_t)(*expo++), *mant++, u, DMANT_BITS); *op++ = *(double *)&u;
-  }
-}
-
-void bitzdouble(double *in, unsigned n, int *expo, uint64_t *mant) {
-  double *ip;
-  for(ip = in; ip < in+n; ip++) { 
-    uint64_t u = *(uint64_t *)ip; 
-    *expo++ = zigzagenc32((int)FLTEXPO(u, DZMANT_BITS, 1ull)-1023);
-    *mant++ = FLTMANT(u, DZMANT_BITS, 1ull);
-  }
-}
-
-void bitzundouble(int *expo, uint64_t *mant, unsigned n, double *out) {
-  double *op; 
-  uint64_t u;
-  for(op = out; op < out+n; ) {
-    BITUNFLOAT( (int64_t)zigzagdec32(*expo++)+1023, *mant++, u, DZMANT_BITS); *op++ = *(double *)&u;
-  }
-}
-
-void bitfloat(float *in, unsigned n, int *expo, unsigned *mant) {
-  float *ip;
-  for(ip = in; ip < in+n; ip++) { 
-    unsigned u = *(unsigned *)ip; 
-    *expo++ = FLTEXPO(u, FMANT_BITS, 1u);
-    *mant++ = FLTMANT(u, FMANT_BITS, 1u);
-  }
-}
-
-void bitunfloat(int *expo, unsigned *mant, unsigned n, float *out) {
-  float *op; 
-  unsigned u;
-  for(op = out; op < out+n; op++) {
-    BITUNFLOAT( (*expo++), *mant++, u, FMANT_BITS); *op = *(float *)&u;
-  }
-}
