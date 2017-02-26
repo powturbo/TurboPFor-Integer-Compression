@@ -48,7 +48,7 @@
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <sys/types.h> 
 #include <sys/param.h>
   #else
 #include <io.h>
@@ -56,17 +56,18 @@
 #define srand48(x)  srand(x)
 #define drand48()   ((double)(rand()) / RAND_MAX)
 #define __off64_t   _off64_t  
-  #endif
+  #endif 
 
 #include <time.h>
 #include "conf.h"   
 #include "plugins.h"
 #include "vint.h"
-//#define USERDTSC
+#include "vp4.h"
+//#define RDTSC_ON
 //--------------------------------------- Time ------------------------------------------------------------------------
 #include <time.h>
 typedef unsigned long long tm_t;
-
+ 
 #if defined (__i386__) || defined( __x86_64__ ) 
   #ifdef _MSC_VER  // __rdtsc
 #include <intrin.h>
@@ -122,7 +123,7 @@ typedef unsigned long long tm_t;
   #endif
 #define TM_T 1000000.0
 
-  #ifdef USERDTSC
+  #ifdef RDTSC_ON
 #define tminit tmrdtscini
 #define tmtime tmrdtsc
 #define TM_T				(CLOCKS_PER_SEC*4000ull)
@@ -230,7 +231,29 @@ int memcheck(unsigned char *_in, unsigned _n, unsigned char *_cpy, int cmp) {
   for(i = 0; i < n; i++)
     if(in[i] != cpy[i]) {
       if(cmp > 4) abort(); // crash (AFL) fuzzing
-      printf("ERROR in[%d]=%x, dec[%d]=%x\n", i, in[i], i, cpy[i]); 
+      printf("ERROR in[%d]=%x,%d dec[%d]=%x,%d\n", i, in[i], bsr64(in[i]), i, cpy[i], bsr64(cpy[i]) ); 
+      if(cmp>3) { 
+	    int j;
+        for(j=i & 0xffffff80u; j < i+128;j++) { unsigned e = in[j] != cpy[j];
+          if(e) printf("#%d:%x,%x ", j, in[j], cpy[j]);else printf("%d:%x ", j, in[j]);
+        }
+        printf("\n");
+	  }
+      if(cmp > 2) exit(EXIT_FAILURE);      
+	  return i+1; 
+	}
+  return 0;
+}
+
+int memcheck64(unsigned char *_in, unsigned _n, unsigned char *_cpy, int cmp) { 
+  uint64_t *in = _in,*cpy=_cpy,n = (_n+7)/8;
+  int i;
+  if(cmp <= 1) 
+    return 0;
+  for(i = 0; i < n; i++)
+    if(in[i] != cpy[i]) {
+      if(cmp > 4) abort(); // crash (AFL) fuzzing
+      printf("ERROR in[%d]=%llx,%d dec[%d]=%llx,%d\n", i, in[i], bsr64(in[i]), i, cpy[i], bsr64(cpy[i]) ); 
       if(cmp>3) { 
 	    int j;
         for(j=i & 0xffffff80u; j < i+128;j++) { unsigned e = in[j] != cpy[j];
@@ -580,11 +603,12 @@ void plugprttf(FILE *f, int fmt) {
 
 #define RATIO(_clen_, _len_)  ((double)_clen_*100.0/_len_)
 #define RATIOI(_clen_, _len_) ((double)_clen_*32.0/_len_)
-#define FACTOR(_clen_, _len_) ((double)_len_/(double)_clen_)
-
+#define FACTOR(_clen_, _len_) ((double)_len_*100.0/(double)_clen_)
+#define RATIOF(_clen_, _len_, _mode_) _mode_?FACTOR(_clen_, _len_):RATIO(_clen_, _len_)
+int be_factor=0;
 void plugprt(struct plug *plug, long long totinlen, char *finame, int fmt, FILE *f) {
-  double ratio  = RATIO(plug->len,totinlen), ratioi = RATIOI(plug->len,totinlen),   
-         //ratio  = FACTOR(plug->len,totinlen),
+  double ratio  = RATIOF(plug->len,totinlen, be_factor),
+         ratioi = RATIOI(plug->len,totinlen),   
          tc     = TMIS(totinlen,plug->tc), td = TMIS(totinlen,plug->td);
   char   name[65]; 
   if(plug->lev >= 0) 
@@ -836,7 +860,7 @@ void plugplotc(struct plug *plug, int k, long long totinlen, int fmt, int speedu
       if(name[0]) { 														
         fprintf(f, "],\ny: [");
         for(p = gs; p < g; p++) 
-          fprintf(f, "%.2f%s", speedup<3?FACTOR(p->len,totinlen):RATIO(p->len,totinlen), p+1<g?",":"");        
+          fprintf(f, "%.2f%s", RATIOF(p->len,totinlen, be_factor), p+1<g?",":"");        
         fprintf(f, "],\nmode: 'markers+text',\ntype: 'scatter',\nname: '%s',\ntextposition: 'top center', textfont: { family:  'Raleway, sans-serif' }, marker: { size: 12 }\n", name, txt);	
         if(txt[0]) 
           fprintf(f, "\n,text: [%s]\n", txt);
@@ -862,7 +886,7 @@ void plugplotc(struct plug *plug, int k, long long totinlen, int fmt, int speedu
   }
   fprintf(f, "],\ny: [");
   for(p = gs; p < g; p++) 
-    fprintf(f, "%.2f%s", speedup<3?FACTOR(p->len,totinlen):RATIO(p->len,totinlen), p+1<g?",":"");        
+    fprintf(f, "%.2f%s", RATIOF(p->len,totinlen, be_factor), p+1<g?",":"");        
   fprintf(f, "],\nmode: 'markers+text',\ntype: 'scatter',\nname: '%s',\ntextposition: 'top center', textfont: { family:  'Raleway, sans-serif' }, marker: { size: 12 }\n", name, txt);	
   if(txt[0]) 
     fprintf(f, "\n,text:[%s]\n", txt);
@@ -1090,7 +1114,7 @@ unsigned long long plugbench(struct plug *plug, unsigned char *in, unsigned inle
   plug->len += outlen; 
   plug->tc  += (tc += (double)tm_tm/(double)tm_rm); 
   if(!outlen) plug->tc = 0;
-  																								if(outlen && verbose /*&& inlen == filen*/) { printf("%12u   %5.1f   %5.2f  %8.2f   ", outlen, RATIO(outlen,inlen), RATIOI(outlen,inlen), TMIS(inlen,tc)); fflush(stdout); }
+  																								if(outlen && verbose /*&& inlen == filen*/) { printf("%12u   %5.1f   %5.2f  %8.2f   ", outlen, RATIOF(outlen,inlen, be_factor), RATIOI(outlen,inlen), TMIS(inlen,tc)); fflush(stdout); }
   if(cmp && outlen) {
     unsigned char *cpy = _cpy; 
 	if(_cpy != in) memrcpy(cpy, in, inlen);
@@ -1142,7 +1166,7 @@ void zipfgen(unsigned *a, unsigned n, double alpha, unsigned x1, unsigned x2) {
   qsort(zmap, m, sizeof(zmap[0]), (int(*)(const void*,const void*))dcmp); 
   for(i = 0; i < n; i++) { 
     double r = drand48(); 
-    int    l = 0, h = m-1; 
+    int    l = 0, h = m-1;  
     while(l < h) { 
       int k = (l + h) >> 1; 
       if(r >= zmap[k]) l = k + 1; 
@@ -1165,7 +1189,9 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, unsigned isize, FILE *
   unsigned char *in = *_in,*ip; unsigned nmax = 0;           
   if(!fi) { 															    printf("zipf alpha=%.2f range[%u..%u].n=%u\n ", a, rm, rx, n);
 	in = malloc(n*isize+OVD); 												if(!in) die("malloc err=%u", nmax);
-    zipfgen((unsigned *)in, n, a, rm, rx);                       
+	
+    //zipfgen((unsigned *)in, n, a, rm, rx); 
+    { int i; for(i = 0; i < n; i++) in[i] = i; } 
 																			int i;for(i = 1; i <= n; i++) xbits[bsr32(ctou32(in+i*4))]++; 
     if(be_mindelta == 0 || be_mindelta == 1) {                                                       	stprint("delta"); 
       unsigned *ip = (unsigned *)in, v;
@@ -1233,12 +1259,17 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, unsigned isize, FILE *
       while(fread(&u, sizeof(u), 1, fi)>0)
         IPUSH(in,n,isize,nmax, u-mdelta);		
     } break;
+	/*case T_DBL:
+      double d,*din = NULL; n=0;
+      while(fread(&u, sizeof(u), 1, fi)>0)
+        IPUSH(din,n,isize,nmax, d);		
+     }*/
     /*case T_UINT32: {
       unsigned u; 
       while(fread(&u, sizeof(u), 1, fi)>0)
         IPUSH(in,n,isize,nmax, u-mdelta);
     } break;*/
-	default: die("unkown data format\n");
+	default: die("unknown data format\n");
   }
   *_in = in;
   return n*isize;
@@ -1321,9 +1352,9 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
   unsigned      *cpy = malloc(n*4+OVD),b,i; if(!cpy) die("malloc err=%u", n*4);
   char s[33]; 
   s[0] = 0;                                                             printf("bittest: %u-%u, n=%u\n", rm, rx, n); fflush(stdout);
-  for(b = rm; b <= min(rx,32); b++) {    
+  for(b = rm; b <= min(rx,64); b++) {    
     srand(time(NULL));	            									sprintf(s,"b=%d", b);        
-    for(i = 0; i < n; i++) in[i] = (be_rand?rand():(uint32_t)(-1)) & ((1ull << b)-1);
+    for(i = 0; i < n; i++) in[i] = be_rand?rand():((1ull << b)-1);
     in[n-1] = ((1ull << b)-1);
     if(be_mindelta == 0 || be_mindelta == 1) 
       for(in[0]=0,i = 1; i < n; i++) { 
@@ -1336,7 +1367,7 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
         sprintf(name, "%s %d%s", p->name, p->lev, p->prm);
       else
         sprintf(name, "%s%s",    p->name,         p->prm);
-           
+            
       codini(n, p->id);	
       unsigned pbsize = p->blksize?p->blksize:bsize;
       if(be_mindelta >= 0) 
@@ -1346,15 +1377,71 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
       if(!outlen) die("Codec error or codec not available\n");  
     }
   }
-}
+} 
 
-//int bshuf_using_AVX2(void);
+/*void fp() {           
+  int i;
+  for(i=-127; i <= 127; i++) { if(!i) printf("\n"); 
+	double d = i;  
+	uint64_t u = ctou64(&d); int e = (int)FPEXPO64(u);
+    //printf("%d:%c,%d,%x,%lld ", i, (u>>63)?'-':'+', e, zigzagenc32(e), bswap64(FPMANT(u, FPMANT_BITS64, 1ull)) );
+    printf("%d:%lld,%llx ", i,FPEXPO64(u), FPMANT64(u)  );     
+  }      
+}*/ 
+
+#define TEST64
+  #ifdef TEST64
+#define R64 ((unsigned long long)rand()) 
+#define RND64 ( (R64<<60) ^ (R64<<45) ^ (R64<<30) ^ (R64<<15) ^ (R64<<0) )
+#define NN (4*1024*1024)
+
+uint64_t in[NN+64],cpy[NN+64]; 
+unsigned char out[NN*10];
+
+void vstest64(int id, int rm,int rx, unsigned n) { fprintf(stderr,"64 bits test.n=%d ", n);   
+  unsigned b,i;
+ 
+  if(rx > 64) rx = 64;                                                            
+  if(n > NN) n = NN;
+  for(b = rm; b <= rx; b++) {                                           fprintf(stderr,"\nb=%d:", b);        
+    uint64_t start = 0, msk = b==64?0xffffffffffffffffull:((1ull << b)-1);
+    for(i = 0; i < n; i++) 
+      in[i] = be_rand?RND64:msk; //(/*start +=*/ RND64 & msk);								//fprintf(stderr, ".%llx ", in[0]); 
+    in[0]   = msk;
+    in[n-1] = msk;
+    unsigned char *op;
+    switch(id) { 
+      case 0: op = vbenc64(   in, n, out);    break;
+      case 1: op = bitpack64( in, n, out, b); break;
+      case 2: op = p4enc64(   in, n, out);    break;
+      case 3: op = vsenc64(   in, n, out);    break;
+      case 4: op = efanoenc64(in, n, out, 0); break;
+    }
+    fprintf(stderr,"%d ", (int)(op-out) );     
+    memrcpy(cpy, in, n*sizeof(in[0]));
+    switch(id) {
+      case 0: vbdec64(    out, n, cpy);      break;
+      case 1: bitunpack64(out, n, cpy, b);   break;
+      case 2: p4dec64(    out, n, cpy);      break;
+      case 3: vsdec64(    out, n, cpy);      break;
+      case 4: efanodec64( out, n, cpy, 0);   break;
+    }
+	for(i = 0; i < n; i++) 
+      if(in[i] != cpy[i]) {
+        fprintf(stderr, "Error b=%d at '%d' (%llx,%llx)", b, i, in[i], cpy[i]); break;
+      }
+  }
+  exit(0);
+}
+  #else
+#define vstest64(id,rm,rx,n)
+  #endif
+
 char *sifmt[] = {"","s","i","z"};
   #ifdef __MINGW32__
 extern int _CRT_glob=1;	
   #endif
 int main(int argc, char* argv[]) {
-
   int 				 xstdout=-1,xstdin=-1;
   int                recurse  = 0, xplug = 0,tm_Repk=1,plot=-1,fmt=0,fno,merge=0,rprio=1,dfmt = 0,kid=1,skiph=0,decs=2,divs=1;
   unsigned           bsize    = 128*4, bsizex=0, n=25000000;
@@ -1370,7 +1457,7 @@ int main(int argc, char* argv[]) {
       { "help", 	0, 0, 'h'},
       { 0, 		    0, 0, 0}
     };
-    if((c = getopt_long(argc, argv, "1234A:a:b:B:C:d:ce:E:F:f:gGi:I:j:J:k:K:l:L:m:M:n:N:oOPp:Q:rRs:S:t:T:Uv:V:W:X:Y:Z:z", long_options, &option_index)) == -1) break;
+    if((c = getopt_long(argc, argv, "1234a:A:b:B:cC:d:De:E:F:f:gGHi:I:j:J:k:K:l:L:m:M:n:N:oOPp:Q:q:rRs:S:t:T:Uv:V:W:X:Y:Z:z:", long_options, &option_index)) == -1) break;
     switch(c) { 
       case 0:
         printf("Option %s", long_options[option_index].name);
@@ -1399,6 +1486,7 @@ int main(int argc, char* argv[]) {
       case 'g': merge++;		 			 		 break;
       case 'G': plotmcpy++;	 			 		 	 break;
 
+      case 'H': be_factor++;                         break;
       case 'i': if((tm_repc  = atoi(optarg))<=0) 
 		          tm_repc=tm_Repc=1;         		 break;
       case 'I': tm_Repc  = atoi(optarg);       		 break;
@@ -1428,6 +1516,7 @@ int main(int argc, char* argv[]) {
       case '3': xlog2    = xlog2?0:1;                break;
       case '4': ylog2    = ylog2?0:1;                break;
 	  case 'R': be_rand=0; break;
+	  case 'q' : cpuini(atoi(optarg)); break;
         #ifdef LZTURBO
       case 'c': beb      = optarg; 		 			 break; 
         #else
@@ -1436,7 +1525,7 @@ int main(int argc, char* argv[]) {
       case 'n': n       = argtoi(optarg,1);   break;
       case 'm': rm      = argtoi(optarg,1);   break;
       case 'M': rx      = argtoi(optarg,1);  break;
-	  //case 'z': vstest64(atoi(optarg),rm,rx,n); break;
+	  case 'z': vstest64(atoi(optarg),rm,rx,n); break;
       BEOPT;
 	  case 'h':
       default: 
@@ -1474,7 +1563,6 @@ int main(int argc, char* argv[]) {
     setpriority(PRIO_PROCESS, 0, -19);
 	  #endif
   }
-  //printf("bitshufleavx2=%d\n", bshuf_using_AVX2());
   if(!scmd) scmd = "DEFAULT"; 
   for(s[0] = 0;;) {
     char *q; int i;
@@ -1520,7 +1608,7 @@ int main(int argc, char* argv[]) {
       if(!dfmt) dfmt = T_UINT32; 
 	} else { 
       fi = strcmp(finame,"stdin")?fopen(finame, "rb"):stdin; 
-      if(!fi) { perror(finame); die("open error '%s'\n", finame); } 
+      if(!fi) { perror(finame); continue; /*die("open error '%s'\n", finame);*/ } 
     }
 	  
     char *q; 
@@ -1539,8 +1627,9 @@ int main(int argc, char* argv[]) {
         fseeko(fi, 0, SEEK_END); filen = ftello(fi); fseeko(fi , 0 , SEEK_SET); 		//if(filen > filenmax) filen = filenmax;
       } else 
         filen = filenmax;
-      insize  = filen; if(insize > filenmax) insize = filenmax; 
+      //insize  = filen; 
       insize  = min(filen,(1u<<MAP_BITS)); 											if(filen < mininlen) insize = mininlen;
+	  if(insize > filenmax) insize = filenmax; 
       insizem = (fuzz&3)?SIZE_ROUNDUP(insize, pagesize):(insize+INOVD);
   
       if(insizem && !(_in = _valloc(insizem,1)))
@@ -1601,7 +1690,8 @@ int main(int argc, char* argv[]) {
         } else  while((inlen = fread(_in, 1, insize, fi)) > 0) { 		memrcpy(out, _in, inlen);if(!checks) checksort(_in,inlen/4),checks++;
           ftotinlen += inlen;																
           outlen += plugbench(p, _in, inlen, out, outsize, _cpy, pbsize, plugr,tid, finame);   
-	      //if(ftotinlen >= filen) break;
+	      if(ftotinlen >= filenmax) 
+		    break;
         } 	  
       }
       codexit(p->id);																        //if(verbose && filen > insize) plugprt(p, ftotinlen, finame, FMT_TEXT,stdout);
