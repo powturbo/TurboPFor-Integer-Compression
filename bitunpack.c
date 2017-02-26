@@ -44,7 +44,7 @@ typedef unsigned char *(*BITUNPACK_F64)(const unsigned char *__restrict in, unsi
 typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
    
 #define PREFETCH(_ip_) __builtin_prefetch(_ip_+512)//#define PREFETCH(ip)
- 
+  
   #if 0
 #define OP(_op_, _x_) *_op_++
 #define OPX(_op_)  
