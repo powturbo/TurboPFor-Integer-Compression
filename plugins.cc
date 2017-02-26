@@ -102,6 +102,11 @@ enum {
   TB_VSIMPLE_S1,
   TB_VSIMPLE_S4,   
   TB_VSIMPLE_S8,
+  //TB_FPFOR,
+  TB_FPPFOR64,
+  TB_FPFFOR64,
+  TB_FPDFOR64,
+  TB_PF64,
   #ifdef TURBOPFORH
 #define C_TURBOPFORH    CODEC0V
   #else
@@ -147,9 +152,12 @@ enum {
   LI_SCPACK,
 #define C_LZ4			CODEC1
   LZ4_,
-  LZ4_S1,
-  LZ4_S4,   
-  LZ4_S8,
+  LZ4_BIT,
+  LZ4_BITX,
+  LZ4_NIBBLE,   
+  LZ4_NIBBLEX,   
+  LZ4_BYTE,
+//  LZ4_FP8,
 #define C_MASKEDVBYTE   CODEC1		
   P_MASKEDVBYTE,
 #define C_POLYCOM  		CODEC1		
@@ -178,9 +186,9 @@ enum {
   #endif
   P_ZLIB,
 #define C_TRANSFORM     CODEC0
-  TB_TP8_32, 	
-  TB_TP8V_32, 	
-  TB_TP4V_32, 	
+  TP_BYTE4S, 	
+  TP_BYTE, 	
+  TP_NIBBLE, 	
   TB_ZIGZAG_32, 	
   TB_DELTA_32, 	
 #define C_LZTURBO       0
@@ -238,8 +246,6 @@ unsigned char *for_selectx( unsigned char *__restrict in, unsigned n, unsigned *
   #endif
 
   #if C_QMX
-//#include "ext/qmx/compress_qmx.h"
-//#include "ext/qmx.h"
 #include "ext/bench_/bench/compress_qmx.h" 
 #include "ext/bench_/bench/compress_qmx_v2.h"
 #include "ext/bench_/bench/compress_qmx_v3.h"
@@ -254,6 +260,7 @@ unsigned char *for_selectx( unsigned char *__restrict in, unsigned n, unsigned *
 #include "bitutil.h"
 #include "transpose.h"
 #include "vp4.h"
+#include "fp.h"
   #endif
   
   #if C_ZLIB
@@ -394,6 +401,11 @@ struct plugs plugs[] = {
   { TB_FOR128V,		"TurboForV", 		C_TURBOPFOR,	BLK_V128,0,"","FOR (SIMD)" }, 
   { TB_FOR256V,		"TurboFor256V", 	C_TURBOPFOR,	BLK_V256,0,"","FOR (AVX2)" }, 
   { TB_FORDA, 		"TurboForDA", 		C_TURBOPFOR,	BLK_V128,0,"","FOR direct access" }, 
+//  { TB_FPFOR,		"FPTurboPFor", 		C_TURBOPFOR,	BLK_SIZE,0,"","FP PFOR" }, 
+  { TB_FPPFOR64,	"FP_PREV64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR" }, 
+  { TB_FPFFOR64,	"FP_FCM64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR (FCM)" }, 
+  { TB_FPDFOR64,	"FP_DFCM64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR (DFCM)" }, 
+  { TB_PF64,		"TurboPFor64", 		C_TURBOPFOR,	BLK_V128,0,"","PFOR 64" }, 
 
   { TB_BP,			"TurboPack", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar)" }, 
   { TB_BPN,			"TurboPackN", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar) large blocks" }, 
@@ -455,23 +467,26 @@ struct plugs plugs[] = {
   //-------- lz77 + [delta] + transpose/shuffle ---------------
   { P_LZT,			"LzTurbo",	    	C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
   { P_VSHUF,		"VSimpleANS",		C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
-  { LZ4_,  			"lz4",				C_LZ4,			BLK_SIZE, 0, "","lz4" }, 
-  { LZ4_S1,  		"lz4_bitshufle",	C_LZ4,			BLK_SIZE, 0, "","Bitshuffle + lz4" }, 
-  { LZ4_S4,  		"lz4_tp4",			C_LZ4,			BLK_SIZE, 0, "","TurboPFor's [delta]+byte transpose + lz4" }, 
-  { LZ4_S8,  		"lz4_tp8",			C_LZ4,			BLK_SIZE, 0, "","TurboPFor's [delta]+transpose + lz4" }, 
-  { P_ZLIB, 		"zlib", 			C_ZLIB,			BLK_SIZE, 0, "","TurboPFor's [delta]+transpose + zlib" },
+  { LZ4_,  			"lz4",				C_LZ4,			BLK_SIZE, 0, "",   "lz4" }, 
+  { LZ4_BIT,  		"lz4_bit",			C_LZ4,			BLK_SIZE, 0, "2,4,8","Bitshuffle + [delta]+lz4" }, 
+  { LZ4_NIBBLE,  	"lz4_nibble",		C_LZ4,			BLK_SIZE, 0, "2,4,8","TurboPFor's [delta]+nibble transpose + lz4" }, 
+  { LZ4_BITX,  		"lz4_bitx",			C_LZ4,			BLK_SIZE, 0, "2,4,8","Bitshuffle + [xor]+lz4" }, 
+  { LZ4_NIBBLEX,  	"lz4_nibblex",		C_LZ4,			BLK_SIZE, 0, "2,4,8","TurboPFor's [xor]+nibble transpose + lz4" }, 
+  { LZ4_BYTE,  		"lz4_byte",			C_LZ4,			BLK_SIZE, 0, "2,4,8","TurboPFor's [delta]+byte transpose + lz4" }, 
+// { LZ4_FP8,  		"lz4_fp8",			C_LZ4,			BLK_SIZE, 0, "4,8","TurboPFor's [delta]+fp transpose + lz4" }, 
+  { P_ZLIB, 		"zlib", 			C_ZLIB,			BLK_SIZE, 0, "4,8","TurboPFor's [delta]+byte transpose + zlib" },
   //----- Transform --------------
   { P_MCPY, 		"memcpy", 			C_MEMCPY 				 },
   { P_COPY, 		"copy",		    	C_MEMCPY 				 },
 
-  { TB_TP8_32, 		"TP8s_32", 			C_TURBOPFOR,	BLK_SIZE,0,"","Byte Transpose (scalar)" }, 
-  { TB_TP8V_32, 	"TP8_32",			C_TURBOPFOR,	BLK_SIZE,0,"","Byte transpose (sse)" }, 
-  { TB_TP4V_32, 	"TP4_32",			C_TURBOPFOR,	BLK_SIZE,0,"","Nibble transpose (sse)" }, 
+  { TP_BYTE4S, 		"tpbyte4s", 		C_TURBOPFOR,	BLK_SIZE,0,"","Byte Transpose (scalar)" }, 
+  { TP_BYTE, 		"tpbyte",			C_TURBOPFOR,	BLK_SIZE,0,"2,4,8","Byte transpose (simd)" }, 
+  { TP_NIBBLE, 		"tpnibble",			C_TURBOPFOR,	BLK_SIZE,0,"2,4,8","Nibble transpose (simd)" }, 
   { TB_ZIGZAG_32, 	"ZigZag_32", 		C_TURBOPFOR,	BLK_SIZE,0,"","ZigZag encoding (sse2)" }, 
   { TB_DELTA_32, 	"Delta_32", 		C_TURBOPFOR,	BLK_SIZE,0,"","Delta encoding (sse2)"}, 
  
-  { P_BITSHUFFLE, 	"BitShuffle", 		C_TURBOPFOR,	BLK_SIZE,0,"","Bit shuffle (SIMD)" }, 
-  { P_BS_SHUFFLE, 	"Blosc_Shuffle",	C_C_BLOSC,		BLK_SIZE,0,"","Blosc's shuffle (SIMD)" }, 
+  { P_BITSHUFFLE, 	"BitShuffle", 		C_TURBOPFOR,	BLK_SIZE,0,"2,4,8","Bit shuffle (simd)" }, 
+  { P_BS_SHUFFLE, 	"Blosc_Shuffle",	C_C_BLOSC,		BLK_SIZE,0,"2,4,8","Blosc's shuffle (simd)" }, 
     #ifdef LZTURBO
 //  #include "../beplugr.h"
     #endif  
@@ -483,7 +498,7 @@ struct plugg plugg[] = {
   { "DEFAULT",	"Default",  					"TurboPFor/TurboPackV/TurboVByte/TurboPack/TurboFor/TurboPForN/TurboPackN/TurboPForDI/TurboPFor256V/TurboPack256V/TurboPFor256N" },
   { "BENCH",	"Benchmark",  					"TurboPFor/TurboPackV/TurboVByte/TurboPack/QMX/FP.SimdFastPfor/FP.SimdOptPFor/MaskedVbyte/StreamVbyte" },
   { "EFFICIENT","Efficient",					"TurboPFor/vsimple/turbovbyte" },
-  { "TRANSFORM","transpose/shufle,delta,zigzag","TP8s_32/TP8_32/TP4_32/ZigZag_32/Delta_32/BitShuffle/Blosc_Shuffle" },
+  { "TRANSFORM","transpose/shufle,delta,zigzag","tpbyte4s/tpbyte,4/tpnibble,4/ZigZag_32/Delta_32/BitShuffle,4" },
 
   { "BITPACK",	"Bit Packing",  				"TurboPack256V/TurboPackV/TurboPackH/TurboPack/SC.SimdPack128/SC.SimdPack256" },
   { "VBYTE",	"Variable byte",				"TurboVByte/FP.VByte/PC.Vbyte/VarintG8IU/MaskedVbyte/StreamVbyte" },
@@ -494,28 +509,12 @@ struct plugg plugg[] = {
   { "" }
 };
 
-#define _TP_BITS 1     // transpose bits (4,8,16,32,64)
-//bitunshuffle(typesize, blocksize, tmp, dest, tmp2);
   #if C_C_BLOSC  
-#define   BITSHUFFLE(in,n,out)   bitshuffle(   4, (n)/4, (unsigned char *)in, out, NULL)                    //crash
-#define BITUNSHUFFLE(in,n,out)   bitunshuffle( 4, (n)/4, (unsigned char *)in, (unsigned char *)out, NULL)
-  #else    
-#define   BITSHUFFLE(in,n,out)   bshuf_bitshuffle(in, out, (n)/4, 4, 0);  memcpy((char *)out+((n)&(~31)),(char *)in+((n)&(~31)),(n)&31)
-#define BITUNSHUFFLE(in,n,out)   bshuf_bitunshuffle(in, out, (n)/4, 4, 0);memcpy((char *)out+((n)&(~31)),(char *)in+((n)&(~31)),(n)&31)
-  #endif 
-
-  #if _TP_BITS == 16
-#define   TRANSPOSE(in,n,out)   transpose2(in,n,out)
-#define UNTRANSPOSE(in,n,out) untranspose2(in,n,out)
-  #elif _TP_BITS == 64
-#define   TRANSPOSE(in,n,out)   transpose8(in,n,out)
-#define UNTRANSPOSE(in,n,out) untranspose8(in,n,out)
-  #elif _TP_BITS == 128
-#define   TRANSPOSE(in,n,out)   transpose16(in,n,out)
-#define UNTRANSPOSE(in,n,out) untranspose16(in,n,out)
+#define   BITSHUFFLE(in,n,out,esize) bitshuffle(   esize, (n)/esize, (unsigned char *)in, out, NULL)                    //crash
+#define BITUNSHUFFLE(in,n,out,esize) bitunshuffle( esize, (n)/esize, (unsigned char *)in, (unsigned char *)out, NULL)
   #else
-#define   TRANSPOSE(in,n,out)   transpose4(in,n,out)
-#define UNTRANSPOSE(in,n,out) untranspose4(in,n,out)
+#define   BITSHUFFLE(in,n,out,esize) bshuf_bitshuffle(  in, out, (n)/esize, esize, 0); memcpy((char *)out+((n)&(~(8*esize-1))),(char *)in+((n)&(~(8*esize-1))),(n)&(8*esize-1))
+#define BITUNSHUFFLE(in,n,out,esize) bshuf_bitunshuffle(in, out, (n)/esize, esize, 0); memcpy((char *)out+((n)&(~(8*esize-1))),(char *)in+((n)&(~(8*esize-1))),(n)&(8*esize-1))
   #endif 
 
 #define PAD8(__x) (((__x)+7)/8)
@@ -571,7 +570,7 @@ void codexit(int codec) {}
 
 //--- Sorted integer array : Delta/Differential compression (inc=0 increasing, inc=1 strictly increasing sequence) ---------------
 unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc) { 
-  unsigned *in = (unsigned *)_in, n = (_n+3) / 4, i, pa[BLK_SIZE+2048], x, b;
+  unsigned *in = (unsigned *)_in, n = (_n+3) / 4, i, *pa=(unsigned *)sbuf, x, b;
   
   switch(codec) {	  
     case TB_VSIMPLE: x = *in++; bitdenc32( in, --n, pa, x, inc);
@@ -684,41 +683,41 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       #endif
       // --------- transpose + lz77 ------------------------------------------------------------------------------------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:b = bitzenc32(in, n, (unsigned *)out,  0, 0); return out + n*4;
-    case TB_TP8_32:   bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); _transpose4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case TB_TP8V_32:  bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); TRANSPOSE(   (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case TB_TP4V_32:  bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); transposen4( (unsigned char *)sbuf, n*4, out); return out + n*4;
-    case TB_DELTA_32: bitdenc32(in, n, (unsigned *)out,  -inc, inc); return out + n*4; 
+    case TB_ZIGZAG_32:b = bitzenc32(in, n, (unsigned *)out,  0, 0); return out + _n;
+    case TP_BYTE4S:   bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); tpenc4( (unsigned char *)sbuf, _n, out);     return out + _n;
+    case TP_BYTE:     bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); tpenc( (unsigned char *)sbuf, _n, out, lev); return out + _n;
+    case TP_NIBBLE:   bitdenc32(in, n, (unsigned *)sbuf, -inc, inc); tp4enc((unsigned char *)sbuf, _n, out, lev); return out + _n;
+    case TB_DELTA_32: bitdenc32(in, n, (unsigned *)out,  -inc, inc); return out + _n; 
       #endif
 
       // --------- delta + transpose + lz77 ----------------------------------------------------------------------------------------
       #if C_LZTURBO
-    case P_LZT10:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); struct lzobj lz; lz.srclen = n*4; lz.src = sbuf; lz.dst = out; lz.dstlen = n*4; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
-    case P_VSHUF:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); unsigned char *p = mheenc(sbuf, n*4,    MH_BLK, out+4, out+n*4+MH_BLK); ctou32(out) = p-(out+4); return p; }
-    //case P_VSHUF:{ bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); unsigned char *p=vsenc32(pa, n, sbuf); p = mheenc(sbuf, p-sbuf, MH_BLK, out+4, out+n*4+1024); ctou32(out) = p-(out+4); return p; }
+    case P_LZT10:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); tpenc((unsigned char *)out, _n, sbuf,4); struct lzobj lz; lz.srclen = _n; lz.src = sbuf; lz.dst = out; lz.dstlen = _n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZT20:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); tpenc((unsigned char *)out, _n, sbuf,4); struct lzobj lz; lz.srclen = _n; lz.src = sbuf; lz.dst = out; lz.dstlen = _n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
+    case P_LZT22:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); tpenc((unsigned char *)out, _n, sbuf,4); struct lzobj lz; lz.srclen = _n; lz.src = sbuf; lz.dst = out; lz.dstlen = _n; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz);  }
+    case P_VSHUF:{ bitdenc32(in, n, (unsigned *)out, -inc, inc); tpenc((unsigned char *)out, _n, sbuf,4); unsigned char *p = mheenc(sbuf, _n,    MH_BLK, out+4, out+_n+MH_BLK); ctou32(out) = p-(out+4); return p; }
+    //case P_VSHUF:{ bitdenc32( in+1, --n, pa, in[0], inc); vbxput32(out, in[0]); unsigned char *p=vsenc32(pa, n, sbuf); p = mheenc(sbuf, p-sbuf, MH_BLK, out+4, out+_n+1024); ctou32(out) = p-(out+4); return p; }
       #endif
 	  
       #if C_C_BLOSC
     case P_BS_LZ:    
     case P_BS_LZ4:    
-    case P_BS_ZLIB: return out + blosc_compress(lev, BLOSC_SHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
-    //case P_BS_ZLIB_1:  return out + blosc_compress(lev, BLOSC_SHUFFLE/*BLOSC_DELTA*/, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
+    case P_BS_ZLIB: return out + blosc_compress(lev, BLOSC_SHUFFLE, 4/*typesize*/, _n, in, out, _n+BLOSC_MAX_OVERHEAD);
+    //case P_BS_ZLIB_1:  return out + blosc_compress(lev, BLOSC_SHUFFLE/*BLOSC_DELTA*/, 4/*typesize*/, _n, in, out, _n+BLOSC_MAX_OVERHEAD);
       #endif
 
       #if C_LZ4
         #if C_BITSHUFFLE      
-    case LZ4_S1: { bitdenc32(in, n, (unsigned *)out, -inc, inc);  BITSHUFFLE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
+    case LZ4_BIT:     bitdenc32(in, n, (unsigned *)out, -inc, inc); BITSHUFFLE((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n);
         #endif
-    case LZ4_  : return out + LZ4_compress((char *)in, (char *)out, n*4);
-    case LZ4_S4: { bitdenc32(in, n, (unsigned *)out, -inc, inc); transposen4((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
-    case LZ4_S8: { bitdenc32(in, n, (unsigned *)out, -inc, inc);   TRANSPOSE((unsigned char *)out, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4); } //  bshuf_bitshuffle(out, sbuf, n*4/32, 32, 0);
+    case LZ4_  : 	  return out + LZ4_compress((char *)in, (char *)out, _n);
+    case LZ4_NIBBLE:{ bitdenc32(in, n, (unsigned *)out, -inc, in); tp4enc((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); } 
+    case LZ4_BYTE:  { bitdenc32(in, n, (unsigned *)out, -inc, inc); tpenc( (unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); }
       #endif
 	    
       #if C_ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { bitdenc32(in, n, (unsigned *)out, -inc, inc); TRANSPOSE((unsigned char *)out, n*4, sbuf); uLongf outlen = n*4; int rc = compress2(out+4, &outlen, sbuf, n*4, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+      { bitdenc32(in, n, (unsigned *)out, -inc, inc); tpenc((unsigned char *)out, _n, sbuf, 4); uLongf outlen = _n; int rc = compress2(out+4, &outlen, sbuf, _n, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
   }
   return out;
@@ -837,48 +836,50 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
       #endif   
 					//---------- transpose + lz77 ----------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:memcpy(out, in, n*4); bitzdec32(out, n, 0); return in + n*4;
-    case TB_TP8_32:   _untranspose4((unsigned char *)in, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); return in + n*4;
-    case TB_TP8V_32:  UNTRANSPOSE(  (unsigned char *)in, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); return in + n*4;
-    case TB_TP4V_32:  untransposen4((unsigned char *)in, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); return in + n*4;
-    case TB_DELTA_32: memcpy(out, in, n*4); bitddecn32(out, n, -inc, inc); return in + n*4;
+    case TB_ZIGZAG_32:memcpy(out, in, outlen); bitzdec32(out, n, 0); return in + outlen;
+    case TP_BYTE4S:   tpdec4((unsigned char *)in, outlen, (unsigned char *)out);     bitddecn32(out, n, -inc, inc); return in + outlen;
+    case TP_BYTE:     tpdec( (unsigned char *)in, outlen, (unsigned char *)out,lev); bitddecn32(out, n, -inc, inc); return in + outlen;
+    case TP_NIBBLE:   tp4dec((unsigned char *)in, outlen, (unsigned char *)out,lev); bitddecn32(out, n, -inc, inc); return in + outlen;
+    case TB_DELTA_32: memcpy(out, in, outlen); bitddecn32(out, n, -inc, inc); return in + outlen;
       #endif
                      //---------- delta + transpose + lz77 ----------------------
       #if C_LZ4
         #if C_BITSHUFFLE      
-    case LZ4_S1: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); break;       
+    case LZ4_BIT:   in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); BITUNSHUFFLE(sbuf, outlen, (unsigned char *)out,lev); bitddecn32(out, n, -inc, inc); break;       
+    case LZ4_BITX:  in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); BITUNSHUFFLE(sbuf, outlen, (unsigned char *)out,lev); bitxdec32(out, n, inc); break;       
         #endif     
-    case LZ4_  : in += LZ4_decompress_fast((char *)in, (char *)out, n*4); break;       
-    case LZ4_S4: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposen4(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); break;       
-    case LZ4_S8: in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); break;       
+    case LZ4_  : 	in += LZ4_decompress_fast((char *)in, (char *)out,  outlen); break;       
+    case LZ4_NIBBLE:in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); tp4dec(sbuf, outlen, (unsigned char *)out,lev); bitddecn32(out, n, -inc, inc); break;       
+    case LZ4_NIBBLEX:in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); tp4dec(sbuf, outlen, (unsigned char *)out,lev); bitxdec32(out, n, inc); break;       
+    case LZ4_BYTE:  in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); tpdec( sbuf, outlen, (unsigned char *)out,lev); bitddecn32(out, n, -inc, inc); break;       
       #endif     
 
       #if C_ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
+      { uLongf outsize = outlen; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; tpdec(sbuf, outlen, (unsigned char *)out,4); bitddecn32(out, n, -inc, inc); } break;
       #endif
 
       #if C_C_BLOSC
     case P_BS_LZ:
     case P_BS_LZ4:
-    case P_BS_ZLIB: { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
+    case P_BS_ZLIB: { blosc_decompress(in, out, outlen); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
       #endif
 
       #if C_LZTURBO
-    case P_LZT10: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz);  UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
+    case P_LZT10: { struct lzobj lz; lz.dstlen = outlen; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz);  tpdec(sbuf, outlen, (unsigned char *)out,4); bitddecn32(out, n, -inc, inc); } break;
     case P_LZT20:
-    case P_LZT22: { struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz);  UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
+    case P_LZT22: { struct lzobj lz; lz.dstlen = outlen; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz);  tpdec(sbuf, outlen, (unsigned char *)out,4); bitddecn32(out, n, -inc, inc); } break;
     //case P_VSHUF: vbxget32(in, x);*out = x; in += ansdecompress( in, (n-1)*4, sbuf); vsdec32( sbuf, n-1, out+1); bitddecn32(out, n, -inc, inc); break;
 
-    case P_VSHUF:  { unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); bitddecn32(out, n, -inc, inc); } break;
-    //case P_VSHUF:  { vbxget32(in, x);*out = x; unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); vsdec32(sbuf, n-1, out+1); bitddecn32(out+1, n-1, x, inc); } break;
+    case P_VSHUF:  { unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, outlen); tpdec(sbuf, outlen, (unsigned char *)out,4); bitddecn32(out, n, -inc, inc); } break;
+    //case P_VSHUF:  { vbxget32(in, x);*out = x; unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, outlen); vsdec32(sbuf, n-1, out+1); bitddecn32(out+1, n-1, x, inc); } break;
       #endif
   } 
   return in;
 }
 
 unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc) { 
-  unsigned *in = (unsigned *)_in, n = (_n+3) / 4, i, pa[BLK_SIZE+2048], x, b;
+  unsigned *in = (unsigned *)_in, n = (_n+3) / 4, i, *pa = (unsigned *)sbuf, x, b;
 
   switch(codec) {
     case TB_VBYTE:  x = *in++; --n; vbxput32(out, x);								return vbzenc32(  in, n, out, x);
@@ -927,7 +928,8 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 	
     case TB_PFDA:    return p4encx32( in, n, out);
     //case TB_PFM:     bitfm32( in, n, &x); vbxput32(out, x); return p4denc32(in, n, out, x); 
-    case TB_PDI:     { unsigned pa[BLK_SIZE+2048],inc; bitfm32( in, n, &x); inc = bitdi32(in, n, x); if(verbose > 6 || verbose > 5 && inc) printf("#%d,%d ", x, inc); if(inc>(1<<27)) inc=1<<27; bitdienc32(in, n, pa, x, inc);
+    case TB_PDI:     { unsigned *pa = (unsigned *)sbuf,inc; bitfm32( in, n, &x); inc = bitdi32(in, n, x); if(verbose > 6 || verbose > 5 && inc) printf("#%d,%d ", x, inc); 
+	    if(inc>(1<<27)) inc=1<<27; bitdienc32(in, n, pa, x, inc);
 	    inc=inc<<5|(x&31); x>>=5; vbxput32(out, x); vbput32(out, inc); return p4enc32(pa, n, out);
 	  }
     case TB_FOR :  
@@ -1057,63 +1059,70 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 	  
       // --------- transform ----------------------------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:  bitzenc32(                    in, n, (unsigned *)out, 0,0); return out + n*4;
-    case TB_TP8_32:     _transpose4( (unsigned char *)in, n*4,           out);      return out + n*4;
-    case TB_TP8V_32:    TRANSPOSE(   (unsigned char *)in, n*4,           out);      return out + n*4;
-    case TB_TP4V_32:    transposen4( (unsigned char *)in, n*4,           out);      return out + n*4;
-    case TB_DELTA_32: 	bitdenc32(                    in, n, (unsigned *)out, 0,0); return out + n*4; 
+    case TP_BYTE4S:     tpenc4((unsigned char *)in, _n,           out);     return out + _n;
+    case TP_BYTE:       tpenc( (unsigned char *)in, _n,           out,lev); return out + _n;
+    case TP_NIBBLE:     tp4enc((unsigned char *)in, _n,           out,lev); return out + _n;
+    case TB_DELTA_32: 	bitdenc32(              in,n, (unsigned *)out,0,0); return out + _n; 
+    case TB_ZIGZAG_32:  bitzenc32(              in, n,(unsigned *)out,0,0); return out + _n;
+      #endif
+      #if C_BITSHUFFLE      
+    case P_BITSHUFFLE:  BITSHUFFLE( (unsigned char *)in, _n, out,lev); 		return out + _n;    
       #endif
       #if C_C_BLOSC      
-    case P_BS_SHUFFLE:  shuffle( 4, n*4, (unsigned char *)in, out); return out + n*4;
+    case P_BS_SHUFFLE:  shuffle( lev, _n, (unsigned char *)in, out); 		return out + _n;
       #endif
 
-      #if C_BITSHUFFLE      
-    case P_BITSHUFFLE:  BITSHUFFLE( (unsigned char *)in, n*4, out);/* bshuf_bitshuffle(in, out, n, 4, 0);*/ return out + n*4;    
-      #endif
- 
+	//case TB_FPFOR:    return fpfcmenc32((float *)in,   n,   out); 
+	case TB_FPPFOR64:  return fppenc64(   (double *)in, (_n+7)/8, out); 
+	case TB_FPFFOR64: return fpfcmenc64( (double *)in, (_n+7)/8, out); 
+	case TB_FPDFOR64: return fpdfcmenc64((double *)in, (_n+7)/8, out); 
+    case TB_PF64:     return p4enc64((uint64_t *)in, (_n+7)/8, out);
       // --------- transpose + lz77 ----------------------------------------
       #if C_LZTURBO
-    case P_LZT10: { n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
-    case P_LZT20: { n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
-    case P_LZT22: { n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz); }     
-    case P_LZT32: { n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzhc2(&lz); }
-    //case P_VSHUF: { unsigned char *p = vsenc32(in, n, sbuf); p = mheenc(sbuf, p-sbuf, MH_BLK, out+2, out+n*4+256); ctou16(out) = p-(out+2); printf("L=%d ", p-(out+2));  return p; } //out + anscompress( sbuf, xb, out, out+n*4);
-    //case P_VSHUF: { unsigned char                           *p = mheenc(in, n*4, MH_BLK, out+4, out+n*4+256); ctou32(out) = p-(out+4); return p; } //out + anscompress( sbuf, xb, out, out+n*4);
-    case P_VSHUF: { unsigned char *p;/* = vsenc32(in, n, sbuf)*/ n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); p = mheenc(sbuf, n/*p-sbuf*/, MH_BLK, out+4, out+n+256); ctou32(out) = p-(out+4); return p; } //out + anscompress( sbuf, xb, out, out+n*4);
+    case P_LZT10: { n *= 4; tpenc( (unsigned char *)in, n, sbuf,4); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
+    case P_LZT20: { n *= 4; tpenc( (unsigned char *)in, n, sbuf,4); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 0; lz.hbits = 16; return out + lzbc01(&lz); }
+    case P_LZT22: { n *= 4; tpenc( (unsigned char *)in, n, sbuf,4); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzbc2(&lz); }     
+    case P_LZT32: { n *= 4; tpenc( (unsigned char *)in, n, sbuf,4); struct lzobj lz; lz.srclen = n; lz.src = sbuf; lz.dst = out; lz.dstlen = n; lz.level = 2; lz.hbits = 26; return out + lzhc2(&lz); }
+    //case P_VSHUF: { unsigned char *p = vsenc32(in, n, sbuf); p = mheenc(sbuf, p-sbuf, MH_BLK, out+2, out+_n+256); ctou16(out) = p-(out+2); printf("L=%d ", p-(out+2));  return p; } //out + anscompress( sbuf, xb, out, out+_n);
+    //case P_VSHUF: { unsigned char                           *p = mheenc(in, _n, MH_BLK, out+4, out+_n+256); ctou32(out) = p-(out+4); return p; } //out + anscompress( sbuf, xb, out, out+_n);
+    case P_VSHUF: { unsigned char *p;/* = vsenc32(in, n, sbuf)*/ n *= 4; tpenc( (unsigned char *)in, n, sbuf, 4); p = mheenc(sbuf, n/*p-sbuf*/, MH_BLK, out+4, out+n+256); ctou32(out) = p-(out+4); return p; } //out + anscompress( sbuf, xb, out, out+_n);
       #endif
 
 	  #if C_BITSHUFFLE      
-    case TB_VSIMPLE_S1:  BITSHUFFLE( (unsigned char *)in, n*4, sbuf); return vsenc32((unsigned *)sbuf, n, out);
+    case TB_VSIMPLE_S1:  BITSHUFFLE( (unsigned char *)in, _n, sbuf,4); return vsenc32((unsigned *)sbuf, n, out);
 	  #endif
-    case TB_VSIMPLE_S4: transposen4( (unsigned char *)in, n*4, sbuf); return vsenc32((unsigned *)sbuf, n, out);
-    case TB_VSIMPLE_S8:   TRANSPOSE( (unsigned char *)in, n*4, sbuf); return vsenc32((unsigned *)sbuf, n, out);
+    case TB_VSIMPLE_S4: tp4enc( (unsigned char *)in, _n, sbuf,4);   return vsenc32((unsigned *)sbuf, n, out);
+    case TB_VSIMPLE_S8:  tpenc( (unsigned char *)in, _n, sbuf,4);   return vsenc32((unsigned *)sbuf, n, out);
 	  
       #if C_LZ4
         #if C_BITSHUFFLE      
-    case LZ4_S1:  BITSHUFFLE( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
+    case LZ4_BIT: BITSHUFFLE( (unsigned char *)in, _n, sbuf,lev);return out + LZ4_compress((char *)sbuf, (char *)out, _n);
+    case LZ4_BITX:    bitxenc32(in, n, (unsigned *)out, 0); BITSHUFFLE((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n);
 	    #endif
-    case LZ4_  : return out + LZ4_compress((char *)in, (char *)out, n*4);
-    case LZ4_S4: transposen4( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
-    case LZ4_S8: TRANSPOSE( (unsigned char *)in, n*4, sbuf); return out + LZ4_compress((char *)sbuf, (char *)out, n*4);
+    case LZ4_  : 	 return out + LZ4_compress((char *)in, (char *)out, _n);
+    case LZ4_NIBBLE: tp4enc((unsigned char *)in, _n, sbuf, lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n);
+    case LZ4_NIBBLEX:{bitxenc32(in, n, (unsigned *)out, 0); tp4enc((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); } 
+    case LZ4_BYTE:   tpenc( (unsigned char *)in, _n, sbuf, lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n);
+    //case LZ4_FP8:     fp8zenc( (unsigned char *)in, _n, sbuf, sbuf+_n*2); return out + LZ4_compress((char *)sbuf, (char *)out, _n);
       #endif
 	  
       #if C_C_BLOSC
     case P_BS_LZ:
     case P_BS_LZ4: 
-    case P_BS_ZLIB:  return out + blosc_compress(lev, BLOSC_SHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
-    //return out + blosc_compress(1/*clevel*/, BLOSC_BITSHUFFLE, 4/*typesize*/, n*4, in, out, n*4+BLOSC_MAX_OVERHEAD);
+    case P_BS_ZLIB:  return out + blosc_compress(lev, BLOSC_SHUFFLE, 4/*typesize*/, _n, in, out, _n+BLOSC_MAX_OVERHEAD);
+    //return out + blosc_compress(1/*clevel*/, BLOSC_BITSHUFFLE, 4/*typesize*/, _n, in, out, _n+BLOSC_MAX_OVERHEAD);
       #endif
 	  
       #if C_ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { n *= 4; TRANSPOSE( (unsigned char *)in, n, sbuf); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+      { n *= 4; tpenc( (unsigned char *)in, n, sbuf, 4); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif  
     //default : die("library '%d' not included\n", codec);
   }
   return out;
 } 
 
-unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, int outlen, int codec, int lev, char *prm, int b) { 
+unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, int outlen, int codec, int lev, char *prm, int b) {   
   unsigned *out = (unsigned *)_out, n = (outlen+3) / 4,x; 	
   switch(codec) {         
     case TB_VBYTE:      				 		return vbdec32(  in, n, out); //    case P_VU: return vudec32(   in, n, out);
@@ -1125,7 +1134,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
 
     case TB_FOR:    vbxget32(in, x); b = *in++; return bitfunpack32( in, n, out, x, b);
     case TB_FORDA:  vbxget32(in, x); b = *in++; return bitfunpackx32(in, n, out, x, b);      
-
+    
     case TB_BP:    	if(b < 0) b = *in++; 		return bitunpack32(         in, n, out, b);
     case TB_BPN: 	                     		return in+bitnunpack32(     in, n, out);
  	  #if C_TURBOPFORV
@@ -1248,54 +1257,62 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
       #endif
       //---------- transform ----------------------
       #if C_TRANSFORM
-    case TB_ZIGZAG_32:  memcpy(out, in, n*4); bitzdec32(out, n, 0); 				return in + n*4;
-    case TB_TP8_32:    _untranspose4(  (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
-    case TB_TP8V_32:    UNTRANSPOSE( (unsigned char *)in, n*4, (unsigned char *)out); 	return in + n*4;
-    case TB_TP4V_32:    untransposen4( (unsigned char *)in, n*4, (unsigned char *)out); return in + n*4;
-    case TB_DELTA_32: memcpy(out, in, n*4); bitddecn32(out, n, 0, 0); return in + n*4;
+    case TP_BYTE4S:   tpdec4(  (unsigned char *)in, outlen, (unsigned char *)out);     return in + outlen;
+    case TP_BYTE:     tpdec(   (unsigned char *)in, outlen, (unsigned char *)out,lev); return in + outlen;
+    case TP_NIBBLE:   tp4dec(  (unsigned char *)in, outlen, (unsigned char *)out,lev); return in + outlen;
+    case TB_DELTA_32: memcpy(out, in, outlen); bitddecn32(out, n, 0, 0); 			   return in + outlen;
+    case TB_ZIGZAG_32:memcpy(out, in, outlen); bitzdec32( out, n, 0); 			  	   return in + outlen;
 	  #endif
-      #if C_C_BLOSC
-    case P_BS_SHUFFLE:  unshuffle( 4, n*4, (unsigned char *)in, (unsigned char *)out); 	return in + n*4;
-      #endif		
       #if C_BITSHUFFLE      
-    case P_BITSHUFFLE:  BITUNSHUFFLE(in, n*4, (unsigned char *)out); /*bshuf_bitunshuffle(in, out, n, 4, 0);*/ return in + n*4;
+    case P_BITSHUFFLE:BITUNSHUFFLE(in, outlen, (unsigned char *)out,lev); 			   return in + outlen;
       #endif
+      #if C_C_BLOSC
+    case P_BS_SHUFFLE:unshuffle( lev, outlen, (unsigned char *)in, (unsigned char *)out);return in + outlen;
+      #endif		
  
+	//case TB_FPFOR:    return fpfcmdec32(in, n, (float *)out); 
+	case TB_FPPFOR64:  return fppdec64(   in, (outlen+7)/8, (double *)out); 
+	case TB_FPFFOR64: return fpfcmdec64( in, (outlen+7)/8, (double *)out); 
+	case TB_FPDFOR64: return fpdfcmdec64(in, (outlen+7)/8, (double *)out); 
+    case TB_PF64:     return p4dec64(    in, (outlen+7)/8, (uint64_t *)out);
       //---------- transpose + lz77 ----------------------
       #if C_LZTURBO
-    case P_LZT10:  	{ struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); } break;
+    case P_LZT10:  	{ struct lzobj lz; lz.dstlen = outlen; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lz8d(&lz); tpdec(sbuf, outlen, (unsigned char *)out,4); } break;
     case P_LZT20: 
-    case P_LZT22:  	{ struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); } break;
-    case P_LZT32:  	{ struct lzobj lz; lz.dstlen = n*4; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzhd(&lz); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); } break;
-    //case P_VSHUF: { unsigned inlen = ctou16(in); printf("l=%d ", inlen); in+=2; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); vsdec32(sbuf, n, out); } break;//      in = ansdecompress( in, n*4, sbuf); 
-    //case P_VSHUF: { unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, out, n*4); } break;//      in = ansdecompress( in, n*4, sbuf); 
-    case P_VSHUF:  	{ unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, n*4); UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); /*vsdec32(sbuf, n, out);*/ } break;//      in = ansdecompress( in, n*4, sbuf); 
+    case P_LZT22:  	{ struct lzobj lz; lz.dstlen = outlen; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzbd(&lz); tpdec(sbuf, outlen, (unsigned char *)out,4); } break;
+    case P_LZT32:  	{ struct lzobj lz; lz.dstlen = outlen; lz.src = in; lz.dst = sbuf; lz.level = 0; in += lzhd(&lz); tpdec(sbuf, outlen, (unsigned char *)out,4); } break;
+    //case P_VSHUF: { unsigned inlen = ctou16(in); printf("l=%d ", inlen); in+=2; in = mhdec(in, inlen, MH_BLK, sbuf, outlen); vsdec32(sbuf, n, out); } break;//      in = ansdecompress( in, outlen, sbuf); 
+    //case P_VSHUF: { unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, out, outlen); } break;//      in = ansdecompress( in, outlen, sbuf); 
+    case P_VSHUF:  	{ unsigned inlen = ctou32(in); in+=4; in = mhdec(in, inlen, MH_BLK, sbuf, outlen); tpdec(sbuf, outlen, (unsigned char *)out,4); /*vsdec32(sbuf, n, out);*/ } break;//      in = ansdecompress( in, outlen, sbuf); 
       #endif
 	  
       #if C_BITSHUFFLE      
-    case TB_VSIMPLE_S1:     	in = vsdec32(in, n, (unsigned *)sbuf);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); break;/*bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); */ 
+    case TB_VSIMPLE_S1:     	in = vsdec32(in, n, (unsigned *)sbuf);  BITUNSHUFFLE(sbuf, outlen, (unsigned char *)out,4); break;
       #endif
-    case TB_VSIMPLE_S4:  in = vsdec32(in, n, (unsigned *)sbuf); untransposen4(sbuf, n*4, (unsigned char *)out); break;
-    case TB_VSIMPLE_S8:  in = vsdec32(in, n, (unsigned *)sbuf);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); break;/*bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); */ 
+    case TB_VSIMPLE_S4:  in = vsdec32(in, n, (unsigned *)sbuf); tp4dec(sbuf, _n, (unsigned char *)out,4); break;
+    case TB_VSIMPLE_S8:  in = vsdec32(in, n, (unsigned *)sbuf); tpdec( sbuf, _n, (unsigned char *)out,4); break;
       
       #if C_LZ4
         #if C_BITSHUFFLE      
-    case LZ4_S1:    in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);  BITUNSHUFFLE(sbuf, n*4, (unsigned char *)out); break;/*bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); */ 
-        #endif
-    case LZ4_  : 	in += LZ4_decompress_fast((char *)in, (char *)out, n*4); break;       
-    case LZ4_S4:    in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4); untransposen4(sbuf, n*4, (unsigned char *)out); break;
-    case LZ4_S8:    in += LZ4_decompress_fast((char *)in, (char *)sbuf, n*4);   UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); break;/*bshuf_bitunshuffle(sbuf, out, n*4/32, 32, 0); */ 
+    case LZ4_BIT:    in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); BITUNSHUFFLE(sbuf, outlen, (unsigned char *)out,lev); break;
+    case LZ4_BITX:   in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); BITUNSHUFFLE(sbuf, outlen, (unsigned char *)out,lev); bitxdec32(out, n, 0); break;       
+        #endif     
+    case LZ4_  : 	 in += LZ4_decompress_fast((char *)in, (char *)out,  outlen); break;       
+    case LZ4_NIBBLE: in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); tp4dec(sbuf, outlen, (unsigned char *)out,lev); break;
+    case LZ4_NIBBLEX:in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); tp4dec(sbuf, outlen, (unsigned char *)out,lev); bitxdec32(out, n, 0); break;       
+    case LZ4_BYTE:   in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); tpdec( sbuf, outlen, (unsigned char *)out,lev); break; 
+    //case LZ4_FP8:    in += LZ4_decompress_fast((char *)in, (char *)sbuf, outlen); fpzdec64(sbuf, sbuf+outlen*2, outlen, (unsigned char *)out); break; 
       #endif
 	  
       #if C_C_BLOSC
     case P_BS_LZ:    
     case P_BS_LZ4:    
-    case P_BS_ZLIB: { blosc_decompress(in, out, n*4); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
+    case P_BS_ZLIB: { blosc_decompress(in, out, outlen); size_t nbytes, cbytes,blocksize; blosc_cbuffer_sizes(in, &nbytes, &cbytes, &blocksize); return in+cbytes; }
       #endif
 	  
       #if C_ZLIB
     case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { uLongf outsize = n*4; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; UNTRANSPOSE(sbuf, n*4, (unsigned char *)out); } break;
+      { uLongf outsize = outlen; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; tpdec(sbuf, outlen, (unsigned char *)out,4); } break;
       #endif
     //default : 	  die("library '%d' not included\n", codec);
   }
