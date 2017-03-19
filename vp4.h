@@ -153,9 +153,18 @@ unsigned _p4bits16(          uint16_t *__restrict in, unsigned n, unsigned *pbx)
 unsigned _p4bits32(          uint32_t *__restrict in, unsigned n, unsigned *pbx);
 unsigned _p4bits64(          uint64_t *__restrict in, unsigned n, unsigned *pbx);
 
-#define P4EB(_b_) (_b_ << 1)
-#define P4EBX(_b_, _bx_) (_bx_ << 8 | _b_ << 1 | 1) 
-#define P4SAVE(_out_, _b_, _bx_) do { if(!_bx_) *_out_++ = P4EB(_b_);else *(uint16_t *)_out_ = P4EBX(_b_, _bx_), _out_ += 2; } while(0)
+unsigned _p4bitsx8(          uint8_t  *__restrict in, unsigned n, unsigned *pbx);
+unsigned _p4bitsx16(         uint16_t *__restrict in, unsigned n, unsigned *pbx);
+unsigned _p4bitsx32(         uint32_t *__restrict in, unsigned n, unsigned *pbx);
+unsigned _p4bitsx64(         uint64_t *__restrict in, unsigned n, unsigned *pbx);
+
+
+#define P4HDE(_out_, _b_, _bx_) do { if(!_bx_) *_out_++ = _b_;else *_out_++ = 0x80 | _b_, *_out_++ = _bx_; } while(0)
+#define P4HVE(_out_, _b_, _bx_,_usize_) do { unsigned _c = _b_==_usize_?(_usize_-1):_b_; if(_bx_ <= _usize_) P4HDE(_out_, _c,  _bx_); else *_out_++= 0x40|_c;  } while(0)
+#define P4HVE16(_out_, _b_, _bx_) do {                                   				 if(_bx_ <= 16     ) P4HDE(_out_, _b_, _bx_); else *_out_++= 0x40|_b_; } while(0)
+#define P4HVE32(_out_, _b_, _bx_) do {                                   				 if(_bx_ <= 32     ) P4HDE(_out_, _b_, _bx_); else *_out_++= 0x40|_b_; } while(0)
+#define P4HVE64(_out_, _b_, _bx_) P4HVE(_out_, _b_, _bx_,64)
+#define P4HVE8(_out_, _b_, _bx_)  P4HDE(_out_, _b_, _bx_)
 
 //---------------------------- TurboPFor: Decode --------------------------------------------------------
 // decompress a previously (with p4enc32) bit packed array. Return value = end of packed buffer in 
@@ -176,12 +185,12 @@ unsigned char *p4dec64(       unsigned char *__restrict in, unsigned n, uint64_t
 //------ Delta decoding --------------------------- Return value = end of packed input buffer in ---------------------------
 //-- Increasing integer lists. out[i] = out[i-1] + in[i]          	   
 // b and bx specified
-inline unsigned char *_p4ddec8(      unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
-inline unsigned char *_p4ddec16(     unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4ddec32(     unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4ddec128v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4ddec256v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4ddec64(     unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
+unsigned char *_p4ddec8(      unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
+unsigned char *_p4ddec16(     unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
+unsigned char *_p4ddec32(     unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+unsigned char *_p4ddec128v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+unsigned char *_p4ddec256v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+unsigned char *_p4ddec64(     unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
 
 unsigned char *p4ddec8(       unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start);
 unsigned char *p4ddec16(      unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start);
@@ -192,12 +201,12 @@ unsigned char *p4ddec64(      unsigned char *__restrict in, unsigned n, uint64_t
 
 //-- Strictly increasing (never remaining constant or decreasing) integer lists. out[i] = out[i-1] + in[i] +  1
 // b and bx specified (see idxcr.c/idxqry.c for an example)
-inline unsigned char *_p4d1dec8(     unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
-inline unsigned char *_p4d1dec16(    unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4d1dec32(    unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
-inline unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
-inline unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
+unsigned char *_p4d1dec8(     unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
+unsigned char *_p4d1dec16(    unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
+unsigned char *_p4d1dec32(    unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
 
 unsigned char *p4d1dec8(      unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start);
 unsigned char *p4d1dec16(     unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start);
@@ -224,9 +233,9 @@ unsigned char *p4zdec64(      unsigned char *__restrict in, unsigned n, uint64_t
 //---------------- Direct Access functions to compressed TurboPFor array p4encx16/p4encx32 -------------------------------------------------------
   #ifndef NTURBOPFOR_DAC
 #define P4D_PAD8(_x_) 		( (((_x_)+8-1)/8) )
-#define P4D_B(_x_)  		(((_x_) >> 1) & 0x3f)
-#define P4D_XB(_x_)  		(((_x_) & 1)?((_x_) >> 8):0)
-#define P4D_ININC(_in_, _x_) _in_ += 1+(_x_ & 1)
+#define P4D_B(_x_)  		((_x_) & 0x7f)
+#define P4D_XB(_x_)  		(((_x_) & 0x80)?((_x_) >> 8):0)
+#define P4D_ININC(_in_, _x_) _in_ += 1+((_x_) >> 7)
 
 static inline unsigned p4bits(unsigned char *__restrict in, int *bx) { unsigned i = ctou16(in); *bx = P4D_XB(i); return P4D_B(i); }
 
@@ -242,7 +251,7 @@ static unsigned long long p4xmap[P4D_MAX/64+1] = { 0 };
 // prepare direct access usage
 static inline void p4ini(struct p4 *p4, unsigned char **pin, unsigned n, unsigned *b) { unsigned char *in = *pin;
   unsigned p4i  = ctou16(in);
-  p4->isx       = p4i&1;
+  p4->isx       = p4i&0x80;
   *b            = P4D_B(p4i);
   p4->bx        = P4D_XB(p4i); 				//printf("p4i=%x,b=%d,bx=%d ", p4->i, *b, p4->bx);						  //assert(n <= P4D_MAX);
   *pin = p4->ex = ++in; 
