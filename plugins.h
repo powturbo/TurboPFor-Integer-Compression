@@ -55,11 +55,11 @@ int  codstart( unsigned char *in, int inlen, int codec);
 unsigned char *codcomp(   unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int b);
 unsigned char *coddecomp( unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int b);
 
-unsigned char *codcomps(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc);
-unsigned char *coddecomps(unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int inc);
+unsigned char *codcomps(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int mdelta);
+unsigned char *coddecomps(unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int mdelta);
 
-unsigned char *codcompz(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int inc);
-unsigned char *coddecompz(unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int inc);
+unsigned char *codcompz(  unsigned char *in, unsigned n, unsigned char *out, int outsize, int codec, int lev, char *prm, int mdelta);
+unsigned char *coddecompz(unsigned char *in, unsigned n, unsigned char *out, int outlen,  int codec, int lev, char *prm, int mdelta);
 
 char *codver(int codec, char *v, char *s);
 void *_valloc(size_t size, int a);
