@@ -35,7 +35,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 <p>
 + **Floating Point Compression**
  - :new: (Differential) Finite Context Method FCM/DFCM floating point compression
- - Using TurboPFor, more than 2 GB/s throughput
+ - Using **TurboPFor**, more than 2 GB/s throughput
 <p>
 + **Inverted Index ...do less, go fast!**
  - Direct Access to compressed *frequency* and *position* data w/ zero decompression
@@ -69,7 +69,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |76345136| 19.1| 6.11|245|653|**VSimple**|
 |91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
-|99910930| 25.0| 7.99|**3290**|**2968**|**TurboPackV**|
+|99910930| 25.0| 7.99|**3494**|**2968**|**TurboPackV**|
 |99910930| 25.0| 7.99|2367|2351|**TurboPack**|
 |99910930| 25.0| 7.99|2105|2219|**TurboFor**|
 |100332929| 25.1| 8.03|**3580**|**2998**|**TurboPack256V**|
@@ -384,5 +384,5 @@ header files to use with documentation:<br />
    - [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
    - [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  26 FEB 2017
+Last update:  19 MAR 2017
 
