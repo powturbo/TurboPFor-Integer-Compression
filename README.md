@@ -1,43 +1,43 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
- * 100% C (C++ headers), as simple as memcpy
- * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
- * :sparkles: **FULL** range 8/16/32/64 bits lists
- * No other "Integer Compression" compress/decompress faster
- * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Zigzag for sorted/unsorted arrays
+  * 100% C (C++ headers), as simple as memcpy
+  * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
+  * :sparkles: **FULL** range 8/16/32/64 bits lists
+  * No other "Integer Compression" compress/decompress faster
+  * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Zigzag for sorted/unsorted arrays
 * **For/PFor/PForDelta**
- * **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
- * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
- * Compress 70 times faster and decompress up to 4 times faster than OptPFD
- * :new: **TurboPFor AVX2, now 50%! more faster!!!!**
- * :new: **TurboPFor Hybrid, better compression and more faster**
+  * **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
+  * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
+  * Compress 70 times faster and decompress up to 4 times faster than OptPFD
+  * :new: **TurboPFor AVX2, now 50%! more faster!!!!**
+  * :new: **TurboPFor Hybrid, better compression and more faster**
 * **Bit Packing**
- * :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
- * :new: TurboPack AVX2 more faster. **Decoding 10 Billions intergers/seconds (40Gb/s)**
- * :new: more faster. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
- * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
+  * :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
+  * :new: TurboPack AVX2 more faster. **Decoding 10 Billions intergers/seconds (40Gb/s)**
+  * :new: more faster. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+  * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
- * :sparkles: Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
- * :new: **new scheme : better compression and 30% faster**
+  * :sparkles: Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
+  * :new: **new scheme : better compression and 30% faster**
 * **Simple family**
- * :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
+  * :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
- * :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
+  * :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
- * :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
+  * :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
 <p>
 * **Floating Point Compression**
- * :new: (Differential) Finite Context Method FCM/DFCM floating point compression
- * Using **TurboPFor**, more than 2 GB/s throughput
+  * :new: (Differential) Finite Context Method FCM/DFCM floating point compression
+  * Using **TurboPFor**, more than 2 GB/s throughput
 <p>
 * **Inverted Index ...do less, go fast!**
- * Direct Access to compressed *frequency* and *position* data w/ zero decompression
- * :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
- * **Novel** Implicit skips with zero extra overhead
- * **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
- * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
- * :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a simple quad core PC.<br>
+  * Direct Access to compressed *frequency* and *position* data w/ zero decompression
+  * :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
+  * **Novel** Implicit skips with zero extra overhead
+  * **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
+  * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
+  * :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a simple quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Integer Compression Benchmark:
