@@ -85,9 +85,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define _BITPACK_ bitd1pack
 #include "bitpack_.h"
 
-/*#define IPB( _ip_,_x_, _parm_) 	v = IP(_ip_,_x_) - start - inc; start = IP(_ip_,_x_)
+/*#define IPB( _ip_,_x_, _parm_) 	v = IP(_ip_,_x_) - start - mdelta; start = IP(_ip_,_x_)
 #define IPV( _ip_,_x_) 			v
-#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start - inc)
+#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start - mdelta)
 #define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
 #define _BITPACK_ bitepack
 #include "bitpack_.h"*/
@@ -170,7 +170,7 @@ size_t bitnzpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict
 #include "bitpack_.h" 
 unsigned char *bitpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *pout = out+PAD8(128*b); BITPACK128V32(in, b, out, 0); return pout; }
 
-#define VSTI(_ip_, __i, _iv_, __sv) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,__sv); __sv = v
+#define VSTI(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v
 #define IPP(ip, i, _iv_) _iv_
 #include "bitpack_.h" 
 unsigned char *bitdpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
@@ -179,7 +179,7 @@ unsigned char *bitdpack128v32(unsigned       *__restrict in, unsigned n, unsigne
   return pout;
 }
 
-#define VSTI(_ip_, __i, _iv_, __sv) 
+#define VSTI(_ip_, _i_, _iv_, _sv_) 
 #define IPP(_ip_, i, _iv_) 			_mm_sub_epi32(_mm_loadu_si128(_ip_++),sv)
 #include "bitpack_.h" 
 unsigned char *bitfpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
@@ -188,21 +188,21 @@ unsigned char *bitfpack128v32(unsigned       *__restrict in, unsigned n, unsigne
   return pout;
 }
 
-#define VSTI(_ip_, __i, _iv_, __sv) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi32(DELTA128x32(v,__sv),cv); __sv = v
+#define VSTI(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi32(DELTA128x32(v,_sv_),cv); _sv_ = v
 #define IPP(ip, i, _iv_) _iv_
 unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   BITPACK128V32(in, b, out, sv); return pout; 
 }
 
-#define VSTI(_ip_, __i, _iv_, __sv) _iv_ = _mm_sub_epi32(_mm_loadu_si128(_ip_++),__sv); __sv = _mm_add_epi32(__sv,cv); 
+#define VSTI(_ip_, _i_, _iv_, _sv_) _iv_ = _mm_sub_epi32(_mm_loadu_si128(_ip_++),_sv_); _sv_ = _mm_add_epi32(_sv_,cv); 
 #define IPP(ip, i, _iv_) _iv_
 unsigned char *bitf1pack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set_epi32(start+4,start+3,start+2,start+1), cv = _mm_set1_epi32(4);
   BITPACK128V32(in, b, out, sv); return pout; 
 }
 
-#define VSTI(_ip_, __i, _iv_, __sv) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,__sv); __sv = v; _iv_ = ZIGZAG128x32(_iv_)
+#define VSTI(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v; _iv_ = ZIGZAG128x32(_iv_)
 unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   BITPACK128V32(in, b, out, sv); 
@@ -229,7 +229,7 @@ unsigned char *bitpack256v32(unsigned       *__restrict in, unsigned n, unsigned
 #undef IPP
 
 
-#define VSTI(_ip_, __i, _iv_, __sv) _iv_ = _mm256_sub_epi32(_mm256_loadu_si256(_ip_++),sv)
+#define VSTI(_ip_, _i_, _iv_, _sv_) _iv_ = _mm256_sub_epi32(_mm256_loadu_si256(_ip_++),sv)
 #define IPP(_ip_, i, _iv_) 			_iv_
 #include "bitpack_.h"  
 unsigned char *bitfpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
@@ -238,39 +238,35 @@ unsigned char *bitfpack256v32(unsigned       *__restrict in, unsigned n, unsigne
   return pout;
 }
 
-#define VSTI(_ip_, __i, _iv_, __sv) _iv_ = _mm256_sub_epi32(_mm256_loadu_si256(_ip_++),__sv); __sv = _mm256_add_epi32(__sv,cv); 
+#define VSTI(_ip_, _i_, _iv_, _sv_) _iv_ = _mm256_sub_epi32(_mm256_loadu_si256(_ip_++),_sv_); _sv_ = _mm256_add_epi32(_sv_,cv); 
 #define IPP(ip, i, _iv_) _iv_
 unsigned char *bitf1pack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
   __m256i v, sv = _mm256_set_epi32(start+8,start+7,start+6,start+5,start+4,start+3,start+2,start+1), cv = _mm256_set1_epi32(8);
   BITPACK256V32(in, b, out, sv); return pout; 
 }
 
-//------------------------------------------------------------------------------------------------------------------------------
-#if 0
-#define VSTI(_ip_, __i, _iv_, __sv) v = _mm256_loadu_si256(_ip_++); DELTA256x32(v,__sv, _iv_) //__sv = v
+#define VSTI(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = DELTA256x32(v,_sv_); _sv_ = v
 #define IPP(ip, i, _iv_) _iv_
-#include "bitpack_.h"  
-
-unsigned char *bitdpack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
-  __m256i v; //,sv = _mm256_set1_epi32(start),zv = _mm256_setzero_si256();
-  __m128i sv = _mm_set1_epi32(start);
+#include "bitpack_.h" 
+unsigned char *bitdpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
+  __m256i v,sv = _mm256_set1_epi32(start);
   BITPACK256V32(in, b, out, sv);
   return pout;
 }
 
-#define VSTI(_ip_, __i, _iv_, __sv) v = _mm256_loadu_si256(_ip_++); _iv_ = _mm256_sub_epi32(DELTA256x32(v,__sv),cv); __sv = v
-unsigned char *bitd1pack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
+#define VSTI(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = _mm256_sub_epi32(DELTA256x32(v,_sv_),cv); _sv_ = v
+unsigned char *bitd1pack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
   __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
-  //BITPACK256V32(in, b, out, sv); return pout; 
-}
-
-#define VSTI(_ip_, __i, _iv_, __sv) v = _mm256_loadu_si256(_ip_++); _iv_ = DELTA256x32(v,__sv); __sv = v; _iv_ = ZIGZAG256x32(_iv_)
-unsigned char *bitzpack256v32(unsigned       *__restrict in, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
-  __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
-  //BITPACK256V32(in, b, out, sv); 
+  BITPACK256V32(in, b, out, sv); 
   return pout; 
 }
-#endif
+
+#define VSTI(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = DELTA256x32(v,_sv_); _sv_ = v; _iv_ = ZIGZAG256x32(_iv_)
+unsigned char *bitzpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
+  __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
+  BITPACK256V32(in, b, out, sv); 
+  return pout; 
+}
 #endif
 
 #pragma clang diagnostic pop
