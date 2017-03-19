@@ -28,7 +28,7 @@
 #include "conf.h"
 #include "bitutil.h"
 #include "bitpack.h"
-#include "vint.h"				//#include "vsimple.h"
+#include "vint.h"
 #include "vp4.h"
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
@@ -253,13 +253,14 @@ static ALIGNED(char, shuffles[16][16], 16) = {
 #pragma GCC optimize ("align-functions=16")
 
 ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
-  uint_t ex[P4D_MAX+32];
-    #if USIZE == 64
-  b = ((b>>1)==63)?(64<<1):b;
-    #endif
-  if(!(b & 1))
-    return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b>>1);
-  b >>= 1;
+  uint_t ex[P4D_MAX+64];
+  if(!(b & 0x80)) {
+      #if USIZE == 64
+    b = (b == 63)?64:b;
+      #endif
+    return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);
+  }
+  b &= 0x7f;
     #if defined(VSIZE) && USIZE < 64 
   unsigned char *pb = in;	
       #if VSIZE == 128  
@@ -304,15 +305,15 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
 
 unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {  if(!n) return in; 
   unsigned b = *in++, bx, i;  
-  if(likely(!(b & 0x80))) {
-    if(b & 1)
+  if(likely(!(b & 0x40))) {
+    if(b & 0x80)
 	  bx = *in++;
     return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx);
   }
     #if USIZE > 8  
   else {
     uint_t ex[P4D_MAX+32]; 
-	b  = (b & 0x7f)>>1; 	
+	b  &= 0x3f; 	
     bx = *in++;                 
 
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b); 
@@ -354,35 +355,39 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
   *out++ = start;
   --n;
     #endif
-  for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {             __builtin_prefetch(ip+512);  
-    unsigned b = *ip++,bx,i;
-  
-    if(likely(!(b & 0x80))) {
-      if(b & 1)
+  for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {             __builtin_prefetch(ip+512);//ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));
+    unsigned b = *ip++, bx, i;  
+    if(likely(!(b & 0x40))) {
+      if(b & 0x80)
 	    bx = *ip++;
-      ip = TEMPLATE2(_P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start), b, bx );
-    } 
+      ip = TEMPLATE2(_P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start), b, bx);
+    }
       #if USIZE > 8  
-	else {  
-      uint_t ex[P4D_MAX+8]; 
-	  b  = (b & 0x7f)>>1;
-      bx = *ip++;
+    else {
+      uint_t ex[P4D_MAX+32]; 
+	  b  &= 0x3f; 	
+      bx = *ip++;                 
+
       ip = TEMPLATE2(BITUNPACK, USIZE)(ip, CSIZE, op, b); 
       ip = TEMPLATE2(vbdec,     USIZE)(ip, bx, ex);
-      for(i = 0; i != (bx & ~3); i += 4) { 
+      for(i = 0; i != (bx & ~7); i += 8) { 
 	    op[ip[i  ]] |= ex[i  ] << b;
 	    op[ip[i+1]] |= ex[i+1] << b;
 	    op[ip[i+2]] |= ex[i+2] << b;
 	    op[ip[i+3]] |= ex[i+3] << b;
- 	  }
+	    op[ip[i+4]] |= ex[i+4] << b;
+	    op[ip[i+5]] |= ex[i+5] << b;
+	    op[ip[i+6]] |= ex[i+6] << b;
+	    op[ip[i+7]] |= ex[i+7] << b;
+	  }
 	  for(;i < bx; i++) 
 	    op[ip[i]] |= ex[i] << b;
       ip += bx;
         #ifdef BITUNDD
       TEMPLATE2(BITUNDD, USIZE)(op, CSIZE, start);
 	    #endif
-    }															//   ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));   
-      #endif	
+    }
+      #endif
     P4DELTA_(start = op[CSIZE-1]); 											
   }
   return TEMPLATE2(P4NDECS, USIZE)(ip, n&(CSIZE-1), op P4DELTA(start)) - in; 
