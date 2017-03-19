@@ -21,47 +21,43 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   transpose.h - Byte/Nibble transpose 
+//   transpose.h - Byte/Nibble transpose for further compressing with lz77 or other compressors
 #ifdef __cplusplus
 extern "C" {
 #endif
-// Transpose/Shuffle block for further compressing with lz77 or other compressors
-void tpenc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
-void tpdec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+// Syntax
+// in    : Input buffer
+// n     : Total number of bytes in input buffer
+// out   : output buffer
+// esize : element size in bytes (ex. 2, 4, 8,... )
+
+//---------- High level functions with dynamic cpu detection and JIT scalar/sse/avx2 switching
+void tpenc(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // tranpose
+void tpdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // reverse transpose
 
 // Nibble transpose
-void tp4enc(     unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
-void tp4dec(     unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+void tp4enc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+void tp4dec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
-//---------- low level functions ----------------------------------
-void tpenc2(     unsigned char *in, unsigned n, unsigned char *out);
-void tpenc3(     unsigned char *in, unsigned n, unsigned char *out);
-void tpenc4(     unsigned char *in, unsigned n, unsigned char *out);
-void tpenc8(     unsigned char *in, unsigned n, unsigned char *out);
-void tpenc16(    unsigned char *in, unsigned n, unsigned char *out);
+//---------- Low level functions ------------------------------------
+void tpenc2(      unsigned char *in, unsigned n, unsigned char *out);  // scalar
+void tpenc3(      unsigned char *in, unsigned n, unsigned char *out);
+void tpenc4(      unsigned char *in, unsigned n, unsigned char *out);
+void tpenc8(      unsigned char *in, unsigned n, unsigned char *out);
+void tpenc16(     unsigned char *in, unsigned n, unsigned char *out);
 
-void tpdec2(     unsigned char *in, unsigned n, unsigned char *out);
-void tpdec3(     unsigned char *in, unsigned n, unsigned char *out);
-void tpdec4(     unsigned char *in, unsigned n, unsigned char *out);
-void tpdec8(     unsigned char *in, unsigned n, unsigned char *out);
-void tpdec16(    unsigned char *in, unsigned n, unsigned char *out);
+void tpdec2(      unsigned char *in, unsigned n, unsigned char *out);
+void tpdec3(      unsigned char *in, unsigned n, unsigned char *out);
+void tpdec4(      unsigned char *in, unsigned n, unsigned char *out);
+void tpdec8(      unsigned char *in, unsigned n, unsigned char *out);
+void tpdec16(     unsigned char *in, unsigned n, unsigned char *out);
 
-void tpenc128v2( unsigned char *in, unsigned n, unsigned char *out);
-void tpdec128v2( unsigned char *in, unsigned n, unsigned char *out);
-void tpenc128v4( unsigned char *in, unsigned n, unsigned char *out);
-void tpdec128v4( unsigned char *in, unsigned n, unsigned char *out);
-void tpenc128v8( unsigned char *in, unsigned n, unsigned char *out);
-void tpdec128v8( unsigned char *in, unsigned n, unsigned char *out);
-
-void tpenc256v2( unsigned char *in, unsigned n, unsigned char *out);
-void tpdec256v2( unsigned char *in, unsigned n, unsigned char *out);
-void tpenc256v4( unsigned char *in, unsigned n, unsigned char *out);
-void tpdec256v4( unsigned char *in, unsigned n, unsigned char *out);
-void tpenc256v8( unsigned char *in, unsigned n, unsigned char *out);
-void tpdec256v8( unsigned char *in, unsigned n, unsigned char *out);
-
-void tp4enc4(unsigned char *in, unsigned n, unsigned char *out);
-void tp4dec4(unsigned char *in, unsigned n, unsigned char *out);
+void tpenc128v2(  unsigned char *in, unsigned n, unsigned char *out);   // sse2
+void tpdec128v2(  unsigned char *in, unsigned n, unsigned char *out);
+void tpenc128v4(  unsigned char *in, unsigned n, unsigned char *out);
+void tpdec128v4(  unsigned char *in, unsigned n, unsigned char *out);
+void tpenc128v8(  unsigned char *in, unsigned n, unsigned char *out);
+void tpdec128v8(  unsigned char *in, unsigned n, unsigned char *out);
 
 void tp4enc128v2( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec128v2( unsigned char *in, unsigned n, unsigned char *out);
@@ -70,12 +66,28 @@ void tp4dec128v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp4enc128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec128v8( unsigned char *in, unsigned n, unsigned char *out);
 
+void tpenc256v2(  unsigned char *in, unsigned n, unsigned char *out);   // avx2   
+void tpdec256v2(  unsigned char *in, unsigned n, unsigned char *out);
+void tpenc256v4(  unsigned char *in, unsigned n, unsigned char *out);
+void tpdec256v4(  unsigned char *in, unsigned n, unsigned char *out);
+void tpenc256v8(  unsigned char *in, unsigned n, unsigned char *out);
+void tpdec256v8(  unsigned char *in, unsigned n, unsigned char *out);
+
 void tp4enc256v2( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec256v2( unsigned char *in, unsigned n, unsigned char *out);
 void tp4enc256v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec256v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp4enc256v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec256v8( unsigned char *in, unsigned n, unsigned char *out);
+
+//------- CPU instruction set 
+// cpuiset  = 0: return current simd set, 
+// cpuiset != 0: set simd set 0:scalar, 20:sse2, 52:avx2
+int   cpuini(int cpuiset); 
+
+// convert simd set to string "sse3", "sse3", "sse4.1" or "avx2" 
+// Ex.: printf("current cpu set=%s\n", cpustr(cpuini(0)) ); 
+char *cpustr(int cpuiset); 
 
 #ifdef __cplusplus
 }
