@@ -135,7 +135,7 @@ unsigned char *bitunpack64( const unsigned char *__restrict in, unsigned n, uint
 
 // ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------
   #ifndef NTURBOPFOR_DAC
-    #ifdef __AVX2__
+    #if __AVX2__
 #include <immintrin.h>
 #define bzhi64(_u_, _b_) _bzhi_u64(_u_, _b_)
 #define bzhi32(_u_, _b_) _bzhi_u32(_u_, _b_)
@@ -146,8 +146,10 @@ unsigned char *bitunpack64( const unsigned char *__restrict in, unsigned n, uint
 
 #include "conf.h"
 
-// Get a single 32 bits value with index "idx" (or bit index b*idx) from packed integer array
 static ALWAYS_INLINE unsigned  bitgetx32(const unsigned char *__restrict in, unsigned  idx, unsigned b) { unsigned bidx = b*idx; return bzhi64( ctou64((uint32_t *)in+(bidx>>5)) >> (bidx&0x1f), b ); }
+//static ALWAYS_INLINE unsigned  bitgetx32(const unsigned char *__restrict in, unsigned  idx, unsigned b) { unsigned bidx = b*idx;
+ //return (ctou64((uint32_t *)in+(bidx>>5)) << 32+(bidx&0x1f)) >> (64-b);
+// return bzhi64( ctou64((uint32_t *)in+(bidx>>5)) >> (bidx&0x1f), b ); }
 static ALWAYS_INLINE unsigned _bitgetx32(const unsigned char *__restrict in, uint64_t bidx, unsigned b) {                        return bzhi64( ctou64((uint32_t *)in+(bidx>>5)) >> (bidx&0x1f), b ); }
 
 // like  bitgetx32 but for 16 bits integer array
