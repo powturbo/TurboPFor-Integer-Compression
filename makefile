@@ -88,7 +88,7 @@ CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS
 all: icbench idxcr idxqry idxseg
 
 cpp: $(CPPF)
-	$(CC) -mavx2 $(MARCH) -E $(CPPF)
+	$(CC) -mavx2 $(MARCH) -E -P $(CPPF)
 
 bitpack.o: bitpack.c bitpack.h bitpack_.h
 	$(CC) -O3 $(DDEBUG) -fstrict-aliasing $(MARCH) -w -Wall -falign-loops=32 -c bitpack.c
@@ -207,7 +207,7 @@ OB+=transpose_avx2.o
 endif
 
 #------------------------
-ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o fp.o
+ICLIB=bitpack.o bitunpack.o vint.o vp4d.o vp4c.o bitutil.o fp.o vsimple.o
 
 ifeq ($(SIMDH),1)
 ICLIB+=bitunpack128h.o
