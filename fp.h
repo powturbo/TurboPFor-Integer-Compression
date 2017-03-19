@@ -21,15 +21,20 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//     "Floating Point Compression"
+//     "Floating Point Compressionw/ TurboPFor"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned char *fppenc64(    double        *in, unsigned n, unsigned char *out);
-unsigned char *fppdec64(    unsigned char *in, unsigned n, double        *out);
+//---- Last value Predictor 
+unsigned char *fppenc64(   double        *in, unsigned n, unsigned char *out);
+unsigned char *fppdec64(   unsigned char *in, unsigned n, double        *out);
+
+//---- FCM: Finite Context Method Predictor 
 unsigned char *fpfcmenc64( double        *in, unsigned n, unsigned char *out);
 unsigned char *fpfcmdec64( unsigned char *in, unsigned n, double        *out);
+
+// DFCM: Differential Finite Context Method Predictor 
 unsigned char *fpdfcmenc64(double        *in, unsigned n, unsigned char *out);
 unsigned char *fpdfcmdec64(unsigned char *in, unsigned n, double        *out);
 
