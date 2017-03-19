@@ -26,11 +26,9 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
   * :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
-<p>
 * **Floating Point Compression**
   * :new: (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, more than 2 GB/s throughput
-<p>
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
