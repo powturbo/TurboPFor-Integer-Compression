@@ -46,7 +46,8 @@ static inline int      bsr64(unsigned long long x) { return x?64 - __builtin_clz
 
 static inline unsigned rol32(unsigned x, int s) { asm ("roll %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
 static inline unsigned ror32(unsigned x, int s) { asm ("rorl %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
-
+static inline unsigned long long rol64(unsigned long long x, int s) { asm ("rolq %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
+static inline unsigned long long ror64(unsigned long long x, int s) { asm ("rorq %%cl,%0" :"=r" (x) :"0" (x),"c" (s)); return x; }
     #else
 static inline int    __bsr32(unsigned x          ) { return   31 - __builtin_clz(  x); }
 static inline int      bsr32(int x               ) { return x?32 - __builtin_clz(  x):0; }
@@ -54,6 +55,8 @@ static inline int      bsr64(unsigned long long x) { return x?64 - __builtin_clz
 
 static inline unsigned rol32(unsigned x, int s) { return x << s | x >> (32 - s); }
 static inline unsigned ror32(unsigned x, int s) { return x >> s | x << (32 - s); }
+static inline unsigned rol64(unsigned x, int s) { return x << s | x >> (64 - s); }
+static inline unsigned ror64(unsigned x, int s) { return x >> s | x << (64 - s); }
     #endif
 
 #define ctz64(_x_) __builtin_ctzll(_x_)
@@ -177,7 +180,9 @@ static inline unsigned long long ctou64(const void *cp) { unsigned long long x; 
   #endif
 #endif
 
-//---------------------misc ---------------------------------------------------   
+//---------------------misc ---------------------------------------------------
+//#define C64(x) x##ull
+   
 #define SIZE_ROUNDUP(_n_, _a_) (((size_t)(_n_) + (size_t)((_a_) - 1)) & ~(size_t)((_a_) - 1))
   #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
