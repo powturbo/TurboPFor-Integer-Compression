@@ -38,6 +38,9 @@
 #include "bitpack.h"
 #include "vp4.h"
 #include "idx.h"
+#ifndef min
+#define min(x,y) (((x)<(y)) ? (x) : (y))
+#endif
 
 #ifdef NSIMD
 #define bitpack128v32 bitpack32
