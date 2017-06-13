@@ -174,12 +174,10 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 - Recent "integer compression" GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
 
 ### Compile:
-
 		git clone --recursive git://github.com/powturbo/TurboPFor.git
 		cd TurboPFor
 
 ###### Linux, Windows (MingW), Clang,... 		
-
 		make
 		or
 		make AVX2=1
@@ -191,9 +189,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 		make NSIMD=1
 
 ###### Windows visual c++ 
-
-        nmake /f makefile.vs
-
+		nmake /f makefile.vs
 
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
