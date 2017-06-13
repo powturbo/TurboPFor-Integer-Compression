@@ -130,7 +130,7 @@ ifeq ($(NCODEC1), 0)
 OB+=ext/streamvbyte/src/streamvbyte.o ext/streamvbyte/src/streamvbytedelta.o 
 OB+=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 OB+=ext/simdcomp/src/simdintegratedbitpacking.o ext/simdcomp/src/simdcomputil.o ext/simdcomp/src/simdbitpacking.o ext/simdcomp/src/simdpackedselect.o 
-OB+=ext/simdcomp_/simdfor.o 
+OB+=ext/simdcomp_/simdfor.o
 
 ifeq ($(AVX2),1)
 OB+=ext/simdcomp/src/avxbitpacking.o 
@@ -159,6 +159,7 @@ OB+=ext/polycom/optpfd.o
 OB+=ext/polycom/polyvbyte.o
 
 OB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o
+OB+=ext/simple8b.o 
 
 ifeq ($(HAVE_ZLIB), 1)
 CDEFS+=-DZLIB
@@ -202,7 +203,7 @@ OB+=../dev/lz/lz8c.o ../dev/lz/lzbc.o
 endif
 
 
-OB+=eliasfano.o vsimple.o $(TRANSP) ext/simple8b.o transpose.o transpose_sse.o
+OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
 ifeq ($(AVX2),1)
 OB+=transpose_avx2.o 
 endif
@@ -247,7 +248,8 @@ idxqry:  idxqry.o $(ICLIB)
 	$(CC) $^ $(LDFLAGS) $(LIBTHREAD) $(LIBRT) -o idxqry $(LFLAGS)
 
 clean:
-	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete
+	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete -or -name "icbench" -delete -or -name "idxqry" -delete
+	@find . -type f -name "icbench" -delete -or -name "idxqry" -delete -or -name "idxseg" -delete -or -name "idxcr" -delete
 
 cleanw:
 	del /S ..\*.o
