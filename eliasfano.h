@@ -25,7 +25,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif 
+#if defined(_MSC_VER) && _MSC_VER < 1600
+#include "vs/stdint.h"
+#else 
 #include <stdint.h>
+#endif
 
 // compress/decompress integer array with n values to the buffer out. Return value = end of output/input buffer
 unsigned char *efanoenc32(     unsigned      *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned start);
