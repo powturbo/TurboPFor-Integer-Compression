@@ -30,9 +30,8 @@
 #include <stdio.h>
 #include <math.h> 
 #include <time.h>
-#include <getopt.h>
 #include <sys/stat.h>
-#include <stdint.h>
+#include "conf.h"
 
 #include "plugins.h"
 
@@ -153,8 +152,12 @@ enum {
   LZ4_NIBBLEX,   
   LZ4_BYTE,
 //  LZ4_FP8,
+    #ifdef __SSSE3__
 #define C_MASKEDVBYTE   CODEC1		
   P_MASKEDVBYTE,
+    #else
+#define C_MASKEDVBYTE  0
+    #endif
 #define C_POLYCOM  		CODEC1		
   PC_OPTPFD,             			// compression too slow and limited to 28 bits. crashs on some lists
   PC_VBYTE,
@@ -172,8 +175,13 @@ enum {
   AM_SIMPLE8B,
 #define C_STREAMVBYTE   CODEC1
   P_STREAMVBYTE,
+  
+    #ifdef __SSSE3__
 #define C_VARINTG8IU    CODEC1
   P_VARINTG8IU,
+    #else
+#define C_VARINTG8IU  0
+    #endif  
   #ifdef ZLIB
 #define C_ZLIB			CODEC2
   #else
@@ -320,7 +328,6 @@ struct plugg plugg[] = {
 };
 
 #define PAD8(__x) (((__x)+7)/8)
-
 //---------------------------------------------- plugins --------------------------------------------------------
 #include "conf.h"  
 unsigned char sbuf[BLK_SIZE*2+64];
@@ -329,6 +336,7 @@ int codini(size_t insize, int codec) {
   switch(codec) {
     #include "ext/beplugi_.c"
   }
+  return 0;
 }   
  
 void codexit(int codec) {} 
@@ -341,7 +349,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_VSIMPLE: x = *in++; bitdienc32( in, --n, pa, x, mdelta);
 	                                 vbxput32(out, x);			return vsenc32(         pa, n, out);
     case TB_VBYTE:   x = *in++; --n; vbxput32(out, x);			return mdelta?vbd1enc32(   in, n, out, x   ):vbdenc32(     in, n, out, x);
-    case TB_EF:      x = *in++; --n; vbxput32(out, x);			return mdelta?efano1enc32( in, n, out, x+1 ):efanoenc32(   in, n, out, x);
+    case TB_EF:      x = *in++; --n; vbxput32(out, x); 			return mdelta?efano1enc32( in, n, out, x+1 ):efanoenc32(   in, n, out, x);
 	
     case TB_PFDA:    x = *in++; --n; vbxput32(out, x); DELTR(in,n,x,mdelta,pa); 
 																return p4encx32(pa,n,out);
@@ -356,7 +364,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       else {    b = bitd32( in, n, x);  *out++=b;				return bitdpack32( in, n, out, x, b); } 
     case TB_BPN:    											return out+(mdelta?bitnd1pack32(in, n, out):bitndpack32( in, n, out));
 	
-    case TB_PDI: { x = *in++; unsigned mdelta = bitdi32(in, --n, x); if(mdelta>(1<<27)) mdelta=1<<27; bitdienc32(in, n, pa, x, mdelta); 
+    case TB_PDI: { unsigned mdelta; x = *in++; mdelta = bitdi32(in, --n, x); if(mdelta>(1<<27)) mdelta=1<<27; bitdienc32(in, n, pa, x, mdelta); 
 	    mdelta=mdelta<<5|(x&31); x>>=5; vbxput32(out, x); vbput32(out, mdelta); return p4enc32(pa, n, out);
 	  }
 
@@ -419,7 +427,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_BP:     vbxget32(in, x);*out++ = x; --n; b = *in++; return mdelta?bitd1unpack32(     in, n, out, x, b):bitdunpack32(    in, n, out, x, b);
     case TB_BPN:               						  		    return in+(mdelta?bitnd1unpack32(in, n, out      ):bitndunpack32(   in, n, out));
 	
-    case TB_PDI: { vbxget32(in, x); uint32_t mdelta; vbget32(in, mdelta); x = x << 5 | (mdelta & 31); *out++ = x; --n; in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta>>5); break; }
+    case TB_PDI: { uint32_t mdelta; vbxget32(in, x);  vbget32(in, mdelta); x = x << 5 | (mdelta & 31); *out++ = x; --n; in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta>>5); break; }
 	  #if C_TURBOPFORV
     case TB_FOR128V:vbxget32(in, x);*out++ = x; --n; b = *in++;
 	  if(mdelta) {                                      	        return n==128?bitf1unpack128v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
@@ -568,9 +576,9 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_ZIGZAG32: bitzenc32(              in, n,(unsigned *)out,0,0); return out + _n;
       #endif
       //---- Floating point ----------------------
-	case TB_FPPFOR64: return fppenc64(   (double *)in, PAD8(_n), out); 
-	case TB_FPFFOR64: return fpfcmenc64( (double *)in, PAD8(_n), out); 
-	case TB_FPDFOR64: return fpdfcmenc64((double *)in, PAD8(_n), out); 
+	case TB_FPPFOR64: ctou64(out) = ctou64(_in); return fppenc64(   (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in)); 
+	case TB_FPFFOR64: ctou64(out) = ctou64(_in); return fpfcmenc64( (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
+	case TB_FPDFOR64: ctou64(out) = ctou64(_in); return fpdfcmenc64((uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
     case TB_PF64:     return p4enc64((uint64_t *)in,   PAD8(_n), out);
     #include "ext/beplugc_.c"	  
   }
@@ -584,7 +592,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_VSIMPLE:    				 		return vsdec32(  in, n, out); 
     case TB_EF:    					     		return in; // Not applicable
     case TB_PFDA :  							return p4decx32( in, n, out);  //case TB_PFM:    vbxget32(in, x); 			return p4ddec32( in, n, out, x); 
-    case TB_PDI: { vbxget32(in, x); uint32_t mdelta; vbget32(in, mdelta); x = x << 5 | (mdelta & 31); in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta>>5); break; }
+    case TB_PDI: { uint32_t mdelta;  vbxget32(in, x); vbget32(in, mdelta); x = x << 5 | (mdelta & 31); in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta>>5); break; }
 
     case TB_FOR:    vbxget32(in, x); b = *in++; return bitfunpack32( in, n, out, x, b);
     case TB_FORDA:  vbxget32(in, x); b = *in++; return bitfunpackx32(in, n, out, x, b);      
@@ -621,9 +629,9 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_ZIGZAG32: memcpy(out, in, outlen); bitzdec32(out, n, 0); 			  	   return in + outlen;
 	  #endif
       //---- Floating point (64 bits)----------------------
-	case TB_FPPFOR64: return fppdec64(   in, PAD8(outlen), (double *)out); 
-	case TB_FPFFOR64: return fpfcmdec64( in, PAD8(outlen), (double *)out); 
-	case TB_FPDFOR64: return fpdfcmdec64(in, PAD8(outlen), (double *)out); 
+	case TB_FPPFOR64: ctou64(_out) = ctou64(in); return fppdec64(   in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in)); 
+	case TB_FPFFOR64: ctou64(_out) = ctou64(in); return fpfcmdec64( in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));; 
+	case TB_FPDFOR64: ctou64(_out) = ctou64(in); return fpdfcmdec64(in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));
     case TB_PF64:     return p4dec64(    in, PAD8(outlen), (uint64_t *)out);
     #include "ext/beplugd_.c"	  
   }
