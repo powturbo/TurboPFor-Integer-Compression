@@ -25,18 +25,22 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if defined(_MSC_VER) && _MSC_VER < 1600
+#include "vs/stdint.h"
+#else 
+#include <stdint.h>
+#endif
 //---- Last value Predictor 
-unsigned char *fppenc64(   double        *in, unsigned n, unsigned char *out);
-unsigned char *fppdec64(   unsigned char *in, unsigned n, double        *out);
+unsigned char *fppenc64(   uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
+unsigned char *fppdec64(   unsigned char *in, unsigned n, uint64_t      *out, uint64_t start);
 
 //---- FCM: Finite Context Method Predictor 
-unsigned char *fpfcmenc64( double        *in, unsigned n, unsigned char *out);
-unsigned char *fpfcmdec64( unsigned char *in, unsigned n, double        *out);
+unsigned char *fpfcmenc64( uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
+unsigned char *fpfcmdec64( unsigned char *in, unsigned n, uint64_t      *out, uint64_t start);
 
 // DFCM: Differential Finite Context Method Predictor 
-unsigned char *fpdfcmenc64(double        *in, unsigned n, unsigned char *out);
-unsigned char *fpdfcmdec64(unsigned char *in, unsigned n, double        *out);
+unsigned char *fpdfcmenc64(uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
+unsigned char *fpdfcmdec64(unsigned char *in, unsigned n, uint64_t      *out, uint64_t start);
 
 #ifdef __cplusplus
 }
