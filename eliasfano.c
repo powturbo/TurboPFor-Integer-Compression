@@ -24,7 +24,6 @@
 
 //    eliasfano.c - "Integer Compression" Elias Fano
 #ifndef USIZE
-#include <stdint.h>
 #include <string.h>
   #ifdef __SSE2__
 #include <emmintrin.h>
@@ -135,15 +134,19 @@
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
 
-unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
-  if(!n) return out; 
-  uint_t *ip, e = EFE(in,n-1,start);					 		
-  if(!e) { out[0] = 0; return out+1; }	
-  
+unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { 
+  uint_t *ip, e,x,hl,i;					 		
   unsigned char *op;
-  unsigned lb = TEMPLATE2(bsr, USIZE)(e/n); uint_t x = ((uint_t)1 << lb)-1, hl = PAD8((e>>lb)+n),i; 
+  unsigned lb;
+  uint_t _pa[1024+64],*pa=_pa;										
+  if(!n) return out; 
+  if(n > 1024) pa = malloc(sizeof(pa[0])*(n+64));    if(!pa) die("efanoenc:malloc error size=%d ", n);
+  e = EFE(in,n-1,start);
+  if(!e) { out[0] = 0; if(pa != _pa) free(pa);return out+1; }	
   
-  uint_t pa[n+64];  					
+  lb = TEMPLATE2(bsr, USIZE)(e/n); 
+  x = ((uint_t)1 << lb)-1; hl = PAD8((e>>lb)+n); 
+  
   for(i = 0; i != n&~3;) {
     pa[i] = EFE(in,i,start) & x; ++i;
     pa[i] = EFE(in,i,start) & x; ++i;
@@ -162,15 +165,16 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
     x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
   }
   while(i < n) x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7),++i;
+  if(pa != _pa) free(pa);
   return op+hl;
 }
 
 unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
-  if(!n) 
-	return in;
   unsigned char *ip = in;  																										
   unsigned      i,j,lb = *ip++;           	
   uint64_t      b,x; 
+  if(!n) 
+	return in;
    
   if(!lb) { 
       #if defined(__SSE2__) && USIZE == 32
