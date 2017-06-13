@@ -23,6 +23,7 @@ NCODEC1=1
 NCODEC2=1
 else
 NSIMD=0
+CFLAGS+=-DUSE_SEE
 endif
 
 ifeq ($(AVX2),1)
@@ -40,7 +41,7 @@ CFLAGS+=-D__int64_t=int64_t
 else
   UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS+=-lpthread -lrt -lz
+LDFLAGS+=-lpthread -lrt 
 endif
 endif
 
@@ -85,7 +86,7 @@ endif
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DNDEBUG -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
 CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
 
-all: icbench idxcr idxqry idxseg
+all: icbench idxcr idxqry idxseg ictest
 
 cpp: $(CPPF)
 	$(CC) -mavx2 $(MARCH) -E -P $(CPPF)
@@ -112,7 +113,7 @@ idxqryp.o: idxqry.c
 	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
 
 transpose.o: transpose.c
-	$(CC) -O3 $(CFLAGS) -c transpose.c -o transpose.o
+	$(CC) -O3 $(CFLAGS) -c -DUSE_SSE transpose.c -o transpose.o
 
 transpose_sse.o: transpose.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c transpose.c -o transpose_sse.o
@@ -229,6 +230,10 @@ icbench: $(OB) icbench.o plugins.o
 
 idxseg:   idxseg.o $(ICLIB)
 	$(CC) $^ $(LDFLAGS) -o idxseg
+
+ictest:   ictest.o $(ICLIB)
+	$(CC) $^ $(LDFLAGS) -o ictest
+
 
 ifeq ($(UNAME), Linux)
 para: CFLAGS += -DTHREADMAX=32	
