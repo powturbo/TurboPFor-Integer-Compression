@@ -34,23 +34,28 @@
   #elif defined(__SSE2__)
 #include <emmintrin.h>
   #endif
+#pragma warning( disable : 4005) 
+  
 #include "conf.h"
 #include "transpose.h"
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+512)
+
+#define PREFETCH(_ip_) __builtin_prefetch(_ip_+512,0)
 //#define PREFETCH(ip)
 
 #define powof2(n) !((n)&((n)-1))
-
+ 
 #define TPENC tpenc
 #define TPDEC tpdec
 
 #define ESIZE 3
 #define STRIDE ESIZE
 #include "transpose.c"
+#undef ESIZE
 
 #define ESIZE 16
 #define STRIDE ESIZE
 #include "transpose.c"
+#undef ESIZE
 
 #define ESIZE 2
 
@@ -65,6 +70,7 @@
 #define TPENC256V   tpenc256v
 #define TPDEC256V 	tpdec256v
 #include "transpose.c"
+#undef STRIDE
 
 #define STRIDE 4
 #define TPENC128V   tp4enc128v
@@ -72,6 +78,7 @@
 #define TPENC256V   tp4enc256v
 #define TPDEC256V 	tp4dec256v
 #include "transpose.c"
+#undef ESIZE
 
 #define ESIZE 4
 
@@ -81,6 +88,7 @@
 #define TPENC256V   tpenc256v
 #define TPDEC256V 	tpdec256v
 #include "transpose.c"
+#undef STRIDE
 
 #define STRIDE 8
 #define TPENC128V   tp4enc128v
@@ -88,6 +96,8 @@
 #define TPENC256V   tp4enc256v
 #define TPDEC256V 	tp4dec256v
 #include "transpose.c"
+#undef ESIZE
+#undef STRIDE
 
 #define ESIZE 8
 
@@ -97,6 +107,7 @@
 #define TPENC256V   tpenc256v
 #define TPDEC256V 	tpdec256v
 #include "transpose.c"
+#undef STRIDE
 
 #define STRIDE 16
 #define TPENC128V   tp4enc128v
@@ -106,7 +117,7 @@
 #include "transpose.c"
 
 //--------------------- CPU detection -------------------------------------------
-#if defined(_MSC_VER) || defined (__INTEL_COMPILER)
+#if (_MSC_VER >=1300) || defined (__INTEL_COMPILER)
 #include <intrin.h>
 #endif
 
@@ -119,8 +130,8 @@ static inline void cpuid(int reg[4], int id) {
     #endif
 }
 
-static inline unsigned long long xgetbv (int ctr) {	
-    #if(defined _MSC_VER || defined __INTEL_COMPILER)
+static inline uint64_t xgetbv (int ctr) {	
+    #if(defined _MSC_VER && (_MSC_FULL_VER >= 160040219) || defined __INTEL_COMPILER)
   return _xgetbv(ctr);                                  
     #elif defined(__i386__) || defined(__x86_64__)
   unsigned a, d;
@@ -128,15 +139,15 @@ static inline unsigned long long xgetbv (int ctr) {
     #else  
   unsigned a=0, d=0;
     #endif
-  return (unsigned long long)d << 32 | a;
+  return (uint64_t)d << 32 | a;
 }
 
 static int _cpuiset;                                  
 int cpuini(int cpuiset) { if(cpuiset) _cpuiset = cpuiset; return _cpuiset; }
 char *cpustr(int cpuiset) { 
        if(_cpuiset >= 52) return "avx2";
-  else if(_cpuiset >= 31) return "sse3";
   else if(_cpuiset >= 41) return "sse4.1";
+  else if(_cpuiset >= 31) return "sse3";
   else if(_cpuiset >= 20) return "ss2";
   else return "none";
 }
@@ -169,16 +180,22 @@ int cpuiset(void) {
 //---------------------------------------------------------------------------------
 typedef void (*TPFUNC)( unsigned char *in, unsigned n, unsigned char *out);
 
-static TPFUNC _tpe[]  = { 0, 0, tpenc2, 	 tpenc3, tpenc4,      0, 0, 0, tpenc8, 	    0, 0, 0, 0, 0, 0, 0, tpenc16 };
-static TPFUNC _tpd[]  = { 0, 0, tpdec2, 	 tpdec3, tpdec4,      0, 0, 0, tpdec8, 	    0, 0, 0, 0, 0, 0, 0, tpdec16 };
-static TPFUNC _tp4e[] = { 0, 0, tp4enc128v2, tpenc3, tp4enc128v4, 0, 0, 0, tp4enc128v8, 0, 0, 0, 0, 0, 0, 0, tpenc16 }; // Nibble
-static TPFUNC _tp4d[] = { 0, 0, tp4enc128v2, tpdec3, tp4dec128v4, 0, 0, 0, tp4enc128v8, 0, 0, 0, 0, 0, 0, 0, tpdec16 };
+                       // 0  1       2       3       4      5  6  7       8  9                    16 
+static TPFUNC _tpe[]  = { 0, 0, tpenc2, tpenc3, tpenc4,		0, 0, 0, tpenc8, 0, 0, 0, 0, 0, 0, 0, tpenc16 };
+static TPFUNC _tpd[]  = { 0, 0, tpdec2, tpdec3, tpdec4,		0, 0, 0, tpdec8, 0, 0, 0, 0, 0, 0, 0, tpdec16 };
+ 
+  #ifdef USE_SSE
+static TPFUNC _tp4e[] = { 0, 0, tpenc2, tpenc3, tpenc4,   	0, 0, 0, tpenc8, 0, 0, 0, 0, 0, 0, 0, tpenc16 }; // Nibble
+static TPFUNC _tp4d[] = { 0, 0, tpdec2, tpdec3, tpdec4,    	0, 0, 0, tpdec8, 0, 0, 0, 0, 0, 0, 0, tpdec16 };
+  #endif
+
 static int tpset;
  
 void tpini(int id) { 
+  int i; 
   if(tpset) return; 
   tpset++;   
-  int i = id?id:cpuiset();
+  i = id?id:cpuiset();
   #if defined(USE_AVX2)
   if(i >= 52) {  
     _tpe[2] = tpenc256v2; _tpd[2] = tpdec256v2; _tp4e[2] = tp4enc256v2; _tp4d[2] = tp4dec256v2; 
@@ -186,7 +203,7 @@ void tpini(int id) {
     _tpe[8] = tpenc256v8; _tpd[8] = tpdec256v8; _tp4e[8] = tp4enc256v8; _tp4d[8] = tp4dec256v8; 
   } else 
   #endif
-  #if defined(USE_SSE)
+  #ifdef USE_SSE
   if(i >= 20) {
     _tpe[2] = tpenc128v2; _tpd[2] = tpdec128v2; _tp4e[2] = tp4enc128v2; _tp4d[2] = tp4dec128v2;
     _tpe[4] = tpenc128v4; _tpd[4] = tpdec128v4; _tp4e[4] = tp4enc128v4; _tp4d[4] = tp4dec128v4;
@@ -196,8 +213,9 @@ void tpini(int id) {
   ;
 }
 
-void tpenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { if(!tpset) tpini(0);                                   
+void tpenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
   TPFUNC f;	
+  if(!tpset) tpini(0);                                   
   if(esize <= 16 && (f = _tpe[esize])) f(in,n,out);
   else {
     unsigned i, stride=n/esize; 
@@ -210,8 +228,9 @@ void tpenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
   }
 }  
 
-void tpdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { if(!tpset) tpini(0); 
+void tpdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
   TPFUNC f;	
+  if(!tpset) tpini(0); 
   if(esize <= 16 && (f = _tpd[esize])) f(in,n,out);	
   else {
     unsigned i,stride=n/esize; 
@@ -224,21 +243,25 @@ void tpdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
   }
 }  
 
-void tp4enc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { if(!tpset) tpini(0); 
+  #ifdef USE_SSE
+void tp4enc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
   TPFUNC f;
+  if(!tpset) tpini(0); 
   if(esize <= 16 && (f = _tp4e[esize])) f(in,n,out);
   else tpenc(in,n,out,esize);
 }  
 
-void tp4dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { if(!tpset) tpini(0); 
+void tp4dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
   TPFUNC f;
+  if(!tpset) tpini(0); 
   if(esize <= 16 && (f = _tp4d[esize])) f(in,n,out);
   else tpdec(in,n,out,esize);  
 }
+  #endif
 #endif
 
 #else
-
+	
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
   #if STRIDE == ESIZE
 void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
