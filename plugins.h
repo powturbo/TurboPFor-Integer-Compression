@@ -47,6 +47,7 @@ struct plugg {
   #ifdef __cplusplus
 extern "C" {
   #endif
+extern struct plugg plugg[];
 extern struct codecs codecs[];
 extern struct plugs plugs[];
 int  codini(size_t insize, int codec);
