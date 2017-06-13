@@ -24,7 +24,6 @@
 // "Integer Compression" variable byte include header 
 #ifndef VINT_H
 #define VINT_H
-#include <stdint.h>
 #include "conf.h"
 
 #ifdef __cplusplus
@@ -145,8 +144,8 @@ extern unsigned char _vtab32_[];
 #define fgetc_unlocked(_f_) 	 _IO_getc_unlocked(_f_)
 #endif
 
-#define leb128put(_op_, _x_)  { typeof(_x_) _x = _x_; while(_x > 0x7f) { *_op_++ =      _x & 0x7f;       _x >>= 7; }  *_op_++ =     _x | 0x80; }
-#define vbfput32(_f_,  _x_)  ({ typeof(_x_) _x = _x_; while(_x > 0x7f) { fputc_unlocked(_x & 0x7f, _f_); _x >>= 7; } fputc_unlocked(_x | 0x80, _f_); })
+#define leb128put(_op_, _x_)  { uint64_t _x = _x_; while(_x > 0x7f) { *_op_++ =      _x & 0x7f;       _x >>= 7; }  *_op_++ =     _x | 0x80; }
+#define vbfput32(_f_,  _x_)  ({ uint64_t _x = _x_; while(_x > 0x7f) { fputc_unlocked(_x & 0x7f, _f_); _x >>= 7; } fputc_unlocked(_x | 0x80, _f_); })
 
 #define _leb128get(_ip_, _x_, _act_) { unsigned _sft=0; for(_x_=0;;_sft += 7) { unsigned _c = *_ip_++; _x_ += (_c & 0x7f) << _sft; if(_c >= 0x80) { _act_; break; } } }
 #define leb128get(_ip_, _x_) vbgetax(_ip_, _x_, ;)
