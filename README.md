@@ -7,19 +7,16 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * No other "Integer Compression" compress/decompress faster
   * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Zigzag for sorted/unsorted arrays
 * **For/PFor/PForDelta**
-  * **Novel** **"TurboPFor"** (PFor/PForDelta) scheme w./ **direct access**.
+  * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**.
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
   * Compress 70 times faster and decompress up to 4 times faster than OptPFD
-  * :new: **TurboPFor AVX2, now 50%! more faster!!!!**
   * :new: **TurboPFor Hybrid, better compression and more faster**
 * **Bit Packing**
-  * :sparkles: Fastest and most efficient **"SIMD Bit Packing"**
-  * :new: TurboPack AVX2 more faster. **Decoding 10 Billions intergers/seconds (40Gb/s)**
-  * :new: more faster. Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+  * :sparkles: Fastest and most efficient **"SIMD Bit Packing"** **10 Billions integers/sec (40Gb/s)**
+  * Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
   * :sparkles: Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
-  * :new: **new scheme : better compression and 30% faster**
 * **Simple family**
   * :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
@@ -35,7 +32,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * **Novel** Implicit skips with zero extra overhead
   * **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
   * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
-  * :sparkles: Revolutionary Parallel Query Processing on Multicores w/ more than **7000!!! queries/sec** on a simple quad core PC.<br>
+  * :sparkles: Revolutionary Parallel Query Processing on Multicores **> 7000!!! queries/sec** on a simple quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Integer Compression Benchmark:
@@ -180,6 +177,8 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
   		git clone --recursive git://github.com/powturbo/TurboPFor.git
         cd TurboPFor
+
+###### Linux, Windows (MingW), Clang,...
   		make
 
   		or
@@ -188,6 +187,11 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
         Minimum build w/ TurboPFor scalar functions
         make NSIMD=1
+
+###### Windows visual c++ 
+
+        nmake /f makefile.vs
+
 
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
@@ -346,7 +350,7 @@ header files to use with documentation:<br />
 ###### OS/Compiler (64 bits):
 - Linux: GNU GCC (>=4.6)
 - clang (>=3.2)
-- Windows: MinGW-w64 (no parallel query processing)
+- Windows: MinGW-w64 + Visual c++ (no parallel query processing app)
 
 ###### Multithreading:
 - All TurboPFor integer compression functions are thread safe
@@ -377,5 +381,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  19 MAR 2017
+Last update:  13 JUN 2017
 
