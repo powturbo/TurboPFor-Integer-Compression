@@ -22,7 +22,11 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //     "Integer Compression: max.bits, delta, zigzag, xor"
+#if defined(_MSC_VER) && _MSC_VER < 1600
+#include "vs/stdint.h"
+#else 
 #include <stdint.h>
+#endif
 
 #define BITFORSET_(_out_, _n_, _start_, _mindelta_) do { unsigned _i;\
   for(_i = 0; _i != (_n_&~3); _i+=4) {\
@@ -35,7 +39,7 @@
     _out_[_i] = _start_+_i*_mindelta_, ++_i;\
 } while(0)
 
-#define BITSIZE_(_in_, _n_, _b_, _usize_) { typeof(_in_[0]) *_ip,_u=0;\
+#define BITSIZE_(_in_, _n_, _b_, _usize_) { TEMPLATE3(uint, _usize_, _t) *_ip,_u=0;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
     _u |= _ip[0] | _ip[1] | _ip[2] | _ip[3];\
   while(_ip != _in_+_n_) \
@@ -101,7 +105,7 @@ static inline uint64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
   #endif 
 
     #if defined(__AVX2__) && defined(USE_AVX2)
-#define BITSIZE32(_in_, _n_, _b_) { typeof(_in_[0]) *_ip; __m256i _v = _mm256_setzero_si256();\
+#define BITSIZE32(_in_, _n_, _b_) { unsigned *_ip; __m256i _v = _mm256_setzero_si256();\
   for(_ip = _in_; _ip != _in_+(_n_&~(8-1)); _ip+=8)\
     _v = _mm256_or_si256(_v, _mm256_loadu_si256((__m256i*)_ip));\
   HOR256x32(_v,_b_);\
@@ -126,7 +130,7 @@ static inline uint64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
 } while(0)
 
   #elif defined(__SSE2__) // ------------- 
-#define BITSIZE32(_in_, _n_, _b_) { typeof(_in_[0]) *_ip; __m128i _v = _mm_setzero_si128();\
+#define BITSIZE32(_in_, _n_, _b_) { unsigned *_ip; __m128i _v = _mm_setzero_si128();\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
     _v = _mm_or_si128(_v, _mm_loadu_si128((__m128i*)_ip));\
   HOR128x32(_v,_b_);\
