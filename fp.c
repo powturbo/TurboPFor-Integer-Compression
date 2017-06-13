@@ -34,7 +34,7 @@
 #define DEC64(u,h) zigzagdec64(u)+h
 
 //---- Last value Predictor 
-unsigned char *fppenc64(double *in, unsigned n, unsigned char *out) {
+unsigned char *fppenc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t start) {
   uint64_t      *ip, h = 0, _p[VSIZE], *p;
   unsigned char *op = out;
   
@@ -50,24 +50,24 @@ unsigned char *fppenc64(double *in, unsigned n, unsigned char *out) {
   return op;
 }
 
-unsigned char *fppdec64(unsigned char *in, unsigned n, double *out) {
-  uint64_t      *op, h = 0, _p[VSIZE+32],*p;
+unsigned char *fppdec64(unsigned char *in, unsigned n, uint64_t *out, uint64_t start) {
+  uint64_t      *op, h = 0, _p[VSIZE+32],*p; 
   unsigned char *ip = in;
 
   #define FD64(i) { uint64_t u = DEC64(p[i],h); op[i] = u; h = u; }
-  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); )
-	for(ip = p4dec64(ip, VSIZE, _p), __builtin_prefetch(ip+512, 0), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
-
+  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); ) { __builtin_prefetch(ip+512, 0);
+	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
+  }
   if(n = ((uint64_t *)out+n) - op)
 	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD64(0);
   return ip;
 }
 
 #define HBITS 13 //15
-#define HASH64(_h_,_u_) ((_h_<<5) ^ ((_u_)>>50)) & ((1u<<HBITS)-1)
+#define HASH64(_h_,_u_) (((_h_)<<5 ^ (_u_)>>50) & ((1u<<HBITS)-1))
 
 //---- FCM: Finite Context Method Predictor 
-unsigned char *fpfcmenc64(double *in, unsigned n, unsigned char *out) {
+unsigned char *fpfcmenc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t start) {
   uint64_t      *ip, htab[1<<HBITS] = {0}, h = 0, _p[VSIZE], *p;
   unsigned char *op = out;
   
@@ -83,25 +83,25 @@ unsigned char *fpfcmenc64(double *in, unsigned n, unsigned char *out) {
   return op;
 }
 
-unsigned char *fpfcmdec64(unsigned char *in, unsigned n, double *out) {
-  uint64_t      *op, htab[1<<HBITS] = {0}, h = 0, _p[VSIZE+32],*p;
+unsigned char *fpfcmdec64(unsigned char *in, unsigned n, uint64_t *out, uint64_t start) {
+  uint64_t      *op, htab[1<<HBITS] = {0}, h = 0, _p[VSIZE+32],*p; 
   unsigned char *ip = in;
 
   #define FD64(i) { uint64_t u = DEC64(p[i], htab[h]); op[i] = u; htab[h] = u; h = HASH64(h,u); }
-  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); )
-	for(ip = p4dec64(ip, VSIZE, _p), __builtin_prefetch(ip+512, 0), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
-
+  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); ) { __builtin_prefetch(ip+512, 0);
+	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
+  }
   if(n = ((uint64_t *)out+n) - op)
 	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD64(0);
   return ip;
 }
 
 // DFCM: Differential Finite Context Method Predictor 
-unsigned char *fpdfcmenc64(double *in, unsigned n, unsigned char *out) {
-  uint64_t      htab[1<<HBITS] = {0}, _p[VSIZE+32], *ip, h = 0, v = 0,*p;
+unsigned char *fpdfcmenc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t start) {
   unsigned char *op = out;
+  uint64_t       _p[VSIZE+32], *ip, h = 0, *p, htab[1<<HBITS] = {0}; htab[0] = start ;
   
-  #define DE64(i) { uint64_t u = ip[i]; p[i] = ENC64(u, (htab[h]+v)); htab[h] = u - v; h = HASH64(h,u-v); v = u; } 
+  #define DE64(i) { uint64_t u = ip[i]; p[i] = ENC64(u, (htab[h]+start)); htab[h] = start = u - start; h = HASH64(h,start); start = u; } 
   for(ip = (uint64_t *)in; ip != in + (n&~(VSIZE-1)); ) {  		
     for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { DE64(0); DE64(1); DE64(2); DE64(3); }  
 	op = p4enc64(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
@@ -114,14 +114,14 @@ unsigned char *fpdfcmenc64(double *in, unsigned n, unsigned char *out) {
   return op;
 }
 
-unsigned char *fpdfcmdec64(unsigned char *in, unsigned n, double *out) {
-  uint64_t      htab[1<<HBITS] = {0}, _p[VSIZE+32], *op, h = 0, v = 0, *p;
+unsigned char *fpdfcmdec64(unsigned char *in, unsigned n, uint64_t *out, uint64_t start) {
   unsigned char *ip = in;
+  uint64_t      _p[VSIZE+32], *op, h = 0, *p, htab[1<<HBITS] = {0}; htab[0] = start;
 
-  #define DD64(i) { uint64_t u = DEC64(p[i], (htab[h]+v)); op[i] = u; htab[h] = u-v; h = HASH64(h,u-v); v = u; }
-  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); )
-	for(ip = p4dec64(ip, VSIZE, _p), __builtin_prefetch(ip+512, 0), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { DD64(0); DD64(1); DD64(2); DD64(3); }
-
+  #define DD64(i) { uint64_t u = DEC64(p[i], (htab[h]+start)); op[i] = u; htab[h] = start = u-start; h = HASH64(h,start); start = u; }
+  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); ) { __builtin_prefetch(ip+512, 0);
+	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { DD64(0); DD64(1); DD64(2); DD64(3); }
+  }
   if(n = ((uint64_t *)out+n) - op)
 	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) DD64(0);
   return ip;
