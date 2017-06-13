@@ -47,6 +47,10 @@
 #include "bitpack.h"
 #include "vp4.h"
 #include "idx.h"
+#ifndef min
+#define min(x,y) (((x)<(y)) ? (x) : (y))
+#define max(x,y) (((x)>(y)) ? (x) : (y))
+#endif
 
 #ifdef NSIMD
 #define bitd1unpack128v32 bitd1unpack32
