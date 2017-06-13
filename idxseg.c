@@ -31,6 +31,12 @@
  
 #include <getopt.h>
 #include "conf.h"
+
+#ifndef min
+#define min(x,y) (((x)<(y)) ? (x) : (y))
+#define max(x,y) (((x)>(y)) ? (x) : (y))
+#endif
+
 unsigned argtoi(char *s) {
   char *p; unsigned n = strtol(s, &p, 10),f=1;
   switch(*p) {
