@@ -33,7 +33,7 @@ unsigned bit64(uint64_t *in, unsigned n) { uint64_t b; BITSIZE_( in, n, b, 64); 
 
 //------------ Delta ----------------------------------
 #define DE(i) x = _p[i]-start-_md; start = _p[i]
-#define BITDE(_t_, _p_, _n_, _md_, _act_) { _t_ *_p; const _md = _md_;\
+#define BITDE(_t_, _p_, _n_, _md_, _act_) { _t_ *_p, _md = _md_;\
   for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { DE(0);_act_; DE(1);_act_; DE(2);_act_; DE(3);_act_; }\
   for(;_p != _p_+_n_;_p++) { DE(0); _act_; }\
 }
@@ -60,8 +60,8 @@ unsigned bitd32(uint32_t *in, unsigned n, uint32_t start) {
 	b |= x; 
   }
     #else
-  uint32_t b = 0,_x,*_p;
-  BITDE(in,n, 0, start, b |= _x);
+  uint32_t b = 0,x;
+  BITDE(uint32_t,in,n, 0, b |= x);
     #endif
   return bsr32(b); 
 }
@@ -130,7 +130,7 @@ unsigned bitd132(uint32_t *in, unsigned n, uint32_t start) {
   }
     #else
   uint32_t b = 0,x; 
-  BITDE(uint32_t, in, n, 1, b |= _x);
+  BITDE(uint32_t, in, n, 1, b |= x);
 	#endif
   return bsr32(b); 
 }
@@ -252,7 +252,7 @@ unsigned bitz32(unsigned *in, unsigned n, unsigned start) {
   }
     #else
   uint32_t b = 0, x; 
-  BITZENC(uint32_t, in, n, start, b |= _x);
+  BITZENC(uint32_t, in, n, start, b |= x);
     #endif
   return bsr32(b);
 }
@@ -363,4 +363,4 @@ void bitxdec64(uint64_t *p, unsigned n, uint64_t start) { BITXDEC(uint64_t, p, n
 unsigned bitfm8( uint8_t  *in, unsigned n, uint8_t  *pmin) { uint8_t  mi,mx; BITFM(uint8_t,  in, n); *pmin = mi; return bsr8( mx - mi); }
 unsigned bitfm16(uint16_t *in, unsigned n, uint16_t *pmin) { uint16_t mi,mx; BITFM(uint16_t, in, n); *pmin = mi; return bsr16(mx - mi); }
 unsigned bitfm32(uint32_t *in, unsigned n, uint32_t *pmin) { uint32_t mi,mx; BITFM(uint32_t, in, n); *pmin = mi; return bsr32(mx - mi); }
-unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BITFM(uint16_t, in, n); *pmin = mi; return bsr64(mx - mi); }
+unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BITFM(uint64_t, in, n); *pmin = mi; return bsr64(mx - mi); }
