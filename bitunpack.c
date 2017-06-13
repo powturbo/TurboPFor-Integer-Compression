@@ -22,7 +22,6 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/  
 //   "Integer Compression" Bit Packing 
-#include <stdint.h> 
 #include "conf.h" 
 #include "bitutil.h" 
 #include "bitpack.h"
@@ -43,7 +42,7 @@ typedef unsigned char *(*BITUNPACK_D32)(const unsigned char *__restrict in, unsi
 typedef unsigned char *(*BITUNPACK_F64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out);
 typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
    
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+512)//#define PREFETCH(ip)
+#define PREFETCH(_ip_) __builtin_prefetch(_ip_+512,0)//#define PREFETCH(ip)
   
   #if 0
 #define OP(_op_, _x_) *_op_++
@@ -84,21 +83,21 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 
 #define BITNUNPACK(in, n, out, csize, usize) {\
   unsigned char *ip = in;\
-  for(op = out,out+=n; op < out;) { unsigned oplen = out - op; if(oplen > csize) oplen = csize;		__builtin_prefetch(in+512);\
-    unsigned b = *ip++; ip = TEMPLATE2(bitunpacka, usize)[b](ip, csize, op);\
-	op += csize;\
+  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > csize) oplen = csize;		__builtin_prefetch(in+512);\
+    b = *ip++; ip = TEMPLATE2(bitunpacka, usize)[b](ip, oplen, op);\
+	op += oplen;\
   } \
   return ip - in;\
 }
 
 #define BITNDUNPACK(in, n, out, csize, usize, _bitunpacka_) {\
-  if(!n) return 0;\
   unsigned char *ip = in;\
+  if(!n) return 0;\
   TEMPLATE2(vbxget, usize)(ip, start); \
   *out++ = start;\
-  for(--n,op = out,out+=n; op < out;) { unsigned oplen = out - op; if(oplen > csize) oplen = csize;		__builtin_prefetch(ip+512);\
-    unsigned b = *ip++; ip = TEMPLATE2(_bitunpacka_, usize)[b](ip, csize, op, start);\
-	op += csize;\
+  for(--n,op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > csize) oplen = csize;		PREFETCH(ip+512);\
+    b = *ip++; ip = TEMPLATE2(_bitunpacka_, usize)[b](ip, oplen, op, start);\
+	op += oplen;\
     start = op[-1];\
   } return ip - in;\
 }
@@ -179,7 +178,7 @@ unsigned char *bitunpack128v32( const unsigned char *__restrict in, unsigned n, 
 //------------------------------SSE -----------------------------------------------
   #ifdef __SSSE3__
 #include <tmmintrin.h>
-static ALIGNED(char, shuffles[16][16], 16) = {
+static char shuffles[16][16] = {
   #define _ 0x80
         { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
         { 0,1,2,3, _,_,_,_, _,_, _, _,  _, _, _,_  },
