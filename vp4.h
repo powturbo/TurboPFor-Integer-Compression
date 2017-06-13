@@ -24,12 +24,16 @@
 //  "TurboPFor: Integer Compression" PFor/PForDelta  + Direct access
 #ifndef VP4_H_
 #define VP4_H_
+#if defined(_MSC_VER) && _MSC_VER < 1600
+#include "vs/stdint.h"
+#else 
+#include <stdint.h>
+#endif
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <stdint.h>
-#include <stddef.h>
 //************************************************ High level API - n unlimited ****************************************************
 // Compress integer array with n values to the buffer out. 
 // Return value = number of bytes written to compressed buffer out
@@ -232,6 +236,7 @@ unsigned char *p4zdec64(      unsigned char *__restrict in, unsigned n, uint64_t
 
 //---------------- Direct Access functions to compressed TurboPFor array p4encx16/p4encx32 -------------------------------------------------------
   #ifndef NTURBOPFOR_DAC
+#include "conf.h"
 #define P4D_PAD8(_x_) 		( (((_x_)+8-1)/8) )
 #define P4D_B(_x_)  		((_x_) & 0x7f)
 #define P4D_XB(_x_)  		(((_x_) & 0x80)?((_x_) >> 8):0)
@@ -256,12 +261,12 @@ static inline void p4ini(struct p4 *p4, unsigned char **pin, unsigned n, unsigne
   p4->bx        = P4D_XB(p4i); 				//printf("p4i=%x,b=%d,bx=%d ", p4->i, *b, p4->bx);						  //assert(n <= P4D_MAX);
   *pin = p4->ex = ++in; 
   if(p4->isx) { 
+    unsigned num=0,j; 
+    unsigned char *p;
     ++in;
     p4->xmap = (uint64_t *)in;
-    unsigned num=0,j; 
     for(j=0; j < n/64; j++) { p4->cum[j] = num; num += popcnt64(ctou64(in+j*8)); } 
     if(n & 0x3f) num += popcnt64(ctou64(in+j*8) & ((1ull<<(n&0x3f))-1) );
-    unsigned char *p;
     p4->ex = p = in + (n+7)/8; 				
     *pin   = p = p4->ex+(((uint64_t)num*p4->bx+7)/8); 
   } else p4->xmap = p4xmap;
