@@ -26,7 +26,7 @@
   #ifdef __SSE2__
 #include <emmintrin.h>
   #endif
-#include <stdint.h>
+#include "conf.h"
 #include "vsimple.h"
 
   #ifndef SV_LIM32
@@ -110,7 +110,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         } else *op++ = r<<4; 
         break;
       case 1:
-        *(unsigned *)op =    1 |
+        ctou32(op)      =    1 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] <<  5 |
         (unsigned)ip[ 2] <<  6 |
@@ -141,7 +141,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (unsigned)ip[27] << 31;		ip += 28; op += 4;
         break;
       case 2: 
-        *(unsigned *)op =    2 |
+        ctou32(op)      =    2 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] <<  6 |
         (unsigned)ip[ 2] <<  8 |
@@ -158,7 +158,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (unsigned)ip[13] << 30;		ip += 14; op += 4;
         break;
       case 3: 
-        *(unsigned *)op =    3 |
+        ctou32(op)      =    3 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] <<  7 |
         (unsigned)ip[ 2] << 10 |
@@ -170,7 +170,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (unsigned)ip[ 8] << 28;		ip +=  9; op += 4;
         break;
       case 4: 
-        *(uint64_t *)op =    4 |
+        ctou64(op) =         4 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] <<  8 |
         (unsigned)ip[ 2] << 12 |
@@ -180,7 +180,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (unsigned)ip[ 6] << 28;		ip += 7; op += 4;
         break;
       case 5: 
-        *(uint64_t *)op =    5 |
+        ctou64(op) =    5 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] <<  9 |
         (unsigned)ip[ 2] << 14 |
@@ -190,7 +190,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (uint64_t)ip[ 6] << 34;		ip += 7; op += 5;
         break;
       case 6: 
-        *(uint64_t *)op =    6 |
+        ctou64(op) =         6 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] << 10 |
         (unsigned)ip[ 2] << 16 |
@@ -199,7 +199,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (uint64_t)ip[ 5] << 34; 	ip +=  6; op += 5;
         break;
       case 7: 
-        *(uint64_t *)op =    7 |
+        ctou64(op) =         7 |
         (unsigned)ip[ 0] <<  5 | 
         (unsigned)ip[ 1] << 12 |
         (unsigned)ip[ 2] << 19 |
@@ -208,14 +208,14 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         break;
       case  8: 
       case  9: 
-        *(uint64_t *)op =    9 |
+        ctou64(op) =         9 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] << 13 |
         (unsigned)ip[ 2] << 22 |
         (uint64_t)ip[ 3] << 31; 	ip += 4; op += 5;
         break;
       case 10:
-        *(uint64_t *)op =   10 |
+        ctou64(op) =        10 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] << 14 |
         (uint64_t)ip[ 2] << 24 |
@@ -226,7 +226,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
 
       case 11: 
       case 12: 
-        *(uint64_t *)op =   12 |
+        ctou64(op) =        12 |
         (unsigned)ip[ 0] <<  4 | 
         (unsigned)ip[ 1] << 16 |
         (uint64_t)ip[ 2] << 28 |
@@ -236,7 +236,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
       case 13:
       case 14:      
       case 15:
-        *(uint64_t *)op =   15 |
+        ctou64(op) =        15 |
         (unsigned)ip[ 0] <<  4 | 
         (uint64_t)ip[ 1] << 19 |
         (uint64_t)ip[ 2] << 34 |
@@ -249,7 +249,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
       case 19:      
       case 20: 
         #endif
-        *(uint64_t *)op =   11 |
+        ctou64(op) =        11 |
         (unsigned)ip[ 0] <<  4 | 
         (uint64_t)ip[ 1] << 24 |
         (uint64_t)ip[ 2] << 44; 	ip += 3; op += 8;
@@ -265,7 +265,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
       case 28:      
       case 29:
       case 30:
-        *(uint64_t *)op =   13 |
+        ctou64(op) =   13 |
         (uint64_t)ip[ 0] <<  4 | 
         (uint64_t)ip[ 1] << 34; 	ip += 2; op += 8;
         break;
@@ -274,13 +274,13 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
           #if USIZE == 64
       case 33: case 34: case 35: case 36:
           #endif
-        *(uint64_t *)op =   14 |
+        ctou64(op) =   14 |
         (uint64_t)ip[ 0] <<  4; 	ip++;    op += 5;
         break;
           #if USIZE == 64
-      case 37 ... 64: xm = (m+7)/8;        
+      default: xm = (m+7)/8;        
         *op++ =   0x17 | (xm-1) << 5;
-        *(uint64_t *)op = (uint64_t)ip[ 0]; ip++;   op += xm; 
+        ctou64(op) = (uint64_t)ip[ 0]; ip++;   op += xm; 
         break;
           #endif
         #endif
@@ -310,21 +310,23 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
 unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint_t *__restrict op) { 
   uint_t *op_ = op+n;
   while(op < op_) { 
-    register uint64_t w = *(uint64_t *)ip; __builtin_prefetch(ip+64, 0);
+    uint64_t w = *(uint64_t *)ip; 												__builtin_prefetch(ip+64, 0);
     switch(w & 0xf) {
       case 0: { 
-        unsigned r = (w>>4)&0xf; ip++; 
+        uint_t *q = op; 
+        unsigned r = (w>>4)&0xf; 
+          #ifdef __SSE2__
+        __m128i zv = _mm_setzero_si128();
+          #endif 
+		ip++; 
         if(unlikely(r == 0xf)) { 
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
           else { vbxget32(ip, r); }
         }          
-        uint_t *q = op; op += r+1; 
-          #if defined(__SSE2__)
-        __m128i zv = _mm_setzero_si128();
-          #endif 
+		op += r+1; 
         while(q < op) { 
-            #if defined(__SSE2__)
+            #ifdef __SSE2__
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
             #else
@@ -435,19 +437,22 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint
                                        
         #ifdef USE_RLE 
       case 8: { 
-        int r = (w>>4)&0xf; ip++; 
-        if(unlikely(r == 0xf)) { 
+        uint_t *q=op,u; 
+        int r = (w>>4)&0xf; 
+		ip++; 
+		if(unlikely(r == 0xf)) { 
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
           else { vbxget32(ip, r); }
         } 
-        uint_t *q=op,u; op += r+1; TEMPLATE2(vbxget, USIZE)(ip,u);  
+        op += r+1; TEMPLATE2(vbxget, USIZE)(ip,u);  
           #if defined(__SSE2__) && USIZE == 32
-        __m128i v = _mm_set1_epi32(u);
-        while(q < op) { 
-          _mm_storeu_si128((__m128i *)q,v); q += 4;
-          _mm_storeu_si128((__m128i *)q,v); q += 4;
-        }
+		{ __m128i v = _mm_set1_epi32(u);
+          while(q < op) { 
+            _mm_storeu_si128((__m128i *)q,v); q += 4;
+            _mm_storeu_si128((__m128i *)q,v); q += 4;
+          }
+		}
           #else
         while(q < op) { 
           q[0]=q[1]=q[2]=q[3]=q[4]=q[5]=q[6]=q[7]=u; q+=8; 
