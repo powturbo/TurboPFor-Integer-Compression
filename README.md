@@ -178,14 +178,15 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
   		git clone --recursive git://github.com/powturbo/TurboPFor.git
         cd TurboPFor
 
-###### Linux, Windows (MingW), Clang,...
-  		make
+###### Linux, Windows (MingW), Clang,... 		
+		make
+		or
+		make AVX2=1
 
-  		or
+        Disable external libs
+        make NCODEC1=1 NCODEC2=1 
 
-  		make AVX2=1
-
-        Minimum build w/ TurboPFor scalar functions
+        Disable SIMD
         make NSIMD=1
 
 ###### Windows visual c++ 
