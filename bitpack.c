@@ -29,6 +29,7 @@
 #include "vint.h"
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 
+#pragma warning( disable : 4090) 
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
@@ -41,7 +42,7 @@ typedef unsigned char *(*BITPACK_D32)(uint32_t *__restrict out, unsigned n, cons
 typedef unsigned char *(*BITPACK_F64)(uint64_t *__restrict out, unsigned n, const unsigned char *__restrict in);
 typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, const unsigned char *__restrict in, uint64_t start);
    
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+768)//#define PREFETCH(ip)
+#define PREFETCH(_ip_) __builtin_prefetch(_ip_+768,0)//#define PREFETCH(ip)
 
 #if 0
 #define IP0(_ip_,_x_) *_ip_
@@ -111,28 +112,27 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define BITNPACK(in, n, out, csize, usize) { unsigned char *op = out;\
   for(ip = in, in += n; ip < in;) { \
     unsigned iplen = in - ip,b;\
-    if(iplen > csize) iplen = csize;							__builtin_prefetch(ip+512);\
-    TEMPLATE2(BITSIZE,usize)(ip, csize, b);\
+    if(iplen > csize) iplen = csize;							PREFETCH(ip+512);\
+    TEMPLATE2(BITSIZE,usize)(ip, iplen, b);\
 	*op++ = b; \
 	op = TEMPLATE2(bitpacka, usize)[b](ip, csize, op); \
-	ip += csize;\
+	ip += iplen;\
   } \
   return op - out;\
 }
 
 #define BITNDPACK(in, n, out, csize, usize, _bitd_, _bitpacka_) {\
-  if(!n) return 0;\
   unsigned char *op = out; \
+  if(!n) return 0;\
   start = *in++; \
   TEMPLATE2(vbxput, usize)(op, start);\
-\
   for(ip = in,--n, in += n; ip < in;) { \
-    unsigned iplen = in - ip;\
-	if(iplen > csize) iplen = csize;								__builtin_prefetch(ip+512);\
-    typeof(in[0]) _in[csize+8];\
-    unsigned b = TEMPLATE2(_bitd_, usize)(ip, csize, start);\
+    unsigned iplen = in - ip,b;\
+    TEMPLATE3(uint, usize, _t) _in[csize+8];\
+	if(iplen > csize) iplen = csize;								PREFETCH(ip+512);\
+    b = TEMPLATE2(_bitd_, usize)(ip, iplen, start);\
     *op++ = b; op = TEMPLATE2(_bitpacka_, usize)[b](ip, csize, op, start);\
-	ip += csize;\
+	ip += iplen;\
     start = ip[-1];\
   } \
   return op - out;\
