@@ -67,7 +67,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |102074663| 25.5| 8.17|565|1052|[PC_Vbyte](#PolyCom)|
 |102083036| 25.5| 8.17|1300|1067|[FP_VByte](#FastPFor)|
 |112500000| 28.1| 9.00|382|**3035**|[VarintG8IU](#VarintG8IU)|
-|123415304| 30.9| 9.87|304.52|1927|[FP_GroupSimple](#FastPFor)|
+|123415304| 30.9| 9.87|304|1927|[FP_GroupSimple](#FastPFor)|
 |125000000| 31.2|10.00|1111|2948|[StreamVbyte](#StreamVByte)|
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
