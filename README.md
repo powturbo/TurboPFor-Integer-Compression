@@ -57,6 +57,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |73481096| 18.4| 5.88|156|2187|[FP_SimdFastPFor](#FastPFor) 64k *|
 |76345136| 19.1| 6.11|245|653|**VSimple**|
 |91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
+|93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64k*|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
 |99910930| 25.0| 7.99|**3494**|**2968**|**TurboPackV**|
 |99910930| 25.0| 7.99|2367|2351|**TurboPack**|
@@ -67,12 +68,11 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |102074663| 25.5| 8.17|565|1052|[PC_Vbyte](#PolyCom)|
 |102083036| 25.5| 8.17|1300|1067|[FP_VByte](#FastPFor)|
 |112500000| 28.1| 9.00|382|**3035**|[VarintG8IU](#VarintG8IU)|
-|123415304| 30.9| 9.87|304|1927|[FP_GroupSimple](#FastPFor)|
 |125000000| 31.2|10.00|1111|2948|[StreamVbyte](#StreamVByte)|
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
-(*) codec efficient only for large block size
+(*) codec efficient/usable only for large block size
 
 MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 **#BOLD** = pareto frontier.<br>
