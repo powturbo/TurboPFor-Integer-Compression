@@ -57,7 +57,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |73481096| 18.4| 5.88|156|2187|[FP_SimdFastPFor](#FastPFor) 64k *|
 |76345136| 19.1| 6.11|245|653|**VSimple**|
 |91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
-|93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64k*|
+|93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64k *|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
 |99910930| 25.0| 7.99|**3494**|**2968**|**TurboPackV**|
 |99910930| 25.0| 7.99|2367|2351|**TurboPack**|
