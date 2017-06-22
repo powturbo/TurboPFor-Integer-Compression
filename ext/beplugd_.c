@@ -38,6 +38,16 @@
       }
       return (unsigned char *)ip; 
     } 
+	case FP_GROUPSIMPLE:  { 	
+	  size_t nvalue = n;
+      FastPForLib::SIMDGroupSimple<false,false> ic; const uint32_t *ip = ic.decodeArray((const int32_t *)(in+4), ctou32(in), out, nvalue);
+      if(n & 127) { 
+        nvalue = n - nvalue;
+	    FastPForLib::VariableByte vc;
+		return (unsigned char *)vc.decodeArray(ip, (const uint32_t *)in+1+ctou32(in) - ip, out + (n&(~127)), nvalue);	  //return vbdec32((unsigned char *)ip, n & 127, out + mynvalue1);
+      }
+      return (unsigned char *)ip; 
+    }
 
     case FP_VBYTE:  //return vbytedec( in, n, out); 
 	  { size_t nvalue=n; FastPForLib::VariableByte ic;       return (unsigned char *)ic.decodeArray((const int32_t *)(in+4), ctou32(in), (uint32_t *)out, nvalue); }

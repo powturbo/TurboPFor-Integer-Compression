@@ -11,7 +11,13 @@
 #include "FastPFor/headers/simdfastpfor.h"
 #include "FastPFor/headers/optpfor.h"
 #include "FastPFor/headers/simdoptpfor.h"
-//#include "ext/FastPFor/headers/compositecodec.h"
+#ifndef min
+#define min(x,y) (((x)<(y)) ? (x) : (y))
+#endif
+#define _mm_store_si128 _mm_storeu_si128
+#define _mm_load_si128 _mm_loadu_si128
+#include "FastPFor/headers/simdgroupsimple.h"
+#undef min
   #endif
   
   #if C_SIMPLE8B
