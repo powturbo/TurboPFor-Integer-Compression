@@ -63,6 +63,9 @@
 #include <time.h>
 #include "conf.h"   
 #include "vint.h"
+#include "bitpack.h"
+#include "vsimple.h"
+#include "eliasfano.h"
 #include "vp4.h"
 #include "plugins.h"
 
@@ -1223,7 +1226,7 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
     n = 25000000;
   in  = malloc(n*4+OVD); 	if(!in)  die("malloc err=%u", n*4);
   out = malloc(n*5+OVD); 	if(!out) die("malloc err=%u", n*5);
-  cpy = malloc(n*4+OVD); if(!cpy) die("malloc err=%u", n*4);
+  cpy = malloc(n*4+OVD);    if(!cpy) die("malloc err=%u", n*4);
   s[0] = 0;                                                             printf("bittest: %u-%u, n=%u\n", rm, rx, n); fflush(stdout);
   for(b = rm; b <= min(rx,64); b++) {    
     struct plug *p;
@@ -1258,42 +1261,47 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
 #define RND64 ( (R64<<60) ^ (R64<<45) ^ (R64<<30) ^ (R64<<15) ^ (R64<<0) )
 #define NN (4*1024*1024)
 
-uint64_t in[NN+64],cpy[NN+64]; 
-unsigned char out[NN*10];
+uint64_t in[NN+256],cpy[NN+256]; 
+unsigned char out[NN*16];
 
 void vstest64(int id, int rm,int rx, unsigned n) {   
   unsigned b,i;																				fprintf(stderr,"64 bits test.n=%d ", n); 
  
   if(rx > 64) rx = 64;                                                            
-  if(n > NN) n = NN;
+  if(n > NN) n = NN;  																		//if(id==5) n = 128;
   for(b = rm; b <= rx; b++) {                                                 
-    uint64_t start = 0, msk = b==64?0xffffffffffffffffull:((1ull << b)-1);
+    uint64_t start = 0, msk = b==64?0xffffffffffffffffull:(((uint64_t)1 << b)-1);
     unsigned char *op;																		fprintf(stderr,"\nb=%d:", b);  
-    for(i = 0; i < n; i++) 
-      in[i] = be_rand?RND64:msk; //(/*start +=*/ RND64 & msk);								//fprintf(stderr, ".%llx ", in[0]); 
+    for(i = 0; i < n; i++) {
+      in[i] = be_rand?(RND64&msk):msk; //(/*start +=*/ RND64 & msk);						//fprintf(stderr, ".%llx ", in[0]); 
+      if(bsr64(in[i]) > b) die("Fatal error at b=%d ", b);
+    }
     in[0]   = msk;
     in[n-1] = msk;
     switch(id) { 
       case 0: op = vbenc64(   in, n, out);    break;
       case 1: op = bitpack64( in, n, out, b); break;
-      case 2: op = p4enc64(   in, n, out);    break;
-      case 3: op = vsenc64(   in, n, out);    break;
-      case 4: op = efanoenc64(in, n, out, 0); break;
+      case 2: op = out+bitnpack64(in, n, out); break;
+      case 3: op = p4enc64(   in, n, out);    break;
+      case 4: op = vsenc64(   in, n, out);    break;
+      //case 5: op = efanoenc64(in, n, out, 0); break;
     }
-    fprintf(stderr,"%d ", (int)(op-out) );     
+    fprintf(stderr,"%d ", (int)(op-out) );  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
     memrcpy(cpy, in, n*sizeof(in[0]));
     switch(id) {
       case 0: vbdec64(    out, n, cpy);      break;
       case 1: bitunpack64(out, n, cpy, b);   break;
-      case 2: p4dec64(    out, n, cpy);      break;
-      case 3: vsdec64(    out, n, cpy);      break;
-      case 4: efanodec64( out, n, cpy, 0);   break;
+      case 2: bitnunpack64(out, n, cpy);   break;
+      case 3: p4dec64(    out, n, cpy);      break;
+      case 4: vsdec64(    out, n, cpy);      break;
+      //case 5: efanodec64( out, n, cpy, 0);   break;
     }
 	for(i = 0; i < n; i++) 
       if(in[i] != cpy[i]) {
-        fprintf(stderr, "Error b=%d at '%d' (%llx,%llx)", b, i, in[i], cpy[i]); break;
+        fprintf(stderr, "Error b=%d at '%d' (in=%llx,cpy=%llx)", b, i, in[i], cpy[i]); break;
       }
   }
+  fprintf(stderr,"\n");  
   exit(0);
 }
   #else
