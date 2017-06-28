@@ -136,10 +136,11 @@ static inline uint64_t xgetbv (int ctr) {
     #elif defined(__i386__) || defined(__x86_64__)
   unsigned a, d;
   __asm("xgetbv" : "=a"(a),"=d"(d) : "c"(ctr) : );
+  return (uint64_t)d << 32 | a;
     #else  
   unsigned a=0, d=0;
-    #endif
   return (uint64_t)d << 32 | a;
+    #endif
 }
 
 static int _cpuiset;                                  
