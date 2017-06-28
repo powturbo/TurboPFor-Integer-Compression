@@ -28,14 +28,15 @@
 #include "vint.h"		
 #include "bitutil.h"
 #include "vp4.h"
+
 #undef P4DELTA
-//unsigned xbits[64];
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
-//------------------------------------------
+
 #define _P4BITS _p4bits
 #define  P4BITS _p4bits
 
-//-- Scalar
+#if !defined(SSE2_ON) && !defined(AVX2_ON)
+
 #define _P4ENC   _p4enc
 #define  P4ENC    p4enc
 #define  P4NENC   p4nenc
@@ -137,13 +138,15 @@
 #undef _P4ENC
 #undef  P4ENC
 #undef  BITPACK 
+#endif
 
+#define  BITDELTA bitdienc
 #undef _P4BITS
-#define P4BITS _p4bits
 
-  #ifndef NSIMD
+#if defined(__SSE2__) && defined(SSE2_ON)
+#define P4BITS _p4bits
 #define HYBRID 1 // 
-    #ifdef __SSE2__
+
 //-- SIMD: Vertical bitpacking
 #define VSIZE 128 
 #define _P4ENC    _p4enc128v
@@ -179,10 +182,17 @@
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
-    #endif
 
-    #ifdef __AVX2__
 #define VSIZE 256
+#define _P4ENC    _p4enc256w
+#define  P4ENC     p4enc256w
+#define  P4NENCS   p4encw
+#define  P4NENC    p4nenc256w
+#define  BITPACK   bitpack256w
+#include "vp4c.c"
+#endif
+
+#if defined(__AVX2__) && defined(AVX2_ON)
 #define _P4ENC    _p4enc256v
 #define  P4ENC     p4enc256v
 #define  P4NENC    p4nenc256v
@@ -207,10 +217,7 @@
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
-    #endif
   #endif
-
-#undef USIZE
 
 #else
 #pragma clang diagnostic push 
