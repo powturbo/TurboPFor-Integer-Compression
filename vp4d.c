@@ -31,9 +31,10 @@
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
-  #if 0 //defined(__AVX_2__) 
-#include "avx2.h"
-  #elif defined(__SSSE3__)
+#define P4DELTA(a)
+#define P4DELTA_(a)
+
+  #ifdef __SSSE3__
 #include <tmmintrin.h>
 static char shuffles[16][16] = {
   #define _ 0x80
@@ -56,10 +57,8 @@ static char shuffles[16][16] = {
   #undef _
 };
   #endif
- 
-#define P4DELTA(a)
-#define P4DELTA_(a)
-#undef  DELTA
+  
+  #if !defined(SSE2_ON) && !defined(AVX2_ON)
 
 #define _P4DEC      _p4dec
 #define  P4DEC       p4dec
@@ -150,12 +149,13 @@ static char shuffles[16][16] = {
 #undef  BITUNPACK
 #undef  BITUNDD
 #undef  P4DELTA
-
+  #endif
+  
 #define USIZE 32
-// SIMD -------------
-  #ifndef NSIMD
-    #ifdef __SSSE3__
-#define  VSIZE 128
+
+#if defined(__SSSE3__) && defined(SSE2_ON)
+
+#define VSIZE 128
 #define P4DELTA(a)
 #define P4DELTA_(a)
 #undef  DELTA
@@ -203,9 +203,24 @@ static char shuffles[16][16] = {
 #undef  BITUNDD
 #undef  P4DELTA
 #undef  DELTA
-    #endif
 
-    #ifdef __AVX2__
+#define  VSIZE 256
+
+#define P4DELTA(a) 
+#define P4DELTA_(a) 
+#undef  DELTA
+
+#define _P4DEC        _p4dec256w
+#define  P4DEC         p4dec256w
+#define  P4NDEC        p4ndec256w
+#define  P4NDECS       p4dec
+#define  BITUNPACK     bitunpack256w
+#define  BITUNPACKD    bitunpack256w
+#define  _BITUNPACKD  _bitunpack256w
+#include "vp4d.c"
+  #endif
+
+  #if defined(__AVX2__) && defined(AVX2_ON)
 #define P4DELTA(a) 
 #define P4DELTA_(a) 
 #undef  DELTA
@@ -240,11 +255,9 @@ static char shuffles[16][16] = {
 #define  BITUNDD       bitd1dec
 #include "vp4d.c"
 #undef  BITUNDD
-    #endif  
   #endif  
 
-#undef USIZE
-#else
+#else 
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
 #pragma GCC push_options
@@ -317,24 +330,19 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   }
     #if USIZE > 8  
   else {
-    uint_t ex[P4D_MAX+32]; 
+    uint_t ex[P4D_MAX+32],*pex=ex; 
 	b  &= 0x3f; 	
     bx = *in++;                 
 
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b); 
     in = TEMPLATE2(vbdec,     USIZE)(in, bx, ex);
-    for(i = 0; i != (bx & ~7); i += 8) { 
-	  out[in[i  ]] |= ex[i  ] << b;
-	  out[in[i+1]] |= ex[i+1] << b;
-	  out[in[i+2]] |= ex[i+2] << b;
-	  out[in[i+3]] |= ex[i+3] << b;
-	  out[in[i+4]] |= ex[i+4] << b;
-	  out[in[i+5]] |= ex[i+5] << b;
-	  out[in[i+6]] |= ex[i+6] << b;
-	  out[in[i+7]] |= ex[i+7] << b;
-	}
-	for(;i < bx; i++) 
-	  out[in[i]] |= ex[i] << b;
+	#define ST(j) out[in[i+j]] |= ex[i+j] << b;
+	//#define ST(j) out[*ip++] |= (*pex++) << b;
+	//unsigned char *ip;for(ip = in; ip != in + (bx & ~3); ) 
+    for(i  = 0;  i != (bx & ~7); i+=8) 
+	{ ST(0);ST(1);ST(2);ST(3); ST(4);ST(5);ST(6);ST(7); }
+	//for(;ip != in+bx; ) ST(0);
+	for(;i != bx; i++) ST(0);
     in += bx;
       #ifdef BITUNDD
     TEMPLATE2(BITUNDD, USIZE)(out, n, start);
