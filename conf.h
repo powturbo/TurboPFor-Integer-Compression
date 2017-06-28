@@ -75,6 +75,7 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
 
   #elif _MSC_VER //----------------------------------------------------
 #include <windows.h>
+#include <intrin.h>
     #if _MSC_VER < 1600
 #include "vs/stdint.h"
 #define __builtin_prefetch(x,a)
@@ -91,15 +92,16 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
 #define likely(x)     	(x)
 #define unlikely(x)   	(x)
 
-static inline int __bsr32(int x) { unsigned long z; _BitScanReverse(&z, x); return z; }
-static inline int bsr32(  int x) { unsigned long z; _BitScanReverse(&z, x); return x?z+1:0; }
+static inline int __bsr32(unsigned x) { unsigned long z=0; _BitScanReverse(&z, x); return z; }
+static inline int bsr32(  unsigned x) { unsigned long z;   _BitScanReverse(&z, x); return x?z+1:0; }
+static inline int ctz32(  unsigned x) { unsigned long z;   _BitScanForward(&z, x); return x?z:32; }
+static inline int clz32(  unsigned x) { unsigned long z;   _BitScanReverse(&z, x); return x?31-z:32; }
     #ifdef _WIN64
-static inline int bsr64(uint64_t x) { unsigned long z=0; _BitScanForward64(&z, x); return x?z+1:0; }
-static inline int ctz64(uint64_t x) { unsigned long z=0; _BitScanForward64(&z, x); return x?z:64;; }
-static inline int clz64(uint64_t x) { unsigned long z=0; _BitScanReverse64(&z, x); return x?63-z:64; }
+#pragma intrinsic(_BitScanReverse)
+static inline int bsr64(uint64_t x) { unsigned long z=0; _BitScanReverse64(&z, x); return x?z+1:0; }
+static inline int ctz64(uint64_t x) { unsigned long z;   _BitScanForward64(&z, x); return x?z:64; }
+static inline int clz64(uint64_t x) { unsigned long z;   _BitScanReverse64(&z, x); return x?63-z:64; }
     #endif
-static inline int ctz32(unsigned x) { unsigned long z=0; _BitScanForward(  &z, x); return x?z:32; }
-static inline int clz32(unsigned x) { unsigned long z=0; _BitScanReverse(  &z, x); return x?31-z:32; }
 #define rol32(x,s) _lrotl(x, s)
 #define ror32(x,s) _lrotr(x, s)
 
