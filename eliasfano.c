@@ -159,10 +159,10 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
   
   memset(op, 0, hl);
   for(i = 0; i != n&~3; ) {
-    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
-    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
-    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
-    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= 1u << (x & 7); ++i;
+    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7); ++i;
+    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7); ++i;
+    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7); ++i;
+    x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7); ++i;
   }
   while(i < n) x = i + (EFE(in,i,start) >> lb), op[x >> 3] |= (uint_t)1 << (x & 7),++i;
   if(pa != _pa) free(pa);
@@ -171,7 +171,7 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
 
 unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
   unsigned char *ip = in;  																										
-  unsigned      i,j,lb = *ip++;           	
+  uint_t        i,j,lb = *ip++;           	
   uint64_t      b,x; 
   if(!n) 
 	return in;
