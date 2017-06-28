@@ -104,7 +104,7 @@ static inline uint64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
 #define HOR128x32(_v_,_b_) _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 8)); _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 4)); _b_ = (unsigned)_mm_cvtsi128_si32(_v_)
   #endif 
 
-    #if defined(__AVX2__) && defined(USE_AVX2)
+  #if defined(__AVX2__) && defined(USE_AVX2)
 #define BITSIZE32(_in_, _n_, _b_) { unsigned *_ip; __m256i _v = _mm256_setzero_si256();\
   for(_ip = _in_; _ip != _in_+(_n_&~(8-1)); _ip+=8)\
     _v = _mm256_or_si256(_v, _mm256_loadu_si256((__m256i*)_ip));\
