@@ -1267,9 +1267,8 @@ unsigned char out[NN*16];
 void vstest64(int id, int rm,int rx, unsigned n) {   
   unsigned b,i;																				fprintf(stderr,"64 bits test.n=%d ", n); 
  
-  if(rx > 64) rx = 64;                                                            
   if(n > NN) n = NN;  																		//if(id==5) n = 128;
-  for(b = rm; b <= rx; b++) {                                                 
+  for(b = rm; b <= min(rx,64); b++) {    
     uint64_t start = 0, msk = b==64?0xffffffffffffffffull:(((uint64_t)1 << b)-1);
     unsigned char *op;																		fprintf(stderr,"\nb=%d:", b);  
     for(i = 0; i < n; i++) {
