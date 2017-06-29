@@ -22,6 +22,10 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //    "Floating Point Compression" 
+#pragma warning( disable : 4005) 
+#pragma warning( disable : 4090) 
+#pragma warning( disable : 4068) 
+
 #include "conf.h"  
 #include "vp4.h"
 #include "fp.h"
