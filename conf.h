@@ -79,6 +79,7 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
     #if _MSC_VER < 1600
 #include "vs/stdint.h"
 #define __builtin_prefetch(x,a)
+#define inline          __inline
     #else 
 #include <stdint.h>
 #define __builtin_prefetch(x,a) _mm_prefetch(x, _MM_HINT_NTA)
@@ -87,7 +88,6 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
 #define ALIGNED(x)		__declspec(align(x))
 #define ALWAYS_INLINE	__forceinline
 #define NOINLINE		__declspec(noinline)
-#define inline          __inline
 #define THREADLOCAL		__declspec(thread)
 #define likely(x)     	(x)
 #define unlikely(x)   	(x)
