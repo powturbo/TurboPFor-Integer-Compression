@@ -25,6 +25,9 @@
   #ifndef USIZE
 #include <stdio.h>
 #include <string.h>
+#pragma warning( disable : 4005) 
+#pragma warning( disable : 4090) 
+#pragma warning( disable : 4068) 
 
 #include "conf.h"
 #include "vint.h"
