@@ -23,6 +23,10 @@
 **/
 //  "TurboPFor: Integer Compression" Turbo PFor/PforDelta 
 #ifndef USIZE
+#pragma warning( disable : 4005) 
+#pragma warning( disable : 4090) 
+#pragma warning( disable : 4068) 
+
 #include "conf.h"
 #include "bitpack.h"
 #include "vint.h"		
@@ -342,7 +346,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   if(!n) 
     return 0;
 
-  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { unsigned bx, b;			__builtin_prefetch(ip+512); 
+  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { unsigned bx, b;			__builtin_prefetch(ip+512,0); 
     b = TEMPLATE2(P4BITS, USIZE)(ip, CSIZE, &bx); 									
       #if HYBRID > 0
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
@@ -368,7 +372,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
     return out;
 
   TEMPLATE2(vbxput, USIZE)(op, start);
-  for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	uint_t _in[P4D_MAX+8];unsigned bx, b;			__builtin_prefetch(ip+512);
+  for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	uint_t _in[P4D_MAX+8];unsigned bx, b;			__builtin_prefetch(ip+512,0);
     TEMPLATE2(BITDELTA, USIZE)(ip, CSIZE, _in, start, P4DELTA);
     b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
       #if HYBRID > 0
