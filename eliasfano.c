@@ -28,6 +28,9 @@
   #ifdef __SSE2__
 #include <emmintrin.h>
   #endif
+#pragma warning( disable : 4005) 
+#pragma warning( disable : 4090) 
+#pragma warning( disable : 4068) 
 
 #include "conf.h"
 #include "bitpack.h"
