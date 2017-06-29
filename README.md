@@ -189,8 +189,8 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 		Disable SIMD
 		make NSIMD=1
 
-###### Windows visual c++ 
-		nmake /f makefile.vs
+###### Windows visual c++
+		nmake NCODEC1=1 NCODEC2=1 /f makefile.vs	
 
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
@@ -349,7 +349,8 @@ header files to use with documentation:<br />
 ###### OS/Compiler (64 bits):
 - Linux: GNU GCC (>=4.6)
 - clang (>=3.2)
-- Windows: MinGW-w64 + Visual c++ (no parallel query processing app)
+- Windows: MinGW-w64 (no parallel query processing demo app)
+- Visual c++ (VS2008-VS2017)
 
 ###### Multithreading:
 - All TurboPFor integer compression functions are thread safe
