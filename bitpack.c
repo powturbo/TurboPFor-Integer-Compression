@@ -29,7 +29,9 @@
 #include "vint.h"
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 
+#pragma warning( disable : 4005) 
 #pragma warning( disable : 4090) 
+#pragma warning( disable : 4068) 
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
@@ -44,6 +46,14 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
    
 #define PREFETCH(_ip_) __builtin_prefetch(_ip_+768,0)//#define PREFETCH(ip)
 
+#ifdef _MSC_VER
+#define VX (v=x)
+#define V  x 
+#else
+#define VX v
+#define V  v 	
+#endif
+
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
 #if 0
 #define IP0(_ip_,_x_) *_ip_
@@ -56,10 +66,10 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #endif
 
 #define IPB(_ip_,_x_, _parm_)
-#define IPW(_ip_,_x_) 			v
+#define IPW(_ip_,_x_) 		   	VX
+#define IPX(_ip_,_x_)  		   	(V = IP(_ip_,_x_))
 
 #define IPV(_ip_,_x_) 			IP(_ip_,_x_)
-#define IPX(_ip_,_x_)  		   (v = IP(_ip_,_x_))
 #define IPP(_ip_,_x_, _parm_)
 #define _BITPACK_ bitpack
 #include "bitpack_.h"
@@ -70,9 +80,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 
 #define DELTA
  
-#define IPB(_ip_,_x_, _parm_)   v = IP0(_ip_,_x_) - start; start = IP(_ip_,_x_)
-#define IPV(_ip_,_x_) 		    v
-#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start)
+#define IPB(_ip_,_x_, _parm_)   V = IP0(_ip_,_x_) - start; start = IP(_ip_,_x_)
+#define IPV(_ip_,_x_) 		    VX
+#define IPX(_ip_,_x_) 		   (V = IP(_ip_,_x_) - start)
 #define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_) 	
 #define _BITPACK_ bitdpack
 #include "bitpack_.h"
@@ -83,7 +93,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 
 #define IPB(_ip_,_x_, _parm_)    
 #define IPV(_ip_,_x_) 			IP(_ip_,_x_) - start
-#define IPX(_ip_,_x_)  		    (v = IP(_ip_,_x_) - start)
+#define IPX(_ip_,_x_)  		    (V = IP(_ip_,_x_) - start)
 #define IPP(_ip_,_x_, _parm_)
 #define _BITPACK_ bitfpack
 #include "bitpack_.h"
@@ -92,9 +102,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IPP
 
-#define IPB( _ip_,_x_, _parm_) 	v = IP0(_ip_,_x_) - start - 1; start = IP(_ip_,_x_)
-#define IPV( _ip_,_x_) 			v
-#define IPX(_ip_,_x_) 		   (v = IP(_ip_,_x_) - start - 1)
+#define IPB( _ip_,_x_, _parm_) 	V = IP0(_ip_,_x_) - start - 1; start = IP(_ip_,_x_)
+#define IPV( _ip_,_x_) 			VX
+#define IPX(_ip_,_x_) 		   (V = IP(_ip_,_x_) - start - 1)
 #define IPP(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
 #define _BITPACK_ bitd1pack
 #include "bitpack_.h"
@@ -110,9 +120,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define _BITPACK_ bitepack
 #include "bitpack_.h"*/
 
-#define IPB(_ip_,_x_, _parm_) 	v = zigzagenc32(IP(_ip_,_x_) - start); start = IP(_ip_,_x_)
-#define IPV(_ip_,_x_) 			v
-#define IPX(_ip_,_x_) 		   (v = zigzagenc32(IP(_ip_,_x_) - start))
+#define IPB(_ip_,_x_, _parm_) 	V = zigzagenc32(IP(_ip_,_x_) - start); start = IP(_ip_,_x_)
+#define IPV(_ip_,_x_) 			VX
+#define IPX(_ip_,_x_) 		   (V = zigzagenc32(IP(_ip_,_x_) - start))
 #define IPP(_ip_,_x_, _parm_) 	start = IP(_ip_,_x_)
 #define _BITPACK_ bitzpack
 #include "bitpack_.h"
@@ -124,7 +134,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define IPI(_ip_) _ip_ += 32; start += 32
 #define IPB(_ip_,_x_, _parm_)    
 #define IPV(_ip_,_x_) 			(IP(_ip_,_x_) - start - (_x_) - 1)
-#define IPX(_ip_,_x_)  		    (v = IP(_ip_,_x_) - start - (_x_) - 1)
+#define IPX(_ip_,_x_)  		    (V = IP(_ip_,_x_) - start - (_x_) - 1)
 #define IPP(_ip_,_x_, _parm_)
 #define _BITPACK_ bitf1pack
 #include "bitpack_.h"
