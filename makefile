@@ -240,7 +240,7 @@ endif
 ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o
 
 ifeq ($(AVX2),1)
-bitpack_avx2.o bitunpack_avx2.o vp4c_avx2.o vp4d_avx2.o 
+ICLIB+=bitpack_avx2.o bitunpack_avx2.o vp4c_avx2.o vp4d_avx2.o 
 endif
 
 ifeq ($(SIMDH),1)
