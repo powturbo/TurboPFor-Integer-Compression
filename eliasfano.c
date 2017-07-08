@@ -115,7 +115,7 @@
 #include "eliasfano.c"
     #endif
 	
-    #ifdef __AVX2__
+#if defined(__AVX2__) && defined(AVX2_ON)
 #define VSIZE 256
 #define BITPACK bitpack256v
 #define BITUNPACK bitunpack256v
