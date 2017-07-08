@@ -94,6 +94,7 @@ enum {
   TB_FORDA,  	
   TB_BP,		
   TB_BPN,		
+  TB_BPDA,		
   TB_PDI,		
   TB_VBYTE,    
   TB_VSIMPLE,
@@ -243,12 +244,12 @@ unsigned char *u32dec(unsigned *__restrict in, int n, unsigned *__restrict out) 
   }
   while(op < out+n) *op++ = *in++;
   return (unsigned char *)in;
-}  
-
-unsigned char *_bitunpackx32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out           , unsigned b) { unsigned i,k=0; for(i=0; i < n; i++,k+=b ) *out++ = _bitgetx32(in, k, b); return in + PAD8(n*b); }
+}   
+ 
+unsigned char *_bitunpackx32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out           , unsigned b) { unsigned i,k=0; for(i=0; i < n; i++,k+=b ) *out++ = _bitgetx16(in, k, b); return in + PAD8(n*b); }
 // direct access functions : included for demonstration only. Use the bulk functions instead, if you are decompressing most of the values
 unsigned char *bitf1unpackx32(unsigned char *__restrict in, unsigned n, unsigned *__restrict out, int start, unsigned b) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, i, b)+start+i+1; return in + PAD8(n*b); }
-unsigned char *bitfunpackx32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, int start, unsigned b) { int i; for(i = 0; i < n; i++) out[i] = bitgetx32(in, i, b)+start;     return in + PAD8(n*b); }
+unsigned char *bitfunpackx32( unsigned char *__restrict in, unsigned n, unsigned *__restrict out, int start, unsigned b) { int i; for(i = 0; i < n; i++) out[i] = bitgetx16(in, i, b)+start;     return in + PAD8(n*b); }
 
 //------------------------------------------------- plugins: codes+function -------------------------------------------------
 struct codecs codecs[] = {
@@ -283,6 +284,7 @@ struct plugs plugs[] = {
   { TB_FOR128V,		"TurboForV", 		C_TURBOPFOR,	BLK_V128,0,"","FOR (SIMD)" }, 
   { TB_FOR256V,		"TurboFor256V", 	C_TURBOPFOR,	BLK_V256,0,"","FOR (AVX2)" }, 
   { TB_FORDA, 		"TurboForDA", 		C_TURBOPFOR,	BLK_V128,0,"","FOR direct access" }, 
+  { TB_BPDA, 		"TurboPackDA", 		C_TURBOPFOR,	BLK_V128,0,"","Bit packing direct access" }, 
 
   { TB_BP,			"TurboPack", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar)" }, 
   { TB_BPN,			"TurboPackN", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar) large blocks" }, 
@@ -390,7 +392,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_BP128V:  x = *in++; --n; vbxput32(out, x); 
       if(mdelta) { b = bitd132(in, n, x);  *out++=b;				return n == 128?bitd1pack128v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
       else {    b = bitd32( in, n, x); 	*out++=b;				return n == 128?bitdpack128v32( in, n, out, x, b):bitdpack32(   in, n, out, x, b); }
-        #ifdef __AVX2__
+      #if defined(__AVX2__) && defined(AVX2_ON)
     case TB_FOR256V: x = *in++; --n; vbxput32(out, x); 
       if(mdelta) { b = bitf132(in, n, x);  *out++=b; 				return n == 256?bitf1pack256v32(in, n, out, x, b):bitf1pack32(  in, n, out, x, b); }
       else {    b = bitf32( in, n, x);  *out++=b;				return n == 256?bitfpack256v32( in, n, out, x, b):bitfpack32(   in, n, out, x, b); }
@@ -451,7 +453,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_BP128V: vbxget32(in, x);*out++ = x; --n; b = *in++;
 	  if(mdelta) {                                      	    	return n==128?bitd1unpack128v32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
       else {                                              		return n==128?bitdunpack128v32( in, n, out, x, b):bitdunpack32(  in, n, out, x, b); }
-        #ifdef __AVX2__
+      #if defined(__AVX2__) && defined(AVX2_ON)
     case TB_EF256V: vbxget32(in, x);*out++ = x; --n;
       if(mdelta) {                                           		return n==256?efano1dec256v32(in, n, out, x+1 ):efano1dec32(     in, n, out, x+1); }
       else {                                              		return n==256?efanodec256v32( in, n, out, x   ):efanodec32(      in, n, out, x); }
@@ -503,7 +505,7 @@ unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_PF128V: x = *in++; --n; vbxput32(out, x);                               return n == 128?p4zenc128v32(in, n, out, x):p4zenc32(in, n, out, x);
     case TB_PFN128V:    										                    return out+p4nzenc128v32( in, n, out );
     case TB_BP128V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 128?bitzpack128v32(in, n, out, x, b):bitzpack32(in, n, out, x, b);
-        #ifdef __AVX2__
+      #if defined(__AVX2__) && defined(AVX2_ON)
     case TB_BP256V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 256?bitzpack256v32(in, n, out, x, b):bitzpack32(in, n, out,x, b);
         #endif 
       #endif
@@ -523,7 +525,7 @@ unsigned char *coddecompz(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_PFN128V:       							  		    return in+p4nzdec128v32(in, n, out);
     case TB_PF128V:vbxget32(in, x); *out++ = x; --n;            return n == 128?p4zdec128v32(in, n, out, x):p4zdec32(in, n, out, x);
     case TB_BP128V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 128?bitzunpack128v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
-        #ifdef __AVX2__
+      #if defined(__AVX2__) && defined(AVX2_ON)
     case TB_BP256V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 256?bitzunpack256v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
 	    #endif
 	  #endif
@@ -550,6 +552,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_FOR :  
     case TB_FORDA:   b = bitfm32( in, n, &x); vbxput32(out, x); *out++=b; return bitfpack32( in, n, out, x, b); 
 
+    case TB_BPDA:
     case TB_BP128H:
     case TB_BP:      if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } 
 	                 return bitpack32(in, n, out, b);
@@ -565,7 +568,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 
     case TB_BP128V:  if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } 
 					 return n == 128?bitpack128v32(in, n, out, b):bitpack32(in, n, out, b);
-        #ifdef __AVX2__
+      #if defined(__AVX2__) && defined(AVX2_ON)
     case TB_PF256V:  return n == 256?p4enc256v32(in, n, out):p4enc32(in, n, out);
     case TB_PFN256V: return out+p4nenc256v32(in, n, out);
 
@@ -610,6 +613,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_FOR:    vbxget32(in, x); b = *in++; return bitfunpack32( in, n, out, x, b);
     case TB_FORDA:  vbxget32(in, x); b = *in++; return bitfunpackx32(in, n, out, x, b);      
     
+    case TB_BPDA:  	if(b < 0) b = *in++; 		return _bitunpackx32(       in, n, out, b);
     case TB_BP:    	if(b < 0) b = *in++; 		return bitunpack32(         in, n, out, b);
     case TB_BPN: 	                     		return in+bitnunpack32(     in, n, out);
  	  #if C_TURBOPFORV
@@ -621,7 +625,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_FOR128V: vbxget32(in, x); b = *in++;return bitfunpack128v32( in, n, out, x, b);
 
     case TB_BP128V:   if(b < 0) b = *in++; 		return n != 128?bitunpack32(in, n, out, b):bitunpack128v32(in, n, out, b);
-        #ifdef __AVX2__
+      #if defined(__AVX2__) && defined(AVX2_ON)
     case TB_FOR256V: vbxget32(in, x); b = *in++;return bitfunpack256v32( in, n, out, x, b);
 
     case TB_PF256V : __builtin_prefetch(in+256);return n == 256?p4dec256v32(in, n, out):p4dec32(in, n, out);
