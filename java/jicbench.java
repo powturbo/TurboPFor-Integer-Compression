@@ -35,8 +35,8 @@ $ javac jicbench.java
 
 3 - compile & link a shared library
 $ cd ~/TurboPFor
-$ gcc -O3 -march=native -fstrict-aliasing -m64 -shared -fPIC -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/default-java/include/linux bitpack.c bitunpack.c bitpackv.c bitunpackv.c vp4dc.c vp4dd.c vsimple.c vint.c bitutil.c jic.c -o libic.so
-$ Search "/usr/lib/" for the file "jni.h" and replace "default-java" if necessary (example by "java-8-openjdk-amd64").  
+$ gcc -O3 -w -march=native -fstrict-aliasing -m64 -shared -fPIC -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/default-java/include/linux bitpack.c bitunpack.c vp4c.c vp4d.c vsimple.c vint.c bitutil.c jic.c -o libic.so
+$ Search "/usr/lib/" for the file "jni.h" and replace the JDK name "default-java" if necessary (example by "java-8-openjdk-amd64").  
 
 4 - copy "libic.so" to java library directory
 
