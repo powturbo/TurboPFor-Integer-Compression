@@ -27,7 +27,7 @@
 1 - generate header jic.h 
 $ cd ~/TurboPFor/java
 $ javah -jni jic
-$ cp jtrle.h ..
+$ cp jic.h ..
 
 2 - Compile jic and jicbench
 $ javac jic.java
@@ -36,6 +36,7 @@ $ javac jicbench.java
 3 - compile & link a shared library
 $ cd ~/TurboPFor
 $ gcc -O3 -march=native -fstrict-aliasing -m64 -shared -fPIC -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/default-java/include/linux bitpack.c bitunpack.c bitpackv.c bitunpackv.c vp4dc.c vp4dd.c vsimple.c vint.c bitutil.c jic.c -o libic.so
+$ Search "/usr/lib/" for the file "jni.h" and replace "default-java" if necessary (example by "java-8-openjdk-amd64").  
 
 4 - copy "libic.so" to java library directory
 
