@@ -271,7 +271,7 @@ static inline void p4ini(struct p4 *p4, unsigned char **pin, unsigned n, unsigne
     unsigned num=0,j; 
     unsigned char *p;
     ++in;
-    p4->xmap = (uint64_t *)in;
+    p4->xmap = (unsigned long long *)in;
     for(j=0; j < n/64; j++) { p4->cum[j] = num; num += popcnt64(ctou64(in+j*8)); } 
     if(n & 0x3f) num += popcnt64(ctou64(in+j*8) & ((1ull<<(n&0x3f))-1) );
     p4->ex = p = in + (n+7)/8; 				
