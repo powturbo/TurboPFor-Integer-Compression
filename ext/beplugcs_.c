@@ -73,8 +73,8 @@
     case LZ4_BIT:     bitdienc32(in, n, (unsigned *)out, -mdelta, mdelta); BITSHUFFLE((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n);
         #endif
     case LZ4_  : 	  return out + LZ4_compress((char *)in, (char *)out, _n);
-    case LZ4_NIBBLE:{ bitdienc32(in, n, (unsigned *)out, -mdelta, in); tp4enc((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); } 
-    case LZ4_BYTE:  { bitdienc32(in, n, (unsigned *)out, -mdelta, mdelta); tpenc( (unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); }
+    case LZ4_NIBBLE:{ bitdienc32(in, n, (uint32_t *)out, -mdelta, mdelta); tp4enc((unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); } 
+    case LZ4_BYTE:  { bitdienc32(in, n, (uint32_t *)out, -mdelta, mdelta); tpenc( (unsigned char *)out, _n, sbuf,lev); return out + LZ4_compress((char *)sbuf, (char *)out, _n); }
       #endif
 	    
       #if C_ZLIB

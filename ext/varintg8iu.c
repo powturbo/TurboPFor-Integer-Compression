@@ -141,6 +141,8 @@ unsigned char *vintg8enc(const uint32_t *__restrict in, const size_t length, uns
         return out; //out + ((compressed_size + 3)/ 4);
     }
 
+#define __builtin_ia32_storedqu(dst, result) _mm_storeu_si128(dst,result)
+
 unsigned char *vintg8dec(unsigned char *__restrict in, const size_t length, uint32_t *__restrict out) {
         size_t srclength = length * 4;
         const unsigned *out_ = out + length; //uint32_t * dest = out;size_t nvalue = length * 4;    //uint32_t uncompressSize = 0;

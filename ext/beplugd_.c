@@ -9,7 +9,7 @@
       #if C_FASTPFOR
 	case FP_FASTPFOR: { 	
 	  size_t nvalue = n;
-      FastPForLib::FastPFor<4> ic; const uint32_t *ip = ic.decodeArray((const int32_t *)(in+4), ctou32(in), out, nvalue);
+      FastPForLib::FastPFor<4> ic; const uint32_t *ip = ic.decodeArray((const uint32_t *)(in+4), ctou32(in), out, nvalue);
       if(n & 127) { 
         nvalue = n - nvalue;
 	    FastPForLib::VariableByte vc;
@@ -20,7 +20,7 @@
 
 	case FP_SIMDFASTPFOR:  { 	
 	  size_t nvalue = n;
-      FastPForLib::SIMDFastPFor<4> ic; const uint32_t *ip = ic.decodeArray((const int32_t *)(in+4), ctou32(in), out, nvalue);
+      FastPForLib::SIMDFastPFor<4> ic; const uint32_t *ip = ic.decodeArray((const uint32_t *)(in+4), ctou32(in), out, nvalue);
       if(n & 127) { 
         nvalue = n - nvalue;
 	    FastPForLib::VariableByte vc;
@@ -30,7 +30,7 @@
     }
 	case FP_SIMDOPTPFOR:  { 	
 	  size_t nvalue = n;
-      FastPForLib::SIMDOPTPFor<4> ic; const uint32_t *ip = ic.decodeArray((const int32_t *)(in+4), ctou32(in), out, nvalue);
+      FastPForLib::SIMDOPTPFor<4> ic; const uint32_t *ip = ic.decodeArray((const uint32_t *)(in+4), ctou32(in), out, nvalue);
       if(n & 127) { 
         nvalue = n - nvalue;
 	    FastPForLib::VariableByte vc;
@@ -40,7 +40,7 @@
     } 
 	case FP_GROUPSIMPLE:  { 	
 	  size_t nvalue = n;
-      FastPForLib::SIMDGroupSimple<false,false> ic; const uint32_t *ip = ic.decodeArray((const int32_t *)(in+4), ctou32(in), out, nvalue);
+      FastPForLib::SIMDGroupSimple<false,false> ic; const uint32_t *ip = ic.decodeArray((const uint32_t *)(in+4), ctou32(in), out, nvalue);
       if(n & 127) { 
         nvalue = n - nvalue;
 	    FastPForLib::VariableByte vc;
@@ -50,9 +50,9 @@
     }
 
     case FP_VBYTE:  //return vbytedec( in, n, out); 
-	  { size_t nvalue=n; FastPForLib::VariableByte ic;       return (unsigned char *)ic.decodeArray((const int32_t *)(in+4), ctou32(in), (uint32_t *)out, nvalue); }
+	  { size_t nvalue=n; FastPForLib::VariableByte ic;       return (unsigned char *)ic.decodeArray((const uint32_t *)(in+4), ctou32(in), (uint32_t *)out, nvalue); }
     case FP_SIMPLE8BRLE:  
-	  { size_t nvalue=n; FastPForLib::Simple8b_RLE<true> ic; ic.decodeArray((const int32_t *)(in+4), ctou32(in), (uint32_t *)out, nvalue); return in+4+ctou32(in)*4; }
+	  { size_t nvalue=n; FastPForLib::Simple8b_RLE<true> ic; ic.decodeArray((const uint32_t *)(in+4), ctou32(in), (uint32_t *)out, nvalue); return in+4+ctou32(in)*4; }
 	  #endif
 	
       #if C_LIBFOR

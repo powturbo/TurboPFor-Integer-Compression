@@ -6,10 +6,10 @@
 	  #if C_FASTPFOR
 	case FP_FASTPFOR: {   
       size_t nvalue = outsize/4;
-      FastPForLib::FastPFor<4> ic; ic.encodeArray((const int32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
+      FastPForLib::FastPFor<4> ic; ic.encodeArray((const uint32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
       if(n & 127) {
         size_t nvalue2 = outsize/4 - nvalue;
-        FastPForLib::VariableByte vc; vc.encodeArray((const int32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
+        FastPForLib::VariableByte vc; vc.encodeArray((const uint32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
         nvalue += nvalue2;
       }
 	  ctou32(out) = nvalue;
@@ -17,10 +17,10 @@
     }
 	case FP_SIMDFASTPFOR: {   
       size_t nvalue = outsize/4;
-      FastPForLib::SIMDFastPFor<4> ic; ic.encodeArray((const int32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
+      FastPForLib::SIMDFastPFor<4> ic; ic.encodeArray((const uint32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
       if(n & 127) {
         size_t nvalue2 = outsize/4 - nvalue;
-        FastPForLib::VariableByte vc; vc.encodeArray((const int32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
+        FastPForLib::VariableByte vc; vc.encodeArray((const uint32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
         nvalue += nvalue2;
       }
 	  ctou32(out) = nvalue;
@@ -28,10 +28,10 @@
     }
 	case FP_SIMDOPTPFOR: {   
       size_t nvalue = outsize/4;
-      FastPForLib::SIMDOPTPFor<4> ic; ic.encodeArray((const int32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
+      FastPForLib::SIMDOPTPFor<4> ic; ic.encodeArray((const uint32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
       if(n & 127) {
         size_t nvalue2 = outsize/4 - nvalue;
-        FastPForLib::VariableByte vc; vc.encodeArray((const int32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
+        FastPForLib::VariableByte vc; vc.encodeArray((const uint32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
         nvalue += nvalue2;
       }
 	  ctou32(out) = nvalue;
@@ -39,17 +39,17 @@
     }
 	case FP_GROUPSIMPLE: {   
       size_t nvalue = outsize/4;
-      FastPForLib::SIMDGroupSimple<false,false> ic; ic.encodeArray((const int32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
+      FastPForLib::SIMDGroupSimple<false,false> ic; ic.encodeArray((const uint32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);
       if(n & 127) {
         size_t nvalue2 = outsize/4 - nvalue;
-        FastPForLib::VariableByte vc; vc.encodeArray((const int32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
+        FastPForLib::VariableByte vc; vc.encodeArray((const uint32_t *)(in + (n & (~127))), n & 127, (uint32_t *)(out + 4 + nvalue*4), nvalue2);
         nvalue += nvalue2;
       }
 	  ctou32(out) = nvalue;
 	  return out+4+nvalue*4;
     }
-    case FP_VBYTE:    	{ size_t nvalue=outsize/4; FastPForLib::VariableByte ic; ic.encodeArray((const int32_t *)in, (const size_t)n, (uint32_t *)(out+4), nvalue); ctou32(out)=nvalue; return out+4+nvalue*4; }
-    case FP_SIMPLE8BRLE:{ size_t nvalue=outsize/4; FastPForLib::Simple8b_RLE<true> ic; ic.encodeArray((const int32_t *)in, (const size_t)n, (uint32_t *)(out+4), nvalue); ctou32(out)=nvalue; return out+4+nvalue*4; }
+    case FP_VBYTE:    	{ size_t nvalue=outsize/4; FastPForLib::VariableByte ic; ic.encodeArray((const uint32_t *)in, (const size_t)n, (uint32_t *)(out+4), nvalue); ctou32(out)=nvalue; return out+4+nvalue*4; }
+    case FP_SIMPLE8BRLE:{ size_t nvalue=outsize/4; FastPForLib::Simple8b_RLE<true> ic; ic.encodeArray((const uint32_t *)in, (const size_t)n, (uint32_t *)(out+4), nvalue); ctou32(out)=nvalue; return out+4+nvalue*4; }
 	  #endif 
 	  
       #if C_LIBFOR
