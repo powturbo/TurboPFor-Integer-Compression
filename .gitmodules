@@ -28,3 +28,6 @@
 [submodule "ext/c-blosc"]
 	path = ext/c-blosc
 	url = https://github.com/Blosc/c-blosc.git
+[submodule "ext/JASSv2"]
+	path = ext/JASSv2
+	url = https://github.com/andrewtrotman/JASSv2
