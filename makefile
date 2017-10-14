@@ -88,6 +88,10 @@ ifeq ($(BLOSC),1)
 DEFS+=-DBLOSC
 endif
 
+ifeq ($(QMX),1)
+DEFS+=-DQMX
+endif
+
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
 CXXFLAGS+=$(DDEBUG) $(MARCH) -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
 
@@ -175,7 +179,9 @@ OB+=ext/LittleIntPacker/src/bmipacking32.o
 endif
 
 OB+=ext/libfor/for.o
+ifeq ($(QMX),1)
 OB+=ext/JASSv2/source/compress_integer_qmx_improved.o ext/JASSv2/source/asserts.o
+endif
 OB+=ext/varintg8iu.o
 OB+=ext/rc.o
 endif
