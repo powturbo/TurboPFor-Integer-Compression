@@ -56,7 +56,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |73477088|18.4| 5.88|102| 621|PC_Simple16|
 |73481096| 18.4| 5.88|156|2187|[FP_SimdFastPFor](#FastPFor) 64k *|
 |76345136| 19.1| 6.11|245|653|**VSimple**|
-|91956582| 25.5| 8.15|65|2141|[QMX](#QMX) 64k *|
+|91947533| 23.0| 7.36|71|2934|[QMX](#QMX) 64k *|
 |93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64k *|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
 |99910930| 25.0| 7.99|**3494**|**2968**|**TurboPackV**|
@@ -68,7 +68,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |102074663| 25.5| 8.17|565|1052|[PC_Vbyte](#PolyCom)|
 |102083036| 25.5| 8.17|1300|1067|[FP_VByte](#FastPFor)|
 |112500000| 28.1| 9.00|382|**3035**|[VarintG8IU](#VarintG8IU)|
-|125000000| 31.2|10.00|1111|2948|[StreamVbyte](#StreamVByte)|
+|125000000| 31.2|10.00|1197|2822|[StreamVbyte](#StreamVByte)|
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
@@ -106,6 +106,7 @@ TurboPForDA,TurboForDA: Direct Access is normally used when accessing few indivi
 | 6.699.519.000| 28.0| 8.96| 472| 495|FP_Vbyte|
 | 6.700.989.563| 28.0| 8.96| 685| 846|MaskedVByte|
 | 7.622.896.878| 31.9|10.20| 209|1198|VarintG8IU|
+| 8.060.125.035| 33.7|11.50| 884|2171|Streamvbyte|
 | 8.594.342.216| 35.9|11.50|1307|1594|libfor|
 |23.918.861.764|100.0|32.00|1456|1481|Copy|
 
@@ -381,5 +382,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  08 Sep 2017
+Last update:  14 Oct 2017
 
