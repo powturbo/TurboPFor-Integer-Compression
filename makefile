@@ -17,6 +17,11 @@ DDEBUG=-DNDEBUG
 MARCH=-march=native
 #MARCH=-march=broadwell
 
+MAVX2=-march=haswell
+#Minimum SSE Sandy Bridge 
+MSSE=-march=corei7-avx -mtune=corei7-avx
+# -mno-avx -mno-aes (add for Pentium based Sandy bridge)
+
 ifeq ($(NSIMD),1)
 DEFS+=-DNSIMD
 NCODEC1=1
@@ -27,7 +32,7 @@ CFLAGS+=-DUSE_SEE
 endif
 
 ifeq ($(AVX2),1)
-MARCH+=-mavx2 -mbmi2
+MARCH+= -mbmi2 -mavx2
 else
 AVX2=0
 endif
@@ -83,13 +88,13 @@ ifeq ($(BLOSC),1)
 DEFS+=-DBLOSC
 endif
 
-CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DNDEBUG -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
-CXXFLAGS+=$(DDEBUG) $(MARCH) -std=gnu++0x -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
+CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
+CXXFLAGS+=$(DDEBUG) $(MARCH) -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
 
 all: icbench idxcr idxqry idxseg
 
 cpp: $(CPPF)
-	$(CC) -mavx2 $(MARCH) -E -P $(CPPF)
+	$(CC) -DSSE2_ON $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
 bitutil.o: bitutil.c
 	$(CC) -O3 -falign-loops=32  $< -c -o $@
@@ -98,38 +103,38 @@ vp4c.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4c.c -o vp4c.o
 
 vp4c_sse.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c vp4c.c -o vp4c_sse.o
+	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4c.c -o vp4c_sse.o
 
 vp4c_avx2.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) -DAVX2_ON -march=haswell -mavx2 -c vp4c.c -o vp4c_avx2.o
+	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c vp4c.c -o vp4c_avx2.o
 
 #----------
 vp4d.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4d.c -o vp4d.o
 
 vp4d_sse.o: vp4d.c
-	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c vp4d.c -o vp4d_sse.o
+	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4d.c -o vp4d_sse.o
 
 vp4d_avx2.o: vp4d.c
-	$(CC) -O3 $(CFLAGS) -DAVX2_ON -march=haswell -mavx2 -c vp4d.c -o vp4d_avx2.o
+	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2)  -c vp4d.c -o vp4d_avx2.o
 #------------
 bitpack.o: bitpack.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c bitpack.c -o bitpack.o
 
 bitpack_sse.o: bitpack.c
-	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c bitpack.c -o bitpack_sse.o
+	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c bitpack.c -o bitpack_sse.o
 
 bitpack_avx2.o: bitpack.c
-	$(CC) -O3 $(CFLAGS) -DAVX2_ON -march=haswell -mavx2 -c bitpack.c -o bitpack_avx2.o
+	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitpack.c -o bitpack_avx2.o
 #------------
 bitunpack.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c bitunpack.c -o bitunpack.o
 
 bitunpack_sse.o: bitunpack.c
-	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c bitunpack.c -o bitunpack_sse.o
+	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c bitunpack.c -o bitunpack_sse.o
 
 bitunpack_avx2.o: bitunpack.c
-	$(CC) -O3 $(CFLAGS) -DAVX2_ON -march=haswell -mavx2 -c bitunpack.c -o bitunpack_avx2.o
+	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitunpack.c -o bitunpack_avx2.o
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
@@ -138,10 +143,10 @@ transpose.o: transpose.c
 	$(CC) -O3 $(CFLAGS) -c -DUSE_SSE transpose.c -o transpose.o
 
 transpose_sse.o: transpose.c
-	$(CC) -O3 $(CFLAGS) -DSSE2_ON -mssse3 -c transpose.c -o transpose_sse.o
+	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c transpose.c -o transpose_sse.o
 
 transpose_avx2.o: transpose.c
-	$(CC) -O3 $(CFLAGS) -DAVX2_ON -march=haswell -mavx2 -c transpose.c -o transpose_avx2.o
+	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c transpose.c -o transpose_avx2.o
 
 varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h 
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c -std=c99 ext/varintg8iu.c
@@ -170,10 +175,7 @@ OB+=ext/LittleIntPacker/src/bmipacking32.o
 endif
 
 OB+=ext/libfor/for.o
-#modified QMX for unaligned SIMD load/store
-OB+=ext/bench_/bench/compress_qmx.o ext/bench_/bench/compress_qmx_v2.o ext/bench_/bench/compress_qmx_v3.o ext/bench_/bench/compress_qmx_v4.o
-#OB+=ext/qmx.o
-#OB+=ext/qmx/compress_qmx.o
+OB+=ext/JASSv2/source/compress_integer_qmx_improved.o ext/JASSv2/source/asserts.o
 OB+=ext/varintg8iu.o
 OB+=ext/rc.o
 endif
