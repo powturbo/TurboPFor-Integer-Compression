@@ -52,10 +52,7 @@ unsigned char *for_selectx( unsigned char *__restrict in, unsigned n, unsigned *
   #endif
 
   #if C_QMX
-#include "bench_/bench/compress_qmx.h" 
-#include "bench_/bench/compress_qmx_v2.h"
-#include "bench_/bench/compress_qmx_v3.h"
-#include "bench_/bench/compress_qmx_v4.h"
+#include "JASSv2/source/compress_integer_qmx_improved.h" 
   #endif
   
   #if C_ZLIB

@@ -77,12 +77,9 @@
     case PC_RICE:       return rcenc32(  in, n, (unsigned *)out); 
     case PC_OPTPFD:     return optpfdenc32(in, n, out); //if(n < 128) return vbyteenc(in, n, (unsigned *)out); else { unsigned tmp[2048]; for(i = 0; i < n; i++) tmp[i] = in[i]; return out + OPT4(tmp, n, (unsigned *)out); }
       #endif 
-	  
+	  //encode(void *encoded, size_t encoded_buffer_length, const integer *source, size_t source_integers)
 	  #if C_QMX
-    case P_QMX:  		{ ANT_compress_qmx    qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)in, (uint64_t)n); ctou32(out)=r; return out+4+r; } // { unsigned char *q = qmx_enc(in, n, out+4); ctou32(out) = q - (out+4); return q;
-    case P_QMX2: 		{ ANT_compress_qmx_v2 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)in, (uint64_t)n); ctou32(out)=r; return out+4+r; }
-    case P_QMX3: 		{ ANT_compress_qmx_v3 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)in, (uint64_t)n); ctou32(out)=r; return out+4+r; }
-    case P_QMX4: 		{ ANT_compress_qmx_v4 qmx; unsigned r=qmx.compress(out+4, outsize, (uint32_t *)in, (uint64_t)n); ctou32(out)=r; return out+4+r; }	 
+    case P_QMX:  		{ JASS::compress_integer_qmx_improved    qmx; unsigned r=qmx.encode(out+4, outsize, (uint32_t *)in, (size_t)n); ctou32(out)=r; return out+4+r; } 
 	  #endif
 	  
       #if C_SIMDCOMP

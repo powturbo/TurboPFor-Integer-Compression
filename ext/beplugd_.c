@@ -94,12 +94,8 @@
 	  #if C_STREAMVBYTE 
     case P_STREAMVBYTE:  return in +  streamvbyte_decode(in, out, n); 
       #endif 
-	 
-      #if C_QMX    										//case P_QMX: return qmx_dec(in+4, ctou32(in), out, n); 
-	case P_QMX:  { ANT_compress_qmx  qmx;   qmx.decompress(out, n,  in+4, ctou32(in)); return in+4+ctou32(in);} 	// { unsigned char *q = qmx_enc(in, n, out+4); ctou32(out) = q - (out+4); return q;
-    case P_QMX2: { ANT_compress_qmx_v2 qmx; qmx.decompress(out, n,  in+4, ctou32(in)); return in+4+ctou32(in);}
-    case P_QMX3: { ANT_compress_qmx_v3 qmx; qmx.decompress(out, n,  in+4, ctou32(in)); return in+4+ctou32(in);}
-    case P_QMX4: { ANT_compress_qmx_v4 qmx; qmx.decompress(out, n,  in+4, ctou32(in)); return in+4+ctou32(in);}	 
+      #if C_QMX    										
+	case P_QMX:  { JASS::compress_integer_qmx_improved qmx; qmx.decode(out, n,  in+4, ctou32(in)); return in+4+ctou32(in); }
       #endif
 
       #if C_VARINTG8IU

@@ -27,12 +27,8 @@
       else {      _VBGET32(in, x, *out = x); unsigned all_array[2048]; in = (unsigned char *)detailed_p4_decode(out+1, (unsigned *)in, all_array); }
                                                                                             bitdidec32(out, n, -mdelta, mdelta); break;*/
 	  #endif
-    //case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; in = qmx_dec(in+4, l, out+1, n-1); bitdidec32(out+1, n-1, x, mdelta); break; }   
-      #if C_QMX    										//case P_QMX: return qmx_dec(in+4, ctou32(in), out, n); 
-	case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx  qmx;   qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitdidec32(out+1, n-1, x, mdelta); return in+4+ctou32(in);} 
-    case P_QMX2: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v2 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitdidec32(out+1, n-1, x, mdelta); return in+4+ctou32(in);}
-    case P_QMX3: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v3 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitdidec32(out+1, n-1, x, mdelta); return in+4+ctou32(in);}
-    case P_QMX4: { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; ANT_compress_qmx_v4 qmx; qmx.decompress(out+1, n-1,  in+4, ctou32(in)); bitdidec32(out+1, n-1, x, mdelta); return in+4+ctou32(in);}	 
+      #if C_QMX    								
+    case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; JASS::compress_integer_qmx_improved qmx; qmx.decode(out+1, n-1,  in+4, ctou32(in)); bitdidec32(out+1, n-1, x, mdelta); return in+4+ctou32(in);} 
       #endif
  	  
 	  #if C_SIMDCOMP

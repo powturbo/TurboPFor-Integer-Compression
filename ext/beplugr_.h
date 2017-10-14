@@ -41,9 +41,6 @@
   { LI_BMIPACK,		"LI_BMIPack256",	C_LITTLEPACK,	0,    	 0,"","Bit packing (avx2)"	},
 
   { P_QMX,			"qmx",		    	C_QMX,	    	0,    	 0,"","QMX SIMD (inefficient for small blocks)"	},
-  { P_QMX2,			"qmx2",		    	C_QMX,	    	0,    	 0,"","QMX SIMD (inefficient for small blocks)"	},
-  { P_QMX3,			"qmx3",		    	C_QMX,	    	0,    	 0,"","QMX SIMD (inefficient for small blocks)"	},
-  { P_QMX4,			"qmx4",		    	C_QMX,	    	0,    	 0,"","QMX SIMD (inefficient for small blocks)"	},
   //-------- lz77 + [delta] + transpose/shuffle ---------------
   { P_LZT,			"LzTurbo",	    	C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
   { P_VSHUF,		"VSimpleANS",		C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
