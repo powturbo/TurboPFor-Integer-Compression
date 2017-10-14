@@ -166,7 +166,7 @@ enum {
   PC_RICE,							// incl. only as demo, crash on some lists
   PC_SIMPLE16,						// limited to 28 bits.
 #define C_QMX			CODEC1
-  P_QMX,P_QMX2,P_QMX3,P_QMX4,       // crash on gov2
+  P_QMX,       			// crash on gov2
 #define C_SIMDCOMP		CODEC1
   SC_PACK,
   SC_SIMDPACK128,
