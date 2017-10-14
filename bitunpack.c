@@ -213,8 +213,8 @@ static char shuffles[16][16] = {
 };
   #endif
   
-#define VSTO( _op_, _i_, _ov_, _parm_) if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m)
-#define VSTO0(_op_, _i_, ov, _parm_)   if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)shuffles[m]) ) );  pex += popcnt32(m)
+#define VSTO( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m)
+#define VSTO0(_op_, _i_, ov, _parm_)   if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)shuffles[m]) ) );  pex += popcnt32(m)
 #define BITUNPACK0(_parm_) //_parm_ = _mm_setzero_si128()
 #include "bitunpack_.h"
 
