@@ -14,7 +14,7 @@
   { P_STREAMVBYTE,	"StreamVbyte", 		C_STREAMVBYTE,	0,    	 0,"","Variable byte SIMD" },
 
   { FP_FASTPFOR,	"FP_FastPFor", 		C_FASTPFOR,	    0,    	 0,"","PFor scalar (inefficient for small blocks)" },
-  { FP_SIMDFASTPFOR,"FP_SimdFastPFor", 	C_FASTPFOR,	    0,    	 0,"","PFor SIMD (inefficient for small blocks)" },
+  { FP_SIMDFASTPFOR,"FP_SimdFastPFor", 		C_FASTPFOR,	    0,    	 0,"","PFor SIMD (inefficient for small blocks)" },
   { FP_OPTPFOR,		"FP_OptPFor",  		C_FASTPFOR,	    0,    	 0,"","OptPFor scalar" },
   { FP_SIMDOPTPFOR,	"FP_SIMDOptPFor",  	C_FASTPFOR,	    0,    	 0,"","OptPFor SIMD" },
   { FP_VBYTE,		"FP_VByte", 		C_FASTPFOR,	    0,    	 0,"","Variable byte" },
@@ -23,7 +23,7 @@
 
   { SC_SIMDPACK128,	"SC_SIMDPack128", 	C_SIMDCOMP,		BLK_V128,0,"","Bit packing (SSE4.1)"},
   { SC_SIMDPACK256,	"SC_SIMDPack256", 	C_SIMDCOMP,		BLK_V256,0,"","Bit packing (SSE4.1)"},
-  { SC_FOR,		   	"SC_For", 			C_SIMDCOMP,		BLK_V128,0,"","For (SSE4.1)"},
+  { SC_FOR,		   	"SC_For", 	C_SIMDCOMP,		BLK_V128,0,"","For (SSE4.1)"},
   { SC_FORDA,	 	"SC_ForDA", 		C_SIMDCOMP,		BLK_V128,0,"","For direct access (SSE4.1)"},
 
 //{ CL_FASTPFORD1,	"CL.SIMDPFORD1", 	C_SIMDCOMP, 	"", 0,BLK_V128},
@@ -40,9 +40,9 @@
   { LI_HORPACK,		"LI_HorPack",		C_LITTLEPACK,	0,    	 0,"","Bit packing (sse4.1 horizontal)" },
   { LI_BMIPACK,		"LI_BMIPack256",	C_LITTLEPACK,	0,    	 0,"","Bit packing (avx2)"	},
 
-  { P_QMX,			"qmx",		    	C_QMX,	    	0,    	 0,"","QMX SIMD (inefficient for small blocks)"	},
+  { P_QMX,			"qmx",		C_QMX,	    	0,    	 0,"","QMX SIMD (inefficient for small blocks)"	},
   //-------- lz77 + [delta] + transpose/shuffle ---------------
-  { P_LZT,			"LzTurbo",	    	C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
+  { P_LZT,			"LzTurbo",	C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
   { P_VSHUF,		"VSimpleANS",		C_LZTURBO, 		BLK_SIZE, 0, "20,21,22,32" },
 
   { LZ4_,  			"lz4",				C_LZ4,			BLK_SIZE, 0, "",   "lz4" }, 

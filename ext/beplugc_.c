@@ -79,7 +79,7 @@
       #endif 
 	  //encode(void *encoded, size_t encoded_buffer_length, const integer *source, size_t source_integers)
 	  #if C_QMX
-    case P_QMX:  		{ JASS::compress_integer_qmx_improved    qmx; unsigned r=qmx.encode(out+4, outsize, (uint32_t *)in, (size_t)n); ctou32(out)=r; return out+4+r; } 
+    case P_QMX:  		{ JASS::compress_integer_qmx_improved    qmx; unsigned r=qmx.encode(out+4, outsize, (uint32_t *)in, n); ctou32(out)=r; return out+4+r; } 
 	  #endif
 	  
       #if C_SIMDCOMP

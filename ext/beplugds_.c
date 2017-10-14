@@ -28,7 +28,7 @@
                                                                                             bitdidec32(out, n, -mdelta, mdelta); break;*/
 	  #endif
       #if C_QMX    								
-    case P_QMX:  { vbxget32(in, x); *out = x; unsigned l = *(unsigned *)in; JASS::compress_integer_qmx_improved qmx; qmx.decode(out+1, n-1,  in+4, ctou32(in)); bitdidec32(out+1, n-1, x, mdelta); return in+4+ctou32(in);} 
+    case P_QMX:  { vbxget32(in, x); *out = x; if(n>1) { unsigned l = *(unsigned *)in; JASS::compress_integer_qmx_improved qmx; qmx.decode(out+1, n-1,  in+4, l); bitdidec32(out+1, n-1, x, mdelta); return in+=4+l; } return in; } 
       #endif
  	  
 	  #if C_SIMDCOMP

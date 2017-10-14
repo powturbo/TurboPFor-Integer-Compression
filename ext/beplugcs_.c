@@ -30,7 +30,7 @@
       #endif
 
 	  #if C_QMX
-    case P_QMX:  { bitdienc32( in+1, --n, pa, in[0], mdelta); vbxput32(out, in[0]); JASS::compress_integer_qmx_improved qmx; unsigned r=qmx.encode(out+4, outsize, (uint32_t *)pa, (uint64_t)n); return out+4+r; }
+    case P_QMX:  { bitdienc32( in+1, --n, pa, in[0], mdelta); vbxput32(out, in[0]); JASS::compress_integer_qmx_improved qmx; if(n) { unsigned r=qmx.encode(out+4, outsize, (uint32_t *)pa, n); ctou32(out) = r; return out+4+r; } return out; }
 	  #endif  
 
       #if C_SIMDCOMP				  
