@@ -276,7 +276,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);
   }
   b &= 0x7f;
-    #if defined(VSIZE) && USIZE < 64 
+    #if VSIZE >= 128 && USIZE < 64 
   { unsigned char *pb = in;	
       #if VSIZE == 128  
     in = TEMPLATE2(bitunpack, USIZE)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx); 
