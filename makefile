@@ -90,10 +90,12 @@ endif
 
 ifeq ($(QMX),1)
 DEFS+=-DQMX
+else
+CXXFLAGS+=-std=gnu++0x
 endif
 
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
-CXXFLAGS+=$(DDEBUG) $(MARCH) -w -std=gnu++0x -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
+CXXFLAGS+=$(DDEBUG) $(MARCH) -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
 
 all: icbench idxcr idxqry idxseg
 
