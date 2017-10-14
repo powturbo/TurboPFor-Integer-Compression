@@ -266,7 +266,7 @@ struct codecs codecs[] = {
   { C_LZTURBO, 		"LzTurbo",				"https://sites.google.com/site/powturbo" },
   { C_MASKEDVBYTE,	"MaskedVbyte",			"http://maskedvbyte.org" },
   { C_POLYCOM,		"Polycom",				"https://github.com/encode84/bcm" }, 
-  { C_QMX, 			"QMX",					"https://bitbucket.org/andrewtrotman/bench" },
+  { C_QMX, 		"QMX",					"https://bitbucket.org/andrewtrotman/bench" },
   { C_SIMDCOMP, 	"simdcomp",				"https://github.com/lemire/simdcomp" },
   { C_SIMPLE8B,		"Simple-8b optimized",	"https://github.com/powturbo/TurboPFor" },
   { C_STREAMVBYTE,	"Streamvbyte",			"https://github.com/lemire/streamvbyte" },
@@ -341,7 +341,7 @@ struct plugg plugg[] = {
 #define PAD8(__x) (((__x)+7)/8)
 //---------------------------------------------- plugins --------------------------------------------------------
 #include "conf.h"  
-unsigned char sbuf[BLK_SIZE*2+64];
+unsigned char sbuf[BLK_SIZE*2+1024];
 
 int codini(size_t insize, int codec) {
   switch(codec) {
