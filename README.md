@@ -72,7 +72,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
-(*) codecs inefficient for small block sizes are tested with 64Ki=64000 integers/block.
+(*) codecs inefficient for small block sizes are tested with 64Ki integers/block.
 
 - MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
 - **#BOLD** = pareto frontier.<br>
