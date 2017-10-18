@@ -42,7 +42,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
    Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
-   Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded
+   Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded.
 
         ./icbench -a1.5 -m0 -M255 -n100M ZIPF
 	
@@ -54,10 +54,10 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |65060504| 16.3| 5.20|15|687|[FP_SIMDOptPFor](#FastPFor)|
 |65359916|16.3| 5.23| 8| 609|PC_OptPFD|
 |73477088|18.4| 5.88|102| 621|PC_Simple16|
-|73481096| 18.4| 5.88|156|2187|[FP_SimdFastPFor](#FastPFor) 64k *|
+|73481096| 18.4| 5.88|156|2187|[FP_SimdFastPFor](#FastPFor) 64Ki *|
 |76345136| 19.1| 6.11|245|653|**VSimple**|
 |91947533| 23.0| 7.36|71|2934|[QMX](#QMX) 64k *|
-|93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64k *|
+|93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64Ki *|
 |95915096|24.0| 7.67|  212|958|Simple-8b|
 |99910930| 25.0| 7.99|**3494**|**2968**|**TurboPackV**|
 |99910930| 25.0| 7.99|2367|2351|**TurboPack**|
@@ -72,13 +72,13 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 |400000000|	100.00|	32.00| 2240|2237|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
-(*) codec efficient/usable only for large block size
+(*) codecs inefficient for small block sizes are tested with 64Ki=64000 integers/block.
 
-MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
-**#BOLD** = pareto frontier.<br>
-FP=FastPFor SC:simdcomp PC:Polycom<br>
-TurboPForDA,TurboForDA: Direct Access is normally used when accessing few individual values.
-
+- MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
+- **#BOLD** = pareto frontier.<br>
+- FP=FastPFor SC:simdcomp PC:Polycom<br>
+- TurboPForDA,TurboForDA: Direct Access is normally used when accessing few individual values.<br>
+- Eliasfano can be directly used only for increasing sequences
 ------------------------------------------------------------------------
 ##### - Data files:
  - gov2.sorted from [DocId data set](#DocId data set) Block size=128/Delta coding
@@ -117,6 +117,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 | 3.164.940.562| 13.2|**4.23**|**336**|**1501**|**TurboPFor 64Ki**|
 | 3.273.213.464| 13.7| 4.38|**374**|**1752**|**TurboPFor256 64Ki**|
 | 3.965.982.954| 16.6| 5.30|**380**| 613|[lz4](#lz4)+DT 64Ki|
+| 4.234.154.427| 17.7| 5.66| 109| 1418|qmx 64Ki| 
 | 6.074.995.117| 25.4| 8.13| 494| 729|[blosc_lz4](#blosc) 64Ki| 
 | 8.773.150.644| 36.7|11.74| 637|1301|blosc_lz 64Ki|
 
