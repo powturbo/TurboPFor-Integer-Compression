@@ -11,8 +11,8 @@ CXX ?= g++
 #CC=clang
 #CXX=clang++
 
-DDEBUG=-DNDEBUG 
-#DDEBUG=-g
+#DDEBUG=-DNDEBUG 
+DDEBUG=-g
 
 MARCH=-march=native
 #MARCH=-march=broadwell
