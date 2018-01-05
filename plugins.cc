@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2017
+    Copyright (C) powturbo 2013-2018
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -302,8 +302,8 @@ struct plugs plugs[] = {
   { TB_EF128V, 		"EliasFanoV",		C_TURBOPFOR,	BLK_V128,0,"","Eliasfano  (SSE2)" }, 
   { TB_EF256V,		"EliasFano256V",	C_TURBOPFOR,	BLK_V256,0,"","Elias fano (AVX2" }, 
 
-  { P_MCPY, 		"memcpy", 			C_MEMCPY 				 },
-  { P_COPY, 		"copy",		    	C_MEMCPY 				 },
+  { P_MCPY, 		"memcpy", 			C_MEMCPY,	0,    	 0,"","memcpy" 				 },
+  { P_COPY, 		"copy",		    	C_MEMCPY,	0,    	 0,"","Integer copy"		 },
   //----- Transform --------------
   { TP_BYTES, 		"tpbyte4s", 		C_TURBOPFOR,	BLK_SIZE,0,"","Byte Transpose (scalar)" }, 
   { TP_BYTE, 		"tpbyte",			C_TURBOPFOR,	BLK_SIZE,0,"2,4,8","Byte transpose (simd)" }, 
@@ -504,7 +504,7 @@ unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int
   switch(codec) {
     case TB_VBYTE:  x = *in++; --n; vbxput32(out, x);								return vbzenc32(  in, n, out, x);
     case TB_BP:     x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return bitzpack32(in, n, out, x, b);
-    case TB_BPN:    x = *in++; --n; vbxput32(out, x);           					return out+bitnzpack32(in, n, out);
+    case TB_BPN:               														return out+bitnzpack32(in, n, out);
 	  #if C_TURBOPFORV
     case TB_PF128V: x = *in++; --n; vbxput32(out, x);                               return n == 128?p4zenc128v32(in, n, out, x):p4zenc32(in, n, out, x);
     case TB_PFN128V:    										                    return out+p4nzenc128v32( in, n, out );
@@ -523,7 +523,7 @@ unsigned char *coddecompz(unsigned char *in, unsigned _n, unsigned char *_out, i
   switch(codec) { 
     case TB_VBYTE: vbxget32(in, x); *out++ = x; --n; 			return vbzdec32(in, n, out, x);
     case TB_BP:    vbxget32(in, x); *out++ = x; --n; b = *in++; return bitzunpack32(in, n, out, x, b);
-    case TB_BPN:   vbxget32(in, x); *out++ = x; --n;            return in+bitnzunpack32(in, n, out);
+    case TB_BPN:   												return in+bitnzunpack32(in, n, out);
 
 	  #if C_TURBOPFORV
     case TB_PFN128V:       							  		    return in+p4nzdec128v32(in, n, out);
