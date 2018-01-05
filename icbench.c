@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2017
+    Copyright (C) powturbo 2013-2018
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -134,7 +134,7 @@ int memcheck64(unsigned char *_in, unsigned _n, unsigned char *_cpy, int cmp) {
 //------------------------------- malloc ------------------------------------------------
 #define USE_MMAP
   #if __WORDSIZE == 64
-#define MAP_BITS 30
+#define MAP_BITS 31
   #else
 #define MAP_BITS 28
   #endif
@@ -1149,7 +1149,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, unsigned isize, FILE *
 }
 
 void usage(char *pgm) {
-  fprintf(stderr, "\nIcBench Copyright (c) 2013-2017 Powturbo %s\n", __DATE__);
+  fprintf(stderr, "\nIcBench Copyright (c) 2013-2018 Powturbo %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   fprintf(stderr, " -eS      S = compressors/groups separated by '/' Parameter can be specified after ','\n");
   fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
@@ -1475,8 +1475,8 @@ int main(int argc, char* argv[]) {
     char *q; 
     size_t        outsize,insize;
     unsigned char *_in, *_cpy, *out;
-    int           inlen;																	
-    int64_t ftotinlen=0;
+    //int           inlen;																	
+    int64_t inlen, ftotinlen=0;
     struct plug *p;
 	int checks = 0;
     finame = argvx[fno];																			if(verbose > 1) printf("%s\n", finame);        		
