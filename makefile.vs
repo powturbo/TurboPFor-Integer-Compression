@@ -1,3 +1,4 @@
+# powturbo  (c) Copyright 2013-2018
 # nmake "NCODEC1=1" "NCODEC2=1" /f makefile.vs
 # or
 # nmake "AVX2=1" /f makefile.vs
