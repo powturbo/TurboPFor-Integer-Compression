@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2017
+    Copyright (C) powturbo 2013-2018
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -228,6 +228,7 @@ unsigned char *bitd1unpack128h32(const unsigned char *__restrict in, unsigned n,
 unsigned char *_bitunpack128v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 unsigned char *_bitd1unpack128v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
 unsigned char *_bitunpack128h32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 unsigned char *_bitdunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
