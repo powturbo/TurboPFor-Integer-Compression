@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2017
+    Copyright (C) powturbo 2013-2018
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@
 int verb;
 
 void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2017 Powturbo  %s\n", __DATE__);
+  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2018 Powturbo  %s\n", __DATE__);
   fprintf(stderr, "https://github.com/powturbo/TurboPFor\n\n");
   fprintf(stderr, "Create inverted index from 'Document identifier data set' format\n");
   fprintf(stderr, "See http://lemire.me/data/integercompression2014.html'\n");
