@@ -120,9 +120,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define _BITPACK_ bitepack
 #include "bitpack_.h"*/
 
-#define IPB(_ip_,_x_, _parm_) 	V = zigzagenc32(IP(_ip_,_x_) - start); start = IP(_ip_,_x_)
+#define IPB(_ip_,_x_, _parm_) 	V = TEMPLATE2(zigzagenc, USIZE)(IP(_ip_,_x_) - start); start = IP(_ip_,_x_)
 #define IPV(_ip_,_x_) 			VX
-#define IPX(_ip_,_x_) 		   (V = zigzagenc32(IP(_ip_,_x_) - start))
+#define IPX(_ip_,_x_) 		   (V = TEMPLATE2(zigzagenc, USIZE)(IP(_ip_,_x_) - start))
 #define IPP(_ip_,_x_, _parm_) 	start = IP(_ip_,_x_)
 #define _BITPACK_ bitzpack
 #include "bitpack_.h"
@@ -148,11 +148,10 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
   for(ip = in, in += n; ip < in;) { \
     unsigned iplen = in - ip,b;\
     if(iplen > csize) iplen = csize;							PREFETCH(ip+512);\
-    TEMPLATE2(BITSIZE,usize)(ip, iplen, b); /*if(b!=usize) printf("$%d ", b);*/\
-	*op++ = b; \
-	op = TEMPLATE2(bitpacka, usize)[b](ip, csize, op); \
+    TEMPLATE2(BITSIZE,usize)(ip, iplen, b);\
+	*op++ = b; op = TEMPLATE2(bitpacka, usize)[b](ip, iplen, op); \
 	ip += iplen;\
-  } \
+  }\
   return op - out;\
 }
 
@@ -163,13 +162,12 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
   TEMPLATE2(vbxput, usize)(op, start);\
   for(ip = in,--n, in += n; ip < in;) { \
     unsigned iplen = in - ip,b;\
-    TEMPLATE3(uint, usize, _t) _in[csize+8];\
 	if(iplen > csize) iplen = csize;								PREFETCH(ip+512);\
     b = TEMPLATE2(_bitd_, usize)(ip, iplen, start);\
-    *op++ = b; op = TEMPLATE2(_bitpacka_, usize)[b](ip, csize, op, start);\
+    *op++ = b; op = TEMPLATE2(_bitpacka_, usize)[b](ip, iplen, op, start);\
 	ip += iplen;\
     start = ip[-1];\
-  } \
+  }\
   return op - out;\
 }
 
