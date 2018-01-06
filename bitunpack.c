@@ -69,7 +69,7 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 #define _BITUNPACK_ bitdunpack  // delta + 0
 #include "bitunpack_.h"
     
-#define OUT( _op_, _x_, _w_, _parm_) OP(_op_,_x_) = (_parm_ += zigzagdec32(_w_))
+#define OUT( _op_, _x_, _w_, _parm_) OP(_op_,_x_) = (_parm_ += TEMPLATE2(zigzagdec, USIZE)(_w_))
 #define _BITUNPACK_ bitzunpack  // zigzag
 #include "bitunpack_.h"
   
@@ -89,7 +89,7 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 
 #define BITNUNPACK(in, n, out, csize, usize) {\
   unsigned char *ip = in;\
-  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > csize) oplen = csize;		__builtin_prefetch(in+512,0);\
+  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > csize) oplen = csize;		PREFETCH(in+512,0);\
     b = *ip++; ip = TEMPLATE2(bitunpacka, usize)[b](ip, oplen, op);\
 	op += oplen;\
   } \
