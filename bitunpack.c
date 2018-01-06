@@ -89,7 +89,7 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 
 #define BITNUNPACK(in, n, out, csize, usize) {\
   unsigned char *ip = in;\
-  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > csize) oplen = csize;		PREFETCH(in+512,0);\
+  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > csize) oplen = csize;		PREFETCH(in+512);\
     b = *ip++; ip = TEMPLATE2(bitunpacka, usize)[b](ip, oplen, op);\
 	op += oplen;\
   } \
