@@ -277,6 +277,8 @@ idxseg:   idxseg.o $(ICLIB)
 ictest:   ictest.o $(ICLIB)
 	$(CC) $^ $(LDFLAGS) -o ictest
 
+icapp:   icapp.o $(ICLIB)
+	$(CC) $^ $(LDFLAGS) -o icapp
 
 ifeq ($(UNAME), Linux)
 para: CFLAGS += -DTHREADMAX=32	
