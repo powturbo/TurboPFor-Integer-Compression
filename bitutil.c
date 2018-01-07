@@ -288,15 +288,35 @@ unsigned bitzenc32(unsigned *in, unsigned n, unsigned *out, unsigned start, uint
   return bsr32(b);
 }
 
-#define ZD(i) _z = _p[i]; _p[i] = (start += (_z >> 1 ^ -(_z & 1)))
-#define BITZDEC(_t_, _p_, _n_) { _t_ *_p,_z;\
-  for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { ZD(0); ZD(1); ZD(2); ZD(3); }\
-  for(;_p != _p_+_n_;_p++) ZD(0);\
+#define ZD(_t_, i) { _t_ _z = _p[i]; _p[i] = (start += (_z >> 1 ^ -(_z & 1))); }
+#define BITZDEC(_t_, _p_, _n_) { _t_ *_p;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { ZD(_t_, 0); ZD(_t_, 1); ZD(_t_, 2); ZD(_t_, 3); }\
+  for(;_p != _p_+_n_;_p++) ZD(_t_, 0);\
 }
 
 void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(uint8_t,  p, n); }
-void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { BITZDEC(uint16_t, p, n); }
 void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(uint64_t, p, n); }
+
+void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { 
+    #if defined(__SSSE3__) 
+  __m128i sv = _mm_set1_epi16(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
+  uint16_t *ip;
+  for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip); 
+    iv = UNZIGZAG128x16(iv); 
+	SCAN128x16(iv, sv);
+	_mm_storeu_si128((__m128i *)ip, sv); 
+  }
+  start = (uint16_t)_mm_cvtsi128_si32(_mm_srli_si128(sv,14));
+  while(ip != p+n) {
+    uint16_t z = *ip; 
+	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
+  }
+    #else
+  BITZDEC(uint16_t, p, n);
+    #endif
+}
+
 void bitzdec32(unsigned *p, unsigned n, unsigned start) { 
     #if defined(__AVX2__) && defined(USE_AVX2)
   __m256i sv = _mm256_set1_epi32(start), zv = _mm256_setzero_si256(); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
