@@ -28,7 +28,7 @@ NCODEC1=1
 NCODEC2=1
 else
 NSIMD=0
-CFLAGS+=-DUSE_SEE
+CFLAGS+=-DUSE_SSE -mssse3
 endif
 
 ifeq ($(AVX2),1)
@@ -103,7 +103,7 @@ cpp: $(CPPF)
 	$(CC) -DSSE2_ON $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
 bitutil.o: bitutil.c
-	$(CC) -O3 -falign-loops=32  $< -c -o $@
+	$(CC) -O3 $(CFLAGS) -falign-loops=32 $< -c -o $@
 #----------
 vp4c.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4c.c -o vp4c.o
