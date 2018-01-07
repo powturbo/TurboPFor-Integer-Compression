@@ -80,7 +80,6 @@ static inline uint64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
   _sv_ = _mm256_add_epi32(     _mm256_permute2x128_si256(   _mm256_shuffle_epi32(_sv_,_MM_SHUFFLE(3, 3, 3, 3)), _sv_, 0x11), \
          _mm256_add_epi32(_v_, _mm256_permute2x128_si256(zv,_mm256_shuffle_epi32(_v_, _MM_SHUFFLE(3, 3, 3, 3)),       0x20)));\
 }
-
 #define SCANI256x32(_v_, _sv_, _vi_) SCAN256x32(_v_, _sv_); _sv_ = _mm256_add_epi32(_sv_, _vi_)
 
 #define   ZIGZAG256x32(_v_) _mm256_xor_si256(_mm256_slli_epi32(_v_,1), _mm256_srai_epi32(_v_,31))
@@ -94,12 +93,25 @@ static inline uint64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
 #include <emmintrin.h>
 
 #define DELTA128x32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_or_si128(_mm_srli_si128(_sv_, 12), _mm_slli_si128(_v_, 4)))
+
+    #ifdef __SSSE3__
+#include <tmmintrin.h>
 // SIMD Scan ( prefix sum ) 
+#define SCAN128x16( _v_, _sv_) {\
+  _v_  = _mm_add_epi16(_v_, _mm_slli_si128(_v_, 2));\
+  _v_  = _mm_add_epi16(_v_, _mm_slli_si128(_v_, 4));\
+  _sv_ = _mm_add_epi16(_mm_add_epi16(_v_, _mm_slli_si128(_v_, 8)), _mm_shuffle_epi8(_sv_, _mm_set_epi8(15,14,15,14,15,14,15,14,15,14,15,14,15,14,15,14)));\
+}
+    #endif
+
 #define SCAN128x32( _v_, _sv_) _v_ = _mm_add_epi32(_v_, _mm_slli_si128(_v_, 4)); _sv_ = _mm_add_epi32(_mm_shuffle_epi32(_sv_, _MM_SHUFFLE(3, 3, 3, 3)), _mm_add_epi32(_mm_slli_si128(_v_, 8), _v_) )
 #define SCANI128x32(_v_, _sv_, _vi_) SCAN128x32(_v_, _sv_); _sv_ = _mm_add_epi32(_sv_, _vi_)
 
+#define   ZIGZAG128x16(_v_) _mm_xor_si128(_mm_slli_epi16(_v_,1), _mm_srai_epi16(_v_,15))
 #define   ZIGZAG128x32(_v_) _mm_xor_si128(_mm_slli_epi32(_v_,1), _mm_srai_epi32(_v_,31))
+#define UNZIGZAG128x16(_v_) _mm_xor_si128(_mm_srli_epi16(_v_,1), _mm_srai_epi16(_mm_slli_epi16(_v_,15),15) )
 #define UNZIGZAG128x32(_v_) _mm_xor_si128(_mm_srli_epi32(_v_,1), _mm_srai_epi32(_mm_slli_epi32(_v_,31),31) ) //_mm_sub_epi32(cz, _mm_and_si128(iv,c1))
+
 // SIMD Horizontal OR
 #define HOR128x32(_v_,_b_) _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 8)); _v_ = _mm_or_si128(_v_, _mm_srli_si128(_v_, 4)); _b_ = (unsigned)_mm_cvtsi128_si32(_v_)
   #endif 
