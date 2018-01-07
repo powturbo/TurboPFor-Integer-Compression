@@ -21,7 +21,7 @@
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    TurboRLE - "Most efficient and fastest Run Length Encoding"
+    TurboPFor - "Benchmark demo application"
 **/      
 #include <string.h> 
 #include <stdio.h>
@@ -112,10 +112,10 @@ int main(int argc, char* argv[]) {
 	
     if(flen > b) flen = b;
     n = flen; 
-    if(!(in  =        (unsigned char*)malloc(n+1024)))        { fprintf(stderr, "malloc error\n"); exit(-1); } cpy = in;
+    if(!(in  =        (unsigned char*)malloc(n+1024)))     { fprintf(stderr, "malloc error\n"); exit(-1); } cpy = in;
     if(!(out =        (unsigned char*)malloc(flen*4/3+1024))) { fprintf(stderr, "malloc error\n"); exit(-1); } 
-    if(cmp && !(cpy = (unsigned char*)malloc(n+1024)))        { fprintf(stderr, "malloc error\n"); exit(-1); }
-    n = fread(in, 1, n, fi);									printf("File='%s' Length=%u\n", inname, n);			
+    if(cmp && !(cpy = (unsigned char*)malloc(n+1024)))     { fprintf(stderr, "malloc error\n"); exit(-1); }
+    n = fread(in, 1, n, fi);								 printf("File='%s' Length=%u\n", inname, n);			
     fclose(fi);
     if(n <= 0) exit(0); 
     if(fno == optind)
