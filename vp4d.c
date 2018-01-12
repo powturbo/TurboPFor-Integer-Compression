@@ -40,7 +40,7 @@
 
   #ifdef __SSSE3__
 #include <tmmintrin.h>
-static char shuffles[16][16] = {
+extern char _shuffle_32[16][16];/* = {
   #define _ 0x80
         { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
         { 0,1,2,3, _,_,_,_, _,_, _, _,  _, _, _,_  },
@@ -59,7 +59,8 @@ static char shuffles[16][16] = {
         { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  8, 9,10,11 },
         { 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15 }, 
   #undef _
-};
+};*/
+extern char _shuffle_16[256][16]; // defined in bitunpack.c
   #endif
   
   #if !defined(SSE2_ON) && !defined(AVX2_ON)
@@ -73,17 +74,14 @@ static char shuffles[16][16] = {
 #define _BITUNPACKD  bitunpack  // integrated pfor
 
 #define  P4DECX  // direct access no 64 bits
-
 #define USIZE 8
 #include "vp4d.c"
-
 #define USIZE 16
 #include "vp4d.c"
-
 #define USIZE 32
 #include "vp4d.c"
-#undef  P4DECX
 
+#undef  P4DECX
 #define USIZE 64
 #include "vp4d.c"
 
@@ -100,13 +98,10 @@ static char shuffles[16][16] = {
 #define  BITUNDD     bitddec
 #define USIZE 8
 #include "vp4d.c"
-
 #define USIZE 16
 #include "vp4d.c"
-
 #define USIZE 32
 #include "vp4d.c"
-
 #define USIZE 64
 #include "vp4d.c"
 
@@ -119,13 +114,10 @@ static char shuffles[16][16] = {
 #define  BITUNDD     bitd1dec
 #define USIZE 8
 #include "vp4d.c"
-
 #define USIZE 16
 #include "vp4d.c"
-
 #define USIZE 32
 #include "vp4d.c"
-
 #define USIZE 64
 #include "vp4d.c"
 
@@ -138,13 +130,10 @@ static char shuffles[16][16] = {
 #define  BITUNDD     bitzdec
 #define USIZE 8
 #include "vp4d.c"
-
 #define USIZE 16
 #include "vp4d.c"
-
 #define USIZE 32
 #include "vp4d.c"
-
 #define USIZE 64
 #include "vp4d.c"
                         
@@ -155,14 +144,14 @@ static char shuffles[16][16] = {
 #undef  P4DELTA
   #endif
   
-#define USIZE 32
+#undef USIZE
+#undef DELTA
 
 #if defined(__SSSE3__) && defined(SSE2_ON)
 
 #define VSIZE 128
 #define P4DELTA(a)
 #define P4DELTA_(a)
-#undef  DELTA
 
 #define _P4DEC        _p4dec128v
 #define  P4DEC         p4dec128v
@@ -171,6 +160,9 @@ static char shuffles[16][16] = {
 #define  BITUNPACK     bitunpack128v
 #define  BITUNPACKD    bitunpack128v
 #define  _BITUNPACKD  _bitunpack128v
+#define USIZE 16
+#include "vp4d.c"
+#define USIZE 32
 #include "vp4d.c"
 
 #define P4DELTA(a) ,a
@@ -184,6 +176,9 @@ static char shuffles[16][16] = {
 #define  BITUNPACKD    bitdunpack128v
 #define  _BITUNPACKD  _bitdunpack128v
 #define  BITUNDD       bitddec
+#define USIZE 16
+#include "vp4d.c"
+#define USIZE 32
 #include "vp4d.c"
 
 #define _P4DEC        _p4d1dec128v
@@ -193,6 +188,9 @@ static char shuffles[16][16] = {
 #define  BITUNPACKD    bitd1unpack128v
 #define  _BITUNPACKD  _bitd1unpack128v
 #define  BITUNDD       bitd1dec
+#define USIZE 16
+#include "vp4d.c"
+#define USIZE 32
 #include "vp4d.c"
 
 #define _P4DEC        _p4zdec128v
@@ -202,6 +200,9 @@ static char shuffles[16][16] = {
 #define  BITUNPACKD    bitzunpack128v
 #define  _BITUNPACKD  _bitzunpack128v
 #define  BITUNDD       bitzdec
+#define USIZE 16
+#include "vp4d.c"
+#define USIZE 32
 #include "vp4d.c"
 
 #undef  BITUNDD
@@ -304,7 +305,15 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     { uint_t *_op=out,*op,*pex = ex; 	
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf; 
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)shuffles[m]) ) )); pex += popcnt32(m);
+          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
+        } _op+=64;
+      }
+    }	
+      #elif defined(__SSSE3__) && USIZE == 16
+    { uint_t *_op=out,*op,*pex = ex; 	
+      for(i = 0; i < p4dn; i++) {
+        for(op=_op;  bb[i]; bb[i] >>= 8,op+=8) { const unsigned char m = bb[i]; 
+          _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
         } _op+=64;
       }
     }	
