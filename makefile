@@ -100,7 +100,7 @@ CXXFLAGS+=$(DDEBUG) $(MARCH) -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastP
 all: icbench idxcr idxqry idxseg
 
 cpp: $(CPPF)
-	$(CC) -DSSE2_ON $(MSSE) $(MARCH) -w -E -P $(CPPF)
+	$(CC) -DSSE2_ON -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
 bitutil.o: bitutil.c
 	$(CC) -O3 $(CFLAGS) -falign-loops=32 $< -c -o $@
