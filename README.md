@@ -3,14 +3,14 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 * **TurboPFor: The new synonym for "integer compression"**
   * 100% C (C++ headers), as simple as memcpy
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
-  * :sparkles: **FULL** range 8/16/32/64 bits lists
+  * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
   * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Zigzag for sorted/unsorted arrays
+  * :new: **16 bits** SIMD integrated functions
 * **For/PFor/PForDelta**
   * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**.
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
   * Compress 70 times faster and decompress up to 4 times faster than OptPFD
-  * :new: **TurboPFor Hybrid, better compression and more faster**
 * **Bit Packing**
   * :sparkles: Fastest and most efficient **"SIMD Bit Packing"** **10 Billions integers/sec (40Gb/s)**
   * Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
@@ -24,7 +24,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 + **Transform**
   * :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
 * **Floating Point Compression**
-  * :new: (Differential) Finite Context Method FCM/DFCM floating point compression
+  * :sparkles: (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, more than 2 GB/s throughput
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
@@ -383,5 +383,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  06 Jan 2018
+Last update:  12 Jan 2018
 
