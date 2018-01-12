@@ -1261,7 +1261,8 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
 #define RND64 ( (R64<<60) ^ (R64<<45) ^ (R64<<30) ^ (R64<<15) ^ (R64<<0) )
 #define NN (4*1024*1024)
 
-uint64_t in[NN+256],cpy[NN+256]; 
+//uint64_t in[NN+256],cpy[NN+256]; 
+uint16_t in[NN+256],cpy[NN+256]; 
 unsigned char out[NN*16];
 
 void vstest64(int id, int rm,int rx, unsigned n) {   
@@ -1303,6 +1304,54 @@ void vstest64(int id, int rm,int rx, unsigned n) {
   fprintf(stderr,"\n");  
   exit(0);
 }
+
+
+void vstest16(int id, int rm,int rx, unsigned n) {   
+  unsigned b,i;																				fprintf(stderr,"16 bits test.n=%d ", n); 
+ 
+  if(n > NN) n = NN;  																		//if(id==5) n = 128;
+  for(b = rm; b <= min(rx,16); b++) {    
+    uint64_t start = 0, msk = (1u << b)-1;
+    unsigned char *op;																		fprintf(stderr,"\nb=%d:", b);  
+    for(i = 0; i < n; i++) {
+      in[i] = be_rand?rand()&msk:msk; //(/*start +=*/ RND64 & msk);						//fprintf(stderr, ".%llx ", in[0]); 
+      if(bsr16(in[i]) > b) die("Fatal error at b=%d ", b);
+    }
+    in[0]   = msk;
+    in[n-1] = msk;
+    switch(id) { 
+      case 0: op = vbenc16(   in, n, out);    break;
+//      case 1: op = bitpack16( in, n, out, b); break;
+      case 2: op = out+bitnpack16(in, n, out); break;
+      case 3: op = out+bitnpack128v16(in, n, out); break;
+      case 4: op = out+p4nenc16(   in, n, out);    break;
+      case 5: op = out+p4nzenc16(   in, n, out);    break;
+      case 6: op = out+p4nenc128v16(   in, n, out);    break;
+//    case 4: op = vsenc16(   in, n, out);    break;
+      //case 5: op = efanoenc64(in, n, out, 0); break;
+    }
+    fprintf(stderr,"%d ", (int)(op-out) );  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
+    memrcpy(cpy, in, n*sizeof(in[0]));
+    switch(id) {
+      case 0: vbdec16(    out, n, cpy);      break;
+//      case 1: bitunpack16(out, n, cpy, b);   break;
+      case 2: bitnunpack16(out, n, cpy);   break;
+      case 3: bitnunpack128v16(out, n, cpy);   break;
+      case 4: p4ndec16(    out, n, cpy);      break;
+      case 5: p4nzdec16(    out, n, cpy);      break;
+      case 6: p4ndec128v16(    out, n, cpy);      break;
+      //case 4: vsdec64(    out, n, cpy);      break;
+      //case 5: efanodec64( out, n, cpy, 0);   break;
+    }
+	uint16_t *p = cpy;
+	for(i = 0; i < n; i++) 
+      if(in[i] != p[i]) {
+        fprintf(stderr, "Error b=%d at '%d' (in=%x,cpy=%x)", b, i, in[i], p[i]); break;
+      }
+  }
+  fprintf(stderr,"\n");  
+  exit(0);
+}
   #else
 #define vstest64(id,rm,rx,n)
   #endif
@@ -1327,7 +1376,7 @@ int main(int argc, char* argv[]) {
       { "help", 	0, 0, 'h'},
       { 0, 		    0, 0, 0}
     };
-    if((c = getopt_long(argc, argv, "1234a:A:b:B:cC:d:De:E:F:f:gGHi:I:j:J:k:K:l:L:m:M:n:N:oOPp:Q:q:rRs:S:t:T:Uv:V:W:X:Y:Z:z:", long_options, &option_index)) == -1) break;
+    if((c = getopt_long(argc, argv, "1234a:A:b:B:cC:d:De:E:F:f:gGHi:I:j:J:k:K:l:L:m:M:n:N:oOPp:Q:q:rRs:S:t:T:Uv:V:W:X:Y:Z:y:z:", long_options, &option_index)) == -1) break;
     switch(c) { 
       case 0:
         printf("Option %s", long_options[option_index].name);
@@ -1395,6 +1444,7 @@ int main(int argc, char* argv[]) {
       case 'n': n       = argtoi(optarg,1);   break;
       case 'm': rm      = argtoi(optarg,1);   break;
       case 'M': rx      = argtoi(optarg,1);  break;
+	  case 'y': vstest16(atoi(optarg),rm,rx,n); break;
 	  case 'z': vstest64(atoi(optarg),rm,rx,n); break;
       BEOPT;
 	  case 'h':
