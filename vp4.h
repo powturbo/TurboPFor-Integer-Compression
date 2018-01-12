@@ -40,7 +40,8 @@ extern "C" {
 size_t p4nenc8(       uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nenc16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nenc32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
-size_t p4nenc128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out); // SIMD (Vertical bitpacking)
+size_t p4nenc128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out); // SIMD (Vertical bitpacking)
+size_t p4nenc128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nenc256w32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nenc64(      uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -49,6 +50,7 @@ size_t p4nenc64(      uint64_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4ndenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4ndenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4ndenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4ndenc64(     uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -56,6 +58,7 @@ size_t p4ndenc64(     uint64_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4nd1enc8(     uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4nd1enc128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nd1enc128v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nd1enc64(    uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -63,6 +66,7 @@ size_t p4nd1enc64(    uint64_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4nzenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nzenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nzenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4nzenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nzenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t p4nzenc64(     uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -72,6 +76,7 @@ size_t p4nzenc64(     uint64_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4ndec8(       unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t p4ndec16(      unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t p4ndec32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out);  
+size_t p4ndec128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out);  
 size_t p4ndec128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);  
 size_t p4ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);  
 size_t p4ndec64(      unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
@@ -80,6 +85,7 @@ size_t p4ndec64(      unsigned char *__restrict in, size_t n, uint64_t *__restri
 size_t p4nddec8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t p4nddec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t p4nddec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t p4nddec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out); 
 size_t p4nddec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 size_t p4nddec256w32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 size_t p4nddec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
@@ -88,6 +94,7 @@ size_t p4nddec64(     unsigned char *__restrict in, size_t n, uint64_t *__restri
 size_t p4nd1dec8(     unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t p4nd1dec16(    unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t p4nd1dec32(    unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t p4nd1dec128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out); 
 size_t p4nd1dec128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 size_t p4nd1dec256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 size_t p4nd1dec64(    unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
@@ -95,6 +102,7 @@ size_t p4nd1dec64(    unsigned char *__restrict in, size_t n, uint64_t *__restri
 size_t p4nzdec8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t p4nzdec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t p4nzdec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t p4nzdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out); 
 size_t p4nzdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 size_t p4nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 size_t p4nzdec64(     unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
@@ -109,7 +117,8 @@ size_t p4nzdec64(     unsigned char *__restrict in, size_t n, uint64_t *__restri
 unsigned char *p4enc8(       uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out);
 unsigned char *p4enc16(      uint16_t *__restrict in, unsigned n, unsigned char *__restrict out);
 unsigned char *p4enc32(      uint32_t *__restrict in, unsigned n, unsigned char *__restrict out);
-unsigned char *p4enc128v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); // SSE (Vertical bitpacking)
+unsigned char *p4enc128v16(  uint16_t *__restrict in, unsigned n, unsigned char *__restrict out); // SSE (Vertical bitpacking)
+unsigned char *p4enc128v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); 
 unsigned char *p4enc256v32(  uint32_t *__restrict in, unsigned n, unsigned char *__restrict out); // AVX2 
 unsigned char *p4enc64(      uint64_t *__restrict in, unsigned n, unsigned char *__restrict out);
 
@@ -123,6 +132,7 @@ unsigned char *p4encx64(     uint64_t *__restrict in, unsigned n, unsigned char 
 unsigned char *p4denc8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);
 unsigned char *p4denc16(     uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4denc32(     uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
+unsigned char *p4denc128v16( uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4denc128v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
 unsigned char *p4denc256v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); 
 unsigned char *p4denc64(     uint64_t *__restrict in, unsigned n, unsigned char *__restrict out, uint64_t start);
@@ -136,7 +146,8 @@ unsigned char *p4dencx32(    unsigned *__restrict in, unsigned n, unsigned char 
 unsigned char *p4d1enc8(     uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);
 unsigned char *p4d1enc16(    uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4d1enc32(    uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
-unsigned char *p4d1enc128v32(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); // SIMD (Vertical bitpacking)
+unsigned char *p4d1enc128v16(uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start); // SIMD (Vertical bitpacking)
+unsigned char *p4d1enc128v32(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); 
 unsigned char *p4d1enc256v32(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); 
 unsigned char *p4d1enc64(    uint64_t *__restrict in, unsigned n, unsigned char *__restrict out, uint64_t start);
 
@@ -147,6 +158,7 @@ unsigned char *p4d1encx32(   uint32_t *__restrict in, unsigned n, unsigned char 
 unsigned char *p4zenc8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, uint8_t  start);
 unsigned char *p4zenc16(     uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4zenc32(     uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
+unsigned char *p4zenc128v16( uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, uint16_t start);
 unsigned char *p4zenc128v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start);
 unsigned char *p4zenc256v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, uint32_t start); 
 unsigned char *p4zenc64(     uint64_t *__restrict in, unsigned n, unsigned char *__restrict out, uint64_t start);
@@ -155,6 +167,7 @@ unsigned char *p4zenc64(     uint64_t *__restrict in, unsigned n, unsigned char 
 inline unsigned char *_p4enc8(      uint8_t  *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
 inline unsigned char *_p4enc16(     uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
 inline unsigned char *_p4enc32(     uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); 
+inline unsigned char *_p4enc128v16( uint16_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical bitpacking)
 inline unsigned char *_p4enc128v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical bitpacking)
 inline unsigned char *_p4enc256v32( uint32_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx); 
 inline unsigned char *_p4enc64(     uint64_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx);
@@ -184,13 +197,15 @@ unsigned _p4bitsx64(         uint64_t *__restrict in, unsigned n, unsigned *pbx)
 inline unsigned char *_p4dec8(       unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, unsigned b, unsigned bx);
 inline unsigned char *_p4dec16(      unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, unsigned b, unsigned bx);
 inline unsigned char *_p4dec32(      unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, unsigned b, unsigned bx);
-inline unsigned char *_p4dec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+inline unsigned char *_p4dec128v16(  unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+inline unsigned char *_p4dec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, unsigned b, unsigned bx); 
 inline unsigned char *_p4dec64(      unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, unsigned b, unsigned bx);
 
 unsigned char *p4dec8(        unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out);
 unsigned char *p4dec16(       unsigned char *__restrict in, unsigned n, uint16_t *__restrict out);
 unsigned char *p4dec32(       unsigned char *__restrict in, unsigned n, uint32_t *__restrict out);  
-unsigned char *p4dec128v32(   unsigned char *__restrict in, unsigned n, uint32_t *__restrict out);  // SIMD (Vertical BitPacking)
+unsigned char *p4dec128v16(   unsigned char *__restrict in, unsigned n, uint16_t *__restrict out);  // SIMD (Vertical BitPacking)
+unsigned char *p4dec128v32(   unsigned char *__restrict in, unsigned n, uint32_t *__restrict out);  
 unsigned char *p4dec256v32(   unsigned char *__restrict in, unsigned n, uint32_t *__restrict out);  
 unsigned char *p4dec64(       unsigned char *__restrict in, unsigned n, uint64_t *__restrict out);
 //------ Delta decoding --------------------------- Return value = end of packed input buffer in ---------------------------
@@ -199,6 +214,7 @@ unsigned char *p4dec64(       unsigned char *__restrict in, unsigned n, uint64_t
 unsigned char *_p4ddec8(      unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
 unsigned char *_p4ddec16(     unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
 unsigned char *_p4ddec32(     unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+unsigned char *_p4ddec128v16( unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
 unsigned char *_p4ddec128v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
 unsigned char *_p4ddec256v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
 unsigned char *_p4ddec64(     unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
@@ -206,7 +222,8 @@ unsigned char *_p4ddec64(     unsigned char *__restrict in, unsigned n, uint64_t
 unsigned char *p4ddec8(       unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start);
 unsigned char *p4ddec16(      unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start);
 unsigned char *p4ddec32(      unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start);
-unsigned char *p4ddec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); // SIMD (Vertical BitPacking)
+unsigned char *p4ddec128v16(  unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start); // SIMD (Vertical BitPacking)
+unsigned char *p4ddec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); 
 unsigned char *p4ddec256v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); 
 unsigned char *p4ddec64(      unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
 
@@ -215,14 +232,16 @@ unsigned char *p4ddec64(      unsigned char *__restrict in, unsigned n, uint64_t
 unsigned char *_p4d1dec8(     unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
 unsigned char *_p4d1dec16(    unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
 unsigned char *_p4d1dec32(    unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
-unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+unsigned char *_p4d1dec128v16(unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx); // SIMD (Vertical BitPacking)
+unsigned char *_p4d1dec128v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx); 
 unsigned char *_p4d1dec256v32(unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
 unsigned char *_p4d1dec64(    unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
 
 unsigned char *p4d1dec8(      unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start);
 unsigned char *p4d1dec16(     unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start);
 unsigned char *p4d1dec32(     unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start);
-unsigned char *p4d1dec128v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); // SIMD (Vertical BitPacking)
+unsigned char *p4d1dec128v16( unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start); // SIMD (Vertical BitPacking)
+unsigned char *p4d1dec128v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); 
 unsigned char *p4d1dec256v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); 
 unsigned char *p4d1dec64(     unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
 
@@ -230,6 +249,7 @@ unsigned char *p4d1dec64(     unsigned char *__restrict in, unsigned n, uint64_t
 inline unsigned char *_p4zdec8(      unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b, unsigned bx);
 inline unsigned char *_p4zdec16(     unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
 inline unsigned char *_p4zdec32(     unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
+inline unsigned char *_p4zdec128v16( unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b, unsigned bx);
 inline unsigned char *_p4zdec128v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
 inline unsigned char *_p4zdec256v32( unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b, unsigned bx);
 inline unsigned char *_p4zdec64(     unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b, unsigned bx);
@@ -237,7 +257,8 @@ inline unsigned char *_p4zdec64(     unsigned char *__restrict in, unsigned n, u
 unsigned char *p4zdec8(       unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start);
 unsigned char *p4zdec16(      unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start);
 unsigned char *p4zdec32(      unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start);
-unsigned char *p4zdec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); // SIMD (Vertical BitPacking)
+unsigned char *p4zdec128v16(  unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start); // SIMD (Vertical BitPacking)
+unsigned char *p4zdec128v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start);
 unsigned char *p4zdec256v32(  unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start); 
 unsigned char *p4zdec64(      unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
 
