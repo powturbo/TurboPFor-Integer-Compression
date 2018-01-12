@@ -38,6 +38,7 @@
 
 #define _P4BITS _p4bits
 #define  P4BITS _p4bits
+#define HYBRID 1 // Hybrid TurboPFor : 0=fixed bit packing, 1=fixed BP+Variable byte 
 
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
 
@@ -46,79 +47,56 @@
 #define  P4NENC   p4nenc
 #define  BITPACK  bitpack
 #define  BITDELTA bitdienc
-
 #define USIZE 8
 #include "vp4c.c"
-
-#define HYBRID 1 // Hybrid TurboPFor : 0=fixed bit packing, 1=fixed BP+Variable byte 
 #define USIZE 16
 #include "vp4c.c"
-
 #define USIZE 32
 #include "vp4c.c"
-
 #define USIZE 64
 #include "vp4c.c"
 
-#define P4DELTA 0
+#define P4DELTA 0  // p4d functions
 #define  P4DENC   p4denc
 #define  P4NENC   p4ndenc
 #define  P4NENCS  p4denc
-
-#define HYBRID 0
 #define USIZE 8
 #include "vp4c.c"
-
-#define HYBRID 1
 #define USIZE 16
 #include "vp4c.c"
-
 #define USIZE 32
 #include "vp4c.c"
-
 #define USIZE 64
 #include "vp4c.c"
 
-#define P4DELTA 1
+#define P4DELTA 1  // p4d1 functions
 #define  P4DENC   p4d1enc
 #define  P4NENC   p4nd1enc
 #define  P4NENCS  p4d1enc
-
-#define HYBRID 0
 #define USIZE 8
 #include "vp4c.c"
-
-#define HYBRID 1
 #define USIZE 16
 #include "vp4c.c"
-
 #define USIZE 32
 #include "vp4c.c"
-
 #define USIZE 64
 #include "vp4c.c"
 
-#define  BITDELTA  bitzenc
+#define  BITDELTA  bitzenc // // p4z functions
 #define  P4DENC   p4zenc
 #define  P4NENC   p4nzenc
 #define  P4NENCS  p4zenc
-
-#define HYBRID 0
 #define USIZE 8
 #include "vp4c.c"
-
-#define HYBRID 1
 #define USIZE 16
 #include "vp4c.c"
-
 #define USIZE 32
 #include "vp4c.c"
-
 #define USIZE 64
 #include "vp4c.c"
-#define  BITDELTA bitdienc
 
 #undef P4DELTA
+#define  BITDELTA bitdienc
 
 #define HYBRID 0             // Direct access
 #define  P4BITS _p4bitsx
@@ -126,16 +104,12 @@
 #define _P4ENC  _p4encx
 #define  P4ENC   p4encx
 #define  P4NENC  p4nencx
-
 #define USIZE 8
 #include "vp4c.c"
-
 #define USIZE 16
 #include "vp4c.c"
-
 #define USIZE 32
 #include "vp4c.c"
-
 #define USIZE 64
 #include "vp4c.c"
 
@@ -143,21 +117,23 @@
 #undef  P4ENC
 #undef  BITPACK 
 #endif
-
-#define  BITDELTA bitdienc
 #undef _P4BITS
 
-#if defined(__SSE2__) && defined(SSE2_ON)
-#define P4BITS _p4bits
-#define HYBRID 1 // 
+#define  BITDELTA bitdienc
 
 //-- SIMD: Vertical bitpacking
+#define HYBRID 1
+#define P4BITS _p4bits
+
+  #if defined(__SSE2__) && defined(SSE2_ON)
 #define VSIZE 128 
 #define _P4ENC    _p4enc128v
 #define  P4ENC     p4enc128v
 #define  P4NENCS   p4enc
 #define  P4NENC    p4nenc128v
 #define  BITPACK   bitpack128v
+#define USIZE 16
+#include "vp4c.c"
 #define USIZE 32
 #include "vp4c.c"
 
@@ -165,12 +141,18 @@
 #define  P4DENC    p4denc128v
 #define  P4NENC    p4ndenc128v
 #define  P4NENCS   p4denc
+#define USIZE 16
+#include "vp4c.c"
+#define USIZE 32
 #include "vp4c.c"
 
 #define P4DELTA 1
 #define  P4DENC    p4d1enc128v
 #define  P4NENC    p4nd1enc128v
 #define  P4NENCS   p4d1enc
+#define USIZE 16
+#include "vp4c.c"
+#define USIZE 32
 #include "vp4c.c"
 
 #define P4DELTA 0
@@ -178,6 +160,9 @@
 #define  P4DENC    p4zenc128v
 #define  P4NENC    p4nzenc128v
 #define  P4NENCS   p4zenc
+#define USIZE 16
+#include "vp4c.c"
+#define USIZE 32
 #include "vp4c.c"
 #define  BITDELTA bitdienc
 
@@ -242,7 +227,7 @@
 
     #ifdef _P4BITS 	
 unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-    #if HYBRID == 1
+    #if HYBRID > 0 && USIZE >= 16
   unsigned _vb[USIZE*2+64] = {0}, *vb=&_vb[USIZE];
 	#endif
   unsigned cnt[USIZE+8] = {0}, x, bx, bmp8=(n+7)/8;
@@ -257,7 +242,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
   bx = b; 
   ml = PAD8(n*b)+1; x = cnt[b];												
  
-    #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
   #define VBB(_x_,_b_) vb[_b_-7]+=_x_; vb[_b_-15]+=_x_*2; vb[_b_-19]+=_x_*3; vb[_b_-25]+=_x_*4;
   vv = x; VBB(x,b); 
     #else
@@ -265,7 +250,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
 	#endif
   for(i = b-1; i >= 0; --i) {
 	int fi,v;
-      #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
     v = PAD8(n*i) + 2 + x + vv; 
     l = PAD8(n*i) + 2+bmp8 + PAD8(x*(bx-i)); 
 	x  += cnt[i]; 
@@ -280,7 +265,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
 	ml = fi?l:ml; b = fi?i:b;
 	  #endif
   }  											//fx = 0;
-    #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
   *pbx = fx?(USIZE+1):(bx - b);
       #if USIZE == 64
   if(b == USIZE-1) { b = USIZE; *pbx = 0; }
@@ -310,13 +295,13 @@ unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
     inx[i]      = in[c] >> b; 
   }	
   
-    #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
   if(bx <= USIZE) { 														
     #endif
     for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i]; out += PAD8(n); 	
     out = TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  	 	        					
     out = TEMPLATE2(BITPACK, USIZE)(_in, n,  out, b);  
-    #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
   } 
   else { 															
     *out++ = xn; 
@@ -331,7 +316,7 @@ unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
 unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned bx, b;
   if(!n) return out;
   b = TEMPLATE2(P4BITS, USIZE)(in, n, &bx);	//if(bx <= USIZE) printf("%d,%d ", b, bx);else printf("#%d ", b);							
-    #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
   TEMPLATE2(P4HVE, USIZE)(out,b,bx);
     #else
   P4HDE(out, b, bx); 
@@ -348,7 +333,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
 
   for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { unsigned bx, b;			__builtin_prefetch(ip+512,0); 
     b = TEMPLATE2(P4BITS, USIZE)(ip, CSIZE, &bx); 									
-      #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
       #else
     P4HDE(op, b, bx); 
@@ -375,7 +360,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	uint_t _in[P4D_MAX+8];unsigned bx, b;			__builtin_prefetch(ip+512,0);
     TEMPLATE2(BITDELTA, USIZE)(ip, CSIZE, _in, start, P4DELTA);
     b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
-      #if HYBRID > 0
+    #if HYBRID > 0 && USIZE >= 16
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
       #else
     P4HDE(op, b, bx); 
