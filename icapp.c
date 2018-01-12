@@ -65,20 +65,34 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
   memcpy_ptr(dst, src, len);
 }
 
-#define ID_MEMCPY 6
+#define ID_MEMCPY 14
 unsigned bench(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id) { 
   unsigned l;
   memrcpy(cpy,in,n); 
   switch(id) {
-    case 1: 		TMBENCH("\np4nzenc16  ",l=p4nzenc16(  in, n/2, out)  ,n); 				 printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nzdec16(    out, n/2, cpy)   ,n); break;
-    case 2: 	    TMBENCH("\np4nenc16   ",l=p4nenc16(   in, n/2, out)  ,n); 				 printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4ndec16(     out, n/2, cpy)   ,n); break;
-    case 3: 	    TMBENCH("\nvbzenc16   ",l=vbzenc16(   in, n/2, out,0)-out,n); 			 printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",vbzdec16(     out, n/2, cpy,0) ,n); break;
-    case 4: 	    TMBENCH("\nbitnpack16 ",l=bitnpack16( in, n/2, out)  ,n); 				 printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnunpack16( out, n/2, cpy)   ,n); break;
-    case 5: 	    TMBENCH("\nbitnzpack16",l=bitnzpack16(in, n/2, out)  ,n); 				 printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnzunpack16(out, n/2, cpy)   ,n); break;
-     case ID_MEMCPY:TMBENCH("\nmemcpy     ",libmemcpy(  in,out,n) ,n);  					 printf("%10u %5.1f%%", n, (double)100.0); return n;
+    case 1: 	    TMBENCH("\np4nenc16    ",l=p4nenc16(        in, n/2, out)  ,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4ndec16(         out, n/2, cpy)   ,n); break;
+    case 2: 	    TMBENCH("\np4nenc16v   ",l=p4nenc128v16(    in, n/2, out)  ,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4ndec128v16(     out, n/2, cpy)   ,n); break;
+
+    case 3: 		TMBENCH("\np4nzenc16   ",l=p4nzenc16(       in, n/2, out)  ,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nzdec16(        out, n/2, cpy)   ,n); break;
+    case 4: 	    TMBENCH("\np4nzenc16v  ",l=p4nzenc128v16(   in, n/2, out)  ,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nzdec128v16(    out, n/2, cpy)   ,n); break;
+
+    case 5: 		TMBENCH("\np4ndenc16   ",l=p4ndenc16(       in, n/2, out)  ,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nddec16(        out, n/2, cpy)   ,n); break;
+    case 6: 		TMBENCH("\np4ndenc16v  ",l=p4ndenc128v16(   in, n/2, out)  ,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nddec128v16(    out, n/2, cpy)   ,n); break;
+
+    case 7: 	    TMBENCH("\nvbzenc16    ",l=vbzenc16(        in, n/2, out,0)-out,n); printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",vbzdec16(         out, n/2, cpy,0) ,n); break;
+	
+    case 8: 	    TMBENCH("\nbitnpack16  ",l=bitnpack16(      in, n/2, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnunpack16(     out, n/2, cpy)   ,n); break;
+    case 9: 	    TMBENCH("\nbitnpack16v ",l=bitnpack128v16(  in, n/2, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnunpack128v16( out, n/2, cpy)   ,n); break;
+
+    case 10: 	    TMBENCH("\nbitnzpack16 ",l=bitnzpack16(     in, n/2, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnzunpack16(    out, n/2, cpy)   ,n); break;
+    case 11: 	    TMBENCH("\nbitnzpack16v",l=bitnzpack128v16( in, n/2, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnzunpack128v16(out, n/2, cpy)   ,n); break;
+
+    case 12: 	    TMBENCH("\nbitndpack16 ",l=bitndpack16(     in, n/2, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitndunpack16(    out, n/2, cpy)   ,n); break;
+    case 13: 	    TMBENCH("\nbitndpack16v",l=bitndpack128v16( in, n/2, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitndunpack128v16(out, n/2, cpy)   ,n); break;
+    case ID_MEMCPY:TMBENCH("\nmemcpy     ",libmemcpy(  in,out,n) ,n);  				    printf("%10u %5.1f%%", n, (double)100.0); return n;
 	default: return l;
   }
-  memcheck(in,n,cpy);
+  memcheck(in,(n/2)*2,cpy);
   return l;
 }
 
@@ -99,7 +113,7 @@ int main(int argc, char* argv[]) {
       case 'c': cmp++; 				  	break;
     }
   }
-  if(argc - optind < 1) { fprintf(stderr, "File not specified\n"); exit(-1); }
+  if(argc - optind < 1) { fprintf(stderr, "16 Bits file not specified\n"); exit(-1); }
 
   for(fno = optind; fno < argc; fno++) {
     char *inname = argv[fno];  									
@@ -129,3 +143,22 @@ int main(int argc, char* argv[]) {
   }
 }
 
+/* fc_300MHz.dat skylake: i7-6700 3.4GHz
+./icapp fc_300MHz.dat -I23
+File='fc_300MHz.dat' Length=711595784
+function      E MB/s   size      ratio   D MB/s
+p4nenc16       627.18  441887368  62.1%  3284.07      
+p4nenc16v      684.00  441887368  62.1%  6193.39      
+p4nzenc16      507.39  332356287  46.7%  1405.11      
+p4nzenc16v     548.99  332356287  46.7%  2651.81      
+p4ndenc16      450.75  525441761  73.8%  1375.51      
+p4ndenc16v     459.79  525441761  73.8%  2339.04      
+vbzenc16      2228.28  390678354  54.9%  2027.44      
+bitnpack16    4139.66  587990808  82.6%  5244.86      
+bitnpack16v   6659.51  587990808  82.6%  9207.07      
+bitnzpack16   1441.67  594311978  83.5%  2442.65      
+bitnzpack16v  2218.05  594311978  83.5%  4417.44      
+bitndpack16   2676.71  713562010 100.3%  4937.93      
+bitndpack16v  2994.07  713562010 100.3%  6393.84      
+memcpy      13334.75  711595784 100.0%
+*/
