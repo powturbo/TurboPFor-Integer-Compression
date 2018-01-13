@@ -41,10 +41,33 @@ unsigned bit64(uint64_t *in, unsigned n) { uint64_t b; BITSIZE_( in, n, b, 64); 
 //---- Delta (min. Delta = 0)
 //-- max. bits for delta encoding
 unsigned bitd8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0,x; BITDE(uint8_t,  in, n, 0, b |= x); return bsr8( b); }
-unsigned bitd16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0,x; BITDE(uint16_t, in, n, 0, b |= x); return bsr16(b); }
 unsigned bitd64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0,x; BITDE(uint64_t, in, n, 0, b |= x); return bsr64(b); }
+
+unsigned bitd16(uint16_t *in, unsigned n, uint16_t start) {
+    #if defined(__SSE2__) && defined(USE_SSE)
+  uint16_t *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi16(start);
+  for(ip = in; ip != in+(n&~(8-1)); ip += 8) { 
+    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
+	bv = _mm_or_si128(bv, DELTA128x16(iv,sv)); 
+	sv = iv; 
+  }
+  
+  start = (unsigned short)_mm_cvtsi128_si32(_mm_srli_si128(sv,14));
+  HOR128x16(bv, b);
+  while(ip != in+n) { 
+    unsigned x = *ip-start; 
+	start = *ip++; 
+	b |= x; 
+  }
+    #else
+  uint16_t b = 0,x;
+  BITDE(uint16_t,in,n, 0, b |= x);
+    #endif
+  return bsr32(b); 
+}
+
 unsigned bitd32(uint32_t *in, unsigned n, uint32_t start) {
-    #ifdef __SSE2__
+    #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
@@ -90,7 +113,7 @@ void bitddec32(uint32_t *p, unsigned n, unsigned start) {
     *ip = (start += (*ip)); 
 	ip++; 
   }	
-    #elif defined(__SSE2__)
+    #elif defined(__SSE2__) && defined(USE_SSE)
   __m128i sv = _mm_set1_epi32(start);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
@@ -113,7 +136,7 @@ unsigned bitd18( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0,x; B
 unsigned bitd116(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0,x; BITDE(uint16_t, in, n, 1, b |= x); return bsr16(b); }
 unsigned bitd164(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0,x; BITDE(uint64_t, in, n, 1, b |= x); return bsr64(b); }
 unsigned bitd132(uint32_t *in, unsigned n, uint32_t start) {
-    #ifdef __SSE2__
+    #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
     __m128i iv = _mm_loadu_si128((__m128i *)ip); 
@@ -152,7 +175,7 @@ void bitd1dec32(uint32_t *p, unsigned n, uint32_t start) {
     *ip = (start += (*ip) + 1); 
 	ip++; 
   }	
-    #elif defined(__SSE2__)
+    #elif defined(__SSE2__) && defined(USE_SSE)
   __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
@@ -187,7 +210,7 @@ unsigned bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uin
 unsigned bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t b = 0,*op = out,x; BITDE(uint16_t, in, n, mindelta, b |= x;*op++ = x); return bsr16(b);}
 unsigned bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t b = 0,*op = out,x; BITDE(uint64_t, in, n, mindelta, b |= x;*op++ = x); return bsr64(b);}
 unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) {
-    #ifdef __SSE2__
+    #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b,*op = out; 
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(mindelta), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) { 
@@ -232,7 +255,7 @@ unsigned bitz8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0, x; B
 unsigned bitz16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0, x; BITZENC(uint16_t, int16_t,in, n, b |= x); return bsr16(b); }
 unsigned bitz64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0, x; BITZENC(uint64_t, int64_t,in, n, b |= x); return bsr64(b); }
 unsigned bitz32(unsigned *in, unsigned n, unsigned start) { 
-    #ifdef __SSE2__
+    #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b; 
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
@@ -261,7 +284,7 @@ unsigned bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint
 unsigned bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t b = 0,*op = out;uint16_t x; BITZENC(uint16_t, int16_t,in, n, b |= x; *op++ = x); return bsr16(b); }
 unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t b = 0,*op = out;uint64_t x; BITZENC(uint64_t, int64_t,in, n, b |= x; *op++ = x); return bsr32(b); }
 unsigned bitzenc32(unsigned *in, unsigned n, unsigned *out, unsigned start, uint32_t mindelta) {
-    #ifdef __SSE2__
+    #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b,*op = out; 
   __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), dv;
   for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) { 
@@ -298,7 +321,7 @@ void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(uint8_t,  p, n
 void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(uint64_t, p, n); }
 
 void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { 
-    #if defined(__SSSE3__) 
+    #if defined(__SSSE3__) && defined(USE_SSE)
   __m128i sv = _mm_set1_epi16(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   uint16_t *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
@@ -332,7 +355,7 @@ void bitzdec32(unsigned *p, unsigned n, unsigned start) {
     unsigned z = *ip; 
 	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
   }
-    #elif defined(__SSE2__)
+    #elif defined(__SSE2__) && defined(USE_SSE)
   __m128i sv = _mm_set1_epi32(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
