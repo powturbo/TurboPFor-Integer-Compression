@@ -116,10 +116,12 @@ enum {
   TB_PFN128V,    	
   TB_PFN256V,
   TB_BP128V,		
+  TB_BPN128V,		
 
   TB_FOR256V,    	
   TB_BP256H,		
   TB_BP256V,		
+  TB_BPN256V,		
   TB_EF128V, 	
   TB_EF256V, 	
 #define C_BITSHUFFLE	CODEC1
@@ -294,7 +296,9 @@ struct plugs plugs[] = {
   { TB_BPN,			"TurboPackN", 		C_TURBOPFOR,	0,    	 0,"","Bit packing (scalar) large blocks" }, 
   { TB_BP128V, 		"TurboPackV", 		C_TURBOPFOR,	BLK_V128,0,"","Bit packing (SSE2 Vertical)" }, 
   { TB_BP128H, 		"TurboPackH", 		C_TURBOPFOR,	BLK_V128,0,"","Bit packing (SSE2 Horizontal)" }, 
+  { TB_BPN128V,		"TurboPackVN",		C_TURBOPFOR,	0,       0,"","Bit packing (SSE2 large block)" }, 
   { TB_BP256V, 		"TurboPack256V",	C_TURBOPFOR,	BLK_V256,0,"","Bit packing (AVX2 Vertical)" }, 
+  { TB_BPN256V,		"TurboPack256N",	C_TURBOPFOR,	0,       0,"","Bit packing (AVX2 large block)" }, 
   
   { TB_VBYTE, 		"TurboVByte", 		C_TURBOPFOR,	0,    	 0,"","Variable byte (scalar)" }, 
   { TB_VSIMPLE, 	"VSimple", 			C_TURBOPFOR,	0,    	 0,"","Variable simple (scalar)" }, 
@@ -383,32 +387,34 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
 
 	  #if C_TURBOPFORV
     case TB_EF128V:   x = *in++; --n; vbxput32(out, x);         
-      if(mdelta)  													return n == 128?efano1enc128v32(in, n, out, x+1 ):efano1enc32(  in, n, out, x+1);
+      if(mdelta)  												return n == 128?efano1enc128v32(in, n, out, x+1 ):efano1enc32(  in, n, out, x+1);
       else     													return n == 128?efanoenc128v32( in, n, out, x   ):efanoenc32(   in, n, out, x  );
     case TB_PF128V:   x = *in++; --n; vbxput32(out, x);
-      if(mdelta)                     								return n == 128?p4d1enc128v32(  in, n, out, x   ):p4d1enc32(    in, n, out, x); 
+      if(mdelta)                     							return n == 128?p4d1enc128v32(  in, n, out, x   ):p4d1enc32(    in, n, out, x); 
       else                                               		return n == 128?p4denc128v32(   in, n, out, x   ):p4denc32(     in, n, out, x); 
     case TB_PFN128V:    										return out+(mdelta?p4nd1enc128v32( in, n, out      ):p4ndenc128v32(in, n, out));
 	
     case TB_FOR128V: x = *in++; --n; vbxput32(out, x); 
-      if(mdelta) { b = bitf132(in, n, x);  *out++=b; 				return n == 128?bitf1pack128v32(in, n, out, x, b):bitf1pack32(  in, n, out, x, b); }
+      if(mdelta) { b = bitf132(in, n, x);  *out++=b; 			return n == 128?bitf1pack128v32(in, n, out, x, b):bitf1pack32(  in, n, out, x, b); }
       else {    b = bitf32( in, n, x);  *out++=b;				return n == 128?bitfpack128v32( in, n, out, x, b):bitfpack32(   in, n, out, x, b); }
     case TB_BP128V:  x = *in++; --n; vbxput32(out, x); 
-      if(mdelta) { b = bitd132(in, n, x);  *out++=b;				return n == 128?bitd1pack128v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
+      if(mdelta) { b = bitd132(in, n, x);  *out++=b;			return n == 128?bitd1pack128v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
       else {    b = bitd32( in, n, x); 	*out++=b;				return n == 128?bitdpack128v32( in, n, out, x, b):bitdpack32(   in, n, out, x, b); }
-      #if defined(__AVX2__) && defined(AVX2_ON)
+    case TB_BPN128V:    										return out+(mdelta?bitnd1pack128v32( in, n, out ):bitndpack128v32(in, n, out));
+      #if defined(__AVX2__) && defined(USE_AVX2)
     case TB_FOR256V: x = *in++; --n; vbxput32(out, x); 
-      if(mdelta) { b = bitf132(in, n, x);  *out++=b; 				return n == 256?bitf1pack256v32(in, n, out, x, b):bitf1pack32(  in, n, out, x, b); }
+      if(mdelta) { b = bitf132(in, n, x);  *out++=b; 			return n == 256?bitf1pack256v32(in, n, out, x, b):bitf1pack32(  in, n, out, x, b); }
       else {    b = bitf32( in, n, x);  *out++=b;				return n == 256?bitfpack256v32( in, n, out, x, b):bitfpack32(   in, n, out, x, b); }
     case TB_EF256V: x = *in++; --n;  vbxput32(out, x);         
-      if(mdelta)  													return n == 256?efano1enc256v32(in, n, out, x+1 ):efano1enc32(  in, n, out, x+1);
+      if(mdelta)  												return n == 256?efano1enc256v32(in, n, out, x+1 ):efano1enc32(  in, n, out, x+1);
       else     													return n == 256?efanoenc256v32( in, n, out, x   ):efanoenc32(   in, n, out, x  );
     case TB_PF256V: x = *in++; bitdienc32( in, --n, pa, x, mdelta);
 	                                 vbxput32(out, x);       	return n == 256?p4enc256v32(    pa, n, out      ):p4enc32(      pa, n, out);
     case TB_PFN256V:         									return out+(mdelta?p4nd1enc256v32( in, n, out      ):p4ndenc256v32(in, n, out));
     case TB_BP256V: x = *in++; --n; vbxput32(out, x); 
-      if(mdelta) { b = bitd132(in, n, x); *out++=b;                return n == 256?bitd1pack256v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
+      if(mdelta) { b = bitd132(in, n, x); *out++=b;             return n == 256?bitd1pack256v32(in, n, out, x, b):bitd1pack32(  in, n, out, x, b); }
       else {    b = bitd32( in, n, x); *out++=b;                return n == 256?bitdpack256v32( in, n, out, x, b):bitdpack32(   in, n, out, x, b); }
+    case TB_BPN256V:         									return out+(mdelta?bitnd1pack256v32( in, n, out      ):bitndpack256v32(in, n, out));
         #endif 
       #endif
       // --------- transform ------------------------------------------------------------------------------------------------
@@ -445,40 +451,42 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_PDI: { uint32_t mdelta; vbxget32(in, x);  vbget32(in, mdelta); x = x << 5 | (mdelta & 31); *out++ = x; --n; in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta>>5); break; }
 	  #if C_TURBOPFORV
     case TB_FOR128V:vbxget32(in, x);*out++ = x; --n; b = *in++;
-	  if(mdelta) {                                      	        return n==128?bitf1unpack128v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
+	  if(mdelta) {                                      	    return n==128?bitf1unpack128v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
       else {                                              		return n==128?bitfunpack128v32(  in, n, out, x, b):bitfunpack32(in, n, out, x, b); }
     case TB_EF128V:	vbxget32(in, x);*out++ = x; --n;
-	  if(mdelta) {                                           		return n==128?efano1dec128v32(in, n, out, x+1 ):efano1dec32(     in, n, out, x+1); }
+	  if(mdelta) {                                              return n==128?efano1dec128v32(in, n, out, x+1 ):efano1dec32(     in, n, out, x+1); }
       else {                                              		return n==128?efanodec128v32( in, n, out, x   ):efanodec32(      in, n, out, x); }
     case TB_PF128V:  vbxget32(in, x);*out++ = x; --n;  			//__builtin_prefetch(in+256);
-      if(mdelta) {                                           		return n==128?p4d1dec128v32(  in, n, out, x   ):p4d1dec32(       in, n, out, x); }
+      if(mdelta) {                                           	return n==128?p4d1dec128v32(  in, n, out, x   ):p4d1dec32(       in, n, out, x); }
       else {                                              		return n==128?p4ddec128v32(   in, n, out, x   ):p4ddec32(        in, n, out, x); }
     case TB_PFN128V:       							  		    return in+(mdelta?p4nd1dec128v32(in, n, out      ):p4nddec128v32(   in, n, out));
     case TB_BP128V: vbxget32(in, x);*out++ = x; --n; b = *in++;
-	  if(mdelta) {                                      	    	return n==128?bitd1unpack128v32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
+	  if(mdelta) {                                      	    return n==128?bitd1unpack128v32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
       else {                                              		return n==128?bitdunpack128v32( in, n, out, x, b):bitdunpack32(  in, n, out, x, b); }
-      #if defined(__AVX2__) && defined(AVX2_ON)
+    case TB_BPN128V:       							  		    return in+(mdelta?bitnd1unpack128v32(in, n, out ):bitndunpack128v32(in, n, out));
+      #if defined(__AVX2__) && defined(USE_AVX2)
     case TB_EF256V: vbxget32(in, x);*out++ = x; --n;
-      if(mdelta) {                                           		return n==256?efano1dec256v32(in, n, out, x+1 ):efano1dec32(     in, n, out, x+1); }
+      if(mdelta) {                                           	return n==256?efano1dec256v32(in, n, out, x+1 ):efano1dec32(     in, n, out, x+1); }
       else {                                              		return n==256?efanodec256v32( in, n, out, x   ):efanodec32(      in, n, out, x); }
     case TB_PF256V:  vbxget32(in, x);*out++ = x; --n;  			//__builtin_prefetch(in+256);
-      if(mdelta) {                                           		return n==256?p4d1dec256v32(  in, n, out, x   ):p4d1dec32(       in, n, out, x); }
+      if(mdelta) {                                           	return n==256?p4d1dec256v32(  in, n, out, x   ):p4d1dec32(       in, n, out, x); }
       else {                                              		return n==256?p4ddec256v32(   in, n, out, x   ):p4ddec32(        in, n, out, x); }
     case TB_PFN256V:                                     		return in+(mdelta?p4nd1dec256v32(in, n, out      ):p4nddec256v32(   in, n, out));
 
 
     case TB_FOR256V:vbxget32(in, x);*out++ = x; --n; b = *in++;
-	  if(mdelta) {                                      	        return n==256?bitf1unpack256v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
+	  if(mdelta) {                                      	    return n==256?bitf1unpack256v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
       else {                                              		return n==256?bitfunpack256v32(  in, n, out, x, b):bitfunpack32(in, n, out, x, b); }
     case TB_BP256V: vbxget32(in, x);*out++ = x; --n; b = *in++;  
-      if(mdelta) {                                      		    return n==256?bitd1unpack256v32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
+      if(mdelta) {                                      		return n==256?bitd1unpack256v32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
       else {                                              		return n==256?bitdunpack256v32( in, n, out, x, b):bitdunpack32(  in, n, out, x, b); }
+    case TB_BPN256V:                                     		return in+(mdelta?bitnd1unpack256v32(in, n, out ):bitndunpack256v32(in, n, out));
 	    #endif
 	  #endif
 
 	  #if C_TURBOPFORH
     case TB_BP128H: vbxget32(in, x);*out++ = x; --n; b = *in++; 
-      if(mdelta) {                                      		    return n==128?bitd1unpack128h32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
+      if(mdelta) {                                      		return n==128?bitd1unpack128h32(in, n, out, x, b):bitd1unpack32( in, n, out, x, b); } 
       else {                                              		return n==128?bitdunpack128h32( in, n, out, x, b):bitdunpack32(  in, n, out, x, b); }
 	  #endif	
 					//---------- transpose + lz77 ----------------------
@@ -509,7 +517,7 @@ unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_PF128V: x = *in++; --n; vbxput32(out, x);                               return n == 128?p4zenc128v32(in, n, out, x):p4zenc32(in, n, out, x);
     case TB_PFN128V:    										                    return out+p4nzenc128v32( in, n, out );
     case TB_BP128V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 128?bitzpack128v32(in, n, out, x, b):bitzpack32(in, n, out, x, b);
-      #if defined(__AVX2__) && defined(AVX2_ON)
+      #if defined(__AVX2__) && defined(USE_AVX2)
     case TB_BP256V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 256?bitzpack256v32(in, n, out, x, b):bitzpack32(in, n, out,x, b);
         #endif 
       #endif
@@ -529,7 +537,7 @@ unsigned char *coddecompz(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_PFN128V:       							  		    return in+p4nzdec128v32(in, n, out);
     case TB_PF128V:vbxget32(in, x); *out++ = x; --n;            return n == 128?p4zdec128v32(in, n, out, x):p4zdec32(in, n, out, x);
     case TB_BP128V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 128?bitzunpack128v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
-      #if defined(__AVX2__) && defined(AVX2_ON)
+      #if defined(__AVX2__) && defined(USE_AVX2)
     case TB_BP256V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 256?bitzunpack256v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
 	    #endif
 	  #endif
@@ -558,7 +566,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 
     case TB_BPDA:
     case TB_BP128H:
-    case TB_BP:      if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } 
+    case TB_BP:      if(b < 0) { b = bit32(in, n); *out++ = b; } 
 	                 return bitpack32(in, n, out, b);
     case TB_BPN:     return out+bitnpack32(in, n, out);
 
@@ -570,16 +578,18 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 
     case TB_FOR128V: b = bitfm32( in, n, &x); vbxput32(out, x); *out++=b; return bitfpack128v32( in, n, out, x, b); 
 
-    case TB_BP128V:  if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } 
+    case TB_BP128V:  if(b < 0) { b = bit32(in, n); *out++ = b; } 
 					 return n == 128?bitpack128v32(in, n, out, b):bitpack32(in, n, out, b);
-      #if defined(__AVX2__) && defined(AVX2_ON)
+    case TB_BPN128V: return out+bitnpack128v32(in, n, out);
+      #if defined(__AVX2__) && defined(USE_AVX2)
     case TB_PF256V:  return n == 256?p4enc256v32(in, n, out):p4enc32(in, n, out);
     case TB_PFN256V: return out+p4nenc256v32(in, n, out);
 
     case TB_FOR256V: b = bitfm32( in, n, &x); vbxput32(out, x); *out++=b; return bitfpack256v32( in, n, out, x, b);
 
-    case TB_BP256V:  if(b < 0) { BITSIZE32(in, n, b); *out++ = b; } 
+    case TB_BP256V:  if(b < 0) { b = bit32(in, n); *out++ = b; } 
 	                 return n == 256?bitpack256v32(in, n, out, b):bitpack32(in, n, out, b);
+    case TB_BPN256V: return out+bitnpack256v32(in, n, out);
         #endif
       #endif
 
@@ -629,12 +639,14 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_FOR128V: vbxget32(in, x); b = *in++;return bitfunpack128v32( in, n, out, x, b);
 
     case TB_BP128V:   if(b < 0) b = *in++; 		return n != 128?bitunpack32(in, n, out, b):bitunpack128v32(in, n, out, b);
-      #if defined(__AVX2__) && defined(AVX2_ON)
+    case TB_BPN128V : 							return in+bitnunpack128v32(in, n, out);
+      #if defined(__AVX2__) && defined(USE_AVX2)
     case TB_FOR256V: vbxget32(in, x); b = *in++;return bitfunpack256v32( in, n, out, x, b);
 
     case TB_PF256V : __builtin_prefetch(in+256);return n == 256?p4dec256v32(in, n, out):p4dec32(in, n, out);
     case TB_PFN256V :      				 		return in+p4ndec256v32(in, n, out);
     case TB_BP256V: if(b < 0) b = *in++; 		return n != 256?bitunpack32(in, n, out, b):bitunpack256v32(in, n, out, b);
+    case TB_BPN256V:  		                    return in+bitnunpack256v32(in, n, out);
         #endif
       #endif
 	  #if C_TURBOPFORH
