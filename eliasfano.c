@@ -95,8 +95,7 @@
 #undef EFANODEC
 
 //----------------------
-  #ifndef NSIMD 
-    #ifdef __SSE2__
+  #if defined(__SSE2__) && defined(USE_SSE)
 #define VSIZE 128
 
 #define BITPACK   bitpack128v
@@ -113,9 +112,9 @@
 #define EFANODEC  efanodec128v
 
 #include "eliasfano.c"
-    #endif
+  #endif
 	
-#if defined(__AVX2__) && defined(AVX2_ON)
+  #if defined(__AVX2__) && defined(USE_AVX2)
 #define VSIZE 256
 #define BITPACK bitpack256v
 #define BITUNPACK bitunpack256v
@@ -128,7 +127,6 @@
 #define EFANOENC efanoenc256v
 #define EFANODEC efanodec256v
 #include "eliasfano.c"
-    #endif
   #endif
 
 #else //--------------------------------------------- implementation ---------------------------------------------------------------
