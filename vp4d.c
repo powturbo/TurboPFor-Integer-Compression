@@ -224,12 +224,14 @@ extern char _shuffle_16[256][16]; // defined in bitunpack.c
 #define  _BITUNPACKD  _bitunpack256w
 #include "vp4d.c"
   #endif
+  
+#undef  DELTA
 
   #if defined(__AVX2__) && defined(AVX2_ON)
+#define VSIZE 256
 #define P4DELTA(a) 
 #define P4DELTA_(a) 
-#undef  DELTA
-#define  VSIZE 256
+
 #define _P4DEC        _p4dec256v
 #define  P4DEC         p4dec256v
 #define  P4NDEC        p4ndec256v
@@ -237,11 +239,13 @@ extern char _shuffle_16[256][16]; // defined in bitunpack.c
 #define  BITUNPACK     bitunpack256v
 #define  BITUNPACKD    bitunpack256v
 #define  _BITUNPACKD  _bitunpack256v
+#define USIZE 32
 #include "vp4d.c"
 
 #define P4DELTA(a) ,a
 #define P4DELTA_(a) a
 #define DELTA
+
 #define _P4DEC        _p4ddec256v
 #define  P4DEC         p4ddec256v
 #define  P4NDEC        p4nddec256v
