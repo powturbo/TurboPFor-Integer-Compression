@@ -14,13 +14,15 @@ CXX ?= g++
 DDEBUG=-DNDEBUG 
 #DDEBUG=-g
 
-MARCH=-march=native
-#MARCH=-march=broadwell
-
-MAVX2=-march=haswell
-#Minimum SSE Sandy Bridge 
+#Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
+MAVX2=-march=haswell
+
+# General minimum CPU architecture 
+#MARCH=$(MSSE)
+MARCH=-march=native
+#MARCH=-march=broadwell 
 
 ifeq ($(NSIMD),1)
 DEFS+=-DNSIMD
@@ -29,10 +31,13 @@ NCODEC2=1
 else
 NSIMD=0
 CFLAGS+=-DUSE_SSE -mssse3
+CXXFLAGS+=-DUSE_SSE
 endif
 
 ifeq ($(AVX2),1)
-MARCH+= -mbmi2 -mavx2
+MARCH+=-mbmi2 -mavx2
+CFLAGS+=-DUSE_AVX2
+CXXFLAGS+=-DUSE_AVX2
 else
 AVX2=0
 endif
@@ -95,7 +100,7 @@ CXXFLAGS+=-std=gnu++0x
 endif
 
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
-CXXFLAGS+=$(DDEBUG) $(MARCH) -w -fpermissive -Wall -fno-rtti $(DEFS) -Iext/FastPFor/headers
+CXXFLAGS+=$(DDEBUG) -w -fpermissive -Wall -fno-rtti -Iext/FastPFor/headers $(DEFS)
 
 all: icbench idxcr idxqry idxseg
 
@@ -103,7 +108,7 @@ cpp: $(CPPF)
 	$(CC) -DSSE2_ON -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
 bitutil.o: bitutil.c
-	$(CC) -O3 $(CFLAGS) -falign-loops=32 $< -c -o $@
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32 $< -c -o $@
 #----------
 vp4c.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4c.c -o vp4c.o
@@ -113,8 +118,7 @@ vp4c_sse.o: vp4c.c
 
 vp4c_avx2.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c vp4c.c -o vp4c_avx2.o
-
-#----------
+#---
 vp4d.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4d.c -o vp4d.o
 
@@ -132,7 +136,7 @@ bitpack_sse.o: bitpack.c
 
 bitpack_avx2.o: bitpack.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitpack.c -o bitpack_avx2.o
-#------------
+#---
 bitunpack.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c bitunpack.c -o bitunpack.o
 
@@ -141,10 +145,16 @@ bitunpack_sse.o: bitunpack.c
 
 bitunpack_avx2.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitunpack.c -o bitunpack_avx2.o
+#------------
+vint.o: vint.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vint.c
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
 	
+eliasfano.o: eliasfano.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -DUSE_AVX2 -c eliasfano.c
+#-----------
 transpose.o: transpose.c
 	$(CC) -O3 $(CFLAGS) -c -DUSE_SSE transpose.c -o transpose.o
 
@@ -153,16 +163,12 @@ transpose_sse.o: transpose.c
 
 transpose_avx2.o: transpose.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c transpose.c -o transpose_avx2.o
+#---------
+idxqryp.o: idxqry.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -c idxqry.c -o idxqryp.o
 
 varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h 
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c -std=c99 ext/varintg8iu.c
-
-idxqryp.o: idxqry.c
-	$(CC) -O3 $(CFLAGS) -c idxqry.c -o idxqryp.o
-
-#vint.o: vint.c
-#	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vint.c
-
 
 #-------------------------------------------------------------------
 ifeq ($(NCODEC1), 0)
