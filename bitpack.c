@@ -162,27 +162,27 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IP16
 #undef IP32
 
-#define BITNPACK(in, n, out, csize, usize) { unsigned char *op = out;\
+#define BITNPACK(in, n, out, _csize_, _usize_) { unsigned char *op = out;\
   for(ip = in, in += n; ip < in;) { \
     unsigned iplen = in - ip,b;\
-    if(iplen > csize) iplen = csize;							PREFETCH(ip+512);\
-    TEMPLATE2(BITSIZE,usize)(ip, iplen, b);\
-	*op++ = b; op = TEMPLATE2(bitpacka, usize)[b](ip, iplen, op); \
+    if(iplen > _csize_) iplen = _csize_;							PREFETCH(ip+512);\
+    TEMPLATE2(BITSIZE,_usize_)(ip, iplen, b);\
+	*op++ = b; op = TEMPLATE2(bitpacka, _usize_)[b](ip, iplen, op); \
 	ip += iplen;\
   }\
   return op - out;\
 }
 
-#define BITNDPACK(in, n, out, csize, usize, _bitd_, _bitpacka_) {\
+#define BITNDPACK(in, n, out, _csize_, _usize_, _bitd_, _bitpacka_) {\
   unsigned char *op = out; \
   if(!n) return 0;\
   start = *in++; \
-  TEMPLATE2(vbxput, usize)(op, start);\
+  TEMPLATE2(vbxput, _usize_)(op, start);\
   for(ip = in,--n, in += n; ip < in;) { \
     unsigned iplen = in - ip,b;\
-	if(iplen > csize) iplen = csize;								PREFETCH(ip+512);\
-    b = TEMPLATE2(_bitd_, usize)(ip, iplen, start);\
-    *op++ = b; op = TEMPLATE2(_bitpacka_, usize)[b](ip, iplen, op, start);\
+	if(iplen > _csize_) iplen = _csize_;								PREFETCH(ip+512);\
+    b = TEMPLATE2(_bitd_, _usize_)(ip, iplen, start);\
+    *op++ = b; op = TEMPLATE2(_bitpacka_, _usize_)[b](ip, iplen, op, start);\
 	ip += iplen;\
     start = ip[-1];\
   }\
@@ -210,6 +210,24 @@ size_t bitnzpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict
 size_t bitnzpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitz, bitzpacka); }
 
 #endif
+
+#define _BITNPACKV(in, n, out, _csize_, _usize_, _bitpackv_) {\
+  unsigned char *op = out;\
+  for(ip = in; ip != in + (n&~(_csize_-1)); ip += _csize_) { 				PREFETCH(ip+512);\
+                       unsigned b; TEMPLATE2(BITSIZE,_usize_)(ip, _csize_, b); *op++ = b; op = TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, b); \
+  } if(n&=(_csize_-1)) { unsigned b; TEMPLATE2(BITSIZE,_usize_)(ip, n,     b); *op++ = b; op = TEMPLATE2(bitpack,    _usize_)(ip, n,     op, b); }\
+  return op - out;\
+}
+
+#define _BITNDPACKV(in, n, out, _csize_, _usize_, _bitd_, _bitpackv_, _bitpack_) { if(!n) return 0;\
+  unsigned char *op = out; \
+  start = *in++; \
+  TEMPLATE2(vbxput, _usize_)(op, start);\
+  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512);\
+                         unsigned b = TEMPLATE2(_bitd_, _usize_)(ip, _csize_, start); *op++ = b; op = TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, start, b); ip += _csize_; start = ip[-1];\
+  } if(n&=(_csize_-1)) { unsigned b = TEMPLATE2(_bitd_, _usize_)(ip, n,       start); *op++ = b; op = TEMPLATE2(_bitpack_,  _usize_)(ip, n,     op, start, b); }\
+  return op - out;\
+}
 
 #if defined(__SSE2__) && defined(SSE2_ON)
 #include <emmintrin.h>
@@ -282,35 +300,17 @@ unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigne
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1); BITPACK128V32(in, b, out, sv); return pout; 
 }
 
-#define _BITNPACK128V(in, n, out, csize, usize) {\
-  unsigned char *op = out;\
-  for(ip = in; ip != in + (n&~(csize-1)); ip += csize) { 				PREFETCH(ip+512);\
-                       unsigned b; TEMPLATE2(BITSIZE,usize)(ip, csize, b); *op++ = b; op = TEMPLATE2(bitpack128v, usize)(ip, csize, op, b); \
-  } if(n&=(csize-1)) { unsigned b; TEMPLATE2(BITSIZE,usize)(ip, n,     b); *op++ = b; op = TEMPLATE2(bitpack,     usize)(ip, n,     op, b); }\
-  return op - out;\
-}
+size_t bitnpack128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip;       _BITNPACKV( in, n, out, 128, 16, bitpack128v); } 
+size_t bitnpack128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip;       _BITNPACKV( in, n, out, 128, 32, bitpack128v); } 
 
-#define _BITNDPACK128V(in, n, out, csize, usize, _bitd_, _bitpackv_, _bitpack_) { if(!n) return 0;\
-  unsigned char *op = out; \
-  start = *in++; \
-  TEMPLATE2(vbxput, usize)(op, start);\
-  for(ip = in; ip != in + (n&~(csize-1)); ip += csize, start = ip[-1]) { PREFETCH(ip+512);\
-                       unsigned b = TEMPLATE2(_bitd_, usize)(ip, csize, start); *op++ = b; op = TEMPLATE2(_bitpackv_, usize)(ip, csize, op, start, b);\
-  } if(n&=(csize-1)) { unsigned b = TEMPLATE2(_bitd_, usize)(ip, n,     start); *op++ = b; op = TEMPLATE2(_bitpack_,  usize)(ip, n,     op, start, b); }\
-  return op - out;\
-}
+size_t bitndpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitd,  bitdpack128v,  bitdpack); } 
+size_t bitndpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitd,  bitdpack128v,  bitdpack); } 
 
-size_t bitnpack128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNPACK128V( in, n, out, 128, 16); } 
-size_t bitnpack128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNPACK128V( in, n, out, 128, 32); } 
+size_t bitnd1pack128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitd1, bitd1pack128v, bitd1pack); } 
+size_t bitnd1pack128v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitd1, bitd1pack128v, bitd1pack); } 
 
-size_t bitndpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACK128V(in, n, out, 128, 16, bitd,  bitdpack128v,  bitdpack); } 
-size_t bitndpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACK128V(in, n, out, 128, 32, bitd,  bitdpack128v,  bitdpack); } 
-
-size_t bitnd1pack128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACK128V(in, n, out, 128, 16, bitd1, bitd1pack128v, bitd1pack); } 
-size_t bitnd1pack128v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACK128V(in, n, out, 128, 32, bitd1, bitd1pack128v, bitd1pack); } 
-
-size_t bitnzpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACK128V(in, n, out, 128, 16, bitz,  bitzpack128v,  bitzpack); } 
-size_t bitnzpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACK128V(in, n, out, 128, 32, bitz,  bitzpack128v,  bitzpack); } 
+size_t bitnzpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitz,  bitzpack128v,  bitzpack); } 
+size_t bitnzpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitz,  bitzpack128v,  bitzpack); } 
 
 #endif
 
@@ -371,6 +371,12 @@ unsigned char *bitzpack256v32(unsigned       *__restrict in, unsigned n, unsigne
   BITPACK256V32(in, b, out, sv); 
   return pout; 
 }
+
+size_t bitnpack256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip;       _BITNPACKV( in, n, out, 256, 32, bitpack256v); } 
+size_t bitndpack256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitd,  bitdpack256v,  bitdpack); } 
+size_t bitnd1pack256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitd1, bitd1pack256v, bitd1pack); } 
+size_t bitnzpack256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitz,  bitzpack256v,  bitzpack); } 
+
 #endif
 
 #pragma clang diagnostic pop
