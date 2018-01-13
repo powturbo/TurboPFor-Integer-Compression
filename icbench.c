@@ -929,7 +929,7 @@ int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outl
     for(op = out, out += outlen; op < out; ) { 
       unsigned oplen = out - op; 
       oplen = min(oplen, bsize);
-      ip = coddecomp(ip, 0, op, oplen, id, lev, prm, be_mindelta);      		  if(ip-_in>_inlen) die("FATAL inlen %d,%d ", _inlen, ip-_in);
+      ip = coddecomp(ip, 0, op, oplen, id, lev, prm, be_mindelta);      		  if(ip-_in>_inlen) die("FATAL inlen %d,%d,bsize=%d ", _inlen, ip-_in, bsize);
 	  op += oplen;
     } 
   }
