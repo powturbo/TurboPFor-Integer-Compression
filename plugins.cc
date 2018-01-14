@@ -517,8 +517,12 @@ unsigned char *codcompz(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_PF128V: x = *in++; --n; vbxput32(out, x);                               return n == 128?p4zenc128v32(in, n, out, x):p4zenc32(in, n, out, x);
     case TB_PFN128V:    										                    return out+p4nzenc128v32( in, n, out );
     case TB_BP128V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 128?bitzpack128v32(in, n, out, x, b):bitzpack32(in, n, out, x, b);
+    case TB_BPN128V:    										                    return out+bitnzpack128v32( in, n, out );
       #if defined(__AVX2__) && defined(USE_AVX2)
+    case TB_PF256V: x = *in++; --n; vbxput32(out, x);                               return n == 256?p4zenc256v32(in, n, out, x):p4zenc32(in, n, out, x);
+    case TB_PFN256V:    										                    return out+p4nzenc256v32( in, n, out );
     case TB_BP256V: x = *in++; --n; vbxput32(out, x);b = bitz32(in, n, x); *out++=b;return n == 256?bitzpack256v32(in, n, out, x, b):bitzpack32(in, n, out,x, b);
+    case TB_BPN256V:    										                    return out+bitnzpack256v32( in, n, out );
         #endif 
       #endif
   }
@@ -534,11 +538,15 @@ unsigned char *coddecompz(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_BPN:   												return in+bitnzunpack32(in, n, out);
 
 	  #if C_TURBOPFORV
-    case TB_PFN128V:       							  		    return in+p4nzdec128v32(in, n, out);
     case TB_PF128V:vbxget32(in, x); *out++ = x; --n;            return n == 128?p4zdec128v32(in, n, out, x):p4zdec32(in, n, out, x);
+    case TB_PFN128V:       							  		    return in+p4nzdec128v32(in, n, out);
     case TB_BP128V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 128?bitzunpack128v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
+    case TB_BPN128V:       							  		    return in+bitnzunpack128v32(in, n, out);
       #if defined(__AVX2__) && defined(USE_AVX2)
+    case TB_PF256V:vbxget32(in, x); *out++ = x; --n;            return n == 256?p4zdec256v32(in, n, out, x):p4zdec32(in, n, out, x);
+    case TB_PFN256V:       							  		    return in+p4nzdec256v32(in, n, out);
     case TB_BP256V:vbxget32(in, x); *out++ = x; --n; b = *in++; return n == 256?bitzunpack256v32(in, n, out, x, b):bitzunpack32(in, n, out, x, b);
+    case TB_BPN256V:       							  		    return in+bitnzunpack256v32(in, n, out);
 	    #endif
 	  #endif
   } 
