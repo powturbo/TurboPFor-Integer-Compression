@@ -12,23 +12,23 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
   * Compress 70 times faster and decompress up to 4 times faster than OptPFD
 * **Bit Packing**
-  * :sparkles: Fastest and most efficient **"SIMD Bit Packing"** **10 Billions integers/sec (40Gb/s)**
-  * Scalar **"Bit Packing"** decoding as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+  * Fastest and most efficient **"SIMD Bit Packing"** **10 Billions integers/sec (40Gb/s!)**
+  * Scalar **"Bit Packing"** decoding nearly as fast as SIMD-Packing in realistic (No "pure cache") scenarios
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
-  * :sparkles: Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
+  * Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
 * **Simple family**
-  * :sparkles: **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
+  * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
-  * :sparkles: Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
+  * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
-  * :sparkles: Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
+  * Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
 * **Floating Point Compression**
-  * :sparkles: (Differential) Finite Context Method FCM/DFCM floating point compression
+  * (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, more than 2 GB/s throughput
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
-  * :sparkles: **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
+  * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
   * **Novel** Implicit skips with zero extra overhead
   * **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
   * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
@@ -385,5 +385,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  13 Jan 2018
+Last update:  14 Jan 2018
 
