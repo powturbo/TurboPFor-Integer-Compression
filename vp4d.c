@@ -263,6 +263,17 @@ extern char _shuffle_16[256][16]; // defined in bitunpack.c
 #define  _BITUNPACKD  _bitd1unpack256v
 #define  BITUNDD       bitd1dec
 #include "vp4d.c"
+
+#define _P4DEC        _p4zdec256v
+#define  P4DEC         p4zdec256v
+#define  P4NDEC        p4nzdec256v
+#define  P4NDECS       p4zdec
+#define  BITUNPACKD    bitzunpack256v
+#define  _BITUNPACKD  _bitzunpack256v
+#define  BITUNDD       bitzdec
+#define USIZE 32
+#include "vp4d.c"
+
 #undef  BITUNDD
   #endif  
 
@@ -347,7 +358,7 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   }
     #if USIZE > 8  
   else {
-    uint_t ex[P4D_MAX+32],*pex=ex; 
+    uint_t ex[P4D_MAX+64],*pex=ex; 
 	b  &= 0x3f; 	
     bx = *in++;                 
 
@@ -395,18 +406,27 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
     }
       #if USIZE > 8  
     else {
-      uint_t ex[P4D_MAX+32],*pex=ex; 
+      uint_t ex[P4D_MAX+64]; 
 	  b  &= 0x3f; 	
       bx = *ip++;                 
 
-      ip = TEMPLATE2(BITUNPACK, USIZE)(ip, n, op, b); 
+      ip = TEMPLATE2(BITUNPACK, USIZE)(ip, CSIZE, op, b); 
       ip = TEMPLATE2(vbdec,     USIZE)(ip, bx, ex);
-	  #define ST(j) op[ip[i+j]] |= ex[i+j] << b;	  //#define ST(j) op[*ip++] |= (*pex++) << b;	  //unsigned char *ip;for(ip = ip; ip != ip + (bx & ~3); ) 
-      for(i  = 0;  i != (bx & ~7); i+=8) { ST(0);ST(1);ST(2);ST(3); ST(4);ST(5);ST(6);ST(7); }	//for(;ip != ip+bx; ) ST(0);
-	  for(;i != bx; i++) ST(0);
+      for(i = 0; i != (bx & ~7); i += 8) { 
+	    op[ip[i  ]] |= ex[i  ] << b;
+	    op[ip[i+1]] |= ex[i+1] << b;
+	    op[ip[i+2]] |= ex[i+2] << b;
+	    op[ip[i+3]] |= ex[i+3] << b;
+	    op[ip[i+4]] |= ex[i+4] << b;
+	    op[ip[i+5]] |= ex[i+5] << b;
+	    op[ip[i+6]] |= ex[i+6] << b;
+	    op[ip[i+7]] |= ex[i+7] << b;
+	  }
+	  for(;i != bx; i++) 
+	    op[ip[i]] |= ex[i] << b;
       ip += bx;
         #ifdef BITUNDD
-      TEMPLATE2(BITUNDD, USIZE)(op, n, start);
+      TEMPLATE2(BITUNDD, USIZE)(op, CSIZE, start);
 	    #endif
     }
       #endif
