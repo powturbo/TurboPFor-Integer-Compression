@@ -203,7 +203,15 @@
 #define  P4NENCS   p4d1enc
 #include "vp4c.c"
 #undef P4DELTA
- 
+
+#define P4DELTA 0
+#define  BITDELTA  bitzenc
+#define  P4DENC    p4zenc256v
+#define  P4NENC    p4nzenc256v
+#define  P4NENCS   p4zenc
+#define USIZE 32
+#include "vp4c.c"
+
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
