@@ -19,9 +19,9 @@ MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
 
-# General minimum CPU architecture 
-#MARCH=$(MSSE)
+# Minimum CPU architecture 
 MARCH=-march=native
+#MARCH=$(MSSE)
 #MARCH=-march=broadwell 
 
 ifeq ($(NSIMD),1)
@@ -111,7 +111,7 @@ bitutil.o: bitutil.c
 	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32 $< -c -o $@
 #----------
 vp4c.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4c.c -o vp4c.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops=32 -c vp4c.c -o vp4c.o
 
 vp4c_sse.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4c.c -o vp4c_sse.o
@@ -129,7 +129,7 @@ vp4d_avx2.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2)  -c vp4d.c -o vp4d_avx2.o
 #------------
 bitpack.o: bitpack.c
-	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c bitpack.c -o bitpack.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops=32 -c bitpack.c -o bitpack.o
 
 bitpack_sse.o: bitpack.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c bitpack.c -o bitpack_sse.o
