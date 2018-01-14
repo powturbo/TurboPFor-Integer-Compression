@@ -182,6 +182,7 @@
 #endif
 
 #if defined(__AVX2__) && defined(AVX2_ON)
+#define VSIZE 256
 #define _P4ENC    _p4enc256v
 #define  P4ENC     p4enc256v
 #define  P4NENC    p4nenc256v
