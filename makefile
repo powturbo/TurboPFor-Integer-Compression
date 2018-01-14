@@ -102,7 +102,7 @@ endif
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DUSE_THREADS  -fstrict-aliasing -Iext -Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include $(DEFS)
 CXXFLAGS+=$(DDEBUG) -w -fpermissive -Wall -fno-rtti -Iext/FastPFor/headers $(DEFS)
 
-all: icbench idxcr idxqry idxseg
+all: icbench idxcr idxqry idxseg icapp
 
 cpp: $(CPPF)
 	$(CC) -DSSE2_ON -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
@@ -110,8 +110,9 @@ cpp: $(CPPF)
 bitutil.o: bitutil.c
 	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32 $< -c -o $@
 #----------
+
 vp4c.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops=32 -c vp4c.c -o vp4c.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -DUSE_AVX2 -falign-loops=32 -c vp4c.c -o vp4c.o
 
 vp4c_sse.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4c.c -o vp4c_sse.o
@@ -120,7 +121,7 @@ vp4c_avx2.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c vp4c.c -o vp4c_avx2.o
 #---
 vp4d.o: vp4d.c
-	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c vp4d.c -o vp4d.o
+	$(CC) -O3 $(CFLAGS) -DUSE_SSE  -DUSE_AVX2 -falign-loops=32 -c vp4d.c -o vp4d.o
 
 vp4d_sse.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4d.c -o vp4d_sse.o
@@ -153,7 +154,7 @@ vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
 	
 eliasfano.o: eliasfano.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -DUSE_AVX2 -c eliasfano.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -c eliasfano.c
 #-----------
 transpose.o: transpose.c
 	$(CC) -O3 $(CFLAGS) -c -DUSE_SSE transpose.c -o transpose.o
