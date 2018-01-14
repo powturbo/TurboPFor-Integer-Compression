@@ -350,7 +350,7 @@ void bitzdec32(unsigned *p, unsigned n, unsigned start) {
 	SCAN256x32(iv, sv);
 	_mm256_storeu_si256((__m256i *)ip, sv); 
   }
-  start = (unsigned)_mm256_extract_epi32(_mm256_srli_si256(sv,12), 0);
+  start = (unsigned)_mm256_extract_epi32(_mm256_srli_si256(sv,12), 4);
   while(ip != p+n) { 
     unsigned z = *ip; 
 	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
