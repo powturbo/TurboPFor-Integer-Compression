@@ -1262,12 +1262,12 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
 #define NN (4*1024*1024)
 
 //uint64_t in[NN+256],cpy[NN+256]; 
-uint16_t in[NN+256],cpy[NN+256]; 
+uint64_t _in[NN+256],_cpy[NN+256]; 
 unsigned char out[NN*16];
 
 void vstest64(int id, int rm,int rx, unsigned n) {   
   unsigned b,i;																				fprintf(stderr,"64 bits test.n=%d ", n); 
- 
+  uint64_t *in = _in,*cpy = _cpy;
   if(n > NN) n = NN;  																		//if(id==5) n = 128;
   for(b = rm; b <= min(rx,64); b++) {    
     uint64_t start = 0, msk = b==64?0xffffffffffffffffull:(((uint64_t)1 << b)-1);
@@ -1284,6 +1284,9 @@ void vstest64(int id, int rm,int rx, unsigned n) {
       case 2: op = out+bitnpack64(in, n, out); break;
       case 3: op = p4enc64(   in, n, out);    break;
       case 4: op = vsenc64(   in, n, out);    break;
+      case 5: op = out+bitndpack64(in, n, out); break;
+      case 6: op = out+bitnd1pack64(in, n, out); break;
+      case 7: op = out+bitnzpack64(in, n, out); break;
       //case 5: op = efanoenc64(in, n, out, 0); break;
     }
     fprintf(stderr,"%d ", (int)(op-out) );  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
@@ -1294,6 +1297,9 @@ void vstest64(int id, int rm,int rx, unsigned n) {
       case 2: bitnunpack64(out, n, cpy);   break;
       case 3: p4dec64(    out, n, cpy);      break;
       case 4: vsdec64(    out, n, cpy);      break;
+      case 5: bitndunpack64(out, n, cpy);   break;
+      case 6: bitnd1unpack64(out, n, cpy);   break;
+      case 7: bitnzunpack64(out, n, cpy);   break;
       //case 5: efanodec64( out, n, cpy, 0);   break;
     }
 	for(i = 0; i < n; i++) 
@@ -1308,7 +1314,8 @@ void vstest64(int id, int rm,int rx, unsigned n) {
 
 void vstest16(int id, int rm,int rx, unsigned n) {   
   unsigned b,i;																				fprintf(stderr,"16 bits test.n=%d ", n); 
- 
+  uint16_t *in = _in,*cpy = _cpy;
+
   if(n > NN) n = NN;  																		//if(id==5) n = 128;
   for(b = rm; b <= min(rx,16); b++) {    
     uint64_t start = 0, msk = (1u << b)-1;
