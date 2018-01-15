@@ -80,6 +80,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IP16
 #undef IP32
+#undef IP64
 
 #define DELTA
  
@@ -96,6 +97,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IP16
 #undef IP32
+#undef IP64
 
 #define IP9(_ip_,_x_, _parm_)    
 #define IPV(_ip_,_x_) 			IP(_ip_,_x_) - start
@@ -110,6 +112,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IP16
 #undef IP32
+#undef IP64
 
 #define IP9( _ip_,_x_, _parm_) 	V = IP0(_ip_,_x_) - start - 1; start = IP(_ip_,_x_)
 #define IPV( _ip_,_x_) 			VX
@@ -124,6 +127,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IP16
 #undef IP32
+#undef IP64
 
 /*#define IP9( _ip_,_x_, _parm_) 	v = IP(_ip_,_x_) - start - mdelta; start = IP(_ip_,_x_)
 #define IPV( _ip_,_x_) 			v
@@ -145,6 +149,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IP16
 #undef IP32
+#undef IP64
 
 #define IPI(_ip_) _ip_ += 32; start += 32
 #define IP9(_ip_,_x_, _parm_)    
@@ -161,6 +166,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #undef IPX
 #undef IP16
 #undef IP32
+#undef IP64
 
 #define BITNPACK(in, n, out, _csize_, _usize_) { unsigned char *op = out;\
   for(ip = in, in += n; ip < in;) { \
