@@ -282,7 +282,7 @@ unsigned bitz32(unsigned *in, unsigned n, unsigned start) {
 
 unsigned bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  b = 0,*op = out;uint8_t  x; BITZENC(uint8_t,  int8_t, in, n, b |= x; *op++ = x); return bsr8(b);  }
 unsigned bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t b = 0,*op = out;uint16_t x; BITZENC(uint16_t, int16_t,in, n, b |= x; *op++ = x); return bsr16(b); }
-unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t b = 0,*op = out;uint64_t x; BITZENC(uint64_t, int64_t,in, n, b |= x; *op++ = x); return bsr32(b); }
+unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t b = 0,*op = out;uint64_t x; BITZENC(uint64_t, int64_t,in, n, b |= x; *op++ = x); return bsr64(b); }
 unsigned bitzenc32(unsigned *in, unsigned n, unsigned *out, unsigned start, uint32_t mindelta) {
     #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b,*op = out; 
