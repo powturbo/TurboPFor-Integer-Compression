@@ -66,9 +66,36 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
 }
 
 #define ID_MEMCPY 32
+unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id) { 
+  unsigned l,m=n/8;
+  memrcpy(cpy,in,n); 
+  switch(id) {
+    case 1: 	    TMBENCH("\np4nenc64        ",l=p4nenc64(        in, m, out)  ,n); 		printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4ndec64(         out, m, cpy)   ,n); break;
+
+    case 3: 		TMBENCH("\np4nzenc64       ",l=p4nzenc64(       in, m, out)  ,n); 		printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nzdec64(        out, m, cpy)   ,n); break;
+ 
+    case 5: 		TMBENCH("\np4ndenc64       ",l=p4ndenc64(       in, m, out)  ,n); 		printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nddec64(        out, m, cpy)   ,n); break;
+
+    case 7: 		TMBENCH("\np4nd1enc64      ",l=p4nd1enc64(       in, m, out)  ,n); 		printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4nd1dec64(        out, m, cpy)   ,n); break;
+
+    case 9: 	    TMBENCH("\nvbzenc64        ",l=vbzenc64(        in, m, out,0)-out,n); 	printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",vbzdec64(         out, m, cpy,0) ,n); break;
+	
+    case 10: 	    TMBENCH("\nbitnpack64      ",l=bitnpack64(      in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnunpack64(     out, m, cpy)   ,n); break;
+
+ //   case 12: 	    TMBENCH("\nbitnzpack64     ",l=bitnzpack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnzunpack64(    out, m, cpy)   ,n); break;
+
+//    case 14: 	    TMBENCH("\nbitndpack64     ",l=bitndpack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitndunpack64(    out, m, cpy)   ,n); break;
+
+//    case 16: 	    TMBENCH("\nbitnd1pack64    ",l=bitnd1pack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnd1unpack64(    out, m, cpy)   ,n); break;
+    case ID_MEMCPY: TMBENCH("\nmemcpy          ",libmemcpy(  in,out,n) ,n);  			    printf("%10u %5.1f%%", n, (double)100.0); return n;
+	default: return l;
+  }
+  memcheck(in,m*8,cpy);
+  return l;
+}
 
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id) { 
-  unsigned l,m=(n+3)/4;
+  unsigned l,m=n/4;
   memrcpy(cpy,in,n); 
   switch(id) {
     case 1: 	    TMBENCH("\np4nenc32        ",l=p4nenc32(        in, m, out)  ,n); 		printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4ndec32(         out, m, cpy)   ,n); break;
@@ -108,12 +135,12 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case ID_MEMCPY: TMBENCH("\nmemcpy          ",libmemcpy(  in,out,n) ,n);  			    	printf("%10u %5.1f%%", n, (double)100.0); return n;
 	default: return l;
   }
-  memcheck(in,n,cpy);
+  memcheck(in,m*4,cpy);
   return l;
 }
 
 unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id) { 
-  unsigned l,m=(n+1)/2;
+  unsigned l,m=n/2;
   memrcpy(cpy,in,n); 
   switch(id) {
     case 1: 	    TMBENCH("\np4nenc16        ",l=p4nenc16(        in, m, out)  ,n); 		printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",p4ndec16(         out, m, cpy)   ,n); break;
@@ -143,7 +170,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case ID_MEMCPY: TMBENCH("\nmemcpy          ",libmemcpy(  in,out,n) ,n);  				printf("%10u %5.1f%%", n, (double)100.0); return n;
 	default: return l;
   }
-  memcheck(in,n,cpy);
+  memcheck(in,m*2,cpy);
   return l;
 }
 
@@ -170,7 +197,7 @@ int main(int argc, char* argv[]) {
   if(idmax < idmin) idmax = idmin;
   if(argc - optind < 1) { fprintf(stderr, "raw file not specified\n"); 
     fprintf(stderr, "usage: icpp file [-s2|-s4] -e# -E#\n");
-    fprintf(stderr, "-s2:16 bits, -s4:32 bits,  #:function number  -e:start -E:end\n"); 	
+    fprintf(stderr, "-s2:16 bits, -s4:32 bits,  -s8:64 bits.  #:function number  -e:start -E:end\n"); 	
     exit(-1); 
   }
 
@@ -198,6 +225,7 @@ int main(int argc, char* argv[]) {
       switch(usize) {
         case 2: bench16(in,n,out,cpy,i); break;  
         case 4: bench32(in,n,out,cpy,i); break;    
+        case 8: bench64(in,n,out,cpy,i); break;    
         default: die("integer size must be 2 or 4\n"); 
       }
     printf("\n");      
