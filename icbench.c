@@ -1287,9 +1287,11 @@ void vstest64(int id, int rm,int rx, unsigned n) {
       case 5: op = out+bitndpack64(in, n, out); break;
       case 6: op = out+bitnd1pack64(in, n, out); break;
       case 7: op = out+bitnzpack64(in, n, out); break;
+      case 8: op = vbzenc64(in, n, out, 0); break;
+      case 9: op = out+p4nzenc64(in, n, out); break;
       //case 5: op = efanoenc64(in, n, out, 0); break;
     }
-    fprintf(stderr,"%d ", (int)(op-out) );  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
+    fprintf(stderr,"%d %.2f ", (int)(op-out),  ((double)(op-out)*100.0)/(double)(n*8));  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
     memrcpy(cpy, in, n*sizeof(in[0]));
     switch(id) {
       case 0: vbdec64(    out, n, cpy);      break;
@@ -1300,6 +1302,8 @@ void vstest64(int id, int rm,int rx, unsigned n) {
       case 5: bitndunpack64(out, n, cpy);   break;
       case 6: bitnd1unpack64(out, n, cpy);   break;
       case 7: bitnzunpack64(out, n, cpy);   break;
+      case 8: vbzdec64(    out, n, cpy, 0);      break;
+      case 9: p4nzdec64(    out, n, cpy);      break;
       //case 5: efanodec64( out, n, cpy, 0);   break;
     }
 	for(i = 0; i < n; i++) 
