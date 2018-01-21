@@ -23,9 +23,9 @@
 **/  
 //   "Integer Compression" Bit Packing 
 #include "conf.h" 
-#include "bitutil.h" 
-#include "bitpack.h"
 #include "vint.h"
+#include "bitpack.h"
+#include "bitutil.h" 
 #define PAD8(_x_) (((_x_)+7)/8)
 
 #pragma warning( disable : 4005) 
@@ -94,19 +94,17 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 	op += oplen;\
   } \
   return ip - in;\
+} 
+
+#define BITNDUNPACK(in, n, out, _csize_, _usize_, _bitunpacka_) { if(!n) return 0;\
+  unsigned char *ip = in;\
+  TEMPLATE2(vbxget, _usize_)(ip, start);\
+  for(*out++ = start,--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512);\
+                         unsigned b = *ip++; ip = TEMPLATE2(_bitunpacka_, _usize_)[b](ip, _csize_, op, start); op += _csize_; start = op[-1];\
+  } if(n&=(_csize_-1)) { unsigned b = *ip++; ip = TEMPLATE2(_bitunpacka_, _usize_)[b](ip, n,       op, start); }\
+  return ip - in;\
 }
 
-#define BITNDUNPACK(in, n, out, _csize_, _usize_, _bitunpacka_) {\
-  unsigned char *ip = in;\
-  if(!n) return 0;\
-  TEMPLATE2(vbxget, _usize_)(ip, start); \
-  *out++ = start;\
-  for(--n,op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > _csize_) oplen = _csize_;		PREFETCH(ip+512);\
-    b = *ip++; ip = TEMPLATE2(_bitunpacka_, _usize_)[b](ip, oplen, op, start);\
-	op += oplen;\
-    start = op[-1];\
-  } return ip - in;\
-}
 size_t bitnunpack8(   unsigned char *__restrict in, size_t n, uint8_t  *__restrict out) { uint8_t  *op; BITNUNPACK(in, n, out, 128,  8); } 
 size_t bitnunpack16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op; BITNUNPACK(in, n, out, 128, 16); } 
 size_t bitnunpack32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op; BITNUNPACK(in, n, out, 128, 32); } 
