@@ -82,11 +82,11 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	
     case 10: 	    TMBENCH("\nbitnpack64      ",l=bitnpack64(      in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnunpack64(     out, m, cpy)   ,n); break;
 
- //   case 12: 	    TMBENCH("\nbitnzpack64     ",l=bitnzpack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnzunpack64(    out, m, cpy)   ,n); break;
+    case 12: 	    TMBENCH("\nbitnzpack64     ",l=bitnzpack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnzunpack64(    out, m, cpy)   ,n); break;
 
-//    case 14: 	    TMBENCH("\nbitndpack64     ",l=bitndpack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitndunpack64(    out, m, cpy)   ,n); break;
+    case 14: 	    TMBENCH("\nbitndpack64     ",l=bitndpack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitndunpack64(    out, m, cpy)   ,n); break;
 
-//    case 16: 	    TMBENCH("\nbitnd1pack64    ",l=bitnd1pack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnd1unpack64(    out, m, cpy)   ,n); break;
+    case 16: 	    TMBENCH("\nbitnd1pack64    ",l=bitnd1pack64(     in, m, out)  ,n);	    printf("%10u %5.1f%%", l, (double)l*100.0/n); TMBENCH("",bitnd1unpack64(    out, m, cpy)   ,n); break;
     case ID_MEMCPY: TMBENCH("\nmemcpy          ",libmemcpy(  in,out,n) ,n);  			    printf("%10u %5.1f%%", n, (double)100.0); return n;
 	default: return l;
   }
