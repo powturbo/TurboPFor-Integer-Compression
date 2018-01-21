@@ -153,7 +153,7 @@ unsigned char *TEMPLATE2(vbzenc, USIZE)(uint_t *__restrict in, unsigned n, unsig
   uint_t *ip,v;
   unsigned char *op = out;
 
-  #define VBZE { v = TEMPLATE2(zigzagenc, USIZE)((*ip)-start); start=*ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); }
+  #define VBZE { v = TEMPLATE2(zigzagenc, USIZE)((TEMPLATE3(int, USIZE, _t))(*ip)-(TEMPLATE3(int, USIZE, _t))start); start=*ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); }
   for(ip = in; ip != in+(n&~(4-1)); ) { VBZE;VBZE;VBZE;VBZE; }
   while(ip <  in+n) VBZE;						  //OVERFLOWE(in,n,out,op);
   return op;
