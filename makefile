@@ -105,7 +105,7 @@ CXXFLAGS+=$(DDEBUG) -w -fpermissive -Wall -fno-rtti -Iext/FastPFor/headers $(DEF
 all: icbench idxcr idxqry idxseg icapp
 
 cpp: $(CPPF)
-	$(CC) -DSSE2_ON -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
+	$(CC) -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
 bitutil.o: bitutil.c
 	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32 $< -c -o $@
@@ -121,7 +121,7 @@ vp4c_avx2.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c vp4c.c -o vp4c_avx2.o
 #---
 vp4d.o: vp4d.c
-	$(CC) -O3 $(CFLAGS) -DUSE_SSE  -DUSE_AVX2 -falign-loops=32 -c vp4d.c -o vp4d.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE  -DUSE_AVX2 -falign-loops=32 -c vp4d.c -o vp4d.o
 
 vp4d_sse.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4d.c -o vp4d_sse.o
@@ -139,7 +139,7 @@ bitpack_avx2.o: bitpack.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitpack.c -o bitpack_avx2.o
 #---
 bitunpack.o: bitunpack.c
-	$(CC) -O3 $(CFLAGS) -DUSE_SSE -falign-loops=32 -c bitunpack.c -o bitunpack.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops=32 -c bitunpack.c -o bitunpack.o
 
 bitunpack_sse.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c bitunpack.c -o bitunpack_sse.o
