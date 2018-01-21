@@ -32,7 +32,7 @@ unsigned bit32(uint32_t *in, unsigned n) { uint32_t b; BITSIZE32(in, n, b);     
 unsigned bit64(uint64_t *in, unsigned n) { uint64_t b; BITSIZE_( in, n, b, 64); return b; }
 
 //------------ Delta ----------------------------------
-#define DE(i) x = _p[i]-start-_md; start = _p[i]
+#define DE(i) x = (_p[i]-start)-_md; start = _p[i]
 #define BITDE(_t_, _p_, _n_, _md_, _act_) { _t_ *_p, _md = _md_;\
   for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { DE(0);_act_; DE(1);_act_; DE(2);_act_; DE(3);_act_; }\
   for(;_p != _p_+_n_;_p++) { DE(0); _act_; }\
@@ -233,7 +233,7 @@ unsigned bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uin
     #endif
   return bsr32(b);
 }
-
+ 
 void bitdidec8(  uint8_t  *p, unsigned n, uint8_t  start, uint8_t  mindelta) { BITDD(uint8_t, p, n, mindelta); }
 void bitdidec16( uint16_t *p, unsigned n, uint16_t start, uint16_t mindelta) { BITDD(uint16_t, p, n, mindelta); }
 void bitdidec32( uint32_t *p, unsigned n, uint32_t start, uint32_t mindelta) { BITDD(uint32_t, p, n, mindelta); }
@@ -244,16 +244,16 @@ unsigned bitf32(  uint32_t *in, unsigned n, uint32_t start) { return n?bsr32(in[
 unsigned bitf132( uint32_t *in, unsigned n, uint32_t start) { return n?bsr32(in[n-1] - start - n):0; }
 
 //------------------- Zigzag ---------------------------
-#define ZE(i,_it_) _z = (_it_)_p[i]-(_it_)start; x = (_z << 1) ^ (_z >> (sizeof(_z)*8-1)); start = _p[i]
-#define BITZENC(_ut_, _it_, _p_,_n_, _act_) { _ut_ *_p; _it_ _z;\
-  for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { ZE(0,_it_);_act_; ZE(1,_it_);_act_; ZE(2,_it_);_act_; ZE(3,_it_);_act_; }\
-  for(;_p != _p_+_n_; _p++) { ZE(0,_it_); _act_;}\
+#define ZE(i,_it_,_usize_) x = TEMPLATE2(zigzagenc, _usize_)((_it_)_p[i]-(_it_)start); start = _p[i]
+#define BITZENC(_ut_, _it_, _usize_, _p_,_n_, _act_) { _ut_ *_p;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { ZE(0,_it_,_usize_);_act_; ZE(1,_it_,_usize_);_act_; ZE(2,_it_,_usize_);_act_; ZE(3,_it_,_usize_);_act_; }\
+  for(;_p != _p_+_n_; _p++) { ZE(0,_it_,_usize_); _act_; }\
 }
 
 // max. bits for zigzag encoding
-unsigned bitz8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0, x; BITZENC(uint8_t,  int8_t, in, n, b |= x); return bsr8( b); }
-unsigned bitz16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0, x; BITZENC(uint16_t, int16_t,in, n, b |= x); return bsr16(b); }
-unsigned bitz64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0, x; BITZENC(uint64_t, int64_t,in, n, b |= x); return bsr64(b); }
+unsigned bitz8( uint8_t  *in, unsigned n, uint8_t  start) { uint8_t  b = 0, x; BITZENC(uint8_t,  int8_t, 8, in, n, b |= x); return bsr8( b); }
+unsigned bitz16(uint16_t *in, unsigned n, uint16_t start) { uint16_t b = 0, x; BITZENC(uint16_t, int16_t,16,in, n, b |= x); return bsr16(b); }
+unsigned bitz64(uint64_t *in, unsigned n, uint64_t start) { uint64_t b = 0, x; BITZENC(uint64_t, int64_t,64,in, n, b |= x); return bsr64(b); }
 unsigned bitz32(unsigned *in, unsigned n, unsigned start) { 
     #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b; 
@@ -275,14 +275,14 @@ unsigned bitz32(unsigned *in, unsigned n, unsigned start) {
   }
     #else
   uint32_t b = 0, x; 
-  BITZENC(uint32_t, int32_t, in, n, b |= x);
+  BITZENC(uint32_t, int32_t, 32, in, n, b |= x);
     #endif
   return bsr32(b);
 }
 
-unsigned bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  b = 0,*op = out;uint8_t  x; BITZENC(uint8_t,  int8_t, in, n, b |= x; *op++ = x); return bsr8(b);  }
-unsigned bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t b = 0,*op = out;uint16_t x; BITZENC(uint16_t, int16_t,in, n, b |= x; *op++ = x); return bsr16(b); }
-unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t b = 0,*op = out;uint64_t x; BITZENC(uint64_t, int64_t,in, n, b |= x; *op++ = x); return bsr64(b); }
+unsigned bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  b = 0,*op = out;uint8_t  x; BITZENC(uint8_t,  int8_t,  8,in, n, b |= x; *op++ = x); return bsr8(b);  }
+unsigned bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t b = 0,*op = out;uint16_t x; BITZENC(uint16_t, int16_t,16,in, n, b |= x; *op++ = x); return bsr16(b); }
+unsigned bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t b = 0,*op = out;uint64_t x; BITZENC(uint64_t, int64_t,64,in, n, b |= x; *op++ = x); return bsr64(b); }
 unsigned bitzenc32(unsigned *in, unsigned n, unsigned *out, unsigned start, uint32_t mindelta) {
     #if defined(__SSE2__) && defined(USE_SSE)
   unsigned *ip,b,*op = out; 
@@ -306,19 +306,19 @@ unsigned bitzenc32(unsigned *in, unsigned n, unsigned *out, unsigned start, uint
   }
     #else
   uint32_t b = 0, *op = out,x; 
-  BITZENC(uint32_t, int32_t, in, n, b |= x; *op++ = x);
+  BITZENC(uint32_t, int32_t, 32,in, n, b |= x; *op++ = x);
     #endif
   return bsr32(b);
 }
 
-#define ZD(_t_, i) { _t_ _z = _p[i]; _p[i] = (start += (_z >> 1 ^ -(_z & 1))); }
-#define BITZDEC(_t_, _p_, _n_) { _t_ *_p;\
-  for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { ZD(_t_, 0); ZD(_t_, 1); ZD(_t_, 2); ZD(_t_, 3); }\
-  for(;_p != _p_+_n_;_p++) ZD(_t_, 0);\
+#define ZD(_t_, _usize_, i) { _t_ _z = _p[i]; _p[i] = (start += TEMPLATE2(zigzagdec, _usize_)(_z)); }
+#define BITZDEC(_t_, _usize_, _p_, _n_) { _t_ *_p;\
+  for(_p = _p_; _p != _p_+(_n_&~(4-1)); _p += 4) { ZD(_t_, _usize_, 0); ZD(_t_, _usize_, 1); ZD(_t_, _usize_, 2); ZD(_t_, _usize_, 3); }\
+  for(;_p != _p_+_n_;_p++) ZD(_t_, _usize_, 0);\
 }
 
-void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(uint8_t,  p, n); }
-void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(uint64_t, p, n); }
+void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(uint8_t,  8, p, n); }
+void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(uint64_t, 64,p, n); }
 
 void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { 
     #if defined(__SSSE3__) && defined(USE_SSE)
@@ -336,7 +336,7 @@ void bitzdec16(uint16_t *p, unsigned n, uint16_t start) {
 	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
   }
     #else
-  BITZDEC(uint16_t, p, n);
+  BITZDEC(uint16_t, 16, p, n);
     #endif
 }
 
@@ -367,10 +367,10 @@ void bitzdec32(unsigned *p, unsigned n, unsigned start) {
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
   while(ip != p+n) {
     unsigned z = *ip; 
-	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
+	*ip++ = (start += zigzagdec32(z)); 
   }
     #else
-  BITZDEC(uint32_t, p, n);
+  BITZDEC(uint32_t, 32, p, n);
     #endif
 }
 
