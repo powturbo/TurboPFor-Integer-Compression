@@ -52,27 +52,25 @@
 #define BITSIZE64(_in_, _n_, _b_) BITSIZE_(_in_, _n_, _b_, 64)
 
 static inline unsigned char      zigzagenc8( char           x) { return x << 1 ^   x >> 7; }
-static inline unsigned char      zigzagdec8( unsigned short x) { return x >> 1 ^ -(x &   1); }
+static inline          char      zigzagdec8( unsigned short x) { return x >> 1 ^ -(x &   1); }
 
 static inline unsigned short     zigzagenc16(short          x) { return x << 1 ^   x >> 15; }
-static inline unsigned short     zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
+static inline          short     zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
 
 static inline unsigned       	 zigzagenc31(int      x)       { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; } // for signed x
 static inline unsigned       	 zigzagdec31(unsigned x)       { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
 static inline unsigned long long zigzagenc63(long long          x) { x = (x << 2 | ((x>>62)&  2)) ^   x >> 63; return x; } // for signed x
-static inline unsigned long long zigzagdec63(unsigned long long x) { return (x >> 2 |  (x&  2)<<62 ) ^ -(x &   1); }
+static inline          long long zigzagdec63(unsigned long long x) { return (x >> 2 |  (x&  2)<<62 ) ^ -(x &   1); }
 
 static inline unsigned       	 zigzagenc32(int      x)       { return x << 1 ^   x >> 31; }
-static inline unsigned       	 zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
+static inline int      	         zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
 
 static inline uint64_t           zigzagenc64(int64_t  x)       { return x << 1 ^ x >> 63; }
-static inline uint64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
+static inline  int64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
 
   #ifdef __AVX2__
 #include <immintrin.h>
 
-#define DELTA256x320(_v_, _sv_) _mm256_sub_epi32(_v_, _mm256_or_si256(_mm256_srli_si256(      _mm256_permute2x128_si256(_sv_, _sv_, _MM_SHUFFLE(2, 0, 0, 1)), 12),\
-                                                                     _mm256_alignr_epi8(_v_, _mm256_permute2x128_si256(_v_,  _v_,  _MM_SHUFFLE(0, 0, 2, 0)), 12)))
 #define DELTA256x32(_v_, _sv_) _mm256_sub_epi32(_v_, _mm256_alignr_epi8(_v_, _mm256_permute2f128_si256(_sv_, _v_, _MM_SHUFFLE(0, 2, 0, 1)), 12))
 
 #define SCAN256x32( _v_, _sv_) {\
