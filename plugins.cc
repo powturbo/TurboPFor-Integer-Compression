@@ -103,6 +103,7 @@ enum {
   TB_FPFFOR64,
   TB_FPDFOR64,
   TB_PF64,
+  TB_PF64V,
   #ifdef TURBOPFORH
 #define C_TURBOPFORH    CODEC0V
   #else
@@ -320,6 +321,7 @@ struct plugs plugs[] = {
   { TB_FPFFOR64,	"FP_FCM64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR (FCM)" }, 
   { TB_FPDFOR64,	"FP_DFCM64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR (DFCM)" }, 
   { TB_PF64,		"TurboPFor64", 		C_TURBOPFOR,	BLK_V128,0,"","PFOR 64" }, 
+  { TB_PF64V,		"TurboPFor64V",		C_TURBOPFOR,	BLK_V128,0,"","PFOR 64" }, 
     #if !defined(NCODEC1) && !defined(NCODEC2)
   #include "ext/beplugr_.h" // external libs
     #endif
@@ -381,9 +383,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       else {    b = bitd32( in, n, x);  *out++=b;				return bitdpack32( in, n, out, x, b); } 
     case TB_BPN:    											return out+(mdelta?bitnd1pack32(in, n, out):bitndpack32( in, n, out));
 	
-    case TB_PDI: { unsigned mdelta; x = *in++; mdelta = bitdi32(in, --n, x); if(mdelta>(1<<27)) mdelta=1<<27; bitdienc32(in, n, pa, x, mdelta); 
-	    mdelta=mdelta<<5|(x&31); x>>=5; vbxput32(out, x); vbput32(out, mdelta); return p4enc32(pa, n, out);
-	  }
+    case TB_PDI:    x = *in++; --n; vbxput32(out, x);           return p4senc32(in, n, out, x ); 
 
 	  #if C_TURBOPFORV
     case TB_EF128V:   x = *in++; --n; vbxput32(out, x);         
@@ -448,7 +448,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_BP:     vbxget32(in, x);*out++ = x; --n; b = *in++; return mdelta?bitd1unpack32(     in, n, out, x, b):bitdunpack32(    in, n, out, x, b);
     case TB_BPN:               						  		    return in+(mdelta?bitnd1unpack32(in, n, out      ):bitndunpack32(   in, n, out));
 	
-    case TB_PDI: { uint32_t mdelta; vbxget32(in, x);  vbget32(in, mdelta); x = x << 5 | (mdelta & 31); *out++ = x; --n; in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta>>5); break; }
+    case TB_PDI:    vbxget32(in, x);*out++ = x; --n;            return p4sdec32(in, n, out, x);
 	  #if C_TURBOPFORV
     case TB_FOR128V:vbxget32(in, x);*out++ = x; --n; b = *in++;
 	  if(mdelta) {                                      	    return n==128?bitf1unpack128v32( in, n, out, x, b):bitf1unpack32(   in, n, out, x, b); } 
@@ -616,6 +616,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 	case TB_FPFFOR64: ctou64(out) = ctou64(_in); return fpfcmenc64( (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
 	case TB_FPDFOR64: ctou64(out) = ctou64(_in); return fpdfcmenc64((uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
     case TB_PF64:     return p4enc64((uint64_t *)in,   PAD8(_n), out);
+    case TB_PF64V:    return p4enc128v64((uint64_t *)in,   PAD8(_n), out);
       #if !defined(NCODEC1) && !defined(NCODEC2)
     #include "ext/beplugc_.c"	  
       #endif
@@ -674,6 +675,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
 	case TB_FPFFOR64: ctou64(_out) = ctou64(in); return fpfcmdec64( in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));; 
 	case TB_FPDFOR64: ctou64(_out) = ctou64(in); return fpdfcmdec64(in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));
     case TB_PF64:     return p4dec64(    in, PAD8(outlen), (uint64_t *)out);
+    case TB_PF64V:    return p4dec128v64(in, PAD8(outlen), (uint64_t *)out);
       #if !defined(NCODEC1) && !defined(NCODEC2)
     #include "ext/beplugd_.c"	  
       #endif
