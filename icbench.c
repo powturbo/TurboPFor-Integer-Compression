@@ -1266,49 +1266,54 @@ uint64_t _in[NN+256],_cpy[NN+256];
 unsigned char out[NN*16];
 
 void vstest64(int id, int rm,int rx, unsigned n) {   
-  unsigned b,i;																				fprintf(stderr,"64 bits test.n=%d ", n); 
+  unsigned b,i;																				fprintf(stderr,"64 bits test.n=%d [%d-%d]", n, rm, min(rx,64)); 
   uint64_t *in = _in,*cpy = _cpy;
   if(n > NN) n = NN;  																		//if(id==5) n = 128;
   for(b = rm; b <= min(rx,64); b++) {    
     uint64_t start = 0, msk = b==64?0xffffffffffffffffull:(((uint64_t)1 << b)-1);
     unsigned char *op;																		fprintf(stderr,"\nb=%d:", b);  
     for(i = 0; i < n; i++) {
-      in[i] = be_rand?(RND64&msk):msk; //(/*start +=*/ RND64 & msk);						//fprintf(stderr, ".%llx ", in[0]); 
+      in[i] = be_rand?(RND64&msk)>>(rand() & 3):msk; //(/*start +=*/ RND64 & msk);						//fprintf(stderr, ".%llx ", in[0]); 
       if(bsr64(in[i]) > b) die("Fatal error at b=%d ", b);
     }
     in[0]   = msk;
     in[n-1] = msk;
     switch(id) { 
-      case 0: op = vbenc64(   in, n, out);    break;
-      case 1: op = bitpack64( in, n, out, b); break;
-      case 2: op = out+bitnpack64(in, n, out); break;
-      case 3: op = p4enc64(   in, n, out);    break;
-      case 4: op = vsenc64(   in, n, out);    break;
-      case 5: op = out+bitndpack64(in, n, out); break;
-      case 6: op = out+bitnd1pack64(in, n, out); break;
-      case 7: op = out+bitnzpack64(in, n, out); break;
-      case 8: op = vbzenc64(in, n, out, 0); break;
-      case 9: op = out+p4nzenc64(in, n, out); break;
+      case  0: op = vbenc64(   in, n, out);    break;
+      case  1: op = bitpack64( in, n, out, b); break;
+      case  2: op = out+bitnpack64(in, n, out); break;
+      case  3: op = out+bitnpack128v64(in, n, out); break;
+      case  4: op = out+p4nenc64(   in, n, out);    break;
+      case  5: op = out+p4nenc128v64(in, n, out); break;
+      case  6: op = vsenc64(   in, n, out);    break;
+      case  7: op = out+bitndpack64(in, n, out); break;
+      case  8: op = out+bitnd1pack64(in, n, out); break;
+      case  9: op = out+bitnzpack64(in, n, out); break;
+      case 10: op = vbzenc64(in, n, out, 0); break;
+      case 11: op = out+p4nzenc64(in, n, out); break;
+	  default: die("Fatal error function %d \n", id);
       //case 5: op = efanoenc64(in, n, out, 0); break;
     }
     fprintf(stderr,"%d %.2f ", (int)(op-out),  ((double)(op-out)*100.0)/(double)(n*8));  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
     memrcpy(cpy, in, n*sizeof(in[0]));
     switch(id) {
-      case 0: vbdec64(    out, n, cpy);      break;
-      case 1: bitunpack64(out, n, cpy, b);   break;
-      case 2: bitnunpack64(out, n, cpy);   break;
-      case 3: p4dec64(    out, n, cpy);      break;
-      case 4: vsdec64(    out, n, cpy);      break;
-      case 5: bitndunpack64(out, n, cpy);   break;
-      case 6: bitnd1unpack64(out, n, cpy);   break;
-      case 7: bitnzunpack64(out, n, cpy);   break;
-      case 8: vbzdec64(    out, n, cpy, 0);      break;
-      case 9: p4nzdec64(    out, n, cpy);      break;
+      case  0: vbdec64(    out, n, cpy);      break;
+      case  1: bitunpack64(out, n, cpy, b);   break;
+      case  2: bitnunpack64(out, n, cpy);   break;
+      case  3: bitnunpack128v64(out, n, cpy);   break;
+      case  4: p4ndec64(    out, n, cpy);      break;
+      case  5: p4ndec128v64(    out, n, cpy);      break;
+      case  6: vsdec64(    out, n, cpy);      break;
+      case  7: bitndunpack64(out, n, cpy);   break;
+      case  8: bitnd1unpack64(out, n, cpy);   break;
+      case  9: bitnzunpack64(out, n, cpy);   break;
+      case 10: vbzdec64(    out, n, cpy, 0);      break;
+      case 11: p4nzdec64(    out, n, cpy);      break;
       //case 5: efanodec64( out, n, cpy, 0);   break;
     }
 	for(i = 0; i < n; i++) 
       if(in[i] != cpy[i]) {
-        fprintf(stderr, "Error b=%d at '%d' (in=%llx,cpy=%llx)", b, i, in[i], cpy[i]); break;
+        fprintf(stderr, "Error b=%d at '%d' (in=%x,%x cpy=%x,%x)", b, i, in[i], in[i+1], cpy[i], cpy[i+1]); break;
       }
   }
   fprintf(stderr,"\n");  
@@ -1357,7 +1362,7 @@ void vstest16(int id, int rm,int rx, unsigned n) {
 	uint16_t *p = cpy;
 	for(i = 0; i < n; i++) 
       if(in[i] != p[i]) {
-        fprintf(stderr, "Error b=%d at '%d' (in=%x,cpy=%x)", b, i, in[i], p[i]); break;
+        fprintf(stderr, "Error b=%d at '%d' (in=%x,%x cpy=%x,%x)", b, i, in[i], in[i+1], p[i], p[i+1]); break;
       }
   }
   fprintf(stderr,"\n");  
