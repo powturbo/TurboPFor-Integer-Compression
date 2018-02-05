@@ -42,6 +42,7 @@ size_t bitnpack32(        uint32_t *__restrict in, size_t n, unsigned char *__re
 size_t bitnpack64(        uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnpack128v16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
 size_t bitnpack128v32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnpack128v64(    uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnpack256v32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
 size_t bitndpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 
@@ -74,6 +75,7 @@ size_t bitnunpack32(      unsigned char *__restrict in, size_t n, uint32_t *__re
 size_t bitnunpack64(      unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
 size_t bitnunpack128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t bitnunpack128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
+size_t bitnunpack128v64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out); 
 size_t bitnunpack256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
 
 size_t bitndunpack8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
@@ -152,6 +154,7 @@ unsigned char *bitf1pack128v32(unsigned          *__restrict in, unsigned n, uns
 unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
 //unsigned char *bitpack256w32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitpack128v64(  uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
 
 unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
 unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
@@ -248,7 +251,8 @@ unsigned char *bitd1unpack128v32(const unsigned char *__restrict in, unsigned n,
 unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
 unsigned char *bitf1unpack128v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
-unsigned char *bitunpack256w32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b);
+unsigned char *bitunpack256w32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out,                 unsigned b);
+unsigned char *bitunpack128v64(  const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out,                 unsigned b);
 
 unsigned char *bitunpack256v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out,                 unsigned b);
 unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
@@ -278,6 +282,7 @@ unsigned char *_bitdunpack128h32( const unsigned char *__restrict in, unsigned n
 unsigned char *_bitd1unpack128h32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
 //unsigned char *_bitunpack256w32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitunpack128v64(  const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, unsigned b, uint32_t *__restrict pex, unsigned char *bb);
 
 unsigned char *_bitunpack256v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
