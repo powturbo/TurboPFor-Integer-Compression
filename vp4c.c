@@ -113,9 +113,47 @@
 #define USIZE 64
 #include "vp4c.c"
 
+
 #undef _P4ENC
 #undef  P4ENC
 #undef  BITPACK 
+
+#define PREFETCH(_ip_) __builtin_prefetch(_ip_+768,0)//#define PREFETCH(ip)
+#define P4NDENC(in, n, out, _csize_, _usize_, _p4c_) { if(!n) return 0;\
+  unsigned char *op = out; \
+  start = *in++;\
+  TEMPLATE2(vbxput, _usize_)(op, start);\
+  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512);\
+                         op = TEMPLATE2(_p4c_, _usize_)(ip, _csize_, op, start); ip += _csize_; start = ip[-1];\
+  } if(n&=(_csize_-1)) { op = TEMPLATE2(_p4c_, _usize_)(ip, n,       op, start); }\
+  return op - out;\
+}
+
+#define P4NDDEC(in, n, out, _csize_, _usize_, _p4d_) { if(!n) return 0;\
+  unsigned char *ip = in;\
+  TEMPLATE2(vbxget, _usize_)(ip, start);\
+  for(*out++ = start,--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512);\
+                         ip = TEMPLATE2(_p4d_, _usize_)(ip, _csize_, op, start); op += _csize_; start = op[-1];\
+  } if(n&=(_csize_-1)) { ip = TEMPLATE2(_p4d_, _usize_)(ip, n,       op, start); }\
+  return ip - in;\
+}
+
+unsigned char *p4senc16(uint16_t *in, unsigned n, unsigned char *out, uint16_t x) { uint16_t pa[128+32], mdelta = bitdi16(in, n, x); vbput16(out, mdelta); bitdienc16(in, n, pa, x, mdelta); return p4enc16(pa, n, out);}
+unsigned char *p4senc32(uint32_t *in, unsigned n, unsigned char *out, uint32_t x) { uint32_t pa[128+32], mdelta = bitdi32(in, n, x); vbput32(out, mdelta); bitdienc32(in, n, pa, x, mdelta); return p4enc32(pa, n, out);}
+unsigned char *p4senc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t x) { uint64_t pa[128+64], mdelta = bitdi64(in, n, x); vbput64(out, mdelta); bitdienc64(in, n, pa, x, mdelta); return p4enc64(pa, n, out);}
+
+unsigned char *p4sdec16(unsigned char *in, unsigned n, uint16_t *out, uint16_t x) { uint16_t mdelta; vbget16(in, mdelta); in = p4dec16(in, n, out); bitdidec16(out, n, x, mdelta); return in; }
+unsigned char *p4sdec32(unsigned char *in, unsigned n, uint32_t *out, uint32_t x) { uint32_t mdelta; vbget32(in, mdelta); in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta); return in; }
+unsigned char *p4sdec64(unsigned char *in, unsigned n, uint64_t *out, uint64_t x) { uint64_t mdelta; vbget64(in, mdelta); in = p4dec64(in, n, out); bitdidec64(out, n, x, mdelta); return in; }
+
+size_t p4nsenc16(uint16_t *in, size_t n, unsigned char *out) { uint16_t  *ip,start; P4NDENC(in, n, out, 128, 16, p4senc); }
+size_t p4nsenc32(uint32_t *in, size_t n, unsigned char *out) { uint32_t  *ip,start; P4NDENC(in, n, out, 128, 32, p4senc); }
+size_t p4nsenc64(uint64_t *in, size_t n, unsigned char *out) { uint64_t  *ip,start; P4NDENC(in, n, out, 128, 64, p4senc); }
+
+size_t p4nsdec16(unsigned char *in, size_t n, uint16_t *out) { uint16_t  *op,start; P4NDDEC(in, n, out, 128, 16, p4sdec); }
+size_t p4nsdec32(unsigned char *in, size_t n, uint32_t *out) { uint32_t  *op,start; P4NDDEC(in, n, out, 128, 32, p4sdec); }
+size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,start; P4NDDEC(in, n, out, 128, 64, p4sdec); }
+
 #endif
 #undef _P4BITS
 
@@ -135,6 +173,8 @@
 #define USIZE 16
 #include "vp4c.c"
 #define USIZE 32
+#include "vp4c.c"
+#define USIZE 64
 #include "vp4c.c"
 
 #define P4DELTA 0
@@ -259,7 +299,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
 	#endif
   for(i = b-1; i >= 0; --i) {
 	int fi,v;
-    #if HYBRID > 0 && USIZE >= 16
+      #if HYBRID > 0 && USIZE >= 16
     v = PAD8(n*i) + 2 + x + vv; 
     l = PAD8(n*i) + 2+bmp8 + PAD8(x*(bx-i)); 
 	x  += cnt[i]; 
@@ -308,7 +348,7 @@ unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
   if(bx <= USIZE) { 														
     #endif
     for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i]; out += PAD8(n); 	
-    out = TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  	 	        					
+    out = TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  
     out = TEMPLATE2(BITPACK, USIZE)(_in, n,  out, b);  
     #if HYBRID > 0 && USIZE >= 16
   } 
