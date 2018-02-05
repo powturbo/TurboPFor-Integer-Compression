@@ -40,27 +40,8 @@
 
   #ifdef __SSSE3__
 #include <tmmintrin.h>
-extern char _shuffle_32[16][16];/* = {
-  #define _ 0x80
-        { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
-        { 0,1,2,3, _,_,_,_, _,_, _, _,  _, _, _,_  },
-        { _,_,_,_, 0,1,2,3, _,_, _, _,  _, _, _,_  },
-        { 0,1,2,3, 4,5,6,7, _,_, _, _,  _, _, _,_  },
-        { _,_,_,_, _,_,_,_, 0,1, 2, 3,  _, _, _,_  },
-        { 0,1,2,3, _,_,_,_, 4,5, 6, 7,  _, _, _,_  },
-        { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  _, _, _,_  },
-        { 0,1,2,3, 4,5,6,7, 8,9,10,11,  _, _, _,_  },
-        { _,_,_,_, _,_,_,_, _,_,_,_,    0, 1, 2, 3 },
-        { 0,1,2,3, _,_,_,_, _,_,_,  _,  4, 5, 6, 7 },
-        { _,_,_,_, 0,1,2,3, _,_,_,  _,  4, 5, 6, 7 },
-        { 0,1,2,3, 4,5,6,7, _,_, _, _,  8, 9,10,11 },
-        { _,_,_,_, _,_,_,_, 0,1, 2, 3,  4, 5, 6, 7 },
-        { 0,1,2,3, _,_,_,_, 4,5, 6, 7,  8, 9,10,11 },
-        { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  8, 9,10,11 },
-        { 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15 }, 
-  #undef _
-};*/
-extern char _shuffle_16[256][16]; // defined in bitunpack.c
+extern char _shuffle_32[16][16];  // defined in bitunpack.c
+extern char _shuffle_16[256][16]; 
   #endif
   
   #if !defined(SSE2_ON) && !defined(AVX2_ON)
@@ -163,6 +144,8 @@ extern char _shuffle_16[256][16]; // defined in bitunpack.c
 #define USIZE 16
 #include "vp4d.c"
 #define USIZE 32
+#include "vp4d.c"
+#define USIZE 64
 #include "vp4d.c"
 
 #define P4DELTA(a) ,a
@@ -284,30 +267,41 @@ extern char _shuffle_16[256][16]; // defined in bitunpack.c
 #pragma GCC optimize ("align-functions=16")
 
 ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
-  uint_t ex[P4D_MAX+64];
   if(!(b & 0x80)) {
-      #if USIZE == 64
+      #if USIZE == 64 
     b = (b == 63)?64:b;
       #endif
     return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);
   }
   b &= 0x7f;
-    #if VSIZE >= 128 && USIZE < 64 
-  { unsigned char *pb = in;	
+    #if VSIZE >= 128
+	  #if USIZE == 64 
+  if(b+bx <= 32)
+	  #endif
+  { unsigned char *pb = in;	 
       #if VSIZE == 128  
+	    #if USIZE == 64 
+    uint32_t ex[P4D_MAX+64];
+    in = TEMPLATE2(bitunpack, 32)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx); 
+	    #else
+    uint_t ex[P4D_MAX+64];		  
     in = TEMPLATE2(bitunpack, USIZE)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx); 
+		#endif
       #else
+    uint_t ex[P4D_MAX+64];		  
     in = TEMPLATE2(bitunpack, USIZE)(in+32, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)) + popcnt64(ctou64(in+16)) + popcnt64(ctou64(in+24)), ex, bx); 
       #endif
     return TEMPLATE2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);	  
   }
-    #else
-  { unsigned long long bb[P4D_MAX/64]; 
+    #endif
+    #if VSIZE < 128 || USIZE == 64
+  {   uint_t ex[P4D_MAX+64];
+    unsigned long long bb[P4D_MAX/64]; 
     unsigned num=0,i,p4dn = (n+63)/64;
     for(i = 0; i < n/64; i++) { bb[i] = ctou64(in+i*8); num += popcnt64(bb[i]); }
     if(n & 0x3f) { bb[i] = ctou64(in+i*8) & ((1ull<<(n&0x3f))-1); num += popcnt64(bb[i]); }
     in = TEMPLATE2(bitunpack, USIZE)(in+PAD8(n), num, ex, bx);
-    in = TEMPLATE2(bitunpack, USIZE)(in, n, out, b);
+    in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b);
       #if 0 //defined(AVX_2__)
 	{ uint_t *op,*pex = ex;
       for(i = 0; i < p4dn; i++) {
