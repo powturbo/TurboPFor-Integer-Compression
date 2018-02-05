@@ -47,7 +47,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
    
 #define PREFETCH(_ip_) __builtin_prefetch(_ip_+768,0)//#define PREFETCH(ip)
 
-#ifdef _MSC_VER
+#if 1 //def _MSC_VER
 #define VX (v=x)
 #define V  x 
 #else
@@ -246,6 +246,13 @@ unsigned char *bitpack128v32(unsigned       *__restrict in, unsigned n, unsigned
 unsigned char *bitpack256w32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b) { unsigned char *_out=out; unsigned *_in=in; 
 BITPACK128V32(in, b, out, 0); in = _in+128; out = _out+PAD8(128*b); BITPACK128V32(in, b, out, 0); return _out+PAD8(256*b); }
 
+#define IP32(ip, i, iv) _mm_or_si128(_mm_shuffle_epi32(_mm_loadu_si128(ip++),_MM_SHUFFLE(2, 0, 3, 1)), _mm_shuffle_epi32(_mm_loadu_si128(ip++),_MM_SHUFFLE(3, 1, 2, 0)) )
+#include "bitpack_.h" 
+unsigned char *bitpack128v64(uint64_t       *__restrict _in, unsigned n, unsigned char *__restrict out, unsigned b) {  
+  if(b>32) return bitpack64(_in,n,out,b); 
+  else { unsigned char *pout = out+PAD8(128*b); uint32_t *in = _in; BITPACK128V32(in, b, out, 0); return pout; }
+}
+
 #define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x16(v,_sv_); _sv_ = v
 #define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v
 #define IP16(ip, i, _iv_) _iv_
@@ -303,6 +310,7 @@ unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigne
 
 size_t bitnpack128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip;       _BITNPACKV( in, n, out, 128, 16, bitpack128v); } 
 size_t bitnpack128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip;       _BITNPACKV( in, n, out, 128, 32, bitpack128v); } 
+size_t bitnpack128v64(  uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip;       _BITNPACKV( in, n, out, 128, 64, bitpack128v); } 
 
 size_t bitndpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitd,  bitdpack128v,  bitdpack); } 
 size_t bitndpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitd,  bitdpack128v,  bitdpack); } 
