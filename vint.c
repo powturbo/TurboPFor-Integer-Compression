@@ -272,13 +272,13 @@ unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n
 
 uint_t TEMPLATE2(VBDGETX, USIZE)(unsigned char  *__restrict in, unsigned idx, uint_t start) {
   unsigned char *ip;
-  unsigned i;
+  unsigned i=0;
   uint_t x;
 
     #if USIZE > 64
   unsigned long long u; 
   _vbget64(in, u, ;); x = u>>1; start += x+1;
-  if(u & 1) return start + ; 
+  if(u & 1) return start + 1; 
     #endif
   for(ip = in; i <= idx; i++) {
 	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
