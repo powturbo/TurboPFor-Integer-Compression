@@ -183,7 +183,7 @@ uint_t TEMPLATE2(vbzgetx, USIZE)(unsigned char  *__restrict in, unsigned idx, ui
 
   for(ip = in,i = 0; i <= idx; i++) {
 	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
-    start += x+1;
+    start += x+VDELTA;
   }
   return start;
 }
@@ -194,7 +194,7 @@ unsigned TEMPLATE2(vbzgeteq, USIZE)(unsigned char **__restrict in, unsigned n, u
   uint_t x;
   for(ip = *in,i=idx; i < n; i++) {
 	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
-	if((start += x+1) == key) 
+	if((start += x+VDELTA) == key) 
       break;
   }
   *in = ip;
@@ -277,12 +277,12 @@ uint_t TEMPLATE2(VBDGETX, USIZE)(unsigned char  *__restrict in, unsigned idx, ui
 
     #if USIZE > 64
   unsigned long long u; 
-  _vbget64(in, u, ;); x = u>>1; start += x+1;
-  if(u & 1) return start + 1; 
+  _vbget64(in, u, ;); x = u>>1; start += x+VDELTA;
+  if(u & 1) return start + VDELTA; 
     #endif
   for(ip = in; i <= idx; i++) {
 	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
-    start += x+1;
+    start += x+VDELTA;
   }
   return start;
 }
@@ -293,7 +293,7 @@ unsigned TEMPLATE2(VBDGETGEQ, USIZE)(unsigned char **__restrict in, unsigned n, 
   uint_t x;
     #if USIZE < 64
   if(!idx) {
-    unsigned long long u; _vbget64(ip, u, ;); x = u>>1; start += x+1;
+    unsigned long long u; _vbget64(ip, u, ;); x = u>>1; start += x+VDELTA;
     if((u & 1) && start == *key) { *in = ip; return 0; }
     i++; 
   }
