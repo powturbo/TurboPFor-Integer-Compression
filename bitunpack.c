@@ -82,6 +82,10 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 #define _BITUNPACK_ bitd1unpack  // delta + 1
 #include "bitunpack_.h"
 
+#define OUT( _op_, _x_, _w_, _parm_) OP(_op_,_x_) = (_parm_ += (_w_)) + (_x_+1)  
+#define _BITUNPACK_ bitddunpack  // delta of delta + 1
+#include "bitunpack_.h"
+
 #define OUT( _op_, _x_, _w_, _parm_) OP(_op_,_x_) = _parm_ + (_w_)+(_x_+1)
 #define _BITUNPACK_ bitf1unpack  // for + 1
 #include "bitunpack_.h"
@@ -125,6 +129,10 @@ size_t bitnzunpack16( unsigned char *__restrict in, size_t n, uint16_t *__restri
 size_t bitnzunpack32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; BITNDUNPACK(in, n, out, 128, 32, bitzunpacka); } 
 size_t bitnzunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op,start; BITNDUNPACK(in, n, out, 128, 64, bitzunpacka); } 
 
+size_t bitnfunpack8(  unsigned char *__restrict in, size_t n, uint8_t  *__restrict out) { uint8_t  *op,start; BITNDUNPACK(in, n, out, 128,  8, bitfunpacka); } 
+size_t bitnfunpack16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; BITNDUNPACK(in, n, out, 128, 16, bitfunpacka); } 
+size_t bitnfunpack32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; BITNDUNPACK(in, n, out, 128, 32, bitfunpacka); } 
+size_t bitnfunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op,start; BITNDUNPACK(in, n, out, 128, 64, bitfunpacka); } 
 #endif
 
 #define _BITNUNPACKV(in, n, out, _csize_, _usize_, _bitunpackv_) {\
@@ -719,6 +727,8 @@ size_t bitnd1unpack128v32(unsigned char *__restrict in, size_t n, uint32_t *__re
 size_t bitnzunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitzunpack128v, bitzunpack); } 
 size_t bitnzunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitzunpack128v, bitzunpack); } 
 
+size_t bitnfunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitfunpack128v, bitfunpack); } 
+size_t bitnfunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitfunpack128v, bitfunpack); } 
 #endif // __SSE2__
  
 #if defined(__AVX2__) && defined(AVX2_ON)  
@@ -1144,6 +1154,7 @@ size_t bitnunpack256v32(  unsigned char *__restrict in, size_t n, uint32_t *__re
 size_t bitndunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bitdunpack256v,  bitdunpack); } 
 size_t bitnd1unpack256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bitd1unpack256v, bitd1unpack); } 
 size_t bitnzunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bitzunpack256v,  bitzunpack); } 
+size_t bitnfunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bitfunpack256v,  bitfunpack); } 
 
 #endif
 
