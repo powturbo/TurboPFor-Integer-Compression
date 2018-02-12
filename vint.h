@@ -254,6 +254,15 @@ unsigned char *vbzdec16( unsigned char  *__restrict in, unsigned n, unsigned sho
 unsigned char *vbzdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 unsigned char *vbzdec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
 
+//---------------------- Delta of delta encoding/decoding for unsorted integer lists.
+unsigned char *vbddenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+unsigned char *vbddenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+unsigned char *vbddenc64( uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
+
+unsigned char *vbdddec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+unsigned char *vbdddec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
+unsigned char *vbdddec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
+
 //-- Get value stored at index idx (idx:0...n-1)
 unsigned short vbzgetx16(  unsigned char *__restrict in, unsigned idx, unsigned short start);
 unsigned       vbzgetx32(  unsigned char *__restrict in, unsigned idx, unsigned       start);
