@@ -203,6 +203,7 @@ enum {
   TP_NIBBLE, 	
   TB_ZIGZAG32, 	
   TB_DELTA32, 	
+  TB_DDELTA32, 	
   TB_XOR32, 	
 #define C_LZTURBO       0
   P_LZT,
@@ -315,6 +316,7 @@ struct plugs plugs[] = {
   { TP_NIBBLE, 		"tpnibble",			C_TURBOPFOR,	BLK_SIZE,0,"2,4,8","Nibble transpose (simd)" }, 
   { TB_ZIGZAG32, 	"ZigZag32", 		C_TURBOPFOR,	BLK_SIZE,0,"","ZigZag encoding (sse2)" }, 
   { TB_DELTA32, 	"Delta32", 		    C_TURBOPFOR,	BLK_SIZE,0,"","Delta encoding (sse2)"},  
+  { TB_DDELTA32, 	"DDelta32", 		C_TURBOPFOR,	BLK_SIZE,0,"","Delta of delta encoding (sse2)"},  
   { TB_XOR32, 		"Xor32", 		    C_TURBOPFOR,	BLK_SIZE,0,"","Xor encoding (sse2)" },  
   // ---- Floating point --------
   { TB_FPPFOR64,	"FP_PREV64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR" }, 
@@ -375,7 +377,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_FOR :  
     case TB_FORDA:   x = *in++; --n; vbxput32(out, x); 
       if(mdelta) { b = bitf132(in, n, x);  *out++=b;			return bitf1pack32(in, n, out, x, b); }
-      else {    b = bitf32( in, n, x);  *out++=b;				return bitfpack32( in, n, out, x, b); }
+      else {       b = bitf32( in, n, x);  *out++=b;			return bitfpack32( in, n, out, x, b); }
 
     case TB_BP128H:
     case TB_BP:     x = *in++; --n; vbxput32(out, x); 
@@ -424,6 +426,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TP_BYTE:     bitdienc32(in, n, (unsigned *)sbuf, -mdelta, mdelta); tpenc( (unsigned char *)sbuf, _n, out, lev); return out + _n;
     case TP_NIBBLE:   bitdienc32(in, n, (unsigned *)sbuf, -mdelta, mdelta); tp4enc((unsigned char *)sbuf, _n, out, lev); return out + _n;
     case TB_DELTA32:  bitdienc32(in, n, (unsigned *)out,  -mdelta, mdelta); return out + _n; 
+    case TB_DDELTA32: bitddenc32(in, n, (unsigned *)out,  -mdelta, mdelta); return out + _n; 
     case TB_XOR32:    bitxenc32( in, n, (unsigned *)out,  -mdelta);         return out + _n; 
       #endif
       #if !defined(NCODEC1) && !defined(NCODEC2)
@@ -496,6 +499,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TP_BYTE:     tpdec( (unsigned char *)in, outlen, (unsigned char *)out,lev); bitdidec32(out, n, -mdelta, mdelta); return in + outlen;
     case TP_NIBBLE:   tp4dec((unsigned char *)in, outlen, (unsigned char *)out,lev); bitdidec32(out, n, -mdelta, mdelta); return in + outlen;
     case TB_DELTA32:  memcpy(out, in, outlen); mdelta?bitd1dec32(out, n, -mdelta):bitddec32(out, n, 0); return in + outlen;
+    case TB_DDELTA32: memcpy(out, in, outlen); bitdddec32(out, n, -mdelta); return in + outlen;
     case TB_XOR32:    memcpy(out, in, outlen); bitxdec32(out, n, -mdelta); return in + outlen;
       #endif
       #if !defined(NCODEC1) && !defined(NCODEC2)
@@ -609,6 +613,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TP_BYTE:     tpenc( (unsigned char *)in, _n,           out,lev); return out + _n;
     case TP_NIBBLE:   tp4enc((unsigned char *)in, _n,           out,lev); return out + _n;
     case TB_DELTA32:  bitdienc32(             in,n, (unsigned *)out,0,0); return out + _n; 
+    case TB_DDELTA32: bitddenc32(             in,n, (unsigned *)out,0,0); return out + _n; 
     case TB_ZIGZAG32: bitzenc32(              in, n,(unsigned *)out,0,0); return out + _n;
       #endif
       //---- Floating point ----------------------
@@ -668,6 +673,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TP_BYTE:     tpdec(   (unsigned char *)in, outlen, (unsigned char *)out,lev); return in + outlen;
     case TP_NIBBLE:   tp4dec(  (unsigned char *)in, outlen, (unsigned char *)out,lev); return in + outlen;
     case TB_DELTA32:  memcpy(out, in, outlen); bitddec32(out, n, 0); 			   	   return in + outlen;
+    case TB_DDELTA32: memcpy(out, in, outlen); bitdddec32(out, n, 0); 			   	   return in + outlen;
     case TB_ZIGZAG32: memcpy(out, in, outlen); bitzdec32(out, n, 0); 			  	   return in + outlen;
 	  #endif
       //---- Floating point (64 bits)----------------------
