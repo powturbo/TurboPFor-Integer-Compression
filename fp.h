@@ -34,8 +34,17 @@ extern "C" {
 unsigned char *fppenc64(   uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
 unsigned char *fppdec64(   unsigned char *in, unsigned n, uint64_t      *out, uint64_t start);
 
+unsigned char *fpgenc64(   uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
+unsigned char *fpgdec64(   unsigned char *in, unsigned n, uint64_t      *out, uint64_t start);
+
 unsigned char *fppdec64(unsigned char *in, unsigned n, uint64_t *out, uint64_t start);
 unsigned char *fpddenc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t start);
+
+unsigned char *bitgenc32(uint32_t      *in, unsigned n, unsigned char *out, uint32_t start);
+unsigned char *bitgdec32(unsigned char *in, unsigned n, uint32_t      *out, uint32_t start);
+
+unsigned char *bitgenc64(uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
+unsigned char *bitgdec64(unsigned char *in, unsigned n, uint64_t      *out, uint64_t start);
 
 //---- FCM: Finite Context Method Predictor 
 unsigned char *fpfcmenc64( uint64_t      *in, unsigned n, unsigned char *out, uint64_t start);
