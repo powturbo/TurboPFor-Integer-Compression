@@ -210,6 +210,11 @@ size_t bitnzpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict
 size_t bitnzpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitz, bitzpacka); }
 size_t bitnzpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitz, bitzpacka); }
 
+size_t bitnfpack8(  uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) {  uint8_t  *ip,start; BITNDPACK(in, n, out, 128,  8, bitf, bitfpacka); }
+size_t bitnfpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint16_t *ip,start; BITNDPACK(in, n, out, 128, 16, bitf, bitfpacka); }
+size_t bitnfpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitf, bitfpacka); }
+size_t bitnfpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitf, bitfpacka); }
+
 #endif
 
 #define _BITNPACKV(in, n, out, _csize_, _usize_, _bitpackv_) {\
@@ -321,6 +326,9 @@ size_t bitnd1pack128v32(uint32_t *__restrict in, size_t n, unsigned char *__rest
 size_t bitnzpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitz,  bitzpack128v,  bitzpack); } 
 size_t bitnzpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitz,  bitzpack128v,  bitzpack); } 
 
+size_t bitnfpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitf,  bitfpack128v,  bitfpack); } 
+size_t bitnfpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitf,  bitfpack128v,  bitfpack); } 
+
 #endif
 
 #if defined(__AVX2__) && defined(AVX2_ON)
@@ -385,6 +393,7 @@ size_t bitnpack256v32(  uint32_t *__restrict in, size_t n, unsigned char *__rest
 size_t bitndpack256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitd,  bitdpack256v,  bitdpack); } 
 size_t bitnd1pack256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitd1, bitd1pack256v, bitd1pack); } 
 size_t bitnzpack256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitz,  bitzpack256v,  bitzpack); } 
+size_t bitnfpack256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 256, 32, bitf,  bitfpack256v,  bitfpack); } 
 
 #endif
 
