@@ -208,12 +208,27 @@ unsigned bitd18(    uint8_t  *in, unsigned n, uint8_t  start);
 unsigned bitd116(   uint16_t *in, unsigned n, uint16_t start);
 unsigned bitd132(   uint32_t *in, unsigned n, uint32_t start);
 unsigned bitd164(   uint64_t *in, unsigned n, uint64_t start);
-//-- in-place reverse delta (encoded w/ bitdiencNN and parameter mindelta = 1)  
+//-- in-place reverse delta of delta (encoded w/ bitdiencNN and parameter mindelta = 1)  
 void bitd1dec8(     uint8_t  *p,  unsigned n, uint8_t  start); // non strictly decreasing (out[i] = in[i] - in[i-1] - 1)
 void bitd1dec16(    uint16_t *p,  unsigned n, uint16_t start);
 void bitd1dec32(    uint32_t *p,  unsigned n, uint32_t start);
 void bitd1dec64(    uint64_t *p,  unsigned n, uint64_t start);
 
+//-- get delta maximum bit length of the non strictly decreasing integer array. out[i] = in[i] - in[i-1] - 1
+unsigned bitdd8(    uint8_t  *in, unsigned n, uint8_t  start);
+unsigned bitdd16(   uint16_t *in, unsigned n, uint16_t start);
+unsigned bitdd32(   uint32_t *in, unsigned n, uint32_t start);
+unsigned bitdd64(   uint64_t *in, unsigned n, uint64_t start);
+unsigned bitddenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta);
+unsigned bitddenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta);
+unsigned bitddenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta);
+unsigned bitddenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta);
+
+//-- in-place reverse delta of delta (encoded w/ bitdiencNN and parameter mindelta = 1)  
+void bitdddec8(     uint8_t  *p,  unsigned n, uint8_t  start); // non strictly decreasing (out[i] = in[i] - in[i-1] - 1)
+void bitdddec16(    uint16_t *p,  unsigned n, uint16_t start);
+void bitdddec32(    uint32_t *p,  unsigned n, uint32_t start);
+void bitdddec64(    uint64_t *p,  unsigned n, uint64_t start);
 
 //-- get min. delta (mindelta = in[i] - in[i-1])
 uint8_t  bitdi8(    uint8_t  *in, unsigned n, uint8_t  start);
@@ -232,8 +247,14 @@ void bitdidec32(	uint32_t *p,  unsigned n, uint32_t start, uint32_t mindelta);
 void bitdidec64(	uint64_t *p,  unsigned n, uint64_t start, uint64_t mindelta);
 
 //------------- FOR array bit length: out[i] = in[i] - start -------------------------------------
-unsigned bitf32(    uint32_t *in, unsigned n, uint32_t start);  // sorted
+unsigned bitf8(     uint8_t  *in, unsigned n, uint8_t  start); // sorted
+unsigned bitf18(    uint8_t  *in, unsigned n, uint8_t  start); 
+unsigned bitf16(    uint16_t *in, unsigned n, uint16_t start);
+unsigned bitf116(   uint16_t *in, unsigned n, uint16_t start); 
+unsigned bitf32(    uint32_t *in, unsigned n, uint32_t start);  
 unsigned bitf132(   uint32_t *in, unsigned n, uint32_t start);
+unsigned bitf64(    uint64_t *in, unsigned n, uint64_t start); 
+unsigned bitf164(   uint64_t *in, unsigned n, uint64_t start);
 
 unsigned bitfm8(    uint8_t  *in, unsigned n, uint8_t  *pmin);  // unsorted
 unsigned bitfm16(   uint16_t *in, unsigned n, uint16_t *pmin);  
