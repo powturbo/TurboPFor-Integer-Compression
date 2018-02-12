@@ -5,7 +5,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
-  * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Zigzag for sorted/unsorted arrays
+  * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Delta of Delta/Zigzag for sorted/unsorted arrays
   * :new: **16 bits** + **64 bits** SIMD integrated functions
 * **For/PFor/PForDelta**
   * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**.
@@ -26,6 +26,9 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 * **Floating Point Compression**
   * Delta/Delta of delta + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
+* **Time Series Compression**
+  * :new:**Fastest Gorilla** style compression with **variable byte** or **bit/io**. 
+  * Full range 32/64 bits, more efficient. > 5 GB/s compression and > 10 GB/s decompression
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
@@ -385,5 +388,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  05 Feb 2018
+Last update:  12 Feb 2018
 
