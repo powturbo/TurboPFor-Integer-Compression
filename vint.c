@@ -149,6 +149,36 @@ uint_t TEMPLATE2(vbgetx, USIZE)(unsigned char  *__restrict in, unsigned idx) {
   *_ip = ip;
   return i;
 }*/
+#define BITS 8
+#define BIT_SET(  p, n) (p[(n)/BITS] |=  (0x80>>((n)%BITS)))
+#define BIT_CLEAR(p, n) (p[(n)/BITS] &= ~(0x80>>((n)%BITS)))
+#define BIT_ISSET(p, n) (p[(n)/BITS] &   (0x80>>((n)%BITS)))
+unsigned char *TEMPLATE2(vbddenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { 
+  uint_t *ip,v,pd=0,*p;
+  unsigned char *bp=out; out += (n+7)/8; 
+  #define VBDDE(i) { uint_t x; start = ip[i]-start; x = start-pd; pd = start;  \
+    if(!x) BIT_CLEAR(bp,i); else { BIT_SET(bp,i); x = TEMPLATE2(zigzagenc, USIZE)(x); TEMPLATE2(_vbput, USIZE)(out, x, ;); } start = ip[i]; }
+
+  for(ip = in; ip != in+(n&~(8-1)); ip+=8,bp++) { VBDDE(0);VBDDE(1);VBDDE(2);VBDDE(3);VBDDE(4);VBDDE(5);VBDDE(6);VBDDE(7);}
+  for(p=ip; p != in+n; p++) VBDDE(p-ip);
+  return out;
+}  
+
+unsigned char *TEMPLATE2(vbdddec, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) { 
+  uint_t *op,pd=0,*p;
+  unsigned i;
+  #define VBDDD(i) { uint_t x=0; if(BIT_ISSET(bp,i)) { TEMPLATE2(_vbget, USIZE)(in, x, ;); pd += TEMPLATE2(zigzagdec, USIZE)(x); } op[i] = (start += pd); }
+  unsigned char *bp=in; in+=(n+7)/8;
+  for(op = out; op != out+(n&~(8-1)); op+=8,bp++) { 
+    if(!bp[0]) { op[0]=(start+=pd); op[1]=(start+=pd); op[2]=(start+=pd); op[3]=(start+=pd); op[4]=(start+=pd); op[5]=(start+=pd); op[6]=(start+=pd); op[7]=(start+=pd); continue; }
+    VBDDD(0); VBDDD(1); VBDDD(2); VBDDD(3); VBDDD(4); VBDDD(5); VBDDD(6); VBDDD(7);											__builtin_prefetch(in+16*USIZE, 0);	
+  }
+  for(p=op; p != out+n; p++) VBDDD(p-op); 
+  return in;
+}
+#undef VBDDE
+#undef VBDDD
+
 unsigned char *TEMPLATE2(vbzenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { 
   uint_t *ip,v;
   unsigned char *op = out;
