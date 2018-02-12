@@ -51,7 +51,7 @@ CFLAGS+=-D__int64_t=int64_t
 else
   UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS+=-lpthread -lrt 
+LDFLAGS+=-lpthread -lrt -lm
 endif
 endif
 
@@ -147,6 +147,9 @@ bitunpack_sse.o: bitunpack.c
 bitunpack_avx2.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitunpack.c -o bitunpack_avx2.o
 #------------
+fp.o: fp.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c fp.c
+
 vint.o: vint.c
 	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vint.c
 
