@@ -26,8 +26,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 * **Floating Point Compression**
   * Delta/Delta of delta + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
-* **Time Series Compression**
-  * :new:**Fastest Gorilla** style compression with **variable byte** or **bit/io**. 
+* :new: **Time Series Compression**
+  * **Fastest Gorilla** style compression with **variable byte** or **bit/io**. 
   * Full range 32/64 bits, more efficient. > 5 GB/s compression and > 10 GB/s decompression
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
