@@ -326,7 +326,7 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
   memcpy_ptr(dst, src, len);
 }
 
-void pr(unsigned l, unsigned n) { printf("%10u %6.2f%%", l, (double)l*100.0/n); }
+void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf("%10u %6.2f%% ", l, r);else printf("%10u %7.3f%%", l, r); fflush(stdout); }
 
 #define ID_MEMCPY 40
 unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname) { 
@@ -356,8 +356,9 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 18: 	    TMBENCH("\nbitnd1pack64    ",l=bitnd1pack64(    in, m, out)  ,n);	    pr(l,n); TMBENCH2("",bitnd1unpack64(    out, m, cpy)   ,n); break;
     //case 20: 	    TMBENCH("\nbitnfpack64     ",l=bitnfpack64(     in, m, out)  ,n);	    pr(l,n); TMBENCH2("",bitnfunpack64(     out, m, cpy)   ,n); break;
     
+    //case 30: 	    TMBENCH("\nbitg0enc64      ",l=bitg0enc64(    in, m, out,0)-out  ,n); 	pr(l,n); TMBENCH2("",bitg0dec64(   out, m, cpy,0)   ,n); break;
+    case 31: 	    TMBENCH("\nbitgenc64       ",l=bitgenc64(     in, m, out,0)-out  ,n); 	pr(l,n); TMBENCH2("",bitgdec64(   out, m, cpy,0)   ,n); break;
 	// Function for floating point compression 
-    case 30: 	    TMBENCH("\nbitgenc64       ",l=bitgenc64(   in, m, out,0)-out  ,n); 	pr(l,n); TMBENCH2("",bitgdec64(   out, m, cpy,0)   ,n); break;
     case 32: 	    TMBENCH("\nfppenc64        ",l=fppenc64(    in, m, out,0)-out  ,n); 	pr(l,n); TMBENCH2("",fppdec64(    out, m, cpy,0)   ,n); break;
     case 33: 	    TMBENCH("\nfpgenc64        ",l=fpgenc64(    in, m, out,0)-out  ,n); 	pr(l,n); TMBENCH2("",fpgdec64(    out, m, cpy,0)   ,n); break;
     case 34: 		TMBENCH("\nfpddenc64       ",l=fpddenc64(   in, m, out,0)-out  ,n); 	pr(l,n); TMBENCH2("",fpdddec64(   out, m, cpy,0)   ,n); break;
@@ -415,7 +416,8 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 28: 	    TMBENCH("\nbitnd1pack256v32",l=bitnd1pack256v32(in, m, out)  ,n);   	pr(l,n); TMBENCH2("",bitnd1unpack256v32(out, m, cpy)   ,n); break;
     //case 29: 	    TMBENCH("\nbitnfpack256v32 ",l=bitnfpack256v32( in, m, out)  ,n);   	pr(l,n); TMBENCH2("",bitnfunpack256v32( out, m, cpy)   ,n); break;
       #endif
-    case 30: 	    TMBENCH("\nbitgenc32       ",l=bitgenc32(       in, m, out,0)-out,n); 	pr(l,n); TMBENCH2("",bitgdec32(         out, m, cpy,0) ,n); break;
+    //case 30: 	    TMBENCH("\nbitg0enc32      ",l=bitg0enc32(       in, m, out,0)-out,n); 	pr(l,n); TMBENCH2("",bitg0dec32(         out, m, cpy,0) ,n); break;
+    case 31: 	    TMBENCH("\nbitgenc32       ",l=bitgenc32(       in, m, out,0)-out,n); 	pr(l,n); TMBENCH2("",bitgdec32(         out, m, cpy,0) ,n); break;
 
     //case 27: 	    TMBENCH("\nbitdienc32      ",l=bitdienc32(      in, m, out,0,0),n); 	pr(l,n); memcpy(cpy, out, n);bitddec32( cpy, m,0); TMBENCH2("",bitddec32( out, m,0)   ,n); break;
     //case 28: 	    TMBENCH("\nbitddenc32      ",l=bitddenc32(      in, m, out,0,0),n); 	pr(l,n); memcpy(cpy, out, n);bitdddec32(cpy, m,0); TMBENCH2("",bitdddec32(out, m,0)   ,n); break;
@@ -575,7 +577,7 @@ int main(int argc, char* argv[]) {
       } 
 	}
     if(!in && !(in  = (unsigned char*)malloc(n+1024)))     {    fprintf(stderr, "malloc error 'in =%d'\n", n); exit(-1); } cpy = in;
-    if(!(out =        (unsigned char*)malloc(flen*4/3+1024))) { fprintf(stderr, "malloc error 'out=%d'\n", n); exit(-1); } 
+    if(!(out =        (unsigned char*)malloc(flen*5/3+1024))) { fprintf(stderr, "malloc error 'out=%d'\n", n); exit(-1); } 
     if(cmp && !(cpy = (unsigned char*)malloc(n+1024)))     {    fprintf(stderr, "malloc error 'cpy=%d'\n", n); exit(-1); }
 	if(fi) {
       if(!dfmt) n = fread(in, 1, n, fi);								 			
