@@ -252,14 +252,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Ft3l.2H file     "like previous but use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
 
 
-  - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId data set))<br />
+  - Multiblocks of 32 bits binary file. (Example gov2 from [DocId](#DocId data set))<br />
     Block format: [n1: #of Ids][Id1] [Id2]...[IdN] [n2: #of Ids][Id1][Id2]...[IdN]...
 
         ./icbench -fS -r gov2.sorted
 
 
 ##### - Intersections:
-  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](#DocId data set)<br />
+  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId](#DocId data set)<br />
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
 
   2 - Create index file
@@ -381,7 +381,7 @@ header files to use with documentation:<br />
   * <a name="QMX"></a>[Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/) QMX integer compression from the "simple family"
   * <a name="lz4"></a>[lz4](https://github.com/Cyan4973/lz4). included w. block size 64K as indication. Tested after preprocessing w. delta+transpose
   * <a name="blosc"></a>[blosc](https://github.com/Blosc/c-blosc). blosc is like transpose/shuffle+lz77. Tested blosc+lz4 and blosclz incl. vectorizeed shuffle.<br>
-  * <a name="DocId data set"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
+  * <a name="DocId"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
 
 * **Integer compression publications:**
   * [In Vacuo and In Situ Evaluation of SIMD Codecs (TurboPackV,TurboPFor/QMX)](http://dl.acm.org/citation.cfm?id=3015023) + [paper](http://www.cs.otago.ac.nz/homepages/andrew/papers/)
