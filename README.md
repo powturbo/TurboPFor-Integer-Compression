@@ -84,7 +84,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 - Eliasfano can be directly used only for increasing sequences
 ------------------------------------------------------------------------
 ##### - Data files:
- - gov2.sorted from [DocId data set](#DocId data set) Block size=128/Delta coding
+ - gov2.sorted from [DocId data set](#DocId) Block size=128/Delta coding
 
         ./icbench -fS -r gov2.sorted
 
@@ -252,14 +252,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Ft3l.2H file     "like previous but use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
 
 
-  - Multiblocks of 32 bits binary file. (Example gov2 from [DocId](#DocId data set))<br />
+  - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId))<br />
     Block format: [n1: #of Ids][Id1] [Id2]...[IdN] [n2: #of Ids][Id1][Id2]...[IdN]...
 
         ./icbench -fS -r gov2.sorted
 
 
 ##### - Intersections:
-  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId](#DocId data set)<br />
+  1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](#DocId)<br />
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
 
   2 - Create index file
