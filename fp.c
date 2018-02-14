@@ -225,9 +225,9 @@ size_t fpgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { if
 
 // Improved Gorilla style compression with sliding double delta for timestamps in time series.
 // Up to 300 times better compression and several times faster
-#define N2  7 // for seconds time series
-#define N3  9
-#define N4 12  
+#define N2  6 // for seconds time series
+#define N3 10
+#define N4 17  
 #define NL 18
 
 #define ENC32(_pp_, _ip_, _d_, _op_) do {\
