@@ -617,9 +617,9 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_ZIGZAG32: bitzenc32(              in, n,(unsigned *)out,0,0); return out + _n;
       #endif
       //---- Floating point ----------------------
-	case TB_FPPFOR64: ctou64(out) = ctou64(_in); return fppenc64(   (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in)); 
-	case TB_FPFFOR64: ctou64(out) = ctou64(_in); return fpfcmenc64( (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
-	case TB_FPDFOR64: ctou64(out) = ctou64(_in); return fpdfcmenc64((uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
+	case TB_FPPFOR64: ctou64(out) = ctou64(_in); return out+fppenc64(   (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in)); 
+	case TB_FPFFOR64: ctou64(out) = ctou64(_in); return out+fpfcmenc64( (uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
+	case TB_FPDFOR64: ctou64(out) = ctou64(_in); return out+fpdfcmenc64((uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
     case TB_PF64:     return p4enc64((uint64_t *)in,   PAD8(_n), out);
     case TB_PF64V:    return p4enc128v64((uint64_t *)in,   PAD8(_n), out);
       #if !defined(NCODEC1) && !defined(NCODEC2)
@@ -677,9 +677,9 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_ZIGZAG32: memcpy(out, in, outlen); bitzdec32(out, n, 0); 			  	   return in + outlen;
 	  #endif
       //---- Floating point (64 bits)----------------------
-	case TB_FPPFOR64: ctou64(_out) = ctou64(in); return fppdec64(   in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in)); 
-	case TB_FPFFOR64: ctou64(_out) = ctou64(in); return fpfcmdec64( in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));; 
-	case TB_FPDFOR64: ctou64(_out) = ctou64(in); return fpdfcmdec64(in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));
+	case TB_FPPFOR64: ctou64(_out) = ctou64(in); return in+fppdec64(   in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in)); 
+	case TB_FPFFOR64: ctou64(_out) = ctou64(in); return in+fpfcmdec64( in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));; 
+	case TB_FPDFOR64: ctou64(_out) = ctou64(in); return in+fpdfcmdec64(in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));
     case TB_PF64:     return p4dec64(    in, PAD8(outlen), (uint64_t *)out);
     case TB_PF64V:    return p4dec128v64(in, PAD8(outlen), (uint64_t *)out);
       #if !defined(NCODEC1) && !defined(NCODEC2)
