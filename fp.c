@@ -162,6 +162,7 @@ size_t fpdfcmdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) {
 
 // ------------------ bitio compression ---------------------------
 #define bitdef(     _bw_,_br_)           uint64_t _bw_=0; unsigned _br_=0
+#define bitini(     _bw_,_br_)           _bw_=_br_=0
 
 #define bitput(     _bw_,_br_,_nb_,__x)  _bw_ += (uint64_t)(__x) << _br_, _br_ += (_nb_)
 #define bitenorm(   _bw_,_br_,_op_)      ctou64(_op_) = _bw_; _op_ += (_br_>>3), _bw_ >>=(_br_&~7), _br_ &= 7
@@ -242,9 +243,11 @@ size_t fpgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { if
   bitenorm(bw,br,_op_);\
 } while(0)
 
+#define OVERFLOW if(op >= out_) { *out++ = 1<<4; /*bitini(bw,br); bitput(bw,br,4+3,1<<4); bitflush(bw,br,out);*/ memcpy(out,in,n*sizeof(in[0])); return 1+n*sizeof(in[0]); }
+
 size_t bitgenc32(uint32_t *in, size_t n, unsigned char *out, uint32_t start) {
   uint32_t *ip = in, pd = 0, *pp = in,dd;
-  unsigned char *op = out;
+  unsigned char *op = out, *out_ = out+n*sizeof(in[0]);
 
   bitdef(bw,br);
   if(n > 4)
@@ -255,7 +258,7 @@ size_t bitgenc32(uint32_t *in, size_t n, unsigned char *out, uint32_t start) {
       start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++; 	__builtin_prefetch(ip+256, 0);
       continue;
       a:;
-      ENC32(pp,ip, dd, op);
+      ENC32(pp,ip, dd, op); OVERFLOW;
 	  pp = ++ip;								
     }
 
@@ -263,12 +266,12 @@ size_t bitgenc32(uint32_t *in, size_t n, unsigned char *out, uint32_t start) {
     start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto b; ip++;
     continue;
     b:;
-    ENC32(pp,ip, dd, op);
+    ENC32(pp,ip, dd, op); OVERFLOW;
 	pp = ++ip;								
   }
   if(ip > pp) {
     start = ip[0] - start; dd = start-pd;
-    ENC32(pp, ip, dd, op);
+    ENC32(pp, ip, dd, op); OVERFLOW;
   }
   bitflush(bw,br,op);
   return op - out;
@@ -286,9 +289,10 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 	else if(dd & 4) bitrmv(bw,br,N3+3), dd = _bzhi_u32(dd>>3, N3);
 	else if(dd & 8) bitrmv(bw,br,N4+4), dd = _bzhi_u32(dd>>4, N4);
 	else { 
-	  unsigned b,*_op; size_t r; 
+	  unsigned b,*_op; uint64_t r; 
 	  bitget(bw,br, 4+3, b);
-      if(!b) { 
+      if((b>>=4) <= 1) { 
+        if(b==1) { memcpy(out,in+1, n*sizeof(out[0])); return 1+n*sizeof(out[0]); }
 		bitget(bw,br,3,b); bitget64(bw,br,(b+1)*8,r,ip); bitdnorm(bw,br,ip); 
 		for(r+=NL, _op = op; op != _op+(r&~7); op += 8) 
 		  op[0]=(start+=pd),
@@ -303,7 +307,7 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 		  *op = (start+=pd); 
 		continue;
       } 
-      bitget(bw,br,((b>>4)+1)*8,dd);
+      bitget(bw,br,(b+1)<<3,dd);
     }
 	pd += zigzagdec32(dd); 
 	*op++ = (start += pd); 
@@ -332,7 +336,7 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 
 size_t bitgenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
   uint64_t *ip = in, pd = 0, *pp = in,dd;
-  unsigned char *op = out;
+  unsigned char *op = out, *out_ = out+n*sizeof(in[0]);
 
   bitdef(bw,br);
   if(n > 4)
@@ -343,7 +347,7 @@ size_t bitgenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
       start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++; 	__builtin_prefetch(ip+256, 0);
       continue;
       a:;
-      ENC64(pp,ip, dd, op);
+      ENC64(pp,ip, dd, op); OVERFLOW;
 	  pp = ++ip;								
     }
 
@@ -351,12 +355,12 @@ size_t bitgenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
     start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto b; ip++;
     continue;
     b:;
-    ENC64(pp,ip, dd, op);
+    ENC64(pp,ip, dd, op); OVERFLOW;
 	pp = ++ip;								
   }
   if(ip > pp) {
     start = ip[0] - start; dd = start-pd;
-    ENC64(pp, ip, dd, op);
+    ENC64(pp, ip, dd, op); OVERFLOW;
   }
   bitflush(bw,br,op);
   return op - out;
@@ -376,7 +380,8 @@ size_t bitgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { i
 	else { 
 	  unsigned b; uint64_t r,*_op; 
 	  bitget(bw,br, 4+3, b);
-      if(!b) { 
+      if((b>>=4) <= 1) { 
+        if(b==1) { memcpy(out,in+1, n*sizeof(out[0])); return 1+n*sizeof(out[0]); }
 		bitget(bw,br,3,b); bitget64(bw,br,(b+1)*8,r,ip); bitdnorm(bw,br,ip); 
         //r+=NL; while(r--) *op++=(start+=pd);
 		for(r+=NL, _op = op; op != _op+(r&~7); op += 8) 
@@ -392,7 +397,7 @@ size_t bitgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { i
 		  *op = (start+=pd);
 		continue;
       } 
-      bitget64(bw,br,((b>>4)+1)*8,dd,ip);
+      bitget64(bw,br,(b+1)<<3,dd,ip);
     }
 	pd += zigzagdec64(dd); 
 	*op++ = (start += pd); 
