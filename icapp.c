@@ -580,7 +580,7 @@ int main(int argc, char* argv[]) {
       } 
 	}
     if(!in && !(in  = (unsigned char*)malloc(n+1024)))     {    fprintf(stderr, "malloc error 'in =%d'\n", n); exit(-1); } cpy = in;
-    if(!(out =        (unsigned char*)malloc(flen*5/3+1024))) { fprintf(stderr, "malloc error 'out=%d'\n", n); exit(-1); } 
+    if(!(out =        (unsigned char*)malloc(flen*4/3+1024))) { fprintf(stderr, "malloc error 'out=%d'\n", n); exit(-1); } 
     if(cmp && !(cpy = (unsigned char*)malloc(n+1024)))     {    fprintf(stderr, "malloc error 'cpy=%d'\n", n); exit(-1); }
 	if(fi) {
       if(!dfmt) n = fread(in, 1, n, fi);								 			
