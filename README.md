@@ -249,7 +249,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Ftl ts.txt       "64 bits unsigned
         ./icapp -Ftd file         "64 bits floating point (ex. 8.324567789 )
         ./icapp -Ftl.2H file      "convert numbers with 2 decimal digits to 64 bits integers (ex. 456.23 -> 45623)
-        ./icapp -Ft3l.2H file     "like previous but use the 3th number in the line (ex. Text=3245, text=99 456.23 -> 456.23 )
+        ./icapp -Ft3l.2H file     "like previous but use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
 
 
   - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId data set))<br />
