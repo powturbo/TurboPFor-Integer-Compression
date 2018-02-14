@@ -241,7 +241,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Fu file         "32 bits binary file
         ./icapp -Fl file         "64 bits binary file
 
-  - Text file: 1 integer per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
+  - Text file: 1 entry per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
         ./icbench -eBENCH -fts ts.txt
         ./icbench -eBENCH -ft  lat.txt
