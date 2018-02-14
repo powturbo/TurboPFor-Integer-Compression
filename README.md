@@ -237,12 +237,19 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
         ./icbench file
         ./icapp file           
-        ./icapp -s2 file         "16 bits binary file
+        ./icapp -Fs file         "16 bits binary file
+        ./icapp -Fu file         "32 bits binary file
+        ./icapp -Fl file         "64 bits binary file
 
   - Text file: 1 integer per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
         ./icbench -eBENCH -fts ts.txt
         ./icbench -eBENCH -ft  lat.txt
+        ./icapp -Ftu ts.txt       "32 bits unsigned
+        ./icapp -Ftl ts.txt       "64 bits unsigned
+        ./icapp -Ftd file         "64 bits floating point (ex. 8.324567789 )
+        ./icapp -Ftl.2H file      "convert numbers with 2 decimal digits to 64 bits integers (ex. 456.23 -> 45623)
+        ./icapp -Ft3l.2H file     "like previous but use the 3th number in the line (ex. Text=3245, text=99 456.23 -> 456.23 )
 
 
   - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId data set))<br />
