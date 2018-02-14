@@ -31,34 +31,34 @@ extern "C" {
 #include <stdint.h>
 #endif
 //---- Last value Predictor 
-unsigned char *fppenc64(   uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
-unsigned char *fppdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+size_t fppenc64(   uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
+size_t fppdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
-unsigned char *fpgenc64(   uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
-unsigned char *fpgdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+size_t fpgenc64(   uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
+size_t fpgdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
-unsigned char *fppdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
-unsigned char *fpddenc64(  uint64_t *in,      size_t n, unsigned char *out, uint64_t start);
+size_t fppdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+size_t fpddenc64(  uint64_t *in,      size_t n, unsigned char *out, uint64_t start);
 
 //---- Delta of delta
-unsigned char *bitgenc32(  uint32_t      *in, size_t n, unsigned char *out, uint32_t start);
-unsigned char *bitgdec32(  unsigned char *in, size_t n, uint32_t      *out, uint32_t start);
+size_t bitgenc32(  uint32_t      *in, size_t n, unsigned char *out, uint32_t start);
+size_t bitgdec32(  unsigned char *in, size_t n, uint32_t      *out, uint32_t start);
 
-unsigned char *bitgenc64( uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
-unsigned char *bitgdec64( unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+size_t bitgenc64( uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
+size_t bitgdec64( unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
-//unsigned char *bitg0enc32(  uint32_t      *in, size_t n, unsigned char *out, uint32_t start);
-//unsigned char *bitg0dec32(  unsigned char *in, size_t n, uint32_t      *out, uint32_t start);
-//unsigned char *bitg0enc64(  uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
-//unsigned char *bitg0dec64(  unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+//size_t bitg0enc32(  uint32_t      *in, size_t n, unsigned char *out, uint32_t start);
+//size_t bitg0dec32(  unsigned char *in, size_t n, uint32_t      *out, uint32_t start);
+//size_t bitg0enc64(  uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
+//size_t bitg0dec64(  unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
 //---- FCM: Finite Context Method Predictor 
-unsigned char *fpfcmenc64( uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
-unsigned char *fpfcmdec64( unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+size_t fpfcmenc64( uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
+size_t fpfcmdec64( unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
 // DFCM: Differential Finite Context Method Predictor 
-unsigned char *fpdfcmenc64(uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
-unsigned char *fpdfcmdec64(unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+size_t fpdfcmenc64(uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
+size_t fpdfcmdec64(unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 #ifdef __cplusplus
 }
 #endif
