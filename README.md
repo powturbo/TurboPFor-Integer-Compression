@@ -28,7 +28,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
 * :new: **Time Series Compression**
   * **Fastest Gorilla** style compression (:new: incl. **RLE**) with **variable byte** or **bit/io**.
-  * Full range 32/64 bits, better compression. Up to 15 GB/s compression and > 10 GB/s decompression
+  * Full range 32/64 bits, better compression. > 10 GB/s compression and > 13 GB/s decompression
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
@@ -40,7 +40,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    
 ### Integer Compression Benchmark:
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
-- CPU: Skylake i7-6700 3.4GHz gcc 6.2 single thread 
+- CPU: Skylake i7-6700 3.4GHz gcc 7.2 **single** thread 
 
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
@@ -49,35 +49,35 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
         ./icbench -a1.5 -m0 -M255 -n100M ZIPF
 	
-|C Size|ratio%|Bits/Integer|C MI/s|D MI/s|Name|
+|C Size|ratio%|Bits/Integer|C MB/s|D MB/s|Name|
 |--------:|-----:|--------:|----------:|----------:|--------------|
-|62939886| 15.7| 5.04|**397**|**2350**|**TurboPFor256**|
-|63392759| 15.8| 5.07|330|1608|**TurboPFor**|
-|63392801| 15.8| 5.07|332|231|**TurboPForDA**|
-|65060504| 16.3| 5.20|15|687|[FP_SIMDOptPFor](#FastPFor)|
-|65359916|16.3| 5.23| 8| 609|PC_OptPFD|
-|73477088|18.4| 5.88|102| 621|PC_Simple16|
-|73481096| 18.4| 5.88|156|2187|[FP_SimdFastPFor](#FastPFor) 64Ki *|
-|76345136| 19.1| 6.11|245|653|**VSimple**|
-|91947533| 23.0| 7.36|71|2934|[QMX](#QMX) 64k *|
-|93285864| 23.3| 7.46|392|2558|[FP_GroupSimple](#FastPFor) 64Ki *|
-|95915096|24.0| 7.67|  212|958|Simple-8b|
-|99910930| 25.0| 7.99|**3494**|**2968**|**TurboPackV**|
-|99910930| 25.0| 7.99|2367|2351|**TurboPack**|
-|99910930| 25.0| 7.99|2105|2219|**TurboFor**|
-|100332929| 25.1| 8.03|**3580**|**3031**|**TurboPack256V**|
-|101015650| 25.3| 8.08|2380|2371|**TurboVByte**|
-|102074663| 25.5| 8.17|1428|1979|[MaskedVByte](#MaskedVByte)|
-|102074663| 25.5| 8.17|565|1052|[PC_Vbyte](#PolyCom)|
-|102083036| 25.5| 8.17|1300|1067|[FP_VByte](#FastPFor)|
-|112500000| 28.1| 9.00|382|**3035**|[VarintG8IU](#VarintG8IU)|
-|125000000| 31.2|10.00|1197|2822|[StreamVbyte](#StreamVByte)|
-|400000000|	100.00|	32.00| 2240|2237|Copy|
+|62939886| 15.7| 5.04|**1588**|**9400**|**TurboPFor256**|
+|63392759| 15.8| 5.07|1320|6432|**TurboPFor**|
+|63392801| 15.8| 5.07|1328|924|**TurboPForDA**|
+|65060504| 16.3| 5.20|60|2748|[FP_SIMDOptPFor](#FastPFor)|
+|65359916|16.3| 5.23| 32|2436|PC_OptPFD|
+|73477088|18.4| 5.88|408|2484|PC_Simple16|
+|73481096| 18.4| 5.88|624|8748|[FP_SimdFastPFor](#FastPFor) 64Ki *|
+|76345136| 19.1| 6.11|980|2612|**VSimple**|
+|91947533| 23.0| 7.36|284|11737|[QMX](#QMX) 64k *|
+|93285864| 23.3| 7.46|1568|10232|[FP_GroupSimple](#FastPFor) 64Ki *|
+|95915096|24.0| 7.67|  848|3832|Simple-8b|
+|99910930| 25.0| 7.99|**13976**|**11872**|**TurboPackV**|
+|99910930| 25.0| 7.99|9468|9404|**TurboPack**|
+|99910930| 25.0| 7.99|8420|8876|**TurboFor**|
+|100332929| 25.1| 8.03|**14320**|**12124**|**TurboPack256V**|
+|101015650| 25.3| 8.08|9520|9484|**TurboVByte**|
+|102074663| 25.5| 8.17|5712|7916|[MaskedVByte](#MaskedVByte)|
+|102074663| 25.5| 8.17|2260|4208|[PC_Vbyte](#PolyCom)|
+|102083036| 25.5| 8.17|5200|4268|[FP_VByte](#FastPFor)|
+|112500000| 28.1| 9.00|1528|**12140**|[VarintG8IU](#VarintG8IU)|
+|125000000| 31.2|10.00|4788|11288|[StreamVbyte](#StreamVByte)|
+|400000000|	100.00|	32.00| 8960|8948|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
 (*) codecs inefficient for small block sizes are tested with 64Ki integers/block.
 
-- MI/s: 1.000.000 integers/second. **1000 MI/s = 4 GB/s**<br> 
+- MB/s: 1.000.000 bytes/second. **1000 MB/s = 1 GB/s**<br> 
 - **#BOLD** = pareto frontier.<br>
 - FP=FastPFor SC:simdcomp PC:Polycom<br>
 - TurboPForDA,TurboForDA: Direct Access is normally used when accessing few individual values.<br>
@@ -90,56 +90,73 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
 ![Speed/Ratio](ext/gov2.png "Speed/Ratio: Decompression")
 
-|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
+|Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function |
 |-----------:|------:|-----:|-------:|-------:|---------------------|
-| 3.321.663.893| 13.9| 4.44|**330**|**1522**|**TurboPFor**| 
-| 3.339.730.557| 14.0| 4.47|   8| 536|PC.OptPFD|
-| 3.350.717.959| 14.0| 4.48|**384**|**1782**|**TurboPFor256**| 
-| 3.501.671.314| 14.6| 4.68| 314| 710|**VSimple**|
-| 3.768.146.467| 15.8| 5.04|**807**| 913|**EliasFanoV**|
-| 3.822.161.885| 16.0| 5.11| 143| 611|PC_Simple16|
-| 4.521.326.518| 18.9| 6.05| 209| 824|Simple-8b|
-| 4.649.671.427| 19.4| 6.22|771|962|**TurboVbyte**|
-| 4.955.740.045| 20.7| 6.63|**1766**|**2567**|**TurboPackV**|
-| 4.955.740.045| 20.7| 6.63|1431|2005|**TurboPack**|
-| 5.205.324.760|21.8| 6.96|1738|2372|SC_SIMDPack128|
-| 5.393.769.503| 22.5| 7.21|**2478**|**2897**|**TurboPackV256**|
-| 6.221.886.390| 26.0| 8.32|1667|1738|**TurboFor**|
-| 6.221.886.390| 26.0| 8.32|1661| 565|**TurboForDA**|
-| 6.699.519.000| 28.0| 8.96| 472| 495|FP_Vbyte|
-| 6.700.989.563| 28.0| 8.96| 685| 846|MaskedVByte|
-| 7.622.896.878| 31.9|10.20| 209|1198|VarintG8IU|
-| 8.060.125.035| 33.7|11.50| 884|2171|Streamvbyte|
-| 8.594.342.216| 35.9|11.50|1307|1594|libfor|
-|23.918.861.764|100.0|32.00|1456|1481|Copy|
+| 3.321.663.893| 13.9| 4.44|**1320**|**6088**|**TurboPFor**| 
+| 3.339.730.557| 14.0| 4.47|  32| 2144|PC.OptPFD|
+| 3.350.717.959| 14.0| 4.48|**1536**|**7128**|**TurboPFor256**| 
+| 3.501.671.314| 14.6| 4.68| 56| 2840|**VSimple**|
+| 3.768.146.467| 15.8| 5.04|**3228**| 3652|**EliasFanoV**|
+| 3.822.161.885| 16.0| 5.11| 572| 2444|PC_Simple16|
+| 4.521.326.518| 18.9| 6.05| 836| 3296|Simple-8b|
+| 4.649.671.427| 19.4| 6.22|3084|3848|**TurboVbyte**|
+| 4.955.740.045| 20.7| 6.63|**7064**|**10268**|**TurboPackV**|
+| 4.955.740.045| 20.7| 6.63|5724|8020|**TurboPack**|
+| 5.205.324.760|21.8| 6.96|6952|9488|SC_SIMDPack128|
+| 5.393.769.503| 22.5| 7.21|**9912**|**11588**|**TurboPackV256**|
+| 6.221.886.390| 26.0| 8.32|6668|6952|**TurboFor**|
+| 6.221.886.390| 26.0| 8.32|6644| 2260|**TurboForDA**|
+| 6.699.519.000| 28.0| 8.96| 1888| 1980|FP_Vbyte|
+| 6.700.989.563| 28.0| 8.96| 2740| 3384|MaskedVByte|
+| 7.622.896.878| 31.9|10.20| 836|4792|VarintG8IU|
+| 8.060.125.035| 33.7|11.50| 3536|8684|Streamvbyte|
+| 8.594.342.216| 35.9|11.50|5228|6376|libfor|
+|23.918.861.764|100.0|32.00|5824|5924|Copy|
 
 Block size: 64Ki = 256k bytes. Ki=1024 Integers
 
-|Size |Ratio %|Bits/Integer|C Time MI/s|D Time MI/s|Function |
+|Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function |
 |----------:|-----:|----:|------:|------:|---------------------|
-| 3.164.940.562| 13.2|**4.23**|**336**|**1501**|**TurboPFor 64Ki**|
-| 3.273.213.464| 13.7| 4.38|**374**|**1752**|**TurboPFor256 64Ki**|
-| 3.965.982.954| 16.6| 5.30|**380**| 613|[lz4](#lz4)+DT 64Ki|
-| 4.234.154.427| 17.7| 5.66| 109| 1418|qmx 64Ki| 
-| 6.074.995.117| 25.4| 8.13| 494| 729|[blosc_lz4](#blosc) 64Ki| 
-| 8.773.150.644| 36.7|11.74| 637|1301|blosc_lz 64Ki|
+| 3.164.940.562| 13.2|**4.23**|**1344**|**6004**|**TurboPFor 64Ki**|
+| 3.273.213.464| 13.7| 4.38|**1496**|**7008**|**TurboPFor256 64Ki**|
+| 3.965.982.954| 16.6| 5.30|**1520**| 2452|[lz4](#lz4)+DT 64Ki|
+| 4.234.154.427| 17.7| 5.66| 436| 5672|qmx 64Ki| 
+| 6.074.995.117| 25.4| 8.13| 1976| 2916|[blosc_lz4](#blosc) 64Ki| 
+| 8.773.150.644| 36.7|11.74| 2548|5204|blosc_lz 64Ki|
 
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
+##### Time Series:
+- Test file  [Timestamps: ts.txt(sorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data)) 
+        ./icapp -Ftu ts.txt -I15 -J15
+
+|Function        |C MB/s|   size  |ratio%| D MB/s|Text
+|----------------|-----:|--------:|------:|------:|--------------------|
+|bitgenc32       |**8914**|    56713|  0.010|**13499**|Bit/io Delta of delta|
+|vsenc32         |**12294**|   140400| 0.024 |12877 |Variable Simple|
+|p4nzenc256v32   | 1932|   596018|  0.10 |13326 |TurboPFor256 ZigZag|
+|p4ndenc256v32   | 1961|   596018|  0.10 |13339 |TurboPFor256 Delta| 
+|bitndpack256v32 |**12564**|   909189|  0.16 |13505 |TurboPackV256 Delta|
+|p4nzenc32       | 1810|  1159633|  0.20 | 8502 |TurboPFor ZigZag|
+|p4nzenc128v32   | 1795|  1159633|  0.20 |13338 |TurboPFor ZigZag| 
+|bitnzpack256v32 | 9651|  1254757|  0.22 |**13503**|TurboPackV256 ZigZag| 
+|bitnzpack128v32 |10155|  1472804|  0.26 |13380 |TurboPackV ZigZag| 
+|vbddenc32       | 6198| 18057296|  3.13 |10982 |TurboVByte Delta of delta|
+|memcpy          |13397|577141992|100.00||
+
 ##### - Transpose/Shuffle (no compression)
         ./icbench -eTRANSFORM ZIPF
-	
 
-|Size |C Time MI/s|D Time MI/s|Function|
+|Size |C Time MB/s|D Time MB/s|Function|
 |----------:|------:|------:|-----------------------------------|
-|100000000|**2350**|**2283**|**TPbyte 4** TurboPFor Byte Transpose/shuffle AVX2|
-|100000000|2196|2215|**TPbyte 4** TurboPFor Byte Transpose/shuffle SSE|
-|100000000|1922|1914|Blosc_Shuffle AVX2|
-|100000000|**1301**|**1865**|**TPnibble 4** TurboPFor Nibble Transpose/shuffle SSE|
-|100000000|1655|1571|Blosc shuffle SSE|
-|100000000|789|843|Bitshuffle AVX2|
-|100000000|525|544|Bitshuffle SSE|
+|100000000|**9400**|**9132**|**TPbyte 4** TurboPFor Byte Transpose/shuffle AVX2|
+|100000000|8784|8860|**TPbyte 4** TurboPFor Byte Transpose/shuffle SSE|
+|100000000|7688|7656|Blosc_Shuffle AVX2|
+|100000000|**5204**|**7460**|**TPnibble 4** TurboPFor Nibble Transpose/shuffle SSE|
+|100000000|6620|6284|Blosc shuffle SSE|
+|100000000|3156|3372|Bitshuffle AVX2|
+|100000000|2100|2176|Bitshuffle SSE|
 
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
@@ -395,5 +412,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  13 Feb 2018
+Last update:  15 Feb 2018
 
