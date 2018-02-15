@@ -128,7 +128,8 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
 ##### Time Series:
-- Test file  [Timestamps: ts.txt(sorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data)) 
+- Test file  [Timestamps: ts.txt(sorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
+
         ./icapp -Ftu ts.txt -I15 -J15
 
 |Function        |C MB/s|   size  |ratio%| D MB/s|Text
