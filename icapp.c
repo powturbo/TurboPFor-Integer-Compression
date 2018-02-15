@@ -62,6 +62,7 @@
 #include "vp4.h"
 #include "vint.h"
 #include "fp.h"
+#include "vsimple.h"
 
 //--------------------------------------- Zipfian generator --------------------------------------------------------
 #include <math.h>
@@ -358,6 +359,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     //case 20: 	    TMBENCH("\nbitnfpack64     ",l=bitnfpack64(  in, m, out)  ,n);	    pr(l,n); TMBENCH2("",bitnfunpack64(     out, m, cpy)   ,n); break;
     
     //case 30: 	    TMBENCH("\nbitg0enc64      ",l=bitg0enc64(     in, m, out,0),n); 	pr(l,n); TMBENCH2("",bitg0dec64(       out, m, cpy,0) ,n); break;
+    case 30: 	    TMBENCH("\nvsenc64         ",l=vsenc64(        in, m, out)-out,n); 	    pr(l,n); TMBENCH2("",vsdec64(          out, m, cpy) ,n); break;
     case 31: 	    TMBENCH("\nbitgenc64       ",l=bitgenc64(      in, m, out,0),n); 	    pr(l,n); TMBENCH2("",bitgdec64(        out, m, cpy,0) ,n); break;
 	// Function for floating point compression 
     case 32: 	    TMBENCH("\nfppenc64        ",l=fppenc64(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("",fppdec64(         out, m, cpy,0) ,n); break;
@@ -419,6 +421,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     //case 29: 	    TMBENCH("\nbitnfpack256v32 ",l=bitnfpack256v32( in, m, out)  ,n);   	pr(l,n); TMBENCH2("",bitnfunpack256v32( out, m, cpy)   ,n); break;
       #endif
     //case 30: 	    TMBENCH("\nbitg0enc32      ", l=bitg0enc32(      in, m, out,0),n); 	    pr(l,n); TMBENCH2("",bitg0dec32(        out, m, cpy,0) ,n); break;
+    case 30: 	    TMBENCH("\nvsenc32         ", l=vsenc32(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("",vsdec32(           out, m, cpy) ,n); break;
     case 31: 	    TMBENCH("\nbitgenc32       ", l=bitgenc32(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("",bitgdec32(         out, m, cpy,0) ,n); break;
 
     //case 27: 	    TMBENCH("\nbitdienc32      ",l=bitdienc32(      in, m, out,0,0),n); 	pr(l,n); memcpy(cpy, out, n);bitddec32( cpy, m,0); TMBENCH2("",bitddec32( out, m,0)   ,n); break;
