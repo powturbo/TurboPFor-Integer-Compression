@@ -134,17 +134,17 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 
 |Function        |C MB/s|   size  |ratio%| D MB/s|Text
 |----------------|-----:|--------:|------:|------:|--------------------|
-|bitgenc32       |**8914**|    56713|  0.010|**13499**|Bit/io RLE Delta of delta|
-|vsenc32         |**12294**|   140400| 0.024 |12877 |Variable Simple|
-|p4nzenc256v32   | 1932|   596018|  0.10 |13326 |TurboPFor256 ZigZag|
-|p4ndenc256v32   | 1961|   596018|  0.10 |13339 |TurboPFor256 Delta| 
-|bitndpack256v32 |**12564**|   909189|  0.16 |13505 |TurboPackV256 Delta|
-|p4nzenc32       | 1810|  1159633|  0.20 | 8502 |TurboPFor ZigZag|
-|p4nzenc128v32   | 1795|  1159633|  0.20 |13338 |TurboPFor ZigZag| 
-|bitnzpack256v32 | 9651|  1254757|  0.22 |**13503**|TurboPackV256 ZigZag| 
-|bitnzpack128v32 |10155|  1472804|  0.26 |13380 |TurboPackV ZigZag| 
-|vbddenc32       | 6198| 18057296|  3.13 |10982 |TurboVByte Delta of delta|
-|memcpy          |13397|577141992|100.00||
+|bitgenc32       |**8914**|    56.713|  0.010|**13499**|Bit/io RLE Delta of delta|
+|vsenc32         |**12294**|   140.400| 0.024 |12877 |Variable Simple|
+|p4nzenc256v32   | 1932|   596.018|  0.10 |13326 |TurboPFor256 ZigZag|
+|p4ndenc256v32   | 1961|   596.018|  0.10 |13339 |TurboPFor256 Delta| 
+|bitndpack256v32 |**12564**|   909.189|  0.16 |13505 |TurboPackV256 Delta|
+|p4nzenc32       | 1810|  1.159.633|  0.20 | 8502 |TurboPFor ZigZag|
+|p4nzenc128v32   | 1795|  1.159.633|  0.20 |13338 |TurboPFor ZigZag| 
+|bitnzpack256v32 | 9651|  1.254.757|  0.22 |**13503**|TurboPackV256 ZigZag| 
+|bitnzpack128v32 |10155|  1.472.804|  0.26 |13380 |TurboPackV ZigZag| 
+|vbddenc32       | 6198| 18.057.296|  3.13 |10982 |TurboVByte Delta of delta|
+|memcpy          |13397|577.141.992|100.00||
 
 ##### - Transpose/Shuffle (no compression)
         ./icbench -eTRANSFORM ZIPF
