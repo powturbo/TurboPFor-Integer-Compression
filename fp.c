@@ -284,16 +284,27 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 
   for(bitdnorm(bw,br,ip); op < out+n; ) { 															__builtin_prefetch(ip+384, 0);
     uint32_t dd = bitpeek(bw,br);
-         if(dd & 1) bitrmv(bw,br, 0+1), dd = 0;
+         if(dd & 1) bitrmv(bw,br, 0+1), dd = 0;						
 	else if(dd & 2) bitrmv(bw,br,N2+2), dd = _bzhi_u32(dd>>2, N2);
 	else if(dd & 4) bitrmv(bw,br,N3+3), dd = _bzhi_u32(dd>>3, N3);
 	else if(dd & 8) bitrmv(bw,br,N4+4), dd = _bzhi_u32(dd>>4, N4);
-	else { 
+	else { 								
 	  unsigned b,*_op; uint64_t r; 
 	  bitget(bw,br, 4+3, b);
       if((b>>=4) <= 1) { 
-        if(b==1) { memcpy(out,in+1, n*sizeof(out[0])); return 1+n*sizeof(out[0]); }
-		bitget(bw,br,3,b); bitget64(bw,br,(b+1)*8,r,ip); bitdnorm(bw,br,ip); 
+        if(b==1) { 								// No compression, because of overflow
+		  memcpy(out,in+1, n*sizeof(out[0])); 
+		  return 1+n*sizeof(out[0]); 
+		}
+		bitget(bw,br,3,b); bitget64(bw,br,(b+1)<<3,r,ip); bitdnorm(bw,br,ip); // RLE
+		  #ifdef __SSE2__
+        __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4*pd,3*pd,2*pd,1*pd); 
+		for(r += NL, _op = op; op != _op+(r&~7);) {
+		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = _mm_shuffle_epi32(sv, _MM_SHUFFLE(3, 3, 3, 3)); op += 4; 
+		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = _mm_shuffle_epi32(sv, _MM_SHUFFLE(3, 3, 3, 3)); op += 4; 
+		}
+        start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
+		  #else
 		for(r+=NL, _op = op; op != _op+(r&~7); op += 8) 
 		  op[0]=(start+=pd),
 	      op[1]=(start+=pd),
@@ -303,10 +314,11 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 		  op[5]=(start+=pd),
 		  op[6]=(start+=pd),
 		  op[7]=(start+=pd);
+          #endif	  
 		for(; op != _op+r; op++) 
-		  *op = (start+=pd); 
+		  *op = (start+=pd);
 		continue;
-      } 
+      }
       bitget(bw,br,(b+1)<<3,dd);
     }
 	pd += zigzagdec32(dd); 
@@ -319,7 +331,7 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 
 #define N2  6 // for seconds/milliseconds,... time series
 #define N3 12
-#define N4 20
+#define N4 20 // must be > 16
 
 #define ENC64(_pp_, _ip_, _d_, _op_) do {\
   uint64_t _r = _ip_ - _pp_;\
@@ -380,10 +392,12 @@ size_t bitgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { i
 	else { 
 	  unsigned b; uint64_t r,*_op; 
 	  bitget(bw,br, 4+3, b);
-      if((b>>=4) <= 1) { 
-        if(b==1) { memcpy(out,in+1, n*sizeof(out[0])); return 1+n*sizeof(out[0]); }
-		bitget(bw,br,3,b); bitget64(bw,br,(b+1)*8,r,ip); bitdnorm(bw,br,ip); 
-        //r+=NL; while(r--) *op++=(start+=pd);
+      if((b>>=4) <= 1) { // No compression, because of overflow
+        if(b==1) { 
+          memcpy(out,in+1, n*sizeof(out[0])); 
+          return 1+n*sizeof(out[0]); 
+        }
+		bitget(bw,br,3,b); bitget64(bw,br,(b+1)*8,r,ip); bitdnorm(bw,br,ip); //RLE     //r+=NL; while(r--) *op++=(start+=pd);
 		for(r+=NL, _op = op; op != _op+(r&~7); op += 8) 
 		  op[0]=(start+=pd),
 	      op[1]=(start+=pd),
