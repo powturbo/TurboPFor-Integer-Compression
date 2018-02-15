@@ -127,7 +127,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
 "blosc_lz4" internal lz4 compressor+vectorized shuffle
 
-##### Time Series:
+##### - Time Series:
 - Test file  [Timestamps: ts.txt(sorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
         ./icapp -Ftu ts.txt -I15 -J15
