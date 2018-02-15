@@ -134,7 +134,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 
 |Function        |C MB/s|   size  |ratio%| D MB/s|Text
 |----------------|-----:|--------:|------:|------:|--------------------|
-|bitgenc32       |**8914**|    56713|  0.010|**13499**|Bit/io Delta of delta|
+|bitgenc32       |**8914**|    56713|  0.010|**13499**|Bit/io RLE Delta of delta|
 |vsenc32         |**12294**|   140400| 0.024 |12877 |Variable Simple|
 |p4nzenc256v32   | 1932|   596018|  0.10 |13326 |TurboPFor256 ZigZag|
 |p4ndenc256v32   | 1961|   596018|  0.10 |13339 |TurboPFor256 Delta| 
