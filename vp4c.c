@@ -95,6 +95,20 @@
 #define USIZE 64
 #include "vp4c.c"
 
+#define  BITDELTA bitddenc
+#define P4DELTA 0  // p4dd functions
+#define  P4DENC   p4ddenc
+#define  P4NENC   p4nddenc
+#define  P4NENCS  p4ddenc
+#define USIZE 8
+#include "vp4c.c"
+#define USIZE 16
+#include "vp4c.c"
+#define USIZE 32
+#include "vp4c.c"
+#define USIZE 64
+#include "vp4c.c"
+
 #undef P4DELTA
 #define  BITDELTA bitdienc
 
@@ -256,7 +270,6 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
 #undef   P4ENC    
 #undef   BITPACK
   #endif
-
 #else
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
@@ -265,30 +278,38 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
 #pragma GCC optimize ("align-functions=16")
 
 #define uint_t TEMPLATE3(uint, USIZE, _t)
-
+ 
 #ifdef VSIZE
   #define CSIZE VSIZE
 #else
   #define CSIZE 128
 #endif
-  
+   
   #ifndef P4DELTA
 
-    #ifdef _P4BITS 	
+    #ifdef _P4BITS
 unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
     #if HYBRID > 0 && USIZE >= 16
   unsigned _vb[USIZE*2+64] = {0}, *vb=&_vb[USIZE];
 	#endif
   unsigned cnt[USIZE+8] = {0}, x, bx, bmp8=(n+7)/8;
-  uint_t *ip, u=0; 
-  int b,i,ml,l,fx=0,vv;
+  uint_t *ip, u=0, a = in[0]; 
+  int b,i,ml,l,fx=0,vv,eq=0;
   	
-  #define CNTE(i) { ++cnt[TEMPLATE2(bsr, USIZE)(ip[i])], u |= ip[i]; }
+  #define CNTE(i) { ++cnt[TEMPLATE2(bsr, USIZE)(ip[i])], u |= ip[i]; eq += (ip[i] == a); }
   for(ip = in; ip != in+(n&~3); ip+=4) { CNTE(0); CNTE(1); CNTE(2); CNTE(3); }
   for(;ip != in+n;ip++) CNTE(0);
-
-  b  = TEMPLATE2(bsr, USIZE)(u);  									//if(u) xbits[ctz64(u)]++;									
-  bx = b; 
+	  
+  b  = TEMPLATE2(bsr, USIZE)(u);  																	
+    #if HYBRID > 0
+  if(eq == n && a) { *pbx = USIZE+2; 
+      #if USIZE == 64
+    if(b == USIZE-1) b = USIZE; 
+      #endif
+	return b; 
+  }
+	#endif
+  bx = b;
   ml = PAD8(n*b)+1; x = cnt[b];												
  
     #if HYBRID > 0 && USIZE >= 16
@@ -325,69 +346,67 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
   return b;
 } 
    #endif
- 
-unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
-  uint_t             msk =  (1ull << b)-1, _in[P4D_MAX+32], inx[P4D_MAX+32];
-  unsigned long long xmap[P4D_MAX/64] = {0};  
-  unsigned           miss[P4D_MAX],i, xn, c;
-  unsigned char *_out = out;
-  if(!bx) 
-    return TEMPLATE2(BITPACK, USIZE)(in, n,	out, b);
 
-  #define MISS { miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++; }
+
+unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
+  uint_t             msk =  (1ull << b)-1, _in[P4D_MAX+32], inx[P4D_MAX+32],a,ax;
+  unsigned long long xmap[P4D_MAX/64] = {0};  
+  unsigned           miss[P4D_MAX],i, xn, c; 									//, eq=0,eqx=0;
+  unsigned char *_out = out;
+  
+  if(!bx)
+    return TEMPLATE2(BITPACK, USIZE)(in, n,	out, b);
+    #if HYBRID > 0
+  if(bx == USIZE+2) {
+	TEMPLATE2(ctou, USIZE)(out) = in[0];
+	return out+((b+7)/8);
+  }
+    #endif
+  #define MISS { miss[xn] = i; xn += in[i] > msk; _in[i] = in[i] & msk; i++; } //eq+= (_in[i] == a); } a = in[0] & msk;
   for(xn = i = 0; i != n&~3; ) { MISS; MISS; MISS; MISS; }
   while(i != n) MISS;
-  
+    																			//ax = inx[miss[0]] >> b;
   for(i = 0; i != xn; ++i) {
     c           = miss[i]; 
     xmap[c>>6] |= (1ull << (c&0x3f)); 
-    inx[i]      = in[c] >> b; 
+    inx[i]      = in[c] >> b;													// eqx        += inx[i] == a;
   }	
   
     #if HYBRID > 0 && USIZE >= 16
   if(bx <= USIZE) { 														
     #endif
-    for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i]; out += PAD8(n); 	
-    out = TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  
+    for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i]; out += PAD8(n); 	//if(eqx == xn && bx) { out[-1] |=0x80; TEMPLATE2(ctou, USIZE)(out)=ax; out += (bx+7)/8; } else 
+    out = TEMPLATE2(bitpack, USIZE)(inx, xn, out, bx);  						//if(eq == n && b) { out[-1]|= 0x80; TEMPLATE2(ctou, USIZE)(out)=a; out += (b+7)/8; } else 
     out = TEMPLATE2(BITPACK, USIZE)(_in, n,  out, b);  
     #if HYBRID > 0 && USIZE >= 16
   } 
   else { 															
-    *out++ = xn; 
-    out = TEMPLATE2(BITPACK, USIZE)(_in, n, out,  b);
+    *out++ = xn;   																//if(b && eq == n) { *out++ = 0x80; TEMPLATE2(ctou, USIZE)(out) = _in[0]; out += (b+7)/8; } else { *out++ = 0;
+      out = TEMPLATE2(BITPACK, USIZE)(_in, n, out, b); 
+    
     out = TEMPLATE2(vbenc, USIZE)(inx, xn, out); 				
     for(i = 0; i != xn; ++i) *out++ = miss[i]; 							
   }	  
     #endif
   return out;
-}
+} 
 
 unsigned char *TEMPLATE2(P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out) { unsigned bx, b;
   if(!n) return out;
-  b = TEMPLATE2(P4BITS, USIZE)(in, n, &bx);	//if(bx <= USIZE) printf("%d,%d ", b, bx);else printf("#%d ", b);							
-    #if HYBRID > 0 && USIZE >= 16
+  b = TEMPLATE2(P4BITS, USIZE)(in, n, &bx);							
   TEMPLATE2(P4HVE, USIZE)(out,b,bx);
-    #else
-  P4HDE(out, b, bx); 
-    #endif															 
   out = TEMPLATE2(_P4ENC, USIZE)(in, n, out, b, bx); 
   return out;
 }
 
-size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
+size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) { if(!n) return 0;
   unsigned char *op = out; 
   uint_t *ip; 
-  if(!n) 
-    return 0;
 
   for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { unsigned bx, b;			__builtin_prefetch(ip+512,0); 
     b = TEMPLATE2(P4BITS, USIZE)(ip, CSIZE, &bx); 									
-    #if HYBRID > 0 && USIZE >= 16
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
-      #else
-    P4HDE(op, b, bx); 
-      #endif															 
-    op = TEMPLATE2(_P4ENC, USIZE)(ip, CSIZE, op, b, bx);    //op = TEMPLATE2(P4ENC, USIZE)(ip, CSIZE, op);
+    op = TEMPLATE2(_P4ENC, USIZE)(ip, CSIZE, op, b, bx);
   }
   return TEMPLATE2(p4enc, USIZE)(ip, n&(CSIZE-1), op) - out; 
 }
@@ -409,11 +428,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	uint_t _in[P4D_MAX+8];unsigned bx, b;			__builtin_prefetch(ip+512,0);
     TEMPLATE2(BITDELTA, USIZE)(ip, CSIZE, _in, start, P4DELTA);
     b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
-    #if HYBRID > 0 && USIZE >= 16
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
-      #else
-    P4HDE(op, b, bx); 
-      #endif															 
     op = TEMPLATE2(_P4ENC, USIZE)(_in, CSIZE, op, b, bx);  // op = TEMPLATE2(P4ENC, USIZE)(_in, CSIZE, op);                
     start = ip[CSIZE-1]; 					
   }                   
