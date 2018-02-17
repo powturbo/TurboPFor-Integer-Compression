@@ -128,6 +128,10 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define clz8(_x_)  (clz32(_x_)-8)
 #define clz16(_x_) (clz32(_x_)-16)
 
+#define BZHI32(_u_, _b_) ((_u_) & ((1u  <<(_b_))-1))
+#define BZHI8(_u_, _b_)  BZHI32(_u_, _b_)
+#define BZHI16(_u_, _b_) BZHI32(_u_, _b_)
+#define BZHI64(_u_, _b_) ((_u_) & ((1ull<<(_b_))-1))
 //--------------- Unaligned memory access -------------------------------------
 /*# || defined(i386) || defined(_X86_) || defined(__THW_INTEL)*/
   #if defined(__i386__) || defined(__x86_64__) || \
