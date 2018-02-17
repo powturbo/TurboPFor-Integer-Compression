@@ -117,6 +117,22 @@ extern char _shuffle_16[256][16];
 #include "vp4d.c"
 #define USIZE 64
 #include "vp4d.c"
+
+#define _P4DEC      _p4dddec        //deltaOfdelta
+#define  P4DEC       p4dddec
+#define  P4NDEC      p4ndddec
+#define  P4NDECS     p4dddec
+#define  BITUNPACKD  bitddunpack
+#define _BITUNPACKD  bitddunpack
+#define  BITUNDD     bitdddec
+#define USIZE 8
+#include "vp4d.c"
+#define USIZE 16
+#include "vp4d.c"
+#define USIZE 32
+#include "vp4d.c"
+#define USIZE 64
+#include "vp4d.c"
                         
 #undef _P4DEC
 #undef  P4DEC
@@ -345,7 +361,18 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   unsigned b, bx, i;  
   if(!n) return in;
   b = *in++;
-  if(likely(!(b & 0x40))) {
+  if((b & 0xc0) == 0xc0) {
+	b &= 0x3f;
+      #if USIZE == 64 
+    b = b == 63?64:b;
+      #endif 
+	uint_t u = TEMPLATE2(ctou, USIZE)(in); if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b);  
+	for(i=0; i < n; i++) out[i] = u;
+      #ifdef BITUNDD
+    TEMPLATE2(BITUNDD, USIZE)(out, n, start);
+      #endif
+	return in+(b+7)/8;
+  }	else if(likely(!(b & 0x40))) {
     if(b & 0x80)
 	  bx = *in++;
     return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx);
@@ -354,8 +381,7 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   else {
     uint_t ex[P4D_MAX+64],*pex=ex; 
 	b  &= 0x3f; 	
-    bx = *in++;                 
-
+    bx = *in++;                															    /*if(b && *in++ == 0x80) { uint_t u = TEMPLATE2(ctou, USIZE)(in); if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b); int i; for(i = 0; i < n; i++) out[i] = u; in+=(b+7)/8;  } else*/
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b); 
     in = TEMPLATE2(vbdec,     USIZE)(in, bx, ex);
 	#define ST(j) out[in[i+j]] |= ex[i+j] << b;
@@ -393,7 +419,19 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
     #endif
   for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {            
     unsigned b = *ip++, bx, i;  										 __builtin_prefetch(ip+512);//ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));
-    if(likely(!(b & 0x40))) {
+	
+    if((b & 0xc0) == 0xc0) {
+	  b &= 0x3f;
+        #if USIZE == 64 
+      b = b == 63?64:b;
+        #endif
+	  uint_t u = TEMPLATE2(ctou, USIZE)(ip); if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b);  
+	  int i; for(i=0; i < CSIZE; i++) op[i] = u;
+        #ifdef BITUNDD
+      TEMPLATE2(BITUNDD, USIZE)(op, CSIZE, start);
+        #endif
+	  ip += (b+7)/8;
+    } else if(likely(!(b & 0x40))) {
       if(b & 0x80)
 	    bx = *ip++;
       ip = TEMPLATE2(_P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start), b, bx);
@@ -402,8 +440,7 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
     else {
       uint_t ex[P4D_MAX+64]; 
 	  b  &= 0x3f; 	
-      bx = *ip++;                 
-
+      bx = *ip++;                 											//f(*ip++ == 0x80 && b) { uint_t u = TEMPLATE2(ctou, USIZE)(ip); ip+=(b+7)/8; if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b);  int i; for(i=0; i < CSIZE; i++) op[i] = u; } else
       ip = TEMPLATE2(BITUNPACK, USIZE)(ip, CSIZE, op, b); 
       ip = TEMPLATE2(vbdec,     USIZE)(ip, bx, ex);
       for(i = 0; i != (bx & ~7); i += 8) { 
