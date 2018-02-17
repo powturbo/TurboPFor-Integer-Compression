@@ -202,13 +202,12 @@ unsigned _p4bitsx16(         uint16_t *__restrict in, unsigned n, unsigned *pbx)
 unsigned _p4bitsx32(         uint32_t *__restrict in, unsigned n, unsigned *pbx);
 unsigned _p4bitsx64(         uint64_t *__restrict in, unsigned n, unsigned *pbx);
 
-
-#define P4HDE(_out_, _b_, _bx_) do { if(!_bx_) *_out_++ = _b_;else *_out_++ = 0x80 | _b_, *_out_++ = _bx_; } while(0)
-#define P4HVE(_out_, _b_, _bx_,_usize_) do { unsigned _c = _b_==_usize_?(_usize_-1):_b_; if(_bx_ <= _usize_) P4HDE(_out_, _c,  _bx_); else *_out_++= 0x40|_c;  } while(0)
-#define P4HVE16(_out_, _b_, _bx_) do {                                   				 if(_bx_ <= 16     ) P4HDE(_out_, _b_, _bx_); else *_out_++= 0x40|_b_; } while(0)
-#define P4HVE32(_out_, _b_, _bx_) do {                                   				 if(_bx_ <= 32     ) P4HDE(_out_, _b_, _bx_); else *_out_++= 0x40|_b_; } while(0)
-#define P4HVE64(_out_, _b_, _bx_) P4HVE(_out_, _b_, _bx_,64)
-#define P4HVE8(_out_, _b_, _bx_)  P4HDE(_out_, _b_, _bx_)
+#define P4HVE(_out_, _b_, _bx_,_usize_) do { if(!_bx_) *_out_++ = _b_;else if(_bx_ <= _usize_) *_out_++ = 0x80|_b_, *_out_++ = _bx_; else *_out_++= (_bx_ == _usize_+1?0x40:0xc0)|_b_; } while(0)
+	
+#define P4HVE8( _out_, _b_, _bx_) P4HVE(_out_, _b_, _bx_, 8)
+#define P4HVE16(_out_, _b_, _bx_) P4HVE(_out_, _b_, _bx_,16)
+#define P4HVE32(_out_, _b_, _bx_) P4HVE(_out_, _b_, _bx_,32)
+#define P4HVE64(_out_, _b_, _bx_) do { unsigned _c = _b_==64?64-1:_b_; P4HVE(_out_, _c, _bx_,64); } while(0)
 
 //---------------------------- TurboPFor: Decode --------------------------------------------------------
 // decompress a previously (with p4enc32) bit packed array. Return value = end of packed buffer in 
