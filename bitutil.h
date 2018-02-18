@@ -52,7 +52,7 @@
 #define BITSIZE64(_in_, _n_, _b_) BITSIZE_(_in_, _n_, _b_, 64)
 
 static inline unsigned char      zigzagenc8( char           x) { return x << 1 ^   x >> 7; }
-static inline          char      zigzagdec8( unsigned short x) { return x >> 1 ^ -(x &   1); }
+static inline          char      zigzagdec8( unsigned char  x) { return x >> 1 ^ -(x &   1); }
 
 static inline unsigned short     zigzagenc16(short          x) { return x << 1 ^   x >> 15; }
 static inline          short     zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
