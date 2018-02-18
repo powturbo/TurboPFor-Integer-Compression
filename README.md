@@ -28,7 +28,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
 * :new: **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (:new: improved + **RLE**).
-  * can compress times series to only 0.01% at > 10 GB/s and decompress at > 13 GB/s.
+  * can compress times series to only 0.01%. > 10 GB/s compression and > 13 GB/s decompress.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
