@@ -8,7 +8,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Delta of Delta/Zigzag for sorted/unsorted arrays
   * :new: **16 bits** + **64 bits** SIMD integrated functions
 * **For/PFor/PForDelta**
-  * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**.
+  * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**. :new:**+RLE**
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
   * Compress 70 times faster and decompress up to 4 times faster than OptPFD
 * **Bit Packing**
@@ -22,13 +22,13 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
-  * Scalar & SIMD Transform: Delta, Zigzag, Transpose/Shuffle
+  * Scalar & SIMD Transform: Delta, Delta of delta, Zigzag, Transpose/Shuffle
 * **Floating Point Compression**
   * Delta/Delta of delta + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
 * :new: **Time Series Compression**
-  * **Fastest Gorilla** style compression (:new: incl. **RLE**) with **variable byte** or **bit/io**.
-  * Full range 32/64 bits, better compression. > 10 GB/s compression and > 13 GB/s decompression
+  * **Fastest Gorilla** 16/32/64 bits style compression (:new: improved + **RLE**).
+  * can compress times series to only 0.01% at > 10 GB/s and decompress at > 13 GB/s.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
@@ -258,17 +258,25 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Fs file         "16 bits binary file
         ./icapp -Fu file         "32 bits binary file
         ./icapp -Fl file         "64 bits binary file
+        ./icapp -Ff file         "32 bits floating point binary file
+        ./icapp -Fd file         "64 bits floating point binary file
 
   - Text file: 1 entry per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
 
         ./icbench -eBENCH -fts ts.txt
         ./icbench -eBENCH -ft  lat.txt
-        ./icapp -Ftu ts.txt       "32 bits unsigned
-        ./icapp -Ftl ts.txt       "64 bits unsigned
-        ./icapp -Ftd file         "64 bits floating point (ex. 8.324567789 )
-        ./icapp -Ftl.2H file      "convert numbers with 2 decimal digits to 64 bits integers (ex. 456.23 -> 45623)
-        ./icapp -Ft3l.2H file     "like previous but use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
+        ./icapp -Fts data.txt     "text file, one 16 bits integer per line
+        ./icapp -Ftu ts.txt       "text file, one 32 bits integer per line
+        ./icapp -Ftl ts.txt       "text file, one 64 bits integer per line
+        ./icapp -Ftf file         "text file, one 32 bits floating point (ex. 8.32456) per line
+        ./icapp -Ftd file         "text file, one 64 bits floating point (ex. 8.324567789) per line
+        ./icapp -Ftd file         "64 bits floating point (ex. 8.324567789 ), 1 entry per line
+        ./icapp -Ftl.2H file      "skip 1th line, convert numbers with 2 decimal digits to 64 bits integers (ex. 456.23 -> 45623)
+        ./icapp -Ft3l.2H file     "like prev., use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
 
+  - Text file: multiple numbers separated by non-digits (0..9,-,.) characters (ex. 134534,-45678,98788,4345, )
+
+        ./icapp -Fcu data.txt     "text file, 32 bits integers 
 
   - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId))<br />
     Block format: [n1: #of Ids][Id1] [Id2]...[IdN] [n2: #of Ids][Id1][Id2]...[IdN]...
@@ -413,5 +421,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  17 Feb 2018
+Last update:  18 Feb 2018
 
