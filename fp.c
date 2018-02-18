@@ -22,144 +22,15 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //    "Floating Point/Integer Compression" 
+  #ifndef USIZE
 #pragma warning( disable : 4005) 
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
 
 #include "conf.h"  
 #include "vp4.h"
-#include "fp.h"
 #include "bitutil.h"
-#define VSIZE 128
-
-// Unlike almost floating point compressors, we are using the better zigzag encoding instead the XOR technique.
-//#define ENC64(u,h) ((u)^(h))
-//#define DEC64(u,h) ((u)^(h))
-#define ENC64(u,h) zigzagenc64((int64_t)u-(int64_t)h)
-#define DEC64(u,h) zigzagdec64(u)+(int64_t)h
-
-//---- Last value Predictor 
-size_t fppenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t       _p[VSIZE+32], *ip, *p;
-  unsigned char *op = out;
-
-  #define FE64(i) { uint64_t u = ip[i]; p[i] = ENC64(u, start); start = u; } 
-  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
-    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE64(0); FE64(1); FE64(2); FE64(3); }  
-	op = p4enc64(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
-  }   
-  if(n = (in+n)-ip) { 					
-    for(p = _p; p != &_p[n]; p++,ip++) FE64(0);
-    op = p4enc64(_p, n, op);
-  }
-  return op - out;
-}
-
-size_t fppdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) {
-  uint64_t      *op, _p[VSIZE+32],*p; 
-  unsigned char *ip = in;
-
-  #define FD64(i) { uint64_t u = DEC64(p[i], start); op[i] = u; start = u; }
-  for(op = out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
-	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
-  }
-  if(n = (out+n) - op)
-	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD64(0);
-  return ip - in;
-}
-
-// delta of delta 
-size_t fpddenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t       _p[VSIZE+32], *ip, *p, pd = 0;
-  unsigned char *op = out;
-  
-  #define FE64(i) { uint64_t u = ip[i]; start = u-start; p[i] = ENC64(start,pd); pd = start; start = u; }
-  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
-    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE64(0); FE64(1); FE64(2); FE64(3); }  
-	op = p4enc64(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
-  }   
-  if(n = (in+n)-ip) { 					
-    for(p = _p; p != &_p[n]; p++,ip++) FE64(0);
-    op = p4enc64(_p, n, op);
-  }
-  return op - out;
-}
-
-size_t fpdddec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) {
-  uint64_t       _p[VSIZE+32],*p, *op, pd=0; 
-  unsigned char *ip = in;
-
-  #define FD64(i) { uint64_t u = DEC64(p[i],start+pd); op[i] = u; pd = u - start; start = u; }
-  for(op = out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
-	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
-  }
-  if(n = (out+n) - op)
-	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD64(0);
-  return ip - in;
-}
-
-#define HBITS 13 //15
-#define HASH64(_h_,_u_) (((_h_)<<5 ^ (_u_)>>50) & ((1u<<HBITS)-1))
-//---- FCM: Finite Context Method Predictor 
-size_t fpfcmenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t       htab[1<<HBITS] = {0}, _p[VSIZE+32], *ip, h = 0, *p;
-  unsigned char *op = out;
-  
-  #define FE64(i) { uint64_t u = ip[i]; p[i] = ENC64(u, htab[h]); htab[h] = u; h = HASH64(h,u); } 
-  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {   		
-    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE64(0); FE64(1); FE64(2); FE64(3); }  
-	op = p4enc64(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
-  }   
-  if(n = (in+n)-ip) {
-    for(p = _p; p != &_p[n]; p++,ip++) FE64(0);
-    op = p4enc64(_p, n, op);
-  }
-  return op - out;
-}
-
-size_t fpfcmdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) {
-  uint64_t *op, htab[1<<HBITS] = {0}, h = 0, _p[VSIZE+32],*p; 
-  unsigned char *ip = in;
-
-  #define FD64(i) { uint64_t u = DEC64(p[i], htab[h]); op[i] = u; htab[h] = u; h = HASH64(h,u); }
-  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
-	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); }
-  }
-  if(n = ((uint64_t *)out+n) - op)
-	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD64(0);
-  return ip - in;
-}
-
-// DFCM: Differential Finite Context Method Predictor 
-size_t fpdfcmenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t *ip, _p[VSIZE+32], h = 0, *p, htab[1<<HBITS] = {0};
-  unsigned char *op = out;
-  
-  #define DE64(i) { uint64_t u = ip[i]; p[i] = ENC64(u, (htab[h]+start)); htab[h] = start = u - start; h = HASH64(h,start); start = u; } 
-  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {  		
-    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { DE64(0); DE64(1); DE64(2); DE64(3); }  
-	op = p4enc64(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
-  }  
-  if(n = (in+n)-ip) { 					
-    for(p = _p; p != &_p[n]; p++,ip++) DE64(0);
-    op = p4enc64(_p, n, op);
-  }																	
-  return op - out;
-}  
-
-size_t fpdfcmdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) {
-  uint64_t      _p[VSIZE+32], *op, h = 0, *p, htab[1<<HBITS] = {0}; 
-  unsigned char *ip = in;
-
-  #define DD64(i) { uint64_t u = DEC64(p[i], (htab[h]+start)); op[i] = u; htab[h] = start = u-start; h = HASH64(h,start); start = u; }
-  for(op = (uint64_t*)out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
-	for(ip = p4dec64(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { DD64(0); DD64(1); DD64(2); DD64(3); }
-  }
-  if(n = ((uint64_t *)out+n) - op)
-	for(ip = p4dec64(ip, n, _p), p = _p; p != &_p[n]; p++,op++) DD64(0);
-  return ip - in;
-}
-
+#include "fp.h"
 // ------------------ bitio compression ---------------------------
 #define bitdef(     _bw_,_br_)           uint64_t _bw_=0; unsigned _br_=0
 #define bitini(     _bw_,_br_)           _bw_=_br_=0
@@ -184,72 +55,238 @@ size_t fpdfcmdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) {
 #define bitdnorm(   _bw_,_br_,_ip_)      _bw_ = ctou64(_ip_ += (_br_>>3)), _br_ &= 7
 #define bitalign(   _bw_,_br_,_ip_)      (_ip_ += (_br_+7)>>3)
 
-#define bitput64(bw,br,_b_,_x_,_op_) if((_b_)>45) {              bitput(bw,br,(_b_)-32, (_x_)>>32); bitenorm(bw,br,_op_); bitput(bw,br,32,(unsigned)(_x_));      } else bitput(bw,br,_b_,_x_);
-#define bitget64(bw,br,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget(bw,br,(_b_)-32,_x_);        bitdnorm(bw,br,_ip_); bitget(bw,br,32,_v); _x_ = _x_<<32|_v; } else bitget(bw,br,_b_,_x_); 
-	
-// Fastest Gorilla (see Facebook paper) Floating point/Integer compression implementation using zigzag encoding instead of XOR. Compression 5 GB/s, Decompression: 10 GB/s
-size_t fpgenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t      *ip;
+#define bitput8( bw,br,_b_,_x_,_op_) bitput(bw,br,_b_,_x_)
+#define bitput16(bw,br,_b_,_x_,_op_) bitput(bw,br,_b_,_x_)
+#define bitput32(bw,br,_b_,_x_,_op_) bitput(bw,br,_b_,_x_)
+#define bitput64(bw,br,_b_,_x_,_op_) if((_b_)>45) { bitput(bw,br,(_b_)-32, (_x_)>>32); bitenorm(bw,br,_op_); bitput(bw,br,32,(unsigned)(_x_)); } else bitput(bw,br,_b_,_x_)
+
+#define bitget8( bw,br,_b_,_x_,_ip_) bitget(bw,br,_b_,_x_)
+#define bitget16(bw,br,_b_,_x_,_ip_) bitget(bw,br,_b_,_x_)
+#define bitget32(bw,br,_b_,_x_,_ip_) bitget(bw,br,_b_,_x_)
+#define bitget64(bw,br,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget(bw,br,(_b_)-32,_x_); bitdnorm(bw,br,_ip_); bitget(bw,br,32,_v); _x_ = _x_<<32|_v; } else bitget(bw,br,_b_,_x_)
+//-------------------------------
+#define VSIZE 128
+
+#define P4ENC p4enc
+#define P4DEC p4dec
+
+#define NL 18
+#define N4 17 // must be > 16 
+
+#define N2  3
+#define N3  5
+#define USIZE 8
+#include "fp.c"
+
+#define N2   6
+#define N3  12
+#define USIZE 16
+#include "fp.c"
+
+#define N2  6 // for seconds time series
+#define N3 10
+#define USIZE 32
+#include "fp.c"
+
+#define N2  6    // for seconds/milliseconds,... time series
+#define N3 12
+#define N4 20 	 // must be > 16
+#define USIZE 64
+#include "fp.c"
+
+  #else
+// Unlike almost floating point compressors, we are using the better zigzag encoding instead the XOR technique.
+//#define ENCX(u,h,_usize_) ((u)^(h))
+//#define DECX(u,h,_usize_) ((u)^(h))
+#define ENCX(_u_ , _h_, _usize_)  TEMPLATE2(zigzagenc,_usize_)((_u_)-(_h_))
+#define DECX(_u_ , _h_, _usize_) (TEMPLATE2(zigzagdec,_usize_)(_u_)+(_h_))
+
+#define uint_t TEMPLATE3(uint, USIZE, _t)
+
+//---- Last value Predictor  
+size_t TEMPLATE2(fppenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t         _p[VSIZE+32], *ip, *p;
+  unsigned char *op = out;
+
+  #define FE(i,_usize_) { TEMPLATE3(uint, _usize_, _t) u = ip[i]; p[i] = ENCX(u, start,_usize_); start = u; } 
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
+    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }  
+	op = TEMPLATE2(P4ENC,USIZE)(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
+  }   
+  if(n = (in+n)-ip) { 					
+    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+    op = TEMPLATE2(P4ENC,USIZE)(_p, n, op);
+  }
+  return op - out;
+}
+
+size_t TEMPLATE2(fppdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
+  uint_t        *op, _p[VSIZE+32],*p; 
+  unsigned char *ip = in;
+
+  #define FD(i,_usize_) { TEMPLATE3(uint, USIZE, _t) u = DECX(p[i], start,_usize_); op[i] = u; start = u; }
+  for(op = out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); }
+  }
+  if(n = (out+n) - op)
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
+  return ip - in;
+}
+
+// delta of delta 
+size_t TEMPLATE2(fpddenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t       _p[VSIZE+32], *ip, *p, pd = 0;
+  unsigned char *op = out;
+  
+  #define FE(i,_usize_) { TEMPLATE3(uint, USIZE, _t) u = ip[i]; start = u-start; p[i] = ENCX(start,pd,_usize_); pd = start; start = u; }
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
+    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }  
+	op = TEMPLATE2(P4ENC,USIZE)(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
+  }   
+  if(n = (in+n)-ip) { 					
+    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+    op = TEMPLATE2(P4ENC,USIZE)(_p, n, op);
+  }
+  return op - out;
+}
+
+size_t TEMPLATE2(fpdddec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
+  uint_t       _p[VSIZE+32],*p, *op, pd=0; 
+  unsigned char *ip = in;
+
+  #define FD(i,_usize_) { TEMPLATE3(uint, USIZE, _t) u = DECX(p[i],start+pd,_usize_); op[i] = u; pd = u - start; start = u; }
+  for(op = out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); }
+  }
+  if(n = (out+n) - op)
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
+  return ip - in;
+}
+
+#define HBITS 13 //15
+#define HASH64(_h_,_u_) (((_h_)<<5 ^ (_u_)>>50) & ((1u<<HBITS)-1))
+#define HASH32(_h_,_u_) (((_h_)<<4 ^ (_u_)>>23) & ((1u<<HBITS)-1))
+#define HASH16(_h_,_u_) (((_h_)<<3 ^ (_u_)>>12) & ((1u<<HBITS)-1))
+#define HASH8( _h_,_u_) (((_h_)<<2 ^ (_u_)>> 5) & ((1u<<HBITS)-1))
+//---- FCM: Finite Context Method Predictor 
+size_t TEMPLATE2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t       htab[1<<HBITS] = {0}, _p[VSIZE+32], *ip, h = 0, *p;
+  unsigned char *op = out;
+  
+  #define FE(i,_usize_) { TEMPLATE3(uint, _usize_, _t) u = ip[i]; p[i] = ENCX(u, htab[h],_usize_); htab[h] = u; h = TEMPLATE2(HASH,_usize_)(h,u); } 
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {   		
+    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }  
+	op = TEMPLATE2(P4ENC,USIZE)(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
+  }   
+  if(n = (in+n)-ip) {
+    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+    op = TEMPLATE2(P4ENC,USIZE)(_p, n, op);
+  }
+  return op - out;
+}
+
+size_t TEMPLATE2(fpfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
+  uint_t *op, htab[1<<HBITS] = {0}, h = 0, _p[VSIZE+32],*p; 
+  unsigned char *ip = in;
+
+  #define FD(i,_usize_) { TEMPLATE3(uint, _usize_, _t) u = DECX(p[i], htab[h],_usize_); op[i] = u; htab[h] = u; h = TEMPLATE2(HASH,_usize_)(h,u); }
+  for(op = (uint_t*)out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); }
+  }
+  if(n = ((uint_t *)out+n) - op)
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
+  return ip - in;
+}
+
+// DFCM: Differential Finite Context Method Predictor 
+size_t TEMPLATE2(fpdfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t *ip, _p[VSIZE+32], h = 0, *p, htab[1<<HBITS] = {0};
+  unsigned char *op = out;
+  
+  #define FE(i,_usize_) { TEMPLATE3(uint, _usize_, _t) u = ip[i]; p[i] = ENCX(u, (htab[h]+start),_usize_); htab[h] = start = u - start; h = TEMPLATE2(HASH,_usize_)(h,start); start = u; } 
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {  		
+    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }  
+	op = TEMPLATE2(P4ENC,USIZE)(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
+  }  
+  if(n = (in+n)-ip) { 					
+    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+    op = TEMPLATE2(P4ENC,USIZE)(_p, n, op);
+  }																	
+  return op - out;
+}  
+
+size_t TEMPLATE2(fpdfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
+  uint_t      _p[VSIZE+32], *op, h = 0, *p, htab[1<<HBITS] = {0}; 
+  unsigned char *ip = in;
+
+  #define FD(i,_usize_) { TEMPLATE3(uint, _usize_, _t) u = DECX(p[i], (htab[h]+start),_usize_); op[i] = u; htab[h] = start = u-start; h = TEMPLATE2(HASH,_usize_)(h,start); start = u; }
+  for(op = (uint_t*)out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); }
+  }
+  if(n = ((uint_t *)out+n) - op)
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
+  return ip - in;
+}
+
+// Fastest Gorilla (see Facebook paper) Floating point/Integer compression implementation, using zigzag encoding instead of XOR. Compression, Decompression: > 10 GB/s
+size_t TEMPLATE2(fpgenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t        *ip;
   unsigned       ol = 0,ot = 0;
   unsigned char *op = out;
   bitdef(bw,br); 
-  #define FE64(i) { uint64_t z = ENC64(ip[i], start); start = ip[i];\
+  
+  #define FE(i,_usize_) { TEMPLATE3(uint, _usize_, _t) z = ENCX(ip[i], start,_usize_); start = ip[i];\
     if(likely(!z))             bitput( bw,br, 1, 1);\
-    else { unsigned t = ctz64(z), l = clz64(z); l = l>31?31:l;\
-      if(l >= ol && t >= ot) { bitput( bw,br, 2, 2);               l = 64 - ol - ot; z>>=ot; bitput64(bw,br,  l, z,op); }\
-      else {                   bitput( bw,br, 2+6+5, (t-1)<<5|l); ol = 64 -  l -  t; z>>= t; bitput64(bw,br, ol, z,op); ol = l; ot = t; } \
+    else { unsigned t = TEMPLATE2(ctz,_usize_)(z), l = TEMPLATE2(clz,_usize_)(z); l = l>31?31:l;\
+      if(l >= ol && t >= ot) { bitput( bw,br, 2, 2);               l = _usize_ - ol - ot; z>>=ot; TEMPLATE2(bitput,_usize_)(bw,br,  l, z,op); }\
+      else {                   bitput( bw,br, 2+6+5, (t-1)<<5|l); ol = _usize_ -  l -  t; z>>= t; TEMPLATE2(bitput,_usize_)(bw,br, ol, z,op); ol = l; ot = t; } \
     } bitenorm(bw,br,op);\
   }
-  for(ip = in; ip != in + (n&~(4-1)); ip+=4) { __builtin_prefetch(ip+512, 0); FE64(0); FE64(1); FE64(2); FE64(3); }
-  for(       ; ip != in +  n        ; ip++ ) FE64(0); 
+  for(ip = in; ip != in + (n&~(4-1)); ip+=4) { __builtin_prefetch(ip+512, 0); FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
+  for(       ; ip != in +  n        ; ip++ ) FE(0,USIZE); 
   bitflush(bw,br,op);
   return op - out;
 }
 
-size_t fpgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { if(!n) return 0;
-  uint64_t      *op;
+size_t TEMPLATE2(fpgdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) { if(!n) return 0;
+  uint_t        *op;
   unsigned       ol = 0,ot = 0,x;
   unsigned char *ip = in;
   bitdef(bw,br);
   
-  #define FD64(i) { uint64_t z=0; unsigned _x; bitget(bw,br,1,_x); \
+  #define FD(i,_usize_) { TEMPLATE3(uint, _usize_, _t) z=0; unsigned _x; bitget(bw,br,1,_x); \
     if(likely(!_x)) { bitget(bw,br,1,_x);\
-	  if(!_x) { bitget(bw,br,11,_x); ot = (_x>>5)+1; ol = _x & 31; } bitget64(bw,br,64 - ol - ot,z,ip); z<<=ot;\
-    } op[i] = start = DEC64(z, start); bitdnorm(bw,br,ip);\
+	  if(!_x) { bitget(bw,br,11,_x); ot = (_x>>5)+1; ol = _x & 31; } TEMPLATE2(bitget,_usize_)(bw,br,_usize_ - ol - ot,z,ip); z<<=ot;\
+    } op[i] = start = DECX(z, start,_usize_); bitdnorm(bw,br,ip);\
   }
-  for(bitdnorm(bw,br,ip),op = out; op != out+(n&~(4-1)); op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); __builtin_prefetch(ip+512, 0); }
-  for(        ; op != out+n; op++) FD64(0);
+  for(bitdnorm(bw,br,ip),op = out; op != out+(n&~(4-1)); op+=4) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); __builtin_prefetch(ip+512, 0); }
+  for(        ; op != out+n; op++) FD(0,USIZE);
   bitalign(bw,br,ip);
   return ip - in;
 }
 
-// Improved Gorilla style compression with sliding double delta for timestamps in time series.
+// Improved Gorilla style compression with sliding double delta+zigzag encoding+RLE for timestamps in time series.
 // Up to 300 times better compression and several times faster
-#define N2  6 // for seconds time series
-#define N3 10
-#define N4 17 // must be > 16 
-#define NL 18
-
-#define ENC32(_pp_, _ip_, _d_, _op_) do {\
-  size_t _r = _ip_ - _pp_;\
-  if(_r > NL) { _r -= NL; unsigned _b = (bsr32(_r)+7)>>3; bitput(bw,br,4+3+3,(_b-1)<<(4+3)); bitput64(bw,br,_b<<3, _r, _op_); bitenorm(bw,br,_op_); }\
-  else while(_r--) { bitput(bw,br,1,1); bitenorm(bw,br,_op_); }\
-  _d_ = zigzagenc32(_d_);\
-       if(!_d_)                bitput(bw,br,    1,      1);\
-  else if(_d_ <  (1<< (N2-1))) bitput(bw,br, N2+2,_d_<<2|2);\
-  else if(_d_ <  (1<< (N3-1))) bitput(bw,br, N3+3,_d_<<3|4);\
-  else if(_d_ <  (1<< (N4-1))) bitput(bw,br, N4+4,_d_<<4|8);\
-  else { unsigned _b = (bsr32(_d_)+7)>>3; bitput(bw,br,4+3,(_b-1)<<4); bitput(bw,br, _b<<3, _d_); }\
-  bitenorm(bw,br,_op_);\
-} while(0)
-
 #define OVERFLOW if(op >= out_) { *out++ = 1<<4; /*bitini(bw,br); bitput(bw,br,4+3,1<<4); bitflush(bw,br,out);*/ memcpy(out,in,n*sizeof(in[0])); return 1+n*sizeof(in[0]); }
 
-size_t bitgenc32(uint32_t *in, size_t n, unsigned char *out, uint32_t start) {
-  uint32_t *ip = in, pd = 0, *pp = in,dd;
+size_t TEMPLATE2(bitgenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t        *ip = in, pd = 0, *pp = in,dd;
   unsigned char *op = out, *out_ = out+n*sizeof(in[0]);
 
   bitdef(bw,br);
+  #define FE(_pp_, _ip_, _d_, _op_,_usize_) do {\
+    uint64_t _r = _ip_ - _pp_;\
+    if(_r > NL) { _r -= NL; unsigned _b = (bsr64(_r)+7)>>3; bitput(bw,br,4+3+3,(_b-1)<<(4+3)); bitput64(bw,br,_b<<3, _r, _op_); bitenorm(bw,br,_op_); }\
+    else while(_r--) { bitput(bw,br,1,1); bitenorm(bw,br,_op_); }\
+    _d_ = TEMPLATE2(zigzagenc,_usize_)(_d_);\
+         if(!_d_)                bitput(bw,br,    1,       1);\
+    else if(_d_ <  (1<< (N2-1))) bitput(bw,br, N2+2,_d_<<2|2);\
+    else if(_d_ <  (1<< (N3-1))) bitput(bw,br, N3+3,_d_<<3|4);\
+    else if(_d_ <  (1<< (N4-1))) bitput(bw,br, N4+4,_d_<<4|8);\
+    else { unsigned _b = (TEMPLATE2(bsr,_usize_)(_d_)+7)>>3; bitput(bw,br,4+3,(_b-1)<<4); TEMPLATE2(bitput,_usize_)(bw,br, _b<<3, _d_,_op_); }\
+    bitenorm(bw,br,_op_);\
+  } while(0)
+
   if(n > 4)
     for(; ip < in+(n-1-4);) { 
       start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++;
@@ -258,46 +295,50 @@ size_t bitgenc32(uint32_t *in, size_t n, unsigned char *out, uint32_t start) {
       start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++; 	__builtin_prefetch(ip+256, 0);
       continue;
       a:;
-      ENC32(pp,ip, dd, op); OVERFLOW;
-	  pp = ++ip;								
+      FE(pp,ip, dd, op,USIZE); 
+	  pp = ++ip;		OVERFLOW;						
     }
 
   for(;ip < in+n;) {
     start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto b; ip++;
     continue;
     b:;
-    ENC32(pp,ip, dd, op); OVERFLOW;
-	pp = ++ip;								
+    FE(pp,ip, dd, op,USIZE); 
+	pp = ++ip; OVERFLOW;								
   }
   if(ip > pp) {
     start = ip[0] - start; dd = start-pd;
-    ENC32(pp, ip, dd, op); OVERFLOW;
+    FE(pp, ip, dd, op, USIZE); OVERFLOW;
   }
   bitflush(bw,br,op);
   return op - out;
 }
 
-size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { if(!n) return 0;
-  uint32_t *op = out, pd = 0;
+size_t TEMPLATE2(bitgdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) { if(!n) return 0;
+  uint_t *op = out, pd = 0;
   unsigned char *ip = in;
-  bitdef(bw,br);
 
+  bitdef(bw,br);
   for(bitdnorm(bw,br,ip); op < out+n; ) { 															__builtin_prefetch(ip+384, 0);
+     #if USIZE == 64
+    uint_t dd = bitpeek(bw,br);
+	 #else
     uint32_t dd = bitpeek(bw,br);
-         if(dd & 1) bitrmv(bw,br, 0+1), dd = 0;						
-	else if(dd & 2) bitrmv(bw,br,N2+2), dd = _bzhi_u32(dd>>2, N2);
-	else if(dd & 4) bitrmv(bw,br,N3+3), dd = _bzhi_u32(dd>>3, N3);
-	else if(dd & 8) bitrmv(bw,br,N4+4), dd = _bzhi_u32(dd>>4, N4);
-	else { 								
-	  unsigned b,*_op; uint64_t r; 
+	 #endif
+         if(dd & 1) bitrmv(bw,br, 0+1), dd = 0;
+	else if(dd & 2) bitrmv(bw,br,N2+2), dd = BZHI32(dd>>2, N2);
+	else if(dd & 4) bitrmv(bw,br,N3+3), dd = BZHI32(dd>>3, N3);
+	else if(dd & 8) bitrmv(bw,br,N4+4), dd = BZHI32(dd>>4, N4);
+	else {
+	  unsigned b; uint_t *_op; uint64_t r; 
 	  bitget(bw,br, 4+3, b);
       if((b>>=4) <= 1) { 
-        if(b==1) { 								// No compression, because of overflow
-		  memcpy(out,in+1, n*sizeof(out[0])); 
-		  return 1+n*sizeof(out[0]); 
-		}
-		bitget(bw,br,3,b); bitget64(bw,br,(b+1)<<3,r,ip); bitdnorm(bw,br,ip); // RLE
-		  #ifdef __SSE2__
+        if(b==1) { 															 // No compression, because of overflow
+          memcpy(out,in+1, n*sizeof(out[0])); 
+          return 1+n*sizeof(out[0]); 
+        }
+		bitget(bw,br,3,b); bitget64(bw,br,(b+1)<<3,r,ip); bitdnorm(bw,br,ip);//RLE     //r+=NL; while(r--) *op++=(start+=pd);
+		  #if defined(__SSE2__) && USIZE == 32
         __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4*pd,3*pd,2*pd,1*pd); 
 		for(r += NL, _op = op; op != _op+(r&~7);) {
 		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = _mm_shuffle_epi32(sv, _MM_SHUFFLE(3, 3, 3, 3)); op += 4; 
@@ -314,196 +355,20 @@ size_t bitgdec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { i
 		  op[5]=(start+=pd),
 		  op[6]=(start+=pd),
 		  op[7]=(start+=pd);
-          #endif	  
-		for(; op != _op+r; op++) 
-		  *op = (start+=pd);
-		continue;
-      }
-      bitget(bw,br,(b+1)<<3,dd);
-    }
-	pd += zigzagdec32(dd); 
-	*op++ = (start += pd); 
-	bitdnorm(bw,br,ip);
-  }	
-  bitalign(bw,br,ip);
-  return ip - in;
-}
-
-#define N2  6 // for seconds/milliseconds,... time series
-#define N3 12
-#define N4 20 // must be > 16
-
-#define ENC64(_pp_, _ip_, _d_, _op_) do {\
-  uint64_t _r = _ip_ - _pp_;\
-  if(_r > NL) { _r -= NL; unsigned _b = (bsr64(_r)+7)>>3; bitput(bw,br,4+3+3,(_b-1)<<(4+3)); bitput64(bw,br,_b<<3, _r, _op_); bitenorm(bw,br,_op_); }\
-  else while(_r--) { bitput(bw,br,1,1); bitenorm(bw,br,_op_); }\
-  _d_ = zigzagenc64(_d_);\
-       if(!_d_)                bitput(bw,br,    1,      1);\
-  else if(_d_ <  (1<< (N2-1))) bitput(bw,br, N2+2,_d_<<2|2);\
-  else if(_d_ <  (1<< (N3-1))) bitput(bw,br, N3+3,_d_<<3|4);\
-  else if(_d_ <  (1<< (N4-1))) bitput(bw,br, N4+4,_d_<<4|8);\
-  else { unsigned _b = (bsr64(_d_)+7)>>3; bitput(bw,br,4+3,(_b-1)<<4); bitput64(bw,br, _b<<3, _d_,_op_); }\
-  bitenorm(bw,br,_op_);\
-} while(0)
-
-size_t bitgenc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t *ip = in, pd = 0, *pp = in,dd;
-  unsigned char *op = out, *out_ = out+n*sizeof(in[0]);
-
-  bitdef(bw,br);
-  if(n > 4)
-    for(; ip < in+(n-1-4);) { 
-      start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++;
-      start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++;
-      start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++;
-      start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto a; ip++; 	__builtin_prefetch(ip+256, 0);
-      continue;
-      a:;
-      ENC64(pp,ip, dd, op); OVERFLOW;
-	  pp = ++ip;								
-    }
-
-  for(;ip < in+n;) {
-    start = ip[0] - start; dd = start-pd; pd = start; start = ip[0]; if(dd) goto b; ip++;
-    continue;
-    b:;
-    ENC64(pp,ip, dd, op); OVERFLOW;
-	pp = ++ip;								
-  }
-  if(ip > pp) {
-    start = ip[0] - start; dd = start-pd;
-    ENC64(pp, ip, dd, op); OVERFLOW;
-  }
-  bitflush(bw,br,op);
-  return op - out;
-}
-
-size_t bitgdec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { if(!n) return 0;
-  uint64_t *op = out, pd = 0;
-  unsigned char *ip = in;
-
-  bitdef(bw,br);
-  for(bitdnorm(bw,br,ip); op < out+n; ) { 															__builtin_prefetch(ip+384, 0);
-    uint64_t dd = bitpeek(bw,br);
-         if(dd & 1) bitrmv(bw,br, 0+1), dd = 0;
-	else if(dd & 2) bitrmv(bw,br,N2+2), dd = _bzhi_u64(dd>>2, N2);
-	else if(dd & 4) bitrmv(bw,br,N3+3), dd = _bzhi_u64(dd>>3, N3);
-	else if(dd & 8) bitrmv(bw,br,N4+4), dd = _bzhi_u64(dd>>4, N4);
-	else { 
-	  unsigned b; uint64_t r,*_op; 
-	  bitget(bw,br, 4+3, b);
-      if((b>>=4) <= 1) { // No compression, because of overflow
-        if(b==1) { 
-          memcpy(out,in+1, n*sizeof(out[0])); 
-          return 1+n*sizeof(out[0]); 
-        }
-		bitget(bw,br,3,b); bitget64(bw,br,(b+1)*8,r,ip); bitdnorm(bw,br,ip); //RLE     //r+=NL; while(r--) *op++=(start+=pd);
-		for(r+=NL, _op = op; op != _op+(r&~7); op += 8) 
-		  op[0]=(start+=pd),
-	      op[1]=(start+=pd),
-		  op[2]=(start+=pd),
-		  op[3]=(start+=pd),
-		  op[4]=(start+=pd),
-		  op[5]=(start+=pd),
-		  op[6]=(start+=pd),
-		  op[7]=(start+=pd);
+		  #endif
 		for(; op != _op+r; op++) 
 		  *op = (start+=pd);
 		continue;
       } 
-      bitget64(bw,br,(b+1)<<3,dd,ip);
+      TEMPLATE2(bitget,USIZE)(bw,br,(b+1)<<3,dd,ip);
     }
-	pd += zigzagdec64(dd); 
+	pd += TEMPLATE2(zigzagdec,USIZE)(dd); 
 	*op++ = (start += pd); 
 	bitdnorm(bw,br,ip);
-  }	
+  }
   bitalign(bw,br,ip);
   return ip - in;
 }
-
-#if 0
-// Initial implementation without RLE
-#define N2  7 // for seconds time series
-#define N3  9
-#define N4 12  
-size_t bitg0enc32(uint32_t *in, size_t n, unsigned char *out, uint32_t start) {
-  uint32_t      *ip, pd = 0;
-  unsigned char *op = out;
-  bitdef(bw,br);
- 
-  #define FE32(i) { uint32_t dd; start = ip[i] - start; dd = start-pd; pd = start; dd = zigzagenc32(dd); start = ip[i];\
-         if(!dd)                bitput(bw,br,    1,      1);\
-    else if(dd <  (1<< (N2-1))) bitput(bw,br, N2+2,dd<<2|2);\
-    else if(dd <  (1<< (N3-1))) bitput(bw,br, N3+3,dd<<3|4);\
-	else if(dd <  (1<< (N4-1))) bitput(bw,br, N4+4,dd<<4|8);\
-	else { unsigned _b = (bsr32(dd)+7)>>3; bitput(bw,br,4+2,(_b-1)<<4); bitput(bw,br, _b<<3, dd); }\
-	bitenorm(bw,br,op);\
-  }
-  for(ip = in; ip != in + (n&~(4-1)); ip+=4) { __builtin_prefetch(ip+512, 0); FE32(0); FE32(1); FE32(2); FE32(3); }
-  for(       ; ip != in +  n        ; ip++ ) FE32(0); 
-  bitflush(bw,br,op);
-  return op - out;
-}
-
-size_t bitg0dec32(unsigned char *in, size_t n, uint32_t *out, uint32_t start) { if(!n) return 0;
-  uint32_t      *op, pd = 0; 
-  unsigned char *ip = in;
-
-  bitdef(bw,br);
+#undef USIZE
+  #endif
   
-  #define FD32(i) { uint32_t dd = bitpeek(bw,br);\
-         if(dd & 1) bitrmv(bw,br, 1+0), dd = 0;\
-	else if(dd & 2) bitrmv(bw,br,N2+2), dd = _bzhi_u32(dd>>2, N2);\
-	else if(dd & 4) bitrmv(bw,br,N3+3), dd = _bzhi_u32(dd>>3, N3);\
-	else if(dd & 8) bitrmv(bw,br,N4+4), dd = _bzhi_u32(dd>>4, N4);\
-	else { unsigned _b; bitget(bw,br,4+2,_b); bitget(bw,br,((_b>>4)+1)*8,dd); }\
-	pd += zigzagdec32(dd); op[i] = (start += pd); bitdnorm(bw,br,ip);\
-  }
-  for(bitdnorm(bw,br,ip),op = out; op != out+(n&~(4-1)); op+=4) { FD32(0); FD32(1); FD32(2); FD32(3); __builtin_prefetch(ip+512, 0); }
-  for(; op != out+n; op++) FD32(0);
-  bitalign(bw,br,ip);
-  return ip - in;
-}
-
-#define N2  6 // for seconds/milliseconds,... time series
-#define N3 12
-#define N4 20
-size_t bitg0enc64(uint64_t *in, size_t n, unsigned char *out, uint64_t start) {
-  uint64_t      *ip, pd = 0;
-  unsigned char *op = out;
-  bitdef(bw,br);
-  
-  #define FE64(i) { uint64_t dd; start = (int64_t)ip[i] - (int64_t)start; dd = (int64_t)start-(int64_t)pd; pd = start; dd = zigzagenc64(dd); start = ip[i];\
-         if(!dd)                bitput(bw,br,    1,      1);\
-    else if(dd <  (1<< (N2-1))) bitput(bw,br, N2+2,dd<<2|2);\
-    else if(dd <  (1<< (N3-1))) bitput(bw,br, N3+3,dd<<3|4);\
-	else if(dd <  (1<< (N4-1))) bitput(bw,br, N4+4,dd<<4|8);\
-	else { unsigned _b = (bsr64(dd)+7)>>3; bitput(bw,br,3+4,(_b-1)<<4); bitput64(bw,br, _b<<3, dd, op); }\
-	bitenorm(bw,br,op);\
-  }
-  for(ip = in; ip != in + (n&~(4-1)); ip+=4) { __builtin_prefetch(ip+512, 0); FE64(0); FE64(1); FE64(2); FE64(3); }
-  for(       ; ip != in +  n        ; ip++ ) FE64(0); 
-  bitflush(bw,br,op);
-  return op - out;
-}
-
-size_t bitg0dec64(unsigned char *in, size_t n, uint64_t *out, uint64_t start) { if(!n) return 0;
-  uint64_t *op, pd = 0; 
-  unsigned char *ip = in;
-  bitdef(bw,br);
-  
-  #define FD64(i) { uint64_t dd = bitpeek(bw,br);\
-         if(dd & 1) bitrmv(bw,br, 1+0), dd = 0;\
-	else if(dd & 2) bitrmv(bw,br,N2+2), dd = _bzhi_u64(dd>>2, N2);\
-	else if(dd & 4) bitrmv(bw,br,N3+3), dd = _bzhi_u64(dd>>3, N3);\
-	else if(dd & 8) bitrmv(bw,br,N4+4), dd = _bzhi_u64(dd>>4, N4);\
-	else { unsigned _b; bitget(bw,br,4+3,_b); _b = ((_b>>4)+1)*8; bitget64(bw,br,_b,dd,ip); }\
-	pd += zigzagdec64(dd); start += pd; op[i] = start; bitdnorm(bw,br,ip);\
-  }
-  for(bitdnorm(bw,br,ip),op = out; op != out+(n&~(4-1)); op+=4) { FD64(0); FD64(1); FD64(2); FD64(3); __builtin_prefetch(ip+512, 0); }
-  for(; op != out+n; op++) FD64(0);
-  bitalign(bw,br,ip);
-  return ip - in;
-}
-#endif
-
