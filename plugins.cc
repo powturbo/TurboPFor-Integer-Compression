@@ -47,22 +47,16 @@
     #endif
   #endif
 
-  #ifdef NCODEC
-#define CODEC0 0
-  #else
-#define CODEC0 1
-  #endif
-
-  #ifdef NCODEC1
-#define CODEC1 0
-  #else
+  #ifdef CODEC1
 #define CODEC1 1
+  #else
+#define CODEC1 0
   #endif
 
-  #ifdef NCODEC2
-#define CODEC2 0
-  #else
+  #ifdef CODEC2
 #define CODEC2 1
+  #else
+#define CODEC2 0
   #endif
 
   #ifdef LZTURBO
@@ -71,11 +65,6 @@
 #define C_LZTURBO    0
   #endif
 
-  #ifdef NTRANSFORM
-#define TRANSFORM 0
-  #else
-#define TRANSFORM 1
-  #endif
   #ifdef BLOSC
 #define C_C_BLOSC    CODEC2
   #else	
@@ -125,21 +114,21 @@ enum {
   TB_BPN256V,		
   TB_EF128V, 	
   TB_EF256V, 	
-#define C_BITSHUFFLE	CODEC1
+#define C_BITSHUFFLE	CODEC2
   P_BITSHUFFLE,
   P_BS_LZ,
   P_BS_LZ4, 
   P_BS_ZLIB,
   P_BS_SHUFFLE, 	
-#define C_FASTPFOR		CODEC1
+#define C_FASTPFOR		CODEC2
   FP_VBYTE,
   FP_FASTPFOR,
-  FP_SIMDFASTPFOR,
-  FP_SIMDOPTPFOR,
   FP_OPTPFOR,
   FP_SIMPLE8BRLE,
   FP_SIMDPACK,
   FP_GROUPSIMPLE,
+  FP_SIMDFASTPFOR,
+  FP_SIMDOPTPFOR,
 #define C_LIBFOR		CODEC1
   LF_FOR,
   LF_FORX,
@@ -163,7 +152,7 @@ enum {
     #else
 #define C_MASKEDVBYTE  0
     #endif
-#define C_POLYCOM  		CODEC1		
+#define C_POLYCOM  		CODEC2		
   PC_OPTPFD,             			// compression too slow and limited to 28 bits. crashs on some lists
   PC_VBYTE,
   PC_RICE,							// incl. only as demo, crash on some lists
@@ -180,7 +169,7 @@ enum {
   SC_SIMDPACK256,
   SC_FOR,    	
   SC_FORDA,   	
-#define C_SIMPLE8B 		CODEC1		//crash on integers w. size 32 bits !	
+#define C_SIMPLE8B 		CODEC2		//crash on integers w. size 32 bits !	
   AM_SIMPLE8B,
 #define C_STREAMVBYTE   CODEC1
   P_STREAMVBYTE,
