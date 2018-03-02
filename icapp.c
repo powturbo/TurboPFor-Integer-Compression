@@ -213,7 +213,7 @@ char *keysep;
 unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, int kid, int skiph, int decs, int divs, int mdelta) {	
   unsigned char *in = *_in,*ip; 
   unsigned nmax = 0;           
-  #define LSIZE 1024
+  #define LSIZE (1024*16)
   char s[LSIZE+1];
   double pre;
 
@@ -229,29 +229,26 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
     case T_TXT:																if(verbose) printf("reading text lines. pre=%.2f, col=%d, sep=%s\n", pre, kid, keysep?keysep:"");	
       while(fgets(s, LSIZE, fi)) {
 		unsigned char *p = s,*q;
-		int k=0,keyid=1,c;
-        s[strlen(s) - 1] = 0; 					                      	
-        for(; *p; ) {
-          if(isize > 0) {
-            while(*p && !isdigit(*p) && *p != '-' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++;  p++; }
-		    uint64_t u = strtoll(p, &q, 10) - mdelta;
-		    if(*q == '.')
-		      u = pre>1.0?round(strtod(p, &q)*pre):strtod(p, &q) - mdelta;
-			if(!keysep || keyid == kid /*|| ++k == kid*/) {														
-			  IPUSH(in,n,isize,nmax,u);								c=*q; 	*q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("%s->%lld ", p, u, c); *q = c;
-              break;			
-            }  			
-		    p = q;
-          } else {
-            while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++; p++; }
-		    double d = strtod(p, &q) - mdelta;  					 	
-			if(!keysep || keyid == kid/*|| ++k == kid*/) {														
-			  IPUSH(in,n,-isize,nmax,d);							c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("%s->%f ", p, d); *q = c;
-              break;			
-            }  			
-		    p = q;
-          }
-        } 
+		int k=0, keyid=1, c;
+        s[strlen(s) - 1] = 0; 	
+        q = p;
+        if(kid > 1)
+          do { 		
+            p = q;
+            if(keysep && strchr(keysep,*q)) keyid++;		                      
+            q++;
+          } while(*q && keyid != kid);  c=p[8]; p[8]=0; if(verbose>=5 && n < 100 || verbose>=9) printf("%8s ", p); p[8]=c;
+        if(isize > 0) {                 
+          while(*p && !isdigit(*p) && *p != '-' && *p != '+') p++;
+		  uint64_t u = strtoll(p, &q, 10) - mdelta;
+		  if(*q == '.')
+		    u = pre>1.0?round(strtod(p, &q)*pre):strtod(p, &q) - mdelta;
+		    IPUSH(in,n,isize,nmax,u);								c=*q; 	*q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("%s->%lld ", p, u, c); *q = c;
+        } else {
+          while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++; p++; }
+		  double d = strtod(p, &q) - mdelta;  					 	
+		  IPUSH(in,n,-isize,nmax,d);							c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("%s->%f ", p, d); *q = c;
+        }
       }  
       break;
     case T_CHAR:                                                         	if(verbose) printf("reading char file. pre=%.2f\n", pre);		
