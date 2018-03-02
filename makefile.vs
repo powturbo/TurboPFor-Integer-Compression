@@ -1,5 +1,5 @@
 # powturbo  (c) Copyright 2013-2018
-# nmake "NCODEC1=1" "NCODEC2=1" /f makefile.vs
+# nmake /f makefile.vs
 # or
 # nmake "AVX2=1" /f makefile.vs
 
@@ -24,20 +24,18 @@ DEFS = $(DEFS) /D__AVX2__
 
 !if "$(NSIMD)" == "1"
 DEFS = $(DEFS) /DNSIMD
-NCODEC1=1
-NCODEC2=1
 !else
 OBJS = $(OBJS) transpose_sse.obj bitpack_sse.obj bitunpack_sse.obj vp4c_sse.obj vp4d_sse.obj
 DEFS = $(DEFS) /D__SSE2__ /D__SSSE3__
 CFLAGS = $(CFLAGS) /DUSE_SSE
 !endif
 
-!if "$(NCODEC1)" == "1"
-DEFS = $(DEFS) /DNCODEC1
+!if "$(CODEC1)" == "1"
+DEFS = $(DEFS) /DCODEC1
 !endif
 
-!IF "$(NCODEC2)" == "1"
-DEFS = $(DEFS) /DNCODEC2
+!IF "$(CODEC2)" == "1"
+DEFS = $(DEFS) /DCODEC2
 !endif
 
 !IF "($(BLOSC)" == "1"
