@@ -846,7 +846,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 33: TMBENCH("",l=bvzzenc8(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc8       ",bvzzdec8(         out, m, cpy,0) ,n); break;
    // case 34: TMBENCH("",l=bvzenc8(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc8        ",bvzdec8(          out, m, cpy,0) ,n); break;
   //case 30: TMBENCH("",l=fpzvenc8(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpzvenc8       ",fpzvdec8(         out, m, cpy,0) ,n); break;
-    case 35: TMBENCH("",l=fpgenc8(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpgenc8        ",fpgdec8(          out, m, cpy,0) ,n); break;
+  //  case 35: TMBENCH("",l=fpgenc8(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpgenc8        ",fpgdec8(          out, m, cpy,0) ,n); break;
 
 	   // Function for floating point/integer compression                                                            
 	//case 41: TMBENCH("",l=fppenc8(      in, m, out,0),n); 	    pr(l,n); TMBENCH2("fppenc8        ", fppdec8(         out, m, cpy,0) ,n); break;
