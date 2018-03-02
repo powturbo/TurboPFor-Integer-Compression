@@ -237,7 +237,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
             p = q;
             if(keysep && strchr(keysep,*q)) keyid++;		                      
             q++;
-          } while(*q && keyid != kid);  c=p[8]; p[8]=0; if(verbose>=5 && n < 100 || verbose>=9) printf("%8s ", p); p[8]=c;
+          } while(*q && keyid != kid);
         if(isize > 0) {                 
           while(*p && !isdigit(*p) && *p != '-' && *p != '+') p++;
 		  uint64_t u = strtoll(p, &q, 10) - mdelta;
