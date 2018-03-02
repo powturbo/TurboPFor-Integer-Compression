@@ -284,8 +284,8 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
   - Text file: multiple numbers separated by non-digits (0..9,-,.) characters (ex. 134534,-45678,98788,4345, )
 
-        ./icapp -Fc data.txt         "text file, 32 bits integers 
-        ./icapp -Fc data.txt         "text file, 32 bits integers 
+        ./icapp -Fc data.txt         "text file, 32 bits integers (ex. 56789,3245,23,678 ) 
+        ./icapp -Fcd data.txt        "text file, 64 bits floting-point numbers (ex. 34.7689,5.20,45.789 )
 
   - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId))<br />
     Block format: [n1: #of Ids][Id1] [Id2]...[IdN] [n2: #of Ids][Id1][Id2]...[IdN]...
