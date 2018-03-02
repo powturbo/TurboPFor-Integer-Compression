@@ -365,6 +365,7 @@ unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if
 	#else
 	  LZ4_compress_default((char *)in, (char *)(out+0), n, outsize));
     #endif
+  return rc;
 }
 
 unsigned lzdecomp(unsigned char *in, unsigned n, unsigned char *out) { if(!n) return 0;
@@ -391,7 +392,6 @@ unsigned tp4lzzenc64(unsigned char *in, unsigned n, unsigned char *out, unsigned
 }
 
 unsigned tp4lzzdec64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tp4dec(tmp, n, (unsigned char *)out, 8);
   bitzdec64(out, n/8, 0);
@@ -404,7 +404,6 @@ unsigned tp4lzxenc64(unsigned char *in, unsigned n, unsigned char *out, unsigned
   return lzcomp(tmp, n, out, lev);
 }  
 unsigned tp4lzxdec64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tp4dec(tmp, n, (unsigned char *)out, 8);
   bitxdec64(out, n/8, 0);
@@ -418,7 +417,6 @@ unsigned tp4lzzenc32(unsigned char *in, unsigned n, unsigned char *out, unsigned
 }
 
 unsigned tp4lzzdec32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tp4dec(tmp, n, (unsigned char *)out, 4);
   bitzdec32(out, n/4, 0);
@@ -432,7 +430,6 @@ unsigned tp4lzxenc32(unsigned char *in, unsigned n, unsigned char *out, unsigned
 }
 
 unsigned tp4lzxdec32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tp4dec(tmp, n, (unsigned char *)out, 4);
   bitxdec32(out, n/4, 0);
@@ -446,7 +443,6 @@ unsigned tp4lzzenc16(unsigned char *in, unsigned n, unsigned char *out, unsigned
 }
 
 unsigned tp4lzzdec16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tp4dec(tmp, n, (unsigned char *)out, 2);
   bitzdec16(out, n/2, 0);
@@ -460,7 +456,6 @@ unsigned tp4lzxenc16(unsigned char *in, unsigned n, unsigned char *out, unsigned
 }
 
 unsigned tp4lzxdec16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tp4dec(tmp, n, (unsigned char *)out, 2);
   bitxdec16(out, n/2, 0);
@@ -474,10 +469,9 @@ unsigned tplzenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esi
 }
 
 unsigned tplzdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   tpdec(tmp, n, (unsigned char *)out, esize);
-  return rc;
+  return n;
 }
 
   #ifdef BITSHUFFLE
@@ -490,10 +484,9 @@ unsigned bslzenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esi
 }
 
 unsigned bslzdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize, unsigned char *tmp) {
-  unsigned rc; 
   lzdecomp(in,n,tmp); 
   BITUNSHUFFLE(tmp, n, (unsigned char *)out, esize);
-  return rc;
+  return n;
 }
   #endif
 #endif
@@ -505,8 +498,7 @@ unsigned tp4bvzenc64(unsigned char *in, unsigned n, unsigned char *out, unsigned
 }
 
 unsigned tp4bvzdec64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  unsigned rc; 
-  bvzdec8(in, n, tmp, 0);
+  unsigned rc = bvzdec8(in, n, tmp, 0);
   tp4dec(tmp, n, out, 64/8);
   return n;
 }
@@ -519,7 +511,7 @@ unsigned tp4bvzenc32(unsigned char *in, unsigned n, unsigned char *out, unsigned
 unsigned tp4bvzdec32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *tmp) {
   unsigned rc = bvzdec8(in, n, tmp, 0);
   tp4dec(tmp, n, out, 32/8);
-  return n;
+  return rc;
 }
 
 size_t tp4bvzenc16(unsigned char *in, size_t n, unsigned char *out, unsigned char *tmp) {
