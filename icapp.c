@@ -238,7 +238,12 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
             if(keysep && strchr(keysep,*q)) keyid++;		                      
             q++;
           } while(*q && keyid != kid);
-        if(isize > 0) {                 
+        if(!isize) {
+          while(*p && !isdigit(*p)) p++;
+          if(*p) {
+            
+          }
+        } else if(isize > 0) {                 
           while(*p && !isdigit(*p) && *p != '-' && *p != '+') p++;
 		  uint64_t u = strtoll(p, &q, 10) - mdelta;
 		  if(*q == '.')
