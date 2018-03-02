@@ -202,7 +202,7 @@ enum {
 };
 
 #define PAD8(_x_) 		( (((_x_)+8-1)/8) )  
-#if !defined(NCODEC1) && !defined(NCODEC2)
+#if CODEC1==1 || CODEC2==1
 #include "ext/beplug_.h" // external libs
 #endif
 
@@ -313,7 +313,7 @@ struct plugs plugs[] = {
   { TB_FPDFOR64,	"FP_DFCM64", 		C_TURBOPFOR,	BLK_SIZE,0,"","Floating point PFOR (DFCM)" }, 
   { TB_PF64,		"TurboPFor64", 		C_TURBOPFOR,	BLK_V128,0,"","PFOR 64" }, 
   { TB_PF64V,		"TurboPFor64V",		C_TURBOPFOR,	BLK_V128,0,"","PFOR 64" }, 
-    #if !defined(NCODEC1) && !defined(NCODEC2)
+    #if CODEC1==1 || CODEC2==1
   #include "ext/beplugr_.h" // external libs
     #endif
   { -1 }
@@ -342,7 +342,7 @@ unsigned char sbuf[BLK_SIZE*2+1024];
 
 int codini(size_t insize, int codec) {
   switch(codec) {
-      #if !defined(NCODEC1) && !defined(NCODEC2)
+      #if CODEC1==1 || CODEC2==1
     #include "ext/beplugi_.c"
       #endif
   }
@@ -418,7 +418,7 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
     case TB_DDELTA32: bitddenc32(in, n, (unsigned *)out,  -mdelta, mdelta); return out + _n; 
     case TB_XOR32:    bitxenc32( in, n, (unsigned *)out,  -mdelta);         return out + _n; 
       #endif
-      #if !defined(NCODEC1) && !defined(NCODEC2)
+      #if CODEC1==1 || CODEC2==1
     #include "ext/beplugcs_.c"
       #endif
   }
@@ -491,7 +491,7 @@ unsigned char *coddecomps(unsigned char *in, unsigned _n, unsigned char *_out, i
     case TB_DDELTA32: memcpy(out, in, outlen); bitdddec32(out, n, -mdelta); return in + outlen;
     case TB_XOR32:    memcpy(out, in, outlen); bitxdec32(out, n, -mdelta); return in + outlen;
       #endif
-      #if !defined(NCODEC1) && !defined(NCODEC2)
+      #if CODEC1==1 || CODEC2==1
     #include "ext/beplugds_.c" 
       #endif
   } 
@@ -611,7 +611,7 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
 	case TB_FPDFOR64: ctou64(out) = ctou64(_in); return out+fpdfcmenc64((uint64_t *)(_in+8), PAD8(_n)-1, out+8, ctou64(_in));
     case TB_PF64:     return p4enc64((uint64_t *)in,   PAD8(_n), out);
     case TB_PF64V:    return p4enc128v64((uint64_t *)in,   PAD8(_n), out);
-      #if !defined(NCODEC1) && !defined(NCODEC2)
+      #if CODEC1==1 || CODEC2==1
     #include "ext/beplugc_.c"	  
       #endif
   }
@@ -671,7 +671,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
 	case TB_FPDFOR64: ctou64(_out) = ctou64(in); return in+fpdfcmdec64(in+8, PAD8(outlen)-1, (uint64_t *)(_out+8), ctou64(in));
     case TB_PF64:     return p4dec64(    in, PAD8(outlen), (uint64_t *)out);
     case TB_PF64V:    return p4dec128v64(in, PAD8(outlen), (uint64_t *)out);
-      #if !defined(NCODEC1) && !defined(NCODEC2)
+      #if CODEC1==1 || CODEC2==1
     #include "ext/beplugd_.c"	  
       #endif
   }
