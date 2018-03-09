@@ -39,6 +39,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
 ### Integer Compression Benchmark:
+- :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
+  for testing allmost all integer and floating point file types.
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
 - CPU: Skylake i7-6700 3.4GHz gcc 7.2 **single** thread 
 
@@ -430,5 +432,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  02 Mar 2018
+Last update:  09 Mar 2018
 
