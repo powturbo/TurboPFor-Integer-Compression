@@ -53,6 +53,10 @@
 #include "vint.c"
 #undef USIZE
 
+#define USIZE 8
+#include "vint.c"
+#undef USIZE
+
 #define VDELTA 1
 #define VBDENC    vbd1enc
 #define VBDDEC    vbd1dec
@@ -71,6 +75,9 @@
 #include "vint.c"
 #undef USIZE
 
+#define USIZE 8
+#include "vint.c"
+#undef USIZE
   #else
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
@@ -184,8 +191,8 @@ unsigned char *TEMPLATE2(vbzenc, USIZE)(uint_t *__restrict in, unsigned n, unsig
   unsigned char *op = out;
 
   #define VBZE { v = TEMPLATE2(zigzagenc, USIZE)((TEMPLATE3(int, USIZE, _t))(*ip)-(TEMPLATE3(int, USIZE, _t))start); start=*ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); }
-  for(ip = in; ip != in+(n&~(4-1)); ) { VBZE;VBZE;VBZE;VBZE; }
-  while(ip <  in+n) VBZE;						  //OVERFLOWE(in,n,out,op);
+  for(ip = in; ip != in+(n&~(UN-1)); ) { VBZE;VBZE;VBZE;VBZE; }
+  while(ip != in+n) VBZE;						  //OVERFLOWE(in,n,out,op);
   return op;
 }  
 #undef VBZE
