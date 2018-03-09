@@ -670,52 +670,25 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
   switch(id) {
     case  1: TMBENCH("",l=p4nenc16(        in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nenc16        ",p4ndec16(          out, m, cpy)   ,n); break;
     case  2: TMBENCH("",l=p4nenc128v16(    in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nenc128v16    ",p4ndec128v16(      out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case  3: TMBENCH("",l=p4nenc256v16(    in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nenc256v16    ",p4ndec256v16(      out, m, cpy)   ,n); break;
-      #endif
                                                                                                        
     case  4: TMBENCH("",l=p4ndenc16(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4ndenc16       ",p4nddec16(         out, m, cpy)   ,n); break;
-    case  5: TMBENCH("",l=p4ndenc128v16(   in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4ndenc128v16   ",p4nddec128v16(     out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case  6: TMBENCH("",l=p4ndenc256v16( in, m, out)  ,n);   	    pr(l,n); TMBENCH2("p4ndenc256v16 ", p4nddec256v16( out, m, cpy)   ,n); break;
-      #endif
                                                                                                        
     case  7: TMBENCH("",l=p4nd1enc16(      in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nd1enc16      ",p4nd1dec16(        out, m, cpy)   ,n); break;
-    case  8: TMBENCH("",l=p4nd1enc128v16(  in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nd1enc128v16  ",p4nd1dec128v16(    out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case  9: TMBENCH("",l=p4nd1enc256v16(  in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nd1enc256v16  ",p4nd1dec256v16(     out, m, cpy)   ,n); break;
-      #endif
 
     case 10: TMBENCH("",l=p4nzenc16(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nzenc16       ",p4nzdec16(         out, m, cpy)   ,n); break;
-    case 11: TMBENCH("",l=p4nzenc128v16(   in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nzenc128v16   ",p4nzdec128v16(     out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case 12: TMBENCH("",l=p4nzenc256v16(   in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nzenc256v16   ",p4nzdec256v16(     out, m, cpy)   ,n); break;
-      #endif
   //case 13: TMBENCH("",l=p4nsenc16(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nsenc16       ",p4nsdec16(         out, m, cpy)   ,n); break;
                                                                                                        
     case 20: TMBENCH("",l=bitnpack16(      in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnpack16      ",bitnunpack16(      out, m, cpy)   ,n); break;
     case 21: TMBENCH("",l=bitnpack128v16(  in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnpack128v16  ",bitnunpack128v16(  out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case 22: TMBENCH("",l=bitnpack256v16(  in, m, out)  ,n);   	    pr(l,n); TMBENCH2("bitnpack256v16  ",bitnunpack256v16(  out, m, cpy)   ,n); break;
-      #endif
                                                                                                        
     case 23: TMBENCH("",l=bitndpack16(     in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitndpack16     ",bitndunpack16(     out, m, cpy)   ,n); break;
     case 24: TMBENCH("",l=bitndpack128v16( in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitndpack128v16 ",bitndunpack128v16( out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case 25: TMBENCH("",l=bitndpack256v16( in, m, out)  ,n);        pr(l,n); TMBENCH2("bitndpack256v16 ",bitndunpack256v16( out, m, cpy)   ,n); break;
-      #endif 
                                                                                                         
     case 26: TMBENCH("",l=bitnd1pack16(    in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnd1pack16    ",bitnd1unpack16(    out, m, cpy)   ,n); break;
     case 27: TMBENCH("",l=bitnd1pack128v16(in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnd1pack128v16",bitnd1unpack128v16(out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case 28: TMBENCH("",l=bitnd1pack256v16(in, m, out)  ,n);   	    pr(l,n); TMBENCH2("bitnd1pack256v16",bitnd1unpack256v16(out, m, cpy)   ,n); break;
-      #endif
  
     case 29: TMBENCH("",l=bitnzpack16(     in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnzpack16     ",bitnzunpack16(     out, m, cpy)   ,n); break;
     case 30: TMBENCH("",l=bitnzpack128v16( in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnzpack128v16 ",bitnzunpack128v16( out, m, cpy)   ,n); break;
-	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case 31: TMBENCH("",l=bitnzpack256v16( in, m, out)  ,n);   	    pr(l,n); TMBENCH2("bitnzpack256v16 ",bitnzunpack256v16( out, m, cpy)   ,n); break;                                                                                                      
-      #endif     
       
     case 40: TMBENCH("",l=vbenc16(         in, m, out)-out,n);      pr(l,n); TMBENCH2("vbenc16         ",vbdec16(           out, m, cpy) ,n);   break; // TurboVbyte : variable byte
     case 41: TMBENCH("",l=vbzenc16(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc16        ",vbzdec16(          out, m, cpy,0) ,n); break; 
