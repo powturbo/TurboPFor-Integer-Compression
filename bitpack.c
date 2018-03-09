@@ -137,9 +137,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define _BITPACK_ bitepack
 #include "bitpack_.h"*/ 
 
-#define IP9(_ip_,_x_, _parm_) 	V = TEMPLATE2(zigzagenc, USIZE)((TEMPLATE3(int, USIZE, _t))IP(_ip_,_x_) - (TEMPLATE3(int, USIZE, _t))start); start = IP(_ip_,_x_)
+#define IP9(_ip_,_x_, _parm_) 	V = TEMPLATE2(zigzagenc, USIZE)(IP(_ip_,_x_) - start); start = IP(_ip_,_x_)
 #define IPV(_ip_,_x_) 			VX
-#define IPX(_ip_,_x_) 		   (V = TEMPLATE2(zigzagenc, USIZE)((TEMPLATE3(int, USIZE, _t))IP(_ip_,_x_) - (TEMPLATE3(int, USIZE, _t))start))
+#define IPX(_ip_,_x_) 		   (V = TEMPLATE2(zigzagenc, USIZE)(IP(_ip_,_x_) - start))
 #define IP16(_ip_,_x_, _parm_) 	start = IP(_ip_,_x_)
 #define IP32(_ip_,_x_, _parm_) 	start = IP(_ip_,_x_)
 #define IP64(_ip_,_x_, _parm_) 	start = IP(_ip_,_x_)
@@ -288,7 +288,7 @@ unsigned char *bitfpack128v32(unsigned       *__restrict in, unsigned n, unsigne
 #define IP32(ip, i, _iv_) _iv_
 unsigned char *bitd1pack128v16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(1); BITPACK128V16(in, b, out, sv); return pout; 
-}
+} 
 unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1); BITPACK128V32(in, b, out, sv); return pout; 
 }
@@ -305,10 +305,10 @@ unsigned char *bitf1pack128v32(unsigned       *__restrict in, unsigned n, unsign
 }
 
 #define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x16(v,_sv_); _sv_ = v; _iv_ = ZIGZAG128x16(_iv_)
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v; _iv_ = ZIGZAG128x32(_iv_)
 unsigned char *bitzpack128v16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(1); BITPACK128V16(in, b, out, sv); return pout; 
 }
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v; _iv_ = ZIGZAG128x32(_iv_)
 unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1); BITPACK128V32(in, b, out, sv); return pout; 
 }
@@ -328,7 +328,6 @@ size_t bitnzpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__rest
 
 size_t bitnfpack128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; _BITNDPACKV(in, n, out, 128, 16, bitf,  bitfpack128v,  bitfpack); } 
 size_t bitnfpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; _BITNDPACKV(in, n, out, 128, 32, bitf,  bitfpack128v,  bitfpack); } 
-
 #endif
 
 #if defined(__AVX2__) && defined(AVX2_ON)
