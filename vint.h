@@ -158,6 +158,10 @@ extern unsigned char _vtab32_[];
 #define _vbput16(_op_, _x_, _act_) _vbput32(_op_, _x_, _act_)
 #define _vbget16(_ip_, _x_, _act_) _vbget32(_ip_, _x_, _act_)
 
+#define _vblen8(_x_) 1 
+#define _vbvlen8(_x_) 1
+#define _vbput8(_op_, _x_, _act_) { *_op_++ = _x_; _act_; }
+#define _vbget8(_ip_, _x_, _act_) { _x_ = *_ip_++; _act_; }
 //----------------------------------- Variable byte: single value functions -----------------------------------------------
 // ---- Variable byte length after compression
 static inline unsigned vblen16(unsigned short x) { return _vblen16(x); }
@@ -246,10 +250,12 @@ unsigned vbd1getgeq32( unsigned char **__restrict in, unsigned n, unsigned idx, 
 unsigned vbd1getgeq64( unsigned char **__restrict in, unsigned n, unsigned idx, uint64_t       *key, uint64_t       start);
 
 //---------------------- Zigzag encoding/decoding for unsorted integer lists.
+unsigned char *vbzenc8(  unsigned char  *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned char start);
 unsigned char *vbzenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *vbzenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
 unsigned char *vbzenc64( uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
 
+unsigned char *vbzdec8(  unsigned char  *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned char  start);
 unsigned char *vbzdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 unsigned char *vbzdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 unsigned char *vbzdec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
