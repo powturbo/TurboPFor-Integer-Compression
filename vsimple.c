@@ -36,10 +36,13 @@
   #ifndef SV_LIM32
 #define USE_RLE
 
-                                     //   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32 
+                                         //   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32 
+#define SV_LIM8  unsigned char s_lim8[]  = {  0, 28, 28, 28, 28, 36, 36, 36, 36,  0 };
+#define SV_ITM8  unsigned      s_itm8[]  = {  0, 28, 14,  9,  7,  7,  6,  5,  4, -1 }
+#define SV_LIM16 unsigned char s_lim16[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 0 };
+#define SV_ITM16 unsigned      s_itm16[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3, -1 }
 #define SV_LIM32 unsigned char s_lim32[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 0 };
 #define SV_ITM32 unsigned      s_itm32[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1, -1 }
-
 
 #define SV_LIM64 unsigned char s_lim64[] = {  0, 28, 28, 28, 28, 36, 36, 36, 36, 36, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,\
                                              60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 64, 64, 64, 64, 64, 64, 64, 64, 0 };
@@ -47,10 +50,12 @@
 #define SV_ITM64 unsigned      s_itm64[] = {  0, 28, 14,  9,  7,  7,  6,  5,  4,  4,  6,  5,  5,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,\
                                               1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, -1 }
 
+static SV_LIM8;
+static SV_ITM8;
+static SV_LIM16;
+static SV_ITM16;
 static SV_LIM32;
 static SV_ITM32;
-#define s_lim16 s_lim32
-#define s_itm16 s_itm32
 static SV_ITM64;
 static SV_LIM64;
 
@@ -60,6 +65,11 @@ static SV_LIM64;
 
 #define VSENC vsenc
 #define VSDEC vsdec
+
+#define USIZE 8
+#include "vsimple.c"
+#undef USIZE
+
 #define USIZE 16
 #include "vsimple.c"
 #undef USIZE
@@ -83,10 +93,11 @@ static SV_LIM64;
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
-unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned char *__restrict op) {
+unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict op) {
   unsigned xm,m,r,x; 
-  uint_t *e = in+n,*ip;
+  uint_t *e = in+n,*ip,*sp;
   for(ip = in; ip < e; ) { 										__builtin_prefetch(ip+64, 0);
+    sp = ip;
       #ifdef USE_RLE 
     if(ip+4 < e && *ip == *(ip+1)) { 
       uint_t *q = ip+1; 
@@ -247,18 +258,15 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         (uint64_t)ip[ 3] << 49; 	ip += 4; op += 8;
         break;
       case 16:
-        #if USIZE > 16
       case 17:      
       case 18:
       case 19:      
       case 20: 
-        #endif
         ctou64(op) =        11 |
         (unsigned)ip[ 0] <<  4 | 
         (uint64_t)ip[ 1] << 24 |
         (uint64_t)ip[ 2] << 44; 	ip += 3; op += 8;
         break;
-        #if USIZE > 16
       case 21:
       case 22:      
       case 23:
@@ -275,18 +283,17 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         break;
       case 31:
       case 32:
-          #if USIZE == 64
+        #if USIZE == 64
       case 33: case 34: case 35: case 36:
-          #endif
+        #endif
         ctou64(op) =   14 |
         (uint64_t)ip[ 0] <<  4; 	ip++;    op += 5;
         break;
-          #if USIZE == 64
+        #if USIZE == 64
       default: xm = (m+7)/8;        
         *op++ =   0x17 | (xm-1) << 5;
         ctou64(op) = (uint64_t)ip[ 0]; ip++;   op += xm; 
         break;
-          #endif
         #endif
         #ifdef USE_RLE 
       case USIZE<=32?33:65: 		ip += r;
@@ -301,7 +308,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
         break;
         #endif
 
-    }    
+    } 
   } 
   return op;   
 }
@@ -311,7 +318,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, int n, unsigned ch
 #define OP(__x) op[__x] // *op++ //
 #define OPI(__x) op+=__x// //
 
-unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, int n, uint_t *__restrict op) { 
+unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, uint_t *__restrict op) { 
   uint_t *op_ = op+n;
   while(op < op_) { 
     uint64_t w = *(uint64_t *)ip; 												__builtin_prefetch(ip+64, 0);
