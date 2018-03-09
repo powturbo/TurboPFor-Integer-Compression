@@ -248,11 +248,6 @@ endif
 
 endif
 
-ifeq ($(LZTURBO),1)
-DEFS+=-DLZTURBO
-OB+=../dev/lz/lz8c.o ../dev/lz/lzbc.o 
-endif
-
 OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
 ifeq ($(AVX2),1)
 OB+=transpose_avx2.o 
@@ -260,6 +255,14 @@ endif
 
 #------------------------
 ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o ext/trlec.o ext/trled.o
+
+ifeq ($(LZTURBO),1)
+DEFS+=-DLZTURBO
+OB+=../dev/lz/lz8c.o ../dev/lz/lzbc01.o ../lz/lz8c.o 
+#../lz/lzbc.o ../lz/lz8d.o ../lz/lzbd.o
+ICLIB+=../lz/lz8c0.o ../lz/lzbc0.o ../lz/lz8d.o 
+#../lz/lzbd.o
+endif
 
 ifeq ($(LZ4),1)
 ICLIB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o
