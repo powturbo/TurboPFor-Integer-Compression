@@ -52,7 +52,7 @@
 #define BITSIZE64(_in_, _n_, _b_) BITSIZE_(_in_, _n_, _b_, 64)
 
 static inline unsigned char      zigzagenc8( char           x) { return x << 1 ^   x >> 7; }
-static inline          char      zigzagdec8( unsigned char  x) { return x >> 1 ^ -(x &   1); }
+static inline          char      zigzagdec8( unsigned char  x) { return x >> 1 ^ -(x &  1); }
 
 static inline unsigned short     zigzagenc16(short          x) { return x << 1 ^   x >> 15; }
 static inline          short     zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
@@ -94,6 +94,7 @@ static inline  int64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
 #include <tmmintrin.h>
 #define DELTA128x16(_v_, _sv_) _mm_sub_epi16(_v_, _mm_alignr_epi8(_v_, _sv_, 14))
 #define DELTA128x32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_alignr_epi8(_v_, _sv_, 12))
+
 // SIMD Scan ( prefix sum ) 
 #define SCAN128x16( _v_, _sv_) {\
   _v_  = _mm_add_epi16(_v_, _mm_slli_si128(_v_, 2));\
