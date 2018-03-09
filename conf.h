@@ -125,7 +125,7 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define bsr16(_x_) bsr32(_x_)
 #define ctz8(_x_)  ctz32(_x_)
 #define ctz16(_x_) ctz32(_x_)
-#define clz8(_x_)  (clz32(_x_)-8)
+#define clz8(_x_)  (clz32(_x_)-24)
 #define clz16(_x_) (clz32(_x_)-16)
 
 #define BZHI32(_u_, _b_) ((_u_) & ((1u  <<(_b_))-1))
