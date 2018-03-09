@@ -117,23 +117,7 @@ extern char _shuffle_16[256][16];
 #include "vp4d.c"
 #define USIZE 64
 #include "vp4d.c"
-
-#define _P4DEC      _p4dddec        //deltaOfdelta
-#define  P4DEC       p4dddec
-#define  P4NDEC      p4ndddec
-#define  P4NDECS     p4dddec
-#define  BITUNPACKD  bitddunpack
-#define _BITUNPACKD  bitddunpack
-#define  BITUNDD     bitdddec
-#define USIZE 8
-#include "vp4d.c"
-#define USIZE 16
-#include "vp4d.c"
-#define USIZE 32
-#include "vp4d.c"
-#define USIZE 64
-#include "vp4d.c"
-                        
+                       
 #undef _P4DEC
 #undef  P4DEC
 #undef  BITUNPACK
@@ -344,9 +328,38 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     }	
       #else
     { unsigned k = 0; 
-      uint_t *op;
-      for(op=out,i = 0; i < p4dn; i++,op += 64)
+      uint_t *op,*p;
+      for(op=out,i = 0; i < p4dn; i++,op += 64) {
+		  #if 1 // faster
 	    while(bb[i]) { unsigned x = ctz64(bb[i]); op[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); }
+		  #else
+		unsigned long long u = bb[i]; p = op;
+		#define OP(_i_) p[_i_] += ex[k++]<<b;
+		while(u) {
+		  unsigned x = ctz64(u); u >>= x; p+=x; 
+		  switch(u&0xf) {
+			case  0:                             break; //0000
+			case  1:                      OP(0); break; //0001
+			case  2:               OP(1);        break; //0010
+			case  3:               OP(1); OP(0); break; //0011
+			case  4:        OP(2);               break; //0100
+			case  5:        OP(2);        OP(0); break; //0101
+			case  6:        OP(2); OP(1);        break; //0110
+			case  7:        OP(2); OP(1); OP(0); break; //0111
+			case  8: OP(3);                      break; //1000
+			case  9: OP(3);               OP(0); break; //1001
+			case 10: OP(3);        OP(1);        break; //1010
+			case 11: OP(3);        OP(1); OP(0); break; //1011
+			case 12: OP(3); OP(2);               break; //1100
+			case 13: OP(3); OP(2);        OP(0); break; //1101
+			case 14: OP(3); OP(2); OP(1);        break; //1110
+			case 15: OP(3); OP(2); OP(1); OP(0); break; //1111
+		  }
+		  u >>= 4;
+		  p += 4;
+		}
+        #endif
+	  }
     }
       #endif
   }
