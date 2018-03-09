@@ -46,7 +46,6 @@
 #define _bzhi_u32(_u_, _b_)              ((_u_) & ((1u  <<(_b_))-1))
   #endif
 
-#define bitpeek32(  _bw_,_br_,_nb_)      _bzhi_u32(_bw_>>_br_, _nb_)
 #define bitpeek64(  _bw_,_br_,_nb_)      _bzhi_u64(_bw_>>_br_, _nb_)
 #define bitpeek(    _bw_,_br_)           (_bw_>>_br_)
 #define bitrmv(     _bw_,_br_,_nb_)      _br_ += _nb_
@@ -64,7 +63,7 @@
 #define bitget16(bw,br,_b_,_x_,_ip_) bitget(bw,br,_b_,_x_)
 #define bitget32(bw,br,_b_,_x_,_ip_) bitget(bw,br,_b_,_x_)
 #define bitget64(bw,br,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget(bw,br,(_b_)-32,_x_); bitdnorm(bw,br,_ip_); bitget(bw,br,32,_v); _x_ = _x_<<32|_v; } else bitget(bw,br,_b_,_x_)
-	
+
 //-------------------------------
 #define VSIZE 128
 
@@ -290,7 +289,7 @@ size_t TEMPLATE2(fpgenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t 
   if(start) { ol = TEMPLATE2(clz,USIZE)(start); ot = TEMPLATE2(ctz,USIZE)(start); }
   
   #define FE(i,_usize_) { TEMPLATE3(uint, _usize_, _t) z = XENC(ip[i], start,_usize_); start = ip[i];\
-    if(likely(!z))             bitput( bw,br, 1, 1);\
+    if(likely(!z))                           bitput( bw,br, 1, 1);\
     else { unsigned t = TEMPLATE2(ctz,_usize_)(z), l = TEMPLATE2(clz,_usize_)(z); /*l = l>31?31:l;*/\
 	  unsigned s = _usize_ - l - t, os = _usize_ - ol - ot;\
       if(l >= ol && t >= ot && os < 6+5+s) { bitput( bw,br, 2, 2);                                   z>>=ot;                    TEMPLATE2(bitput,_usize_)(bw,br, os, z,op); }\
@@ -298,7 +297,7 @@ size_t TEMPLATE2(fpgenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t 
     } bitenorm(bw,br,op);\
   }
   for(ip = in; ip != in + (n&~(4-1)); ip+=4) { __builtin_prefetch(ip+512, 0); FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
-  for(       ; ip != in +  n        ; ip++ ) FE(0,USIZE); 
+  for(       ; ip != in +  n        ; ip++) FE(0,USIZE); 
   bitflush(bw,br,op);
   return op - out;
 }
@@ -521,4 +520,4 @@ size_t TEMPLATE2(bvzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
 }
 #undef USIZE
   #endif
-  
+
