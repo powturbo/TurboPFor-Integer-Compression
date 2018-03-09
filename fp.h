@@ -51,7 +51,7 @@ size_t fpzzdec32(   unsigned char *in, size_t n, uint32_t      *out, uint32_t st
 size_t fpzzenc64(   uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
 size_t fpzzdec64(   unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
-// improved gorilla style+RLE w/ bit/io
+// Improved gorilla style + RLE w/ bit/io
 size_t fpgenc8(     uint8_t       *in, size_t n, unsigned char *out, uint8_t  start);
 size_t fpgdec8(     unsigned char *in, size_t n, uint8_t       *out, uint8_t  start);
 size_t fpgenc16(    uint16_t      *in, size_t n, unsigned char *out, uint16_t start);
@@ -60,7 +60,6 @@ size_t fpgenc32(    uint32_t      *in, size_t n, unsigned char *out, uint32_t st
 size_t fpgdec32(    unsigned char *in, size_t n, uint32_t      *out, uint32_t start);
 size_t fpgenc64(    uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
 size_t fpgdec64(    unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
-
 //---- Zigzag w/ bit/io
 size_t bvzenc8(     uint8_t       *in, size_t n, unsigned char *out, uint8_t  start);
 size_t bvzdec8(     unsigned char *in, size_t n, uint8_t       *out, uint8_t  start);
@@ -100,7 +99,7 @@ size_t fpdfcmdec32( unsigned char *in, size_t n, uint32_t      *out, uint32_t st
 size_t fpdfcmenc64( uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
 size_t fpdfcmdec64( unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
-// 
+// 2D DFCM
 size_t fp2dfcmenc8( uint8_t       *in, size_t n, unsigned char *out, uint8_t  start);
 size_t fp2dfcmdec8( unsigned char *in, size_t n, uint8_t       *out, uint8_t  start);
 size_t fp2dfcmenc16(uint16_t      *in, size_t n, unsigned char *out, uint16_t start);
