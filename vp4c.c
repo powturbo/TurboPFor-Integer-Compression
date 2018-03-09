@@ -95,20 +95,6 @@
 #define USIZE 64
 #include "vp4c.c"
 
-#define  BITDELTA bitddenc
-#define P4DELTA 0  // p4dd functions
-#define  P4DENC   p4ddenc
-#define  P4NENC   p4nddenc
-#define  P4NENCS  p4ddenc
-#define USIZE 8
-#include "vp4c.c"
-#define USIZE 16
-#include "vp4c.c"
-#define USIZE 32
-#include "vp4c.c"
-#define USIZE 64
-#include "vp4c.c"
-
 #undef P4DELTA
 #define  BITDELTA bitdienc
 
@@ -218,8 +204,8 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
 #include "vp4c.c"
 #define USIZE 32
 #include "vp4c.c"
-#define  BITDELTA bitdienc
 
+#define  BITDELTA bitdienc
 #undef P4DELTA
 
 #undef  _P4ENC    
