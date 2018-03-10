@@ -268,7 +268,7 @@ size_t TEMPLATE2(fp2dfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uin
   return ip - in;
 }
 
-// Improved Gorilla (see Facebook paper) style Floating point/Integer compression + RLE in time series.
+// Improved Gorilla (see Facebook paper) style Floating point compression + RLE in time series.
 #define bitput2(bw,br, _n1_, _n2_, _x_) {\
 	       if(!_x_)                  bitput(bw,br,      1,       1);/*1*/\
       else if( _x_ < (1<< (_n1_-1))) bitput(bw,br, _n1_+2,_x_<<2|2);/*10*/\
@@ -518,6 +518,7 @@ size_t TEMPLATE2(bvzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
   bitalign(bw,br,ip);
   return ip - in;
 }
+
 #undef USIZE
   #endif
 
