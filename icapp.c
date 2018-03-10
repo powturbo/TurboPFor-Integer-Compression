@@ -331,7 +331,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 static int mcpy=1, cmp=2;
 
-#define CBUF(_n_) (((size_t)(_n_))*4/3+1024)
+#define CBUF(_n_) (((size_t)(_n_))*5/3+1024)
 int memcheck(unsigned char *in, unsigned n, unsigned char *cpy) { 
   int i;
   if(cmp <= 1) return 0;
@@ -688,11 +688,11 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 27: TMBENCH("",l=bitnd1pack128v16(in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnd1pack128v16",bitnd1unpack128v16(out, m, cpy)   ,n); break;
  
     case 29: TMBENCH("",l=bitnzpack16(     in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnzpack16     ",bitnzunpack16(     out, m, cpy)   ,n); break;
-    case 30: TMBENCH("",l=bitnzpack128v16( in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnzpack128v16 ",bitnzunpack128v16( out, m, cpy)   ,n); break;
+    case 30: TMBENCH("",l=bitnzpack128v16( in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnzpack128v16 ",bitnzunpack128v16( out, m, cpy)   ,n); break; 
       
     case 40: TMBENCH("",l=vbenc16(         in, m, out)-out,n);      pr(l,n); TMBENCH2("vbenc16         ",vbdec16(           out, m, cpy) ,n);   break; // TurboVbyte : variable byte
     case 41: TMBENCH("",l=vbzenc16(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc16        ",vbzdec16(          out, m, cpy,0) ,n); break; 
-  //case 41: TMBENCH("",l=vbddenc16(       in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbddenc16       ",vbdddec16(         out, m, cpy,0) ,n); break;     	  
+ // case 41: TMBENCH("",l=vbddenc16(       in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbddenc16       ",vbdddec16(         out, m, cpy,0) ,n); break;     	  
     case 42: TMBENCH("",l=vsenc16(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc16         ",vsdec16(           out, m, cpy) ,n); break;   // vsimple : variable simple
 	   
     case 50: TMBENCH("",l=bvzzenc16(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc16       ",bvzzdec16(         out, m, cpy,0) ,n); break; // bitio	
