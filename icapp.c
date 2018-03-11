@@ -222,24 +222,24 @@ uint64_t strtots(char *p, char **pq) {
   
   if(     u <= 99) u += 2000; 
   else if(u >= 19710101 && u < 20381212) { 
-    tm.tm_year = u/10000;
-	tm.tm_mon  = (u%1000)/100; if(!tm.tm_mon || tm.tm_mon > 12) goto a; tm.tm_mon--;
-	tm.tm_mday = u%10;         if(!tm.tm_mday || tm.tm_mday > 31) goto a; 
+    tm.tm_year =  u/10000; 
+	tm.tm_mon  = (u%10000)/100; if(!tm.tm_mon || tm.tm_mon > 12) goto a; tm.tm_mon--;
+	tm.tm_mday = u%10;          if(!tm.tm_mday || tm.tm_mday > 31) goto a; 
 	goto h;
   } else if(u < 1971 || u > 2099) goto a; 
   tm.tm_year = u;                             
   c = *p;  
-  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mon  = strtoul(p+1, &p, 10); if(!tm.tm_mon || tm.tm_mon > 12) goto a; tm.tm_mon--; 
-  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mday = strtoul(p+1, &p, 10); if(!tm.tm_mday || tm.tm_mday > 31) goto a;
-  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_hour = strtoul(p+1, &p, 10); 			//  printf("'%.20s'->[%d.%d.%d %.2d", s, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour);
-  h:if(tm.tm_hour <= 24 && *p == ':') {
-	tm.tm_min = strtoul(p+1, &p, 10); if(tm.tm_min  > 60) tm.tm_hour = tm.tm_min = 0;
-	tm.tm_sec = strtoul(p+1, &p, 10); if(tm.tm_sec  > 60) tm.tm_hour = tm.tm_min = tm.tm_sec = 0;
+  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mon    = strtoul(p+1, &p, 10); if(!tm.tm_mon  || tm.tm_mon  > 12) goto a; tm.tm_mon--; 
+  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mday   = strtoul(p+1, &p, 10); if(!tm.tm_mday || tm.tm_mday > 31) goto a;
+  if(c != '.' && c != '-' && c != '/') goto b; h:tm.tm_hour = strtoul(p+1, &p, 10);
+  if(tm.tm_hour <= 24 && *p == ':') {
+	tm.tm_min = strtoul(p+1, &p, 10); if(tm.tm_min > 60) tm.tm_hour = tm.tm_min = 0;
+	tm.tm_sec = strtoul(p+1, &p, 10); if(tm.tm_sec > 60) tm.tm_hour = tm.tm_min = tm.tm_sec = 0;  
 	if(*p == '.' || *p == ',') { frac = strtoul(p+1, &p, 10); if((c=p-(p+1)) > 6) frac /= 1000000;else if(c > 3) frac /= 1000; } 
   } else tm.tm_hour = 0;
-  b:u = mktime(&tm);  																		//printf(":%.2d:%.2d]\n ", tm.tm_min, tm.tm_sec);
+  b:u = mktime(&tm);  																		
   u = u * 1000 + frac;  // Milliseconds
-  a:*pq = p;
+  a:*pq = p;                                               //if(verbose > 5) printf("[%d-%d-%d %.2d:%.2d:%.2d.%d]\n", tm.tm_year, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, frac, u);exit(0);
   return u;
 }
 
@@ -389,6 +389,11 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
   
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
 
+#define RLE8  0xdau 
+#define RLE16 0xdadau 
+#define RLE32 0xdadadadau 
+#define RLE64 0xdadadadadadadadaull 
+
 #ifdef USE_LZ
 unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if(!n) return 0;
   unsigned outsize = CBUF(n);
@@ -422,6 +427,61 @@ unsigned lzdecomp(unsigned char *in, unsigned n, unsigned char *out) { if(!n) re
     #else
   LZ4_decompress_fast((char *)(in+0), (char *)out, n/*, CBUF(n)*/);
 	#endif
+}
+
+unsigned trlezc(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp) {
+  bitzenc8(in, n, tmp, 0, 0);
+  return trlec(tmp, n, out);
+}
+
+unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) {
+  trled(in, inlen, out, n); 
+  bitzdec8(out, n, 0);
+  return n;
+}
+
+unsigned srlezc8(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint8_t e) {
+  bitzenc8(in, n/(8/8), tmp, 0, 0); CPYR(in,n,8/8,tmp);
+  return srlec8(tmp, n, out, e);
+}
+
+unsigned srlezd8(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint8_t e) {
+  srled8(in,inlen,out, n, e); 
+  bitzdec8(out, n/(8/8), 0);
+  return n;
+}
+
+unsigned srlezc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint16_t e) {
+  bitzenc16(in, n/(16/8), tmp, 0, 0); CPYR(in,n,16/8,tmp);
+  return srlec16(tmp, n, out, e);
+}
+
+unsigned srlezd16(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint16_t e) {
+  srled16(in,inlen,out, n, e); 
+  bitzdec16(out, n/(16/8), 0);
+  return n;
+}
+
+unsigned srlezc32(uint32_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint32_t e) {
+  bitzenc32(in, n/(32/8), tmp, 0, 0); CPYR(in,n,32/8,tmp);
+  return srlec32(tmp, n, out, e);
+}
+
+unsigned srlezd32(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint32_t e) {
+  srled32(in,inlen,out, n, e); 
+  bitzdec32(out, n/(32/8), 0);
+  return n;
+}
+
+unsigned srlezc64(uint64_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint64_t e) {
+  bitzenc64(in, n/(64/8), tmp, 0, 0); CPYR(in,n,64/8,tmp);
+  return srlec64(tmp, n, out, e);
+}
+
+unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint64_t e) {
+  srled64(in,inlen,out, n, e); 
+  bitzdec64(out, n/(64/8), 0);
+  return n;
 }
 
   #ifdef USE_SSE
@@ -606,7 +666,7 @@ size_t spdpdec(unsigned char *in, size_t n, unsigned char *out, unsigned bsize, 
 unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(8/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=70 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -640,8 +700,10 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 57: TMBENCH("",l=fpdfcmenc8(     in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpdfcmenc8     ",fpdfcmdec8(       out, m, cpy,0) ,n); break;
     case 58: TMBENCH("",l=fp2dfcmenc8(    in, m, out,0),n); 	    pr(l,n); TMBENCH2("fp2dfcmenc8    ",fp2dfcmdec8(      out, m, cpy,0) ,n); break;
 
-    case 60: TMBENCH("",l=trlec(           in, n,out)   ,n);        pr(l,n); TMBENCH2("trle           ",trled(            out,l,cpy, n)          ,n);break;  // TurboRLE
-    case 61: TMBENCH("",l=srlec8(         in, n,out,0xdadadadau),n);pr(l,n); TMBENCH2("srle8          ",srled8(           out,l,cpy, n,0xdadadadau),n);break;
+    case 60: TMBENCH("",l=trlec(           in, n,out),n);           pr(l,n); TMBENCH2("trle           ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
+    case 61: TMBENCH("",l=trlezc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2("trlez          ",trlezd(            out,l,cpy, n),n);      break;  
+    case 62: TMBENCH("",l=srlec8(         in, n,out,RLE8),n);       pr(l,n); TMBENCH2("srle8          ",srled8(           out,l,cpy, n,RLE8),n);break;
+    case 63: TMBENCH("",l=srlezc8(        in, n,out,tmp,RLE8),n);   pr(l,n); TMBENCH2("srlez8         ",srlezd8(          out,l,cpy, n,RLE8),n);break;
       #ifdef USE_LZ
     case 71: TMBENCH("",l=tp4lzenc(   in, n,out,8/8,tmp,lev) ,n);   pr(l,n); TMBENCH2("tpnibble+lz    ",tp4lzdec(         out,n,cpy,8/8,tmp) ,n); break;
     case 72: TMBENCH("",l=tp4lzzenc8(in, n,out,     tmp,lev) ,n);   pr(l,n); TMBENCH2("tpnibbleZ+lz   ",tp4lzzdec8(       out,n,cpy,     tmp) ,n); break;
@@ -664,7 +726,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(16/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=70 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -672,10 +734,13 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case  2: TMBENCH("",l=p4nenc128v16(    in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nenc128v16    ",p4ndec128v16(      out, m, cpy)   ,n); break;
                                                                                                        
     case  4: TMBENCH("",l=p4ndenc16(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4ndenc16       ",p4nddec16(         out, m, cpy)   ,n); break;
+    case  5: TMBENCH("",l=p4ndenc128v16(   in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4ndenc128v16   ",p4nddec128v16(     out, m, cpy)   ,n); break;
                                                                                                        
     case  7: TMBENCH("",l=p4nd1enc16(      in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nd1enc16      ",p4nd1dec16(        out, m, cpy)   ,n); break;
+    case  8: TMBENCH("",l=p4nd1enc128v16(  in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nd1enc128v16  ",p4nd1dec128v16(    out, m, cpy)   ,n); break;
 
     case 10: TMBENCH("",l=p4nzenc16(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nzenc16       ",p4nzdec16(         out, m, cpy)   ,n); break;
+    case 11: TMBENCH("",l=p4nzenc128v16(   in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nzenc128v16   ",p4nzdec128v16(     out, m, cpy)   ,n); break;
   //case 13: TMBENCH("",l=p4nsenc16(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nsenc16       ",p4nsdec16(         out, m, cpy)   ,n); break;
                                                                                                        
     case 20: TMBENCH("",l=bitnpack16(      in, m, out)  ,n);	    pr(l,n); TMBENCH2("bitnpack16      ",bitnunpack16(      out, m, cpy)   ,n); break;
@@ -704,8 +769,10 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 57: TMBENCH("",l=fpdfcmenc16(     in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpdfcmenc16     ",fpdfcmdec16(       out, m, cpy,0) ,n); break;
     case 58: TMBENCH("",l=fp2dfcmenc16(    in, m, out,0),n); 	    pr(l,n); TMBENCH2("fp2dfcmenc16    ",fp2dfcmdec16(      out, m, cpy,0) ,n); break;
 
-    case 60: TMBENCH("",l=trlec(           in, n,out)   ,n);        pr(l,n); TMBENCH2("trle            ",trled(          out,l,cpy, n)          ,n);break;  // TurboRLE
-    case 61: TMBENCH("",l=srlec16(         in, n,out,0xdadadadau),n);pr(l,n);TMBENCH2("srle16          ",srled16(          out,l,cpy, n,0xdadadadau),n);break;
+    case 60: TMBENCH("",l=trlec(           in, n,out),n);           pr(l,n); TMBENCH2("trle            ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
+    case 61: TMBENCH("",l=trlezc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2("trlez           ",trlezd(            out,l,cpy, n),n);      break;  
+    case 62: TMBENCH("",l=srlec16(         in, n,out,RLE16),n);     pr(l,n); TMBENCH2("srle16          ",srled16(           out,l,cpy, n,RLE16),n);break;
+    case 63: TMBENCH("",l=srlezc16(        in, n,out,tmp,RLE16),n); pr(l,n); TMBENCH2("srlez16         ",srlezd16(          out,l,cpy, n,RLE16),n);break;
       #ifdef USE_LZ
     case 69: TMBENCH("",l=spdpenc(in,m*(16/8),out,SPDP_BSIZE,lev),n);pr(l,n);TMBENCH2("SPDP            ",spdpdec(           out, m*(16/8), cpy,SPDP_BSIZE,lev); ,n); break;
     case 70: TMBENCH("",l=tplzenc(    in, n,out,16/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpbyte+lz       ",tplzdec(          out,n,cpy,16/8,tmp) ,n); break;
@@ -730,7 +797,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(32/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=70 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -796,8 +863,10 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 57: TMBENCH("",l=fpdfcmenc32(     in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpdfcmenc32     ",fpdfcmdec32(       out, m, cpy,0) ,n); break;
     case 58: TMBENCH("",l=fp2dfcmenc32(    in, m, out,0),n); 	    pr(l,n); TMBENCH2("fp2dfcmenc32    ",fp2dfcmdec32(      out, m, cpy,0) ,n); break;
 
-    case 60: TMBENCH("",l=trlec(           in, n,out)   ,n);        pr(l,n); TMBENCH2("trle            ",trled(             out,l,cpy, n)          ,n);break;  // TurboRLE
-    case 61: TMBENCH("",l=srlec32(         in, n,out,0xdadadadau),n);pr(l,n);TMBENCH2("srle32          ",srled32(           out,l,cpy, n,0xdadadadau),n);break;
+    case 60: TMBENCH("",l=trlec(           in, n,out),n);           pr(l,n); TMBENCH2("trle            ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
+    case 61: TMBENCH("",l=trlezc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2("trlez           ",trlezd(            out,l,cpy, n),n);      break;  
+    case 62: TMBENCH("",l=srlec32(         in, n,out,RLE32),n);     pr(l,n); TMBENCH2("srle32          ",srled32(           out,l,cpy, n,RLE32),n);break;
+    case 63: TMBENCH("",l=srlezc32(        in, n,out,tmp,RLE32),n); pr(l,n); TMBENCH2("srlez32         ",srlezd32(          out,l,cpy, n,RLE32),n);break;
       #ifdef USE_LZ
     case 69: TMBENCH("",l=spdpenc(in,m*(32/8),out,SPDP_BSIZE,lev),n);pr(l,n);TMBENCH2("SPDP            ",spdpdec(           out, m*(32/8), cpy,SPDP_BSIZE,lev); ,n); break;
     case 70: TMBENCH("",l=tplzenc(    in, n,out,32/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpbyte+lz       ",tplzdec(           out,n,cpy,32/8,tmp) ,n); break;
@@ -822,7 +891,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(64/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=70 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -858,8 +927,10 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 57: TMBENCH("",l=fpdfcmenc64(     in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpdfcmenc64     ",fpdfcmdec64(       out, m, cpy,0) ,n); break;
     case 58: TMBENCH("",l=fp2dfcmenc64(    in, m, out,0),n); 	    pr(l,n); TMBENCH2("fp2dfcmenc64    ",fp2dfcmdec64(      out, m, cpy,0) ,n); break;
 
-    case 60: TMBENCH("",l=trlec(           in, n,out)   ,n);        pr(l,n); TMBENCH2("trle            ",trled(          out,l,cpy, n)          ,n);break;  // TurboRLE
-    case 61: TMBENCH("",l=srlec64(         in, n,out,0xdadadadau),n);pr(l,n); TMBENCH2("srle64       ",srled64(          out,l,cpy, n,0xdadadadau),n);break;
+    case 60: TMBENCH("",l=trlec(           in, n,out),n);           pr(l,n); TMBENCH2("trle            ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
+    case 61: TMBENCH("",l=trlezc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2("trlez           ",trlezd(            out,l,cpy, n),n);      break;  
+    case 62: TMBENCH("",l=srlec64(         in, n,out,RLE64),n);     pr(l,n); TMBENCH2("srle64          ",srled64(           out,l,cpy, n,RLE64),n);break;
+    case 63: TMBENCH("",l=srlezc64(        in, n,out,tmp,RLE64),n); pr(l,n); TMBENCH2("srlez64         ",srlezd64(          out,l,cpy, n,RLE64),n);break;
       #ifdef USE_LZ
     case 69: TMBENCH("",l=spdpenc(in,m*(64/8),out,SPDP_BSIZE,lev), n);pr(l,n);TMBENCH2("SPDP           ",spdpdec(           out, m*(64/8), cpy,SPDP_BSIZE,lev); ,n); break;
     case 70: TMBENCH("",l=tplzenc(    in, n,out,64/8,tmp,lev) ,n); pr(l,n); TMBENCH2("tpbyte+lz      ",tplzdec(          out,n,cpy,64/8,tmp) ,n); break;
