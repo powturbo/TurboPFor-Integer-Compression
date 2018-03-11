@@ -521,4 +521,3 @@ size_t TEMPLATE2(bvzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
 
 #undef USIZE
   #endif
-
