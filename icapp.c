@@ -389,46 +389,11 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
   
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
 
+//------------------ RLE -------------------------
 #define RLE8  0xdau 
 #define RLE16 0xdadau 
 #define RLE32 0xdadadadau 
 #define RLE64 0xdadadadadadadadaull 
-
-#ifdef USE_LZ
-unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if(!n) return 0;
-  unsigned outsize = CBUF(n);
-    #ifdef LZTURBO
-  struct lzobj lz; lz.srclen = n; lz.src = in; lz.dst = out+1; lz.dstlen = outsize; out[0]=lev;
-	   switch(lev) {
-         case 1: lz.level = 0; lz.hbits = 16; return lz8c01(&lz); 
-         case 2: lz.level = 2; lz.hbits = 16; return lz8c01(&lz); 
-	   }
-	#elif defined(LZ4) || defined(BITSHUFFLE)
-  int rc = !lev?LZ4_compress_fast((char *)in, (char *)(out+0), n,outsize, 4):(lev<9?LZ4_compress_default((char *)in, (char *)(out+0), n, outsize):
-      #ifdef LZ4 
-    LZ4_compress_HC((char *)in, (char *)(out+0), n, outsize, lev));
-	  #else
-	LZ4_compress_default((char *)in, (char *)(out+0), n, outsize));
-      #endif
-  return rc;
-	#endif
-}
-
-unsigned lzdecomp(unsigned char *in, unsigned n, unsigned char *out) { if(!n) return 0;
-  unsigned outsize = CBUF(n), lev;
-    #ifdef LZTURBO
-  struct lzobj lz; lz.dstlen = n; lz.src = in+1; lz.dst = out; lz.level = 0; lev = in[0]; 
-  switch(lev) {
-    case 1: 
-	case 2: return lz8d(&lz); break;
- //   case 2: return lzbd(&lz); break;
-//  case 3: return lzhd(&lz); break;
-  }
-    #else
-  LZ4_decompress_fast((char *)(in+0), (char *)out, n/*, CBUF(n)*/);
-	#endif
-}
-
 unsigned trlezc(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp) {
   bitzenc8(in, n, tmp, 0, 0);
   return trlec(tmp, n, out);
@@ -482,6 +447,42 @@ unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigne
   srled64(in,inlen,out, n, e); 
   bitzdec64(out, n/(64/8), 0);
   return n;
+}
+
+//------------------- LZ --------------------------------------------------
+#ifdef USE_LZ
+unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if(!n) return 0;
+  unsigned outsize = CBUF(n);
+    #ifdef LZTURBO
+  struct lzobj lz; lz.srclen = n; lz.src = in; lz.dst = out+1; lz.dstlen = outsize; out[0]=lev;
+	   switch(lev) {
+         case 1: lz.level = 0; lz.hbits = 16; return lz8c01(&lz); 
+         case 2: lz.level = 2; lz.hbits = 16; return lz8c01(&lz); 
+	   }
+	#elif defined(LZ4) || defined(BITSHUFFLE)
+  int rc = !lev?LZ4_compress_fast((char *)in, (char *)(out+0), n,outsize, 4):(lev<9?LZ4_compress_default((char *)in, (char *)(out+0), n, outsize):
+      #ifdef LZ4 
+    LZ4_compress_HC((char *)in, (char *)(out+0), n, outsize, lev));
+	  #else
+	LZ4_compress_default((char *)in, (char *)(out+0), n, outsize));
+      #endif
+  return rc;
+	#endif
+}
+
+unsigned lzdecomp(unsigned char *in, unsigned n, unsigned char *out) { if(!n) return 0;
+  unsigned outsize = CBUF(n), lev;
+    #ifdef LZTURBO
+  struct lzobj lz; lz.dstlen = n; lz.src = in+1; lz.dst = out; lz.level = 0; lev = in[0]; 
+  switch(lev) {
+    case 1: 
+	case 2: return lz8d(&lz); break;
+ //   case 2: return lzbd(&lz); break;
+//  case 3: return lzhd(&lz); break;
+  }
+    #else
+  LZ4_decompress_fast((char *)(in+0), (char *)out, n/*, CBUF(n)*/);
+	#endif
 }
 
   #ifdef USE_SSE
