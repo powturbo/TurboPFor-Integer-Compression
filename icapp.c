@@ -388,66 +388,34 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
   #endif
   
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
+//-----------------  vsimple ---------------------------
+unsigned char *vszenc8( uint8_t  *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc8( in, n, tmp, 0, 0); return vsenc8( tmp, n, out); }
+unsigned char *vszenc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc16(in, n, tmp, 0, 0); return vsenc16(tmp, n, out); }
+unsigned char *vszenc32(uint32_t *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc32(in, n, tmp, 0, 0); return vsenc32(tmp, n, out); }
+unsigned char *vszenc64(uint64_t *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc64(in, n, tmp, 0, 0); return vsenc64(tmp, n, out); }
+
+unsigned char *vszdec8( unsigned char *in, unsigned n, unsigned char *out) { unsigned char *p = vsdec8( in,n,out); bitzdec8( out, n, 0); return p; }
+unsigned char *vszdec16(unsigned char *in, unsigned n, unsigned char *out) { unsigned char *p = vsdec16(in,n,out); bitzdec16(out, n, 0); return p; }
+unsigned char *vszdec32(unsigned char *in, unsigned n, unsigned char *out) { unsigned char *p = vsdec32(in,n,out); bitzdec32(out, n, 0); return p; }
+unsigned char *vszdec64(unsigned char *in, unsigned n, unsigned char *out) { unsigned char *p = vsdec64(in,n,out); bitzdec64(out, n, 0); return p; }
 
 //------------------ RLE -------------------------
 #define RLE8  0xdau 
 #define RLE16 0xdadau 
 #define RLE32 0xdadadadau 
 #define RLE64 0xdadadadadadadadaull 
-unsigned trlezc(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  bitzenc8(in, n, tmp, 0, 0);
-  return trlec(tmp, n, out);
-}
+unsigned trlezc( uint8_t      *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc8(in, n, tmp, 0, 0); return trlec(tmp, n, out); }
+unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) { trled(in, inlen, out, n); bitzdec8(out, n, 0); return n; }
 
-unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) {
-  trled(in, inlen, out, n); 
-  bitzdec8(out, n, 0);
-  return n;
-}
+unsigned srlezc8( uint8_t  *in, unsigned n, unsigned char *out, unsigned char *tmp, uint8_t  e) { bitzenc8( in, n/( 8/8), tmp, 0, 0); return srlec8( tmp, n, out, e); }
+unsigned srlezc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint16_t e) { bitzenc16(in, n/(16/8), tmp, 0, 0); return srlec16(tmp, n, out, e); }
+unsigned srlezc32(uint32_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint32_t e) { bitzenc32(in, n/(32/8), tmp, 0, 0); return srlec32(tmp, n, out, e); }
+unsigned srlezc64(uint64_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint64_t e) { bitzenc64(in, n/(64/8), tmp, 0, 0); return srlec64(tmp, n, out, e); }
 
-unsigned srlezc8(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint8_t e) {
-  bitzenc8(in, n/(8/8), tmp, 0, 0); 
-  return srlec8(tmp, n, out, e);
-}
-
-unsigned srlezd8(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint8_t e) {
-  srled8(in,inlen,out, n, e); 
-  bitzdec8(out, n/(8/8), 0);
-  return n;
-}
-
-unsigned srlezc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint16_t e) {
-  bitzenc16(in, n/(16/8), tmp, 0, 0); //CPYR(in,n,16/8,tmp);
-  return srlec16(tmp, n, out, e);
-}
-
-unsigned srlezd16(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint16_t e) {
-  srled16(in,inlen,out, n, e); 
-  bitzdec16(out, n/(16/8), 0);
-  return n;
-}
-
-unsigned srlezc32(uint32_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint32_t e) {
-  bitzenc32(in, n/(32/8), tmp, 0, 0); //CPYR(in,n,32/8,tmp);
-  return srlec32(tmp, n, out, e);
-}
-
-unsigned srlezd32(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint32_t e) {
-  srled32(in,inlen,out, n, e); 
-  bitzdec32(out, n/(32/8), 0);
-  return n;
-}
-
-unsigned srlezc64(uint64_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint64_t e) {
-  bitzenc64(in, n/(64/8), tmp, 0, 0); //CPYR(in,n,64/8,tmp);
-  return srlec64(tmp, n, out, e);
-}
-
-unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint64_t e) {
-  srled64(in,inlen,out, n, e); 
-  bitzdec64(out, n/(64/8), 0);
-  return n;
-}
+unsigned srlezd8( unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint8_t  e) { srled8(in,inlen,out,  n, e); bitzdec8( out, n/(8/8),  0); return n; }
+unsigned srlezd16(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint16_t e) { srled16(in,inlen,out, n, e); bitzdec16(out, n/(16/8), 0); return n; }
+unsigned srlezd32(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint32_t e) { srled32(in,inlen,out, n, e); bitzdec32(out, n/(32/8), 0); return n; }
+unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint64_t e) { srled64(in,inlen,out, n, e); bitzdec64(out, n/(64/8), 0); return n; }
 
 //------------------- LZ --------------------------------------------------
 #ifdef USE_LZ
@@ -667,7 +635,7 @@ size_t spdpdec(unsigned char *in, size_t n, unsigned char *out, unsigned bsize, 
 unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(8/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if((id == 43 || id>=60 && id <= 79) && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -691,6 +659,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 41: TMBENCH("",l=vbzenc8(        in, m, out,0)-out,n);     pr(l,n); TMBENCH2("vbzenc8        ",vbzdec8(          out, m, cpy,0) ,n); break; 
   //case 41: TMBENCH("",l=vbddenc8(       in, m, out,0)-out,n);     pr(l,n); TMBENCH2("vbddenc8       ",vbdddec8(         out, m, cpy,0) ,n); break;     	  
     case 42: TMBENCH("",l=vsenc8(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc8         ",vsdec8(           out, m, cpy) ,n); break;   // vsimple : variable simple
+    case 43: TMBENCH("",l=vszenc8(        in, m, out,tmp)-out,n); 	pr(l,n); TMBENCH2("vszenc8        ",vszdec8(          out, m, cpy) ,n); break;   
 	   
     case 50: TMBENCH("",l=bvzzenc8(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc8       ",bvzzdec8(         out, m, cpy,0) ,n); break; // bitio	
     case 51: TMBENCH("",l=bvzenc8(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc8        ",bvzdec8(          out, m, cpy,0) ,n); break; 
@@ -727,7 +696,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(16/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if((id == 43 || id>=60 && id <= 79) && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -760,6 +729,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 41: TMBENCH("",l=vbzenc16(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc16        ",vbzdec16(          out, m, cpy,0) ,n); break; 
  // case 41: TMBENCH("",l=vbddenc16(       in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbddenc16       ",vbdddec16(         out, m, cpy,0) ,n); break;     	  
     case 42: TMBENCH("",l=vsenc16(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc16         ",vsdec16(           out, m, cpy) ,n); break;   // vsimple : variable simple
+    case 43: TMBENCH("",l=vszenc16(        in, m, out,tmp)-out,n); 	pr(l,n); TMBENCH2("vszenc16        ",vszdec16(          out, m, cpy) ,n); break;  
 	   
     case 50: TMBENCH("",l=bvzzenc16(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc16       ",bvzzdec16(         out, m, cpy,0) ,n); break; // bitio	
     case 51: TMBENCH("",l=bvzenc16(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc16        ",bvzdec16(          out, m, cpy,0) ,n); break; 
@@ -798,7 +768,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(32/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if((id == 43 || id>=60 && id <= 79) && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -854,6 +824,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 40: TMBENCH("",l=vbenc32(         in, m, out)-out,n);      pr(l,n); TMBENCH2("vbenc32         ",vbdec32(           out, m, cpy) ,n); break; // TurboVbyte : variable byte
     case 41: TMBENCH("",l=vbzenc32(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc32        ",vbzdec32(          out, m, cpy,0) ,n); break; 
     case 42: TMBENCH("",l=vsenc32(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc32         ",vsdec32(           out, m, cpy) ,n); break;   // vsimple : variable simple
+    case 43: TMBENCH("",l=vszenc32(        in, m, out,tmp)-out,n); 	    pr(l,n); TMBENCH2("vszenc32        ",vszdec32(          out, m, cpy) ,n); break;   // vsimple : variable simple
 	   
     case 50: TMBENCH("",l=bvzzenc32(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc32       ",bvzzdec32(         out, m, cpy,0) ,n); break; // bitio	
     case 51: TMBENCH("",l=bvzenc32(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc32        ",bvzdec32(          out, m, cpy,0) ,n); break; 
@@ -892,7 +863,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(64/8),rc = 0;
   char *tmp = NULL; 
-  if(id>=60 && id <= 79 && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
+  if((id == 43 || id>=60 && id <= 79) && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
   
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -918,6 +889,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 40: TMBENCH("",l=vbenc64(         in, m, out)-out,n);      pr(l,n); TMBENCH2("vbenc64         ",vbdec64(           out, m, cpy) ,n); break; // TurboVbyte : variable byte
     case 41: TMBENCH("",l=vbzenc64(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc64        ",vbzdec64(          out, m, cpy,0) ,n); break; 
     case 42: TMBENCH("",l=vsenc64(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc64         ",vsdec64(           out, m, cpy) ,n); break;   // vsimple : variable simple
+    case 43: TMBENCH("",l=vszenc64(        in, m, out,tmp)-out,n); 	pr(l,n); TMBENCH2("vszenc64        ",vszdec64(          out, m, cpy) ,n); break;  
 	   
     case 50: TMBENCH("",l=bvzzenc64(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc64       ",bvzzdec64(         out, m, cpy,0) ,n); break; // bitio	
     case 51: TMBENCH("",l=bvzenc64(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc64        ",bvzdec64(          out, m, cpy,0) ,n); break; 
@@ -1104,7 +1076,8 @@ int main(int argc, char* argv[]) {
         case 8: bench64(in,n,out,cpy,i,inname,lev); break;    
         default: die("integer size must be 2, 4 or 8\n"); 
       }
-    printf("\n\n");      
+    printf("\n"); 
+    if(idmax > idmin) printf("\n");     
     free(in); free(out); free(cpy); in = out = cpy = NULL;
   }
 }
