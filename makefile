@@ -258,7 +258,7 @@ ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d
 
 ifeq ($(LZTURBO),1)
 DEFS+=-DLZTURBO
-OB+=../dev/lz/lz8c.o ../dev/lz/lzbc01.o ../lz/lz8c.o 
+OB+=../lz/lz8c.o ../lz/lz8d.o 
 #../lz/lzbc.o ../lz/lz8d.o ../lz/lzbd.o
 ICLIB+=../lz/lz8c0.o ../lz/lzbc0.o ../lz/lz8d.o 
 #../lz/lzbd.o
