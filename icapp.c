@@ -394,61 +394,6 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
 #define RLE32 0xdadadadau 
 #define RLE64 0xdadadadadadadadaull 
 
-unsigned trlezc(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp) {
-  bitzenc8(in, n, tmp, 0, 0);
-  return trlec(tmp, n, out);
-}
-
-unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) {
-  trled(in, inlen, out, n); 
-  bitzdec8(out, n, 0);
-  return n;
-}
-
-unsigned srlezc8(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint8_t e) {
-  bitzenc8(in, n/(8/8), tmp, 0, 0); CPYR(in,n,8/8,tmp);
-  return srlec8(tmp, n, out, e);
-}
-
-unsigned srlezd8(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint8_t e) {
-  srled8(in,inlen,out, n, e); 
-  bitzdec8(out, n/(8/8), 0);
-  return n;
-}
-
-unsigned srlezc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint16_t e) {
-  bitzenc16(in, n/(16/8), tmp, 0, 0); CPYR(in,n,16/8,tmp);
-  return srlec16(tmp, n, out, e);
-}
-
-unsigned srlezd16(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint16_t e) {
-  srled16(in,inlen,out, n, e); 
-  bitzdec16(out, n/(16/8), 0);
-  return n;
-}
-
-unsigned srlezc32(uint32_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint32_t e) {
-  bitzenc32(in, n/(32/8), tmp, 0, 0); CPYR(in,n,32/8,tmp);
-  return srlec32(tmp, n, out, e);
-}
-
-unsigned srlezd32(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint32_t e) {
-  srled32(in,inlen,out, n, e); 
-  bitzdec32(out, n/(32/8), 0);
-  return n;
-}
-
-unsigned srlezc64(uint64_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint64_t e) {
-  bitzenc64(in, n/(64/8), tmp, 0, 0); CPYR(in,n,64/8,tmp);
-  return srlec64(tmp, n, out, e);
-}
-
-unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint64_t e) {
-  srled64(in,inlen,out, n, e); 
-  bitzdec64(out, n/(64/8), 0);
-  return n;
-}
-
 #ifdef USE_LZ
 unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if(!n) return 0;
   unsigned outsize = CBUF(n);
@@ -482,6 +427,61 @@ unsigned lzdecomp(unsigned char *in, unsigned n, unsigned char *out) { if(!n) re
     #else
   LZ4_decompress_fast((char *)(in+0), (char *)out, n/*, CBUF(n)*/);
 	#endif
+}
+
+unsigned trlezc(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp) {
+  bitzenc8(in, n, tmp, 0, 0);
+  return trlec(tmp, n, out);
+}
+
+unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) {
+  trled(in, inlen, out, n); 
+  bitzdec8(out, n, 0);
+  return n;
+}
+
+unsigned srlezc8(uint8_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint8_t e) {
+  bitzenc8(in, n/(8/8), tmp, 0, 0); 
+  return srlec8(tmp, n, out, e);
+}
+
+unsigned srlezd8(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint8_t e) {
+  srled8(in,inlen,out, n, e); 
+  bitzdec8(out, n/(8/8), 0);
+  return n;
+}
+
+unsigned srlezc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint16_t e) {
+  bitzenc16(in, n/(16/8), tmp, 0, 0); //CPYR(in,n,16/8,tmp);
+  return srlec16(tmp, n, out, e);
+}
+
+unsigned srlezd16(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint16_t e) {
+  srled16(in,inlen,out, n, e); 
+  bitzdec16(out, n/(16/8), 0);
+  return n;
+}
+
+unsigned srlezc32(uint32_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint32_t e) {
+  bitzenc32(in, n/(32/8), tmp, 0, 0); //CPYR(in,n,32/8,tmp);
+  return srlec32(tmp, n, out, e);
+}
+
+unsigned srlezd32(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint32_t e) {
+  srled32(in,inlen,out, n, e); 
+  bitzdec32(out, n/(32/8), 0);
+  return n;
+}
+
+unsigned srlezc64(uint64_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint64_t e) {
+  bitzenc64(in, n/(64/8), tmp, 0, 0); //CPYR(in,n,64/8,tmp);
+  return srlec64(tmp, n, out, e);
+}
+
+unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigned n, uint64_t e) {
+  srled64(in,inlen,out, n, e); 
+  bitzdec64(out, n/(64/8), 0);
+  return n;
 }
 
   #ifdef USE_SSE
