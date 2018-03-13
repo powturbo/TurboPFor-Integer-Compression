@@ -939,9 +939,6 @@ int bedecomp(unsigned char *_in, int _inlen, unsigned char *_out, unsigned _outl
   return ip - _in;
 } 
 
-  #ifdef LZTURBO
-#include "../bebench.h"
-  #else
 struct plug plugr[32]; 
 int tid;
 #define BEPRE
@@ -951,7 +948,6 @@ int tid;
 #define BEUSAGE
 #define BEFILE
 #define BENCHSTA
-#endif
 
 #define INOVD 4*1024
 
