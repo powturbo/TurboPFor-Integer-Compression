@@ -258,9 +258,9 @@ ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d
 
 ifeq ($(LZTURBO),1)
 DEFS+=-DLZTURBO
-OB+=../lz/lz8c.o ../lz/lz8d.o 
+#OB+=../lz/lz8c.o ../lz/lz8d.o 
 #../lz/lzbc.o ../lz/lz8d.o ../lz/lzbd.o
-ICLIB+=../lz/lz8c0.o ../lz/lzbc0.o ../lz/lz8d.o 
+ICLIB+=../lz/lz8c0.o ../lz/lz8d.o 
 #../lz/lzbd.o
 endif
 
@@ -290,13 +290,13 @@ icbench: $(OB) icbench.o plugins.o
 	$(CXX) $^ $(LDFLAGS) -o icbench
 
 .c.o:
-	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@  
+	$(CC) -O3 $(MARCH) $(CFLAGS) $< -c -o $@  
 
 .cc.o:
-	$(CXX) -O3 $(MARCH) $(CXXFLAGS)  $< -c -o $@ 
+	$(CXX) -O2 $(MARCH) $(CXXFLAGS)  $< -c -o $@ 
 
 .cpp.o:
-	$(CXX) -O3 $(MARCH) $(CXXFLAGS) $< -c -o $@ 
+	$(CXX) -O2 $(MARCH) $(CXXFLAGS) $< -c -o $@ 
 
 idxseg:   idxseg.o $(ICLIB)
 	$(CC) $^ $(LDFLAGS) -o idxseg
