@@ -329,11 +329,11 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
       #else
     { unsigned k = 0; 
       uint_t *op,*p;
-      for(op=out,i = 0; i < p4dn; i++,op += 64) {
+      for(op=out,i = 0; i < p4dn; i++,op += 64) { unsigned long long u = bb[i];
 		  #if 1 // faster
-	    while(bb[i]) { unsigned x = ctz64(bb[i]); op[x] += ex[k++]<<b; bb[i] ^= (1ull<<x); }
+	    while(u) op[ctz64(u)] += ex[k++]<<b, u &= u-1;
 		  #else
-		unsigned long long u = bb[i]; p = op;
+		 p = op;
 		#define OP(_i_) p[_i_] += ex[k++]<<b;
 		while(u) {
 		  unsigned x = ctz64(u); u >>= x; p+=x; 
