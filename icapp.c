@@ -220,17 +220,21 @@ uint64_t strtots(char *p, char **pq, int type) {
   while(!isdigit(*p)) p++;                      
   u = strtoull(p, &p, 10);              
   
-  if(     u <= 99) u += 2000; 
-  else if(u >= 19710101 && u < 20381212) { 
+  if(u >= 19710101 && u < 20381212) { 
     tm.tm_year =  u/10000; 
 	tm.tm_mon  = (u%10000)/100; if(!tm.tm_mon || tm.tm_mon > 12) goto a; tm.tm_mon--;
 	tm.tm_mday = u%10;          if(!tm.tm_mday || tm.tm_mday > 31) goto a; 
 	goto h;
-  } else if(u < 1971 || u > 2099) goto a; 
+  } 
   tm.tm_year = u;                             
   c = *p;  
   if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mon    = strtoul(p+1, &p, 10); if(!tm.tm_mon  || tm.tm_mon  > 12) goto a; tm.tm_mon--; 
-  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mday   = strtoul(p+1, &p, 10); if(!tm.tm_mday || tm.tm_mday > 31) goto a;
+  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mday   = strtoul(p+1, &p, 10);
+
+  if(tm.tm_mday >= 1971 && tm.tm_mday <= 2038 && tm.tm_year <= 31) { u = tm.tm_mday; tm.tm_mday = tm.tm_year; tm.tm_year = u; } // Exchange day/year
+  if(tm.tm_year <= 99) u += 2000; else if(tm.tm_year < 1971 || tm.tm_year > 2099) goto a;
+  if(!tm.tm_mday || tm.tm_mday > 31) goto a;
+
   if(c != '.' && c != '-' && c != '/') goto b; h:tm.tm_hour = strtoul(p+1, &p, 10);
   if(tm.tm_hour <= 24 && *p == ':') {
 	tm.tm_min = strtoul(p+1, &p, 10); if(tm.tm_min > 60) tm.tm_hour = tm.tm_min = 0;
@@ -361,6 +365,7 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
 #include "vp4.h"
 #include "vint.h"
 #include "fp.h"
+#include "eliasfano.h"
 #include "vsimple.h"
 #include "transpose.h"
 #include "ext/trle.h"  
@@ -779,12 +784,12 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 }
 
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
-  unsigned l,m = n/(32/8),rc = 0, sorted=1;
+  unsigned l,m = n/(32/8),rc = 0, d, dmin=-1;
   uint32_t *p;
   char *tmp = NULL; 
   if((id == 43 || id>=60 && id <= 79) && !(tmp = (unsigned char*)malloc(CBUF(n)))) die(stderr, "malloc error\n");
 
-  for(p=(uint32_t*)in,l = 1; l < m; l++) if(p[l] < p[l-1]) { sorted = 0; break; }
+  for(p=(uint32_t*)in,l = 1; l < m; l++) if(d=(p[l] < p[l-1])) { dmin = -1; break; } else if(d < dmin) dmin = d;
 
   memrcpy(cpy,in,n); 
   switch(id) {
@@ -837,11 +842,13 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 31: TMBENCH("",l=bitnzpack256v32( in, m, out)  ,n);   	    pr(l,n); TMBENCH2("bitnzpack256v32 ",bitnzunpack256v32( out, m, cpy)   ,n); break;                                                                                                      
       #endif     
       
-    case 32: if(!sorted) return 0; TMBENCH("",l=bitnfpack32(     in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack32     ",bitnfunpack32(     out, m, cpy)   ,n); break;
-    case 33: if(!sorted) return 0; TMBENCH("",l=bitnfpack128v32( in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack128v32 ",bitnfunpack128v32( out, m, cpy)   ,n); break;
+    case 32: if(dmin==-1) return 0; TMBENCH("",l=bitnfpack32(     in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack32     ",bitnfunpack32(     out, m, cpy)   ,n); break;
+    case 33: if(dmin==-1) return 0; TMBENCH("",l=bitnfpack128v32( in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack128v32 ",bitnfunpack128v32( out, m, cpy)   ,n); break;
 	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case 34: if(sorted) { TMBENCH("",l=bitnfpack256v32( in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack256v32 ",bitnfunpack256v32( out, m, cpy)   ,n); } break;
+    case 34: if(dmin==-1) return 0; TMBENCH("",l=bitnfpack256v32( in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack256v32 ",bitnfunpack256v32( out, m, cpy)   ,n); break;
       #endif 
+//  case 35: if(dmin==-1 /*|| !dmin*/) return 0; TMBENCH("",l=efanoenc32(     in, m, out,0)  ,n); pr(l,n); TMBENCH2("efanoenc32       ",efanodec32( out, m, cpy,0)   ,n); break;
+
     case 40: TMBENCH("",l=vbenc32(         in, m, out)-out,n);      pr(l,n); TMBENCH2("vbenc32         ",vbdec32(           out, m, cpy) ,n); break; // TurboVbyte : variable byte
     case 41: TMBENCH("",l=vbzenc32(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc32        ",vbzdec32(          out, m, cpy,0) ,n); break; 
     case 42: TMBENCH("",l=vsenc32(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc32         ",vsdec32(           out, m, cpy) ,n); break;   // vsimple : variable simple
