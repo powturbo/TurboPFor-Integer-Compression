@@ -280,9 +280,11 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Ftf file                "text file, one 32 bits floating point (ex. 8.32456) per line
         ./icapp -Ftd file                "text file, one 64 bits floating point (ex. 8.324567789) per line
         ./icapp -Ftd file -v5            "like prev., display the first 100 values read
+        ./icapp -Ftt file                "text file, timestamp in seconds iso-8601 -> 32 bits integer (ex. 2018-03-12T04:31:06)
+        ./icapp -FtT file                "text file, timestamp in milliseconds iso-8601 -> 64 bits integer (ex. 2018-03-12T04:31:06.345)
         ./icapp -Ftl -D2 -H file         "skip 1th line, convert numbers with 2 decimal digits to 64 bits integers (ex. 456.23 -> 45623)
-        ./icapp -Ftl -D2 -H -K3 file     "like prev., use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
-        ./icapp -Ftl -D2 -H -K3 -k| file "like prev., use '|' as separator
+        ./icapp -Ftl -D2 -H -K3 file.csv  "like prev., use the 3th number in the line (ex. label=3245, text=99 usage=456.23 -> 456.23 )
+        ./icapp -Ftl -D2 -H -K3 -k| file.csv "like prev., use '|' as separator
 
   - Text file: multiple numbers separated by non-digits (0..9,-,.) characters (ex. 134534,-45678,98788,4345, )
 
@@ -432,5 +434,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  09 Mar 2018
+Last update:  14 Mar 2018
 
