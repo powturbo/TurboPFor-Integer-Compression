@@ -220,21 +220,17 @@ uint64_t strtots(char *p, char **pq, int type) {
   while(!isdigit(*p)) p++;                      
   u = strtoull(p, &p, 10);              
   
-  if(u >= 19710101 && u < 20381212) { 
+  if(     u <= 99) u += 2000; 
+  else if(u >= 19710101 && u < 20381212) { 
     tm.tm_year =  u/10000; 
 	tm.tm_mon  = (u%10000)/100; if(!tm.tm_mon || tm.tm_mon > 12) goto a; tm.tm_mon--;
 	tm.tm_mday = u%10;          if(!tm.tm_mday || tm.tm_mday > 31) goto a; 
 	goto h;
-  } 
+  } else if(u < 1971 || u > 2099) goto a; 
   tm.tm_year = u;                             
   c = *p;  
   if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mon    = strtoul(p+1, &p, 10); if(!tm.tm_mon  || tm.tm_mon  > 12) goto a; tm.tm_mon--; 
-  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mday   = strtoul(p+1, &p, 10);
-
-  if(tm.tm_mday >= 1971 && tm.tm_mday <= 2038 && tm.tm_year <= 31) { u = tm.tm_mday; tm.tm_mday = tm.tm_year; tm.tm_year = u; } // Exchange day/year
-  if(tm.tm_year <= 99) u += 2000; else if(tm.tm_year < 1971 || tm.tm_year > 2099) goto a;
-  if(!tm.tm_mday || tm.tm_mday > 31) goto a;
-
+  if(c != '.' && c != '-' && c != '/') goto b; tm.tm_mday   = strtoul(p+1, &p, 10); if(!tm.tm_mday || tm.tm_mday > 31) goto a;
   if(c != '.' && c != '-' && c != '/') goto b; h:tm.tm_hour = strtoul(p+1, &p, 10);
   if(tm.tm_hour <= 24 && *p == ':') {
 	tm.tm_min = strtoul(p+1, &p, 10); if(tm.tm_min > 60) tm.tm_hour = tm.tm_min = 0;
@@ -389,12 +385,11 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
   #endif
   
   #ifdef LZTURBO
-#include "../lz/lz8.h"
-#include "../lz/lzb.h"
-#define USE_LZ
+#include "lzt.c"
   #endif
   
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
+
 //-----------------  vsimple ---------------------------
 unsigned char *vszenc8( uint8_t  *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc8( in, n, tmp, 0, 0); return vsenc8( tmp, n, out); }
 unsigned char *vszenc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc16(in, n, tmp, 0, 0); return vsenc16(tmp, n, out); }
@@ -429,11 +424,7 @@ unsigned srlezd64(unsigned char *in, unsigned inlen, unsigned char *out, unsigne
 unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if(!n) return 0;
   unsigned outsize = CBUF(n);
     #ifdef LZTURBO
-  struct lzobj lz; lz.srclen = n; lz.src = in; lz.dst = out+1; lz.dstlen = outsize; out[0]=lev;
-	   switch(lev) {
-         case 1: lz.level = 0; lz.hbits = 16; return lz8c01(&lz); 
-         case 2: lz.level = 2; lz.hbits = 16; return lz8c01(&lz); 
-	   }
+  #include "lztc.c"
 	#elif defined(LZ4) || defined(BITSHUFFLE)
   int rc = !lev?LZ4_compress_fast((char *)in, (char *)(out+0), n,outsize, 4):(lev<9?LZ4_compress_default((char *)in, (char *)(out+0), n, outsize):
       #ifdef LZ4 
@@ -448,13 +439,7 @@ unsigned lzcomp(unsigned char *in, unsigned n, unsigned char *out, int lev) { if
 unsigned lzdecomp(unsigned char *in, unsigned n, unsigned char *out) { if(!n) return 0;
   unsigned outsize = CBUF(n), lev;
     #ifdef LZTURBO
-  struct lzobj lz; lz.dstlen = n; lz.src = in+1; lz.dst = out; lz.level = 0; lev = in[0]; 
-  switch(lev) {
-    case 1: 
-	case 2: return lz8d(&lz); break;
- //   case 2: return lzbd(&lz); break;
-//  case 3: return lzhd(&lz); break;
-  }
+  #include "lztd.c"
     #else
   LZ4_decompress_fast((char *)(in+0), (char *)out, n/*, CBUF(n)*/);
 	#endif
@@ -847,12 +832,12 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	  #if defined(__AVX2__) && defined(USE_AVX2)
     case 34: if(dmin==-1) return 0; TMBENCH("",l=bitnfpack256v32( in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack256v32 ",bitnfunpack256v32( out, m, cpy)   ,n); break;
       #endif 
-//  case 35: if(dmin==-1 /*|| !dmin*/) return 0; TMBENCH("",l=efanoenc32(     in, m, out,0)  ,n); pr(l,n); TMBENCH2("efanoenc32       ",efanodec32( out, m, cpy,0)   ,n); break;
+    //case 35: if(dmin==-1 /*|| !dmin*/) return 0; TMBENCH("",l=efanoenc32(     in, m, out,0)  ,n); pr(l,n); TMBENCH2("efanoenc32       ",efanodec32( out, m, cpy,0)   ,n); break;
 
     case 40: TMBENCH("",l=vbenc32(         in, m, out)-out,n);      pr(l,n); TMBENCH2("vbenc32         ",vbdec32(           out, m, cpy) ,n); break; // TurboVbyte : variable byte
     case 41: TMBENCH("",l=vbzenc32(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc32        ",vbzdec32(          out, m, cpy,0) ,n); break; 
     case 42: TMBENCH("",l=vsenc32(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc32         ",vsdec32(           out, m, cpy) ,n); break;   // vsimple : variable simple
-    case 43: TMBENCH("",l=vszenc32(        in, m, out,tmp)-out,n);  pr(l,n); TMBENCH2("vszenc32        ",vszdec32(          out, m, cpy) ,n); break;   // vsimple : variable simple
+    case 43: TMBENCH("",l=vszenc32(        in, m, out,tmp)-out,n);  pr(l,n); TMBENCH2("vszenc32        ",vszdec32(          out, m, cpy) ,n); break;  
 	   
     case 50: TMBENCH("",l=bvzzenc32(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc32       ",bvzzdec32(         out, m, cpy,0) ,n); break; // bitio	
     case 51: TMBENCH("",l=bvzenc32(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc32        ",bvzdec32(          out, m, cpy,0) ,n); break; 
@@ -985,6 +970,7 @@ void usage(char *pgm) {
   fprintf(stderr, " -T# = #:Timestamp in iso-8601 converted to milliseconds (64 bits)\n");  
   fprintf(stderr, " -V# = #:divisor. Only for text files\n");  
   fprintf(stderr, " -D# = #:decimals. Only for text files\n");  
+  fprintf(stderr, " -g# = allowed error for lossy floating point compression (ex. -g.00001)\n");  
   fprintf(stderr, "Output:\n");
   fprintf(stderr, " -v#      # = verbosity 0..5 (default 1). 5=print first values read from text file\n");
   fprintf(stderr, "----- arg. ZIPF specified --------------\n");
@@ -1003,11 +989,11 @@ void usage(char *pgm) {
 int main(int argc, char* argv[]) {
   unsigned cmp=1, b = 1 << 30, lz=0, fno,idmin=1,idmax=-1,m=1000000; int isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,be_mindelta=0,lev=1;
   unsigned char *in=NULL,*out,*cpy;
-  double mdelta=-10;
+  double mdelta=-10,errlim=0.0;
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
   static struct option long_options[] = { {"blocsize", 	0, 0, 'b'}, {0, 0, 0}  };
   for(;;) {
-    if((c = getopt_long(argc, argv, "a:B:cC:e:D:E:f:F:i:j:k:K:HI:J:l:m:M:n:s:v:V:y", long_options, &option_index)) == -1) break;
+    if((c = getopt_long(argc, argv, "a:B:cC:e:D:E:f:F:g:i:I:j:J:k:K:Hl:m:M:n:s:v:V:y", long_options, &option_index)) == -1) break;
     switch(c) {
       case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;								
       case 'C': cmp    = atoi(optarg);  break;
@@ -1035,7 +1021,8 @@ int main(int argc, char* argv[]) {
 	    switch(*s) { case 's': be_mindelta = 0; break; case 'S': be_mindelta = 1; break; case 'z': be_mindelta = 2; break; }
 	  } break;
       
-      case 'H': skiph++; 				  	     break;
+      case 'g': errlim = strtod(optarg, NULL); break;
+      case 'H': skiph++; 				  	break;
 	  case 'K': { kid = atoi(optarg); if(!keysep) keysep = ",;\t"; } break;
 	  case 'k': keysep = optarg; break;
       case 'i': if((tm_rep  = atoi(optarg))<=0) 
@@ -1063,6 +1050,9 @@ int main(int argc, char* argv[]) {
         exit(0); 
     }
   }
+    #ifdef LZTURBO
+  beini();
+    #endif
   if(idmax == -1) idmax = ID_MEMCPY;
   if(idmax < idmin) idmax = idmin;
   if(argc - optind < 1) {
@@ -1100,7 +1090,12 @@ int main(int argc, char* argv[]) {
     if(n <= 0) exit(0); 
     if(fno == optind)
       tm_init(tm_Rep, 1); 
-    if(verbose || fno == optind) printf("   E MB/s     size     ratio    D MB/s  function\n");      
+    if(verbose || fno == optind) printf("   E MB/s     size     ratio    D MB/s  function\n");  
+
+    if(errlim > 0.0) {  // convert input for lossy floating point compression
+           if(isize == -4) padfloat32(in,n/4,in,errlim);
+      else if(isize == -8) padfloat64(in,n/8,in,errlim);
+    }
     for(i=idmin; i <= idmax; i++) 
       switch(abs(isize)) {
         case 1: bench8( in,n,out,cpy,i,inname,lev); break;  
@@ -1114,3 +1109,4 @@ int main(int argc, char* argv[]) {
     free(in); free(out); free(cpy); in = out = cpy = NULL;
   }
 }
+
