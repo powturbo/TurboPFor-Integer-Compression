@@ -64,7 +64,7 @@
 #define bitget32(bw,br,_b_,_x_,_ip_) bitget(bw,br,_b_,_x_)
 #define bitget64(bw,br,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget(bw,br,(_b_)-32,_x_); bitdnorm(bw,br,_ip_); bitget(bw,br,32,_v); _x_ = _x_<<32|_v; } else bitget(bw,br,_b_,_x_)
 
-//-------------------------------
+//------------------------------------------------------------------
 #define VSIZE 128
 
 #define P4ENC p4enc
@@ -268,7 +268,7 @@ size_t TEMPLATE2(fp2dfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uin
   return ip - in;
 }
 
-// Improved Gorilla (see Facebook paper) style Floating point compression + RLE in time series.
+// Improved Gorilla (see Facebook paper) style Floating point compression + RLE
 #define bitput2(bw,br, _n1_, _n2_, _x_) {\
 	       if(!_x_)                  bitput(bw,br,      1,       1);/*1*/\
       else if( _x_ < (1<< (_n1_-1))) bitput(bw,br, _n1_+2,_x_<<2|2);/*10*/\
