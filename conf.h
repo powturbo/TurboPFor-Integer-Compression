@@ -143,9 +143,11 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
     defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__)  || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__)   || defined(__ARM_ARCH_6ZK__)
 #define ctou16(_cp_) (*(unsigned short *)(_cp_))
 #define ctou32(_cp_) (*(unsigned       *)(_cp_))
+#define ctof32(_cp_) (*(float          *)(_cp_))
 
     #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(_MSC_VER)
 #define ctou64(_cp_)       (*(uint64_t *)(_cp_))
+#define ctof64(_cp_)       (*(double   *)(_cp_))
     #elif defined(__ARM_FEATURE_UNALIGNED)
 struct _PACKED longu     { uint64_t l; };
 #define ctou64(_cp_) ((struct longu     *)(_cp_))->l
@@ -154,11 +156,15 @@ struct _PACKED longu     { uint64_t l; };
   #elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7S__)
 struct _PACKED shortu    { unsigned short     s; };
 struct _PACKED unsignedu { unsigned           u; };
-struct _PACKED longu     { uint64_t l; };
+struct _PACKED longu     { uint64_t           l; };
+struct _PACKED floatu    { float              f; };
+struct _PACKED doubleu   { double             d; };
 
 #define ctou16(_cp_) ((struct shortu    *)(_cp_))->s
 #define ctou32(_cp_) ((struct unsignedu *)(_cp_))->u
 #define ctou64(_cp_) ((struct longu     *)(_cp_))->l
+#define ctof32(_cp_) ((struct floatu    *)(_cp_))->f
+#define ctof64(_cp_) ((struct doubleu   *)(_cp_))->d
   #else
 #error "unknown cpu"	  
   #endif
