@@ -21,7 +21,7 @@
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    TurboRLE - "Most efficient and fastest Run Length Encoding"
+    TurboRLE - "Most efficient and fastest Run Length Encoding https://github.com/powturbo/TurboRLE"
 **/
 #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
