@@ -23,7 +23,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
   * Scalar & SIMD Transform: Delta, Delta of delta, Zigzag, Transpose/Shuffle, 
-  * :new: univeral error bound **Lossy** floating point conversion for compression with **TurboPFor** or TurboTranspose + lz
+  * :new: Error bound **lossy** floating point conversion for compression with **TurboPFor** or TurboTranspose + lz
 * **Floating Point Compression**
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
