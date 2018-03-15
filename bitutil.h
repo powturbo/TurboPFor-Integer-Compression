@@ -302,6 +302,10 @@ void bitxdec16(     uint16_t *p,  unsigned n, uint16_t start);
 void bitxdec32(     uint32_t *p,  unsigned n, uint32_t start);
 void bitxdec64(     uint64_t *p,  unsigned n, uint64_t start);
 
+//------- Lossy floating point conversion: pad the trailing mantissa bits with zeros according to the error e (ex. e=0.00001) 
+void padfloat32(float  *in, size_t n, float  *out, float  e);
+void padfloat64(double *in, size_t n, double *out, double e);
+
 #ifdef __cplusplus
 }
 #endif
