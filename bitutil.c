@@ -439,3 +439,30 @@ unsigned bitfm8( uint8_t  *in, unsigned n, uint8_t  *pmin) { uint8_t  mi,mx; BIT
 unsigned bitfm16(uint16_t *in, unsigned n, uint16_t *pmin) { uint16_t mi,mx; BITFM(uint16_t, in, n); *pmin = mi; return bsr16(mx - mi); }
 unsigned bitfm32(uint32_t *in, unsigned n, uint32_t *pmin) { uint32_t mi,mx; BITFM(uint32_t, in, n); *pmin = mi; return bsr32(mx - mi); }
 unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BITFM(uint64_t, in, n); *pmin = mi; return bsr64(mx - mi); }
+
+
+//----------- Lossy floating point conversion: pad the trailing mantissa bits with zeros according to the error e (ex. 0.00001)  -----------------------------------
+static inline double efloat64(double d, double e, int lg2e) {
+  int v;
+  uint64_t u, du = ctou64(&d);
+  frexp(d, &v);
+  if((v = 54 - v - lg2e) <= 0) return d;
+  v = v > 52?52:v;
+  do u = du & (~((1ull<<(--v))-1)); while(fabs((ctof64(&u) - d)/d) > e);
+  return ctof64(&u);
+}
+
+void padfloat64(double *in, size_t n, double *out, double e) { int lg2e = -log(e)/log(2.0); double *ip; for(ip = in; ip < in+n; ip++) *out++ = efloat64(*ip, e, lg2e); }
+
+static inline float efloat32(float d, float e, int lg2e) {
+  int v;
+  uint32_t u, du = ctou32(&d);
+  frexpf(d, &v);
+  if((v = 25 - v - lg2e) <= 0) return d;
+  v = v > 23?23:v;
+  do u = du & (~((1u<<(--v))-1)); while(fabsf((ctof32(&u) - d)/d) > e);
+  return ctof32(&u);
+}
+
+void padfloat32(float *in, size_t n, float *out, float e) { int lg2e = -log(e)/log(2.0); float *ip; for(ip = in; ip < in+n; ip++) *out++ = efloat32(*ip, e, lg2e); }
+
