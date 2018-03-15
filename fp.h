@@ -108,6 +108,7 @@ size_t fp2dfcmenc32(uint32_t      *in, size_t n, unsigned char *out, uint32_t st
 size_t fp2dfcmdec32(unsigned char *in, size_t n, uint32_t      *out, uint32_t start);
 size_t fp2dfcmenc64(uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
 size_t fp2dfcmdec64(unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
+
 #ifdef __cplusplus
 }
 #endif
