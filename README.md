@@ -22,12 +22,13 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
-  * Scalar & SIMD Transform: Delta, Delta of delta, Zigzag, Transpose/Shuffle
+  * Scalar & SIMD Transform: Delta, Delta of delta, Zigzag, Transpose/Shuffle, :new:Lossy floating point conversion
 * **Floating Point Compression**
-  * Delta/Delta of delta + (Differential) Finite Context Method FCM/DFCM floating point compression
+  * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
+  * :new: Error bound **lossy** floating point conversion
 * :new: **Time Series Compression**
-  * **Fastest Gorilla** 16/32/64 bits style compression (:new: improved + **RLE**).
+  * **Fastest Gorilla** 16/32/64 bits style compression (:new: **zigzag of delta** + **RLE**).
   * can compress times series to only 0.01%. > 10 GB/s compression and > 13 GB/s decompress.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
@@ -280,6 +281,7 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Ftf file                "text file, one 32 bits floating point (ex. 8.32456) per line
         ./icapp -Ftd file                "text file, one 64 bits floating point (ex. 8.324567789) per line
         ./icapp -Ftd file -v5            "like prev., display the first 100 values read
+        ./icapp -Ftd file -v5 -g.00001   "like prev., error bound lossy floating point compression
         ./icapp -Ftt file                "text file, timestamp in seconds iso-8601 -> 32 bits integer (ex. 2018-03-12T04:31:06)
         ./icapp -FtT file                "text file, timestamp in milliseconds iso-8601 -> 64 bits integer (ex. 2018-03-12T04:31:06.345)
         ./icapp -Ftl -D2 -H file         "skip 1th line, convert numbers with 2 decimal digits to 64 bits integers (ex. 456.23 -> 45623)
@@ -423,16 +425,20 @@ header files to use with documentation:<br />
   * <a name="DocId"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
 
 * **Integer compression publications:**
-  * [In Vacuo and In Situ Evaluation of SIMD Codecs (TurboPackV,TurboPFor/QMX)](http://dl.acm.org/citation.cfm?id=3015023) + [paper](http://www.cs.otago.ac.nz/homepages/andrew/papers/)
-  * [SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
-  * [Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
-  * [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
-  * [Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
+  * :green_book:[In Vacuo and In Situ Evaluation of SIMD Codecs (TurboPackV,TurboPFor/QMX)](http://dl.acm.org/citation.cfm?id=3015023) + [paper](http://www.cs.otago.ac.nz/homepages/andrew/papers/)
+  * :green_book:[SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
+  * :green_book:[Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
+  * :green_book:[On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf)
+  * :green_book:[Google's Group Varint Encoding](http://static.googleusercontent.com/media/research.google.com/de//people/jeff/WSDM09-keynote.pdf)
+  * :green_book:[Integer Compression tweets](https://twitter.com/search?q=%23integercompression&src=typd)
+  * :green_book:[Efficient Compression of Scientific Floating-Point Data and An Application in Structural Analysis](https://www.jstage.jst.go.jp/article/jsces/2017/0/2017_20170002/_article)
+  * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
+    :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
 * **Applications:**
   * [Graph500](https://github.com/julianromera/graph500)
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  14 Mar 2018
+Last update:  15 Mar 2018
 
