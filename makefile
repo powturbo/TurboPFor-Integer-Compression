@@ -254,14 +254,10 @@ OB+=transpose_avx2.o
 endif
 
 #------------------------
-ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o ext/trlec.o ext/trled.o
+ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o ext/trlec.o ext/trled.o eliasfano.o
 
 ifeq ($(LZTURBO),1)
-DEFS+=-DLZTURBO
-#OB+=../lz/lz8c.o ../lz/lz8d.o 
-#../lz/lzbc.o ../lz/lz8d.o ../lz/lzbd.o
-ICLIB+=../lz/lz8c0.o ../lz/lz8d.o 
-#../lz/lzbd.o
+include ../lzturbo.mak
 endif
 
 ifeq ($(LZ4),1)
