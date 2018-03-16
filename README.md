@@ -22,15 +22,15 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
-  * Scalar & SIMD Transform: Delta, Delta of delta, Zigzag, Transpose/Shuffle, 
-  * :new: Error bound **lossy** floating point conversion for compression with **TurboPFor** or TurboTranspose + lz
+  * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, Transpose/Shuffle, 
+  * :new: **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77
 * **Floating Point Compression**
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
-  * :new: Error bound **lossy** floating point conversion
+  * :new: Error bound **lossy** floating point compression
 * :new: **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (:new: **zigzag of delta** + **RLE**).
-  * can compress times series to only 0.01%. > 10 GB/s compression and > 13 GB/s decompress.
+  * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
@@ -164,6 +164,15 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |100,000,000|3156|3372|Bitshuffle AVX2|
 |100,000,000|2100|2176|Bitshuffle SSE|
 
+##### - (Lossy) Floating point compression: 
+        ./icapp -Fd file          " 64 bits floating point raw file 
+        ./icapp -Ff file          " 32 bits floating point raw file 
+        ./icapp -Fcf file         " like prev, for text file with miltiple entries (ex.  8.657,56.8,4.5 ...)
+        ./icapp -Ftf file         " like prev, text file (1 entry/line)
+        ./icapp -Ftf file.csv -K3 " like prev, but 3th column in a csv (comma separated file)
+        ./icapp -Ftf file -g.001  " lossy compression with allowed error 0.001
+
+- see also [TurboTranspose](https://github.com/powturbo/TurboTranspose)
 
 ##### - Compressed Inverted Index Intersections with GOV2<br />
    GOV2: 426GB, 25 Millions documents, average doc. size=18k.
@@ -441,5 +450,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  15 Mar 2018
+Last update:  16 Mar 2018
 
