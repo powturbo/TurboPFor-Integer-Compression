@@ -167,9 +167,10 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 ##### - (Lossy) Floating point compression: 
         ./icapp -Fd file          " 64 bits floating point raw file 
         ./icapp -Ff file          " 32 bits floating point raw file 
-        ./icapp -Fcf file         " like prev, for text file with miltiple entries (ex.  8.657,56.8,4.5 ...)
-        ./icapp -Ftf file         " like prev, text file (1 entry/line)
-        ./icapp -Ftf file.csv -K3 " like prev, but 3th column in a csv (comma separated file)
+        ./icapp -Fcf file         " text file with miltiple entries (ex.  8.657,56.8,4.5 ...)
+        ./icapp -Ftf file         " text file (1 entry/line)
+        ./icapp -Ftf file -v5     " + display the first entries read
+        ./icapp -Ftf file.csv -K3 " but 3th column in a csv file (ex. number,Text,456.5 -> 456.5
         ./icapp -Ftf file -g.001  " lossy compression with allowed error 0.001
 
 - see also [TurboTranspose](https://github.com/powturbo/TurboTranspose)
