@@ -168,7 +168,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
         ./icapp -Fd file          " 64 bits floating point raw file 
         ./icapp -Ff file          " 32 bits floating point raw file 
         ./icapp -Fcf file         " text file with miltiple entries (ex.  8.657,56.8,4.5 ...)
-        ./icapp -Ftf file         " text file (1 entry/line)
+        ./icapp -Ftf file         " text file (1 entry per line)
         ./icapp -Ftf file -v5     " + display the first entries read
         ./icapp -Ftf file.csv -K3 " but 3th column in a csv file (ex. number,Text,456.5 -> 456.5
         ./icapp -Ftf file -g.001  " lossy compression with allowed error 0.001
@@ -451,5 +451,5 @@ header files to use with documentation:<br />
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  16 Mar 2018
+Last update:  14 May 2018
 
