@@ -287,8 +287,9 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
         } else {
           while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++; p++; }
 		  double d = strtod(p, &q) - mdelta;  					 	
-          uint64_t u = ctou64(&d);
-		  IPUSH(in,n,-isize,nmax,u);							c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%f  ", p, d); *q = c;
+          uint64_t u;
+          memcpy(&u,&d,sizeof(u));                                       
+ 		  IPUSH(in,n,-isize,nmax,u);										if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; double d; memcpy(&d,&u,sizeof(d)); printf("\'%s\'->%f  ", p, d); *q = c; } 
         }
       }  
       break;
@@ -318,9 +319,10 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
             while((c = getc(fi)) >= '0' && c <= '9')
 		      if(p - s < LSIZE) *p++ = c;
           *p = 0;
-		  double d = strtod(s, &p) - mdelta;           							if(verbose>=5 && n < 100 || verbose>=9) printf("%f ", d);
-          uint64_t u = ctou64(&d);
-          IPUSH(in,n,-isize,nmax,u);		
+		  double d = strtod(s, &p) - mdelta; 
+          uint64_t u;
+          memcpy(&u,&d,sizeof(u));                                            	if(verbose>=5 && n < 100 || verbose>=9) { double d; memcpy(&d,&u,sizeof(u)); printf("\'%s\'->%f  ", s, d); }
+          IPUSH(in,n,-isize,nmax,u);											
         }
         if(c == EOF) break;
       }
@@ -1027,12 +1029,10 @@ int main(int argc, char* argv[]) {
       case 'H': skiph++; 				  	break;
 	  case 'K': { kid = atoi(optarg); if(!keysep) keysep = ",;\t"; } break;
 	  case 'k': keysep = optarg; break;
-      case 'i': if((tm_rep  = atoi(optarg))<=0) 
-		          tm_rep=tm_Rep=1;         	 break;
-      case 'I': tm_Rep  = atoi(optarg);      break;
-      case 'j': if((tm_rep2  = atoi(optarg))<=0) 
-		          tm_rep2=tm_Rep2=1;         break;
-      case 'J': tm_Rep2 = atoi(optarg);      break;
+      case 'i': if((tm_rep  = atoi(optarg))<=0) tm_rep =tm_Rep=1; break;
+      case 'I': if((tm_Rep  = atoi(optarg))<=0) tm_rep =tm_Rep=1; break;
+      case 'j': if((tm_rep2 = atoi(optarg))<=0) tm_rep2=tm_Rep2=1; break;
+      case 'J': if((tm_Rep2 = atoi(optarg))<=0) tm_rep2=tm_Rep2=1; break;
       case 's': isize = argtoi(optarg,1); 	 break;
       case 'B': b = argtoi(optarg,1); 	     break;
       case 'c': cmp++; 				  	     break;
