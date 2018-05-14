@@ -287,7 +287,8 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
         } else {
           while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++; p++; }
 		  double d = strtod(p, &q) - mdelta;  					 	
-		  IPUSH(in,n,-isize,nmax,d);							c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%f  ", p, d); *q = c;
+          uint64_t u = ctou64(&d);
+		  IPUSH(in,n,-isize,nmax,u);							c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%f  ", p, d); *q = c;
         }
       }  
       break;
@@ -318,7 +319,8 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
 		      if(p - s < LSIZE) *p++ = c;
           *p = 0;
 		  double d = strtod(s, &p) - mdelta;           							if(verbose>=5 && n < 100 || verbose>=9) printf("%f ", d);
-          IPUSH(in,n,-isize,nmax,d);		
+          uint64_t u = ctou64(&d);
+          IPUSH(in,n,-isize,nmax,u);		
         }
         if(c == EOF) break;
       }
