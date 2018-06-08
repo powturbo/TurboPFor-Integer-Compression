@@ -101,6 +101,11 @@ ifeq ($(BITSHUFFLE),1)
 CFLAGS+=-DBITSHUFFLE -Iext/bitshuffle/lz4
 endif
 
+ifeq ($(TURBOPFOR),1)
+# use TurboPFor "p4d1enc" instead of the default bitpack functions in "idxcr.c" and "idxqry.c" (inverted index demo)
+DEFS+=-D_TURBOPFOR
+endif
+
 CFLAGS+=$(DDEBUG) -w -Wall -std=gnu99 -DUSE_THREADS  -fstrict-aliasing -Iext $(DEFS)
 CXXFLAGS+=$(DDEBUG) -w -fpermissive -Wall -fno-rtti -Iext/FastPFor/headers $(DEFS)
 
