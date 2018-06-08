@@ -118,9 +118,10 @@ int main(int argc, char *argv[]) {
       for(_op = op, ip = in, ep = ip+num; ip < ep; ) {
         unsigned n = min(ep-ip, BLK_DIDNUM), b = 0,bx;					    if(op+5*n > out+outsize) die("output buffer too small\n"); 
         if(n > 1) { 
+		    #ifndef _TURBOPFOR 
 		  DELTA(ip, n, b); //bitdenc32( in+1, --n, pa, in[0], mode);
-		    #ifdef _TURBOPFOR 
-		  b = _p4dec32(ip+1, n-1, &bx);
+		  //  #ifdef _TURBOPFOR 
+		  //b = _p4bits32(ip+1, n-1, &bx);
 	        #endif
 		} 	
 		    #ifdef SKIP_S
@@ -138,13 +139,12 @@ int main(int argc, char *argv[]) {
         } else vbput32(op, u);						   		// skip not needed
  
 	    if(n > 1) {
-		    #ifndef SKIP_S
-		  *op++ = b; 	
-			#endif
-            #ifdef _TURBOPFOR
-          *op++ = bx; 
-		  op = n==129?_p4dec128v32(  ip+1, n-1, op, b, bx):_p4dec32(   ip+1, n-1, op, b, bx);
+            #ifdef _TURBOPFOR          
+          op = n==129?p4d1enc128v32(  ip+1, n-1, op, u):p4d1enc32(   ip+1, n-1, op, u);//*op++ = bx; op = n==129?_p4enc128v32(  ip+1, n-1, op, b, bx):_p4enc32(   ip+1, n-1, op, b, bx);
             #else
+		      #ifndef SKIP_S
+		  *op++ = b; 	
+			  #endif
 		  op = n==129?bitpack128v32( ip+1, n-1, op, b)    :bitpack32(ip+1, n-1, op, b);
             #endif
         }
