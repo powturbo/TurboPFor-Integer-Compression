@@ -54,6 +54,7 @@
 
 #ifdef NSIMD
 #define bitd1unpack128v32 bitd1unpack32
+#define _p4d1dec128v32    _p4d1dec32
 #endif
 
 //#define STATS
@@ -150,7 +151,7 @@ int postinit( post_t *v, int tid, idxrd_t *idx, unsigned *dids) {
   return v->f_t;
 }
   
-static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v->didno == bno) die("Fatal postdec"); 
+static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { 	if(v->didno == bno) die("Fatal postdec"); 
   unsigned char *p = v->bp;
   if(v->f_t > BLK_DIDNUM) {  													if(bno < 0 || bno >= v->bnum) die("Fatal bno\n");
     unsigned *pix = (unsigned *)p + bno; 													
@@ -163,13 +164,13 @@ static ALWAYS_INLINE unsigned postdec(post_t *v, int bno, unsigned *dids) { if(v
     #endif
 
   if(v->didnum > 1) { 
-  	  #ifndef SKIP_S
-    unsigned b = *p++; 
-	  #endif
       #ifdef _TURBOPFOR
-    unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+    //unsigned bx = *p++; p = v->didnum == 129?_p4d1dec128v32(    p, 128, &dids[1], dids[0], b, bx):_p4d1dec32(   p, v->didnum-1, &dids[1], dids[0], b, bx);
+	p = v->didnum == 129?p4d1dec128v32(    p, 128, &dids[1], dids[0]):p4d1dec32(   p, v->didnum-1, &dids[1], dids[0]);
 	  #else
+  	    #ifndef SKIP_S
+    unsigned b = *p++; 
+	    #endif
     p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
@@ -212,14 +213,13 @@ static ALWAYS_INLINE unsigned postnext(post_t *v, unsigned *dids) {
   v->didnum  = min(v->_f_t, BLK_DIDNUM); 	
   v->_f_t   -= v->didnum;															//STAT(st_dec+=v->didnum);
   if(v->didnum > 1) {
-  	  #ifndef SKIP_S
-    unsigned b = *p++; 
-	  #endif
       #ifdef _TURBOPFOR
-    unsigned bx = *p++;
-	p = v->didnum == 129?p4dd1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4dd1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+    p = v->didnum == 129?p4d1dec128v32(     p, 128, &dids[1], dids[0]   ):p4d1dec32(    p, v->didnum-1, &dids[1], dids[0]);//unsigned bx = *p++;	p = v->didnum == 129?_p4d1dec128v32(    p, 128, &dids[1], dids[0], b, bx):_p4d1dec32(   p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+  	    #ifndef SKIP_S
+    unsigned b = *p++; 
+	    #endif
+    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   dids[v->didnum] = INT_MAX; 
@@ -264,14 +264,13 @@ static ALWAYS_INLINE unsigned postget(post_t *v, unsigned did, unsigned *dids) {
   dids[0]    = v->did; 																		
   																				STAT(st_dec+=v->didnum); STAT(st_decs[st_terms] += v->didnum);
   if(v->didnum > 1) {															STAT(st_blk++);
-  	  #ifndef SKIP_S
-    unsigned b = *p++; 
-	  #endif     
-      #ifdef _TURBOPFOR
-    unsigned bx = *p++;       
-	p = v->didnum == 129?p4d1d128v32(      p, 128, &dids[1], dids[0], b, bx):p4d1d32(     p, v->didnum-1, &dids[1], dids[0], b, bx);
+      #ifdef _TURBOPFOR   
+    p = v->didnum == 129?p4d1dec128v32(     p, 128, &dids[1], dids[0]   ):p4d1dec32(    p, v->didnum-1, &dids[1], dids[0]);//unsigned bx = *p++; p = v->didnum == 129?_p4d1dec128v32(    p, 128, &dids[1], dids[0], b, bx):_p4d1dec32(   p, v->didnum-1, &dids[1], dids[0], b, bx);
 	  #else
-    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b    ):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
+  	    #ifndef SKIP_S
+    unsigned b = *p++; 
+	    #endif     
+    p = v->didnum == 129?bitd1unpack128v32( p, 128, &dids[1], dids[0], b):bitd1unpack32(p, v->didnum-1, &dids[1], dids[0], b);
 	  #endif	
   }
   dids[v->didnum] = v->ldid&INT_MAX; v->didno = 0; goto a;
