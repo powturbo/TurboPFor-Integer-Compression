@@ -32,8 +32,8 @@
 //#define _TURBOPFOR     	// for compact version     			12 GB  
 
   #ifdef _TURBOPFOR
-#define SKIP_S 6 
-#define SKIP_SIZE 2  		// no implicit skip
+//#define SKIP_S 6 
+#define SKIP_SIZE 2  		// always no implicit skip. 
   #else
 //#define SKIP_S 5
 #define SKIP_SIZE 2  	    // no implicit skips 
