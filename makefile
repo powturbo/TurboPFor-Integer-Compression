@@ -262,7 +262,7 @@ endif
 ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o ext/trlec.o ext/trled.o eliasfano.o
 
 ifeq ($(LZTURBO),1)
-include lzturbo.mak
+include ~/dev/x/lzturbo.mk
 endif
 
 ifeq ($(LZ4),1)
