@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -22,11 +22,25 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //     "Integer Compression: max.bits, delta, zigzag, xor"
+  #ifdef __AVX2__
+#include <immintrin.h>
+  #elif defined(__AVX__)
+#include <immintrin.h>
+  #elif defined(__SSE4_1__)
+#include <smmintrin.h>
+  #elif defined(__SSSE3__)
+#include <tmmintrin.h>
+  #elif defined(__SSE2__)
+#include <emmintrin.h>
+  #elif defined(__ARM_NEON)
+#include <arm_neon.h>
+  #endif
   #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
   #else 
 #include <stdint.h>
   #endif
+#include "sse_neon.h"
 
 #define BITFORSET_(_out_, _n_, _start_, _mindelta_) do { unsigned _i;\
   for(_i = 0; _i != (_n_&~3); _i+=4) {\
@@ -51,26 +65,24 @@
 #define BITSIZE16(_in_, _n_, _b_) BITSIZE_(_in_, _n_, _b_, 16)
 #define BITSIZE64(_in_, _n_, _b_) BITSIZE_(_in_, _n_, _b_, 64)
 
-static inline unsigned char      zigzagenc8( char           x) { return x << 1 ^   x >> 7; }
-static inline          char      zigzagdec8( unsigned char  x) { return x >> 1 ^ -(x &  1); }
+static inline unsigned char      zigzagenc8( signed char    x)     { return x << 1 ^   x >> 7; }
+static inline          char      zigzagdec8( unsigned char  x)     { return x >> 1 ^ -(x &  1); }
 
-static inline unsigned short     zigzagenc16(short          x) { return x << 1 ^   x >> 15; }
-static inline          short     zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
+static inline unsigned short     zigzagenc16(short          x)     { return x << 1 ^   x >> 15; }
+static inline          short     zigzagdec16(unsigned short x)     { return x >> 1 ^ -(x &   1); }
 
-static inline unsigned       	 zigzagenc31(int      x)       { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; } // for signed x
-static inline unsigned       	 zigzagdec31(unsigned x)       { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
+static inline unsigned       	 zigzagenc31(int      x)           { x = (x << 2 | ((x>>30)&  2)) ^   x >> 31; return x; } // for signed x
+static inline unsigned       	 zigzagdec31(unsigned x)           { return (x >> 2 |  (x&  2)<<30 ) ^ -(x &   1); }
 static inline unsigned long long zigzagenc63(long long          x) { x = (x << 2 | ((x>>62)&  2)) ^   x >> 63; return x; } // for signed x
 static inline          long long zigzagdec63(unsigned long long x) { return (x >> 2 |  (x&  2)<<62 ) ^ -(x &   1); }
 
-static inline unsigned       	 zigzagenc32(int      x)       { return x << 1 ^   x >> 31; }
-static inline int      	         zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
+static inline unsigned       	 zigzagenc32(int      x)           { return x << 1 ^   x >> 31; }
+static inline int      	         zigzagdec32(unsigned x)           { return x >> 1 ^ -(x &   1); }
 
-static inline uint64_t           zigzagenc64(int64_t  x)       { return x << 1 ^ x >> 63; }
-static inline  int64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
+static inline uint64_t           zigzagenc64(int64_t  x)           { return x << 1 ^ x >> 63; }
+static inline  int64_t           zigzagdec64(uint64_t x)           { return x >> 1 ^ -(x & 1); }
 
   #ifdef __AVX2__
-#include <immintrin.h>
-
 #define DELTA256x32(_v_, _sv_) _mm256_sub_epi32(_v_, _mm256_alignr_epi8(_v_, _mm256_permute2f128_si256(_sv_, _v_, _MM_SHUFFLE(0, 2, 0, 1)), 12))
 
 #define SCAN256x32( _v_, _sv_) {\
@@ -87,25 +99,28 @@ static inline  int64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
 #define HOR256x32(_v_,_b_) _v_ = _mm256_or_si256(_v_, _mm256_srli_si256(_v_, 8)); _v_ = _mm256_or_si256(_v_, _mm256_srli_si256(_v_, 4)); _b_ = _mm256_extract_epi32(_v_,0) | _mm256_extract_epi32(_v_, 4)
   #endif 
 
-  #ifdef __SSE2__
-#include <emmintrin.h>
-
-    #ifdef __SSSE3__
-#include <tmmintrin.h>
+  #if defined(__SSE2__) || defined(__ARM_NEON)
+    #if defined(__SSSE3__) || defined(__ARM_NEON)
 #define DELTA128x16(_v_, _sv_) _mm_sub_epi16(_v_, _mm_alignr_epi8(_v_, _sv_, 14))
-#define DELTA128x32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_alignr_epi8(_v_, _sv_, 12))
+#define DELTA128x32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_alignr_epi8(_v_, _sv_, 12)) 
 
 // SIMD Scan ( prefix sum ) 
 #define SCAN128x16( _v_, _sv_) {\
   _v_  = _mm_add_epi16(_v_, _mm_slli_si128(_v_, 2));\
   _v_  = _mm_add_epi16(_v_, _mm_slli_si128(_v_, 4));\
-  _sv_ = _mm_add_epi16(_mm_add_epi16(_v_, _mm_slli_si128(_v_, 8)), _mm_shuffle_epi8(_sv_, _mm_set_epi8(15,14,15,14,15,14,15,14,15,14,15,14,15,14,15,14)));\
+  _sv_ = _mm_add_epi16(_mm_add_epi16(_v_, _mm_slli_si128(_v_, 8)), _mm_shuffle_epi8(_sv_, _mm_set1_epi16(0x0f0e)/*_mm_set_epi8(15,14,15,14,15,14,15,14,15,14,15,14,15,14,15,14)*/));\
 }
     #else
 #define DELTA128x16(_v_, _sv_) _mm_sub_epi16(_v_, _mm_or_si128(_mm_srli_si128(_sv_, 14), _mm_slli_si128(_v_, 2)))
 #define DELTA128x32(_v_, _sv_) _mm_sub_epi32(_v_, _mm_or_si128(_mm_srli_si128(_sv_, 12), _mm_slli_si128(_v_, 4)))
     #endif
-#define SCAN128x32( _v_, _sv_) _v_ = _mm_add_epi32(_v_, _mm_slli_si128(_v_, 4)); _sv_ = _mm_add_epi32(_mm_shuffle_epi32(_sv_, _MM_SHUFFLE(3, 3, 3, 3)), _mm_add_epi32(_mm_slli_si128(_v_, 8), _v_) )
+
+#define SUBI128x16(_v_, _sv_) _mm_sub_epi16(_v_, _sv_)
+#define SUBI128x32(_v_, _sv_) _mm_sub_epi32(_v_, _sv_)
+#define ADDI128x16(_v_, _sv_, _vi_) _sv_ = _mm_add_epi16(_mm_add_epi16(_sv_, _vi_),_v_)
+#define ADDI128x32(_v_, _sv_, _vi_) _sv_ = _mm_add_epi32(_mm_add_epi32(_sv_, _vi_),_v_)
+
+#define SCAN128x32( _v_, _sv_) _v_ = _mm_add_epi32(_v_, _mm_slli_si128(_v_, 4)); _sv_ = _mm_add_epi32(mm_shuffle_nnnn_epi32(_sv_, 3), _mm_add_epi32(_mm_slli_si128(_v_, 8), _v_) )  // _mm_shuffle_epi32(_sv_, _MM_SHUFFLE(3, 3, 3, 3))
 
 #define SCANI128x16(_v_, _sv_, _vi_) SCAN128x16(_v_, _sv_); _sv_ = _mm_add_epi16(_sv_, _vi_)
 #define SCANI128x32(_v_, _sv_, _vi_) SCAN128x32(_v_, _sv_); _sv_ = _mm_add_epi32(_sv_, _vi_)
@@ -146,7 +161,7 @@ static inline  int64_t           zigzagdec64(uint64_t x)       { return x >> 1 ^
   _sv = _mm256_add_epi32(_sv, _cv); _cv = _mm256_set1_epi32(4*_mindelta_); do { _mm256_storeu_si256(_ov++, _sv), _sv = _mm256_add_epi32(_sv, _cv); } while(_ov < _ove);\
 } while(0)
 
-  #elif defined(__SSE2__)  && defined(USE_SSE) // ------------- 
+  #elif (defined(__SSE2__) || defined(__ARM_NEON)) && defined(USE_SSE) // ------------- 
 #define BITSIZE32(_in_, _n_, _b_) { unsigned *_ip; __m128i _v = _mm_setzero_si128();\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip+=4)\
     _v = _mm_or_si128(_v, _mm_loadu_si128((__m128i*)_ip));\
@@ -209,6 +224,9 @@ unsigned bitd18(    uint8_t  *in, unsigned n, uint8_t  start);
 unsigned bitd116(   uint16_t *in, unsigned n, uint16_t start);
 unsigned bitd132(   uint32_t *in, unsigned n, uint32_t start);
 unsigned bitd164(   uint64_t *in, unsigned n, uint64_t start);
+
+unsigned bits128v16(   uint16_t *in, unsigned n, uint16_t start);
+unsigned bits128v32(   uint32_t *in, unsigned n, uint32_t start);
 //-- in-place reverse delta of delta (encoded w/ bitdiencNN and parameter mindelta = 1)  
 void bitd1dec8(     uint8_t  *p,  unsigned n, uint8_t  start); // non strictly decreasing (out[i] = in[i] - in[i-1] - 1)
 void bitd1dec16(    uint16_t *p,  unsigned n, uint16_t start);
@@ -309,3 +327,4 @@ void padfloat64(double *in, size_t n, double *out, double e);
 #ifdef __cplusplus
 }
 #endif
+
