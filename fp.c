@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -112,6 +112,7 @@
 #define ZDEC(_u_ , _h_, _usize_) (TEMPLATE2(zigzagdec,_usize_)(_u_)+(_h_))
 
 #define uint_t TEMPLATE3(uint, USIZE, _t)
+#define int_t  TEMPLATE3(int,  USIZE, _t)
 
 //---- Last value Predictor. (same as p4zenc)
 size_t TEMPLATE2(fppenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
@@ -393,11 +394,11 @@ size_t TEMPLATE2(bvzzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t
           return 1+n*sizeof(out[0]); 
         }
 		bitget(bw,br,3,b); bitget64(bw,br,(b+1)<<3,r,ip); bitdnorm(bw,br,ip);//RLE     //r+=NL; while(r--) *op++=(start+=pd);
-		  #if defined(__SSE2__) && USIZE == 32
+		  #if (defined(__SSE2__) /*|| defined(__ARM_NEON)*/) && USIZE == 32
         __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4*pd,3*pd,2*pd,1*pd); 
 		for(r += NL, _op = op; op != _op+(r&~7);) {
-		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = _mm_shuffle_epi32(sv, _MM_SHUFFLE(3, 3, 3, 3)); op += 4; 
-		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = _mm_shuffle_epi32(sv, _MM_SHUFFLE(3, 3, 3, 3)); op += 4; 
+		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = mm_shuffle_nnnn_epi32(sv, 3); op += 4; //_mm_shuffle_epi32(sv, _MM_SHUFFLE(3, 3, 3, 3))->mm_shuffle_nnnn_epi32(sv, 3)
+		  sv = _mm_add_epi32(sv,cv); _mm_storeu_si128(op, sv); sv = mm_shuffle_nnnn_epi32(sv, 3); op += 4; 
 		}
         start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
 		  #else
@@ -495,7 +496,7 @@ size_t TEMPLATE2(bvzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
           return 1+n*sizeof(out[0]); 
         }
 		bitget(bw,br,3,b); bitget64(bw,br,(b+1)<<3,r,ip); bitdnorm(bw,br,ip);//RLE     //r+=NL; while(r--) *op++=(start+=pd);
-		  #if defined(__SSE2__) && USIZE == 32
+		  #if (defined(__SSE2__) || defined(__ARM_NEON)) && USIZE == 32
         __m128i sv = _mm_set1_epi32(start); 
 		for(r += NL, _op = op; op != _op+(r&~7);) {
 		  _mm_storeu_si128(op, sv); op += 4; 
@@ -518,6 +519,71 @@ size_t TEMPLATE2(bvzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
   bitalign(bw,br,ip);
   return ip - in;
 }
+
+#if 1
+size_t TEMPLATE2(bvzaenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t       _p[VSIZE+32], *ip, *p; int_t pd=0,sum=0;
+  unsigned char *op = out;
+  
+  #define FE(i,_usize_) { TEMPLATE3(uint, USIZE, _t) u = ip[i]; start = u-start; sum+=(int_t)start; p[i] = ZENC(start,pd,_usize_); start = u; }
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
+    for(p = _p; p != &_p[VSIZE]; p+=8,ip+=8) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); FE(4,USIZE); FE(5,USIZE); FE(6,USIZE); FE(7,USIZE); pd = sum/8; sum = 0;}
+	op = TEMPLATE2(P4ENC,USIZE)(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
+  }   
+  if(n = (in+n)-ip) { 					
+    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+    op = TEMPLATE2(P4ENC,USIZE)(_p, n, op);
+  }
+  return op - out;
+}
+
+size_t TEMPLATE2(bvzadec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
+  uint_t       _p[VSIZE+32],*p, *op; int_t pd=0, sum=0; 
+  unsigned char *ip = in;
+
+  #define FD(i,_usize_) { TEMPLATE3(uint, USIZE, _t) u = ZDEC(p[i],start+pd,_usize_); op[i] = u; sum += (int_t)(u-start); start = u; }
+  for(op = out; op != out+(n&~(VSIZE-1)); ) { 							__builtin_prefetch(ip+512, 0);
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=8,op+=8) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); FD(4,USIZE); FD(5,USIZE); FD(6,USIZE); FD(7,USIZE); pd = sum/8; sum = 0; }
+  }
+  if(n = (out+n) - op)
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
+  return ip - in;
+}
+
+size_t TEMPLATE2(fphenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
+  uint_t      *ip, h = 0, _p[VSIZE], *p;
+  uint_t      level0 = start/*in[0]*/, slope0 = 0; //in[1] - in[0];
+  uint_t        a = 0,b = 0;
+  unsigned char *op = out;
+
+  #define FE(i,_usize_) { uint_t u = ip[i]; p[i] = ZENC(u, level0+slope0,_usize_); uint_t level1 = a*u + (1.0-a)*(level0 + slope0); slope0 = b*(level1 - level0) + (1 - b)*slope0; level0 = level1; } 
+  for(ip = (uint_t *)in; ip != in + (n&~(VSIZE-1)); ) {
+    for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }  
+	op = TEMPLATE2(P4ENC,USIZE)(_p, VSIZE, op); 													__builtin_prefetch(ip+512, 0);
+  }
+  if(n = ((uint_t *)in+n)-ip) {
+    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+    op = TEMPLATE2(P4ENC,USIZE)(_p, n, op);
+  }
+  return op - out;
+}
+
+size_t TEMPLATE2(fphdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
+  uint_t      *op, h = 0, _p[VSIZE+32],*p;
+  uint_t pred = 0, level0 = start, slope0 = 0;
+  uint_t a = 0,b = 0;
+  unsigned char *ip = in;
+
+  #define FD(i,_usize_) { uint_t u = ZDEC(p[i],(level0+slope0),_usize_); op[i] = u; uint_t level1 = a*u + (1.0-a)*(level0 + slope0); slope0 = b*(level1 - level0) + (1-b)*slope0; level0 = level1; }
+  for(op = (uint_t*)out; op != out+(n&~(VSIZE-1)); ) { 															__builtin_prefetch(ip+512, 0);
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, VSIZE, _p), p = _p; p != &_p[VSIZE]; p+=4,op+=4) { FD(0,USIZE); FD(1,USIZE); FD(2,USIZE); FD(3,USIZE); }
+  }
+  if(n = ((uint_t *)out+n) - op)
+	for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
+  return ip - in;
+}
+
+#endif
 
 #undef USIZE
   #endif
