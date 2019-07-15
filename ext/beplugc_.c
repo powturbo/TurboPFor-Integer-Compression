@@ -82,16 +82,15 @@
     case P_QMX:  		{ JASS::compress_integer_qmx_improved    qmx; unsigned r=qmx.encode(out+4, outsize, (uint32_t *)in, n); ctou32(out)=r; return out+4+r; } 
 	  #endif
 	  
-      #if C_SIMDCOMP
+      #if C_SIMDCOMP128
     //case SC_PACK:    	if(b < 0) { b = maxbits_length(in,n); *out++ = b; } return fastpackwithoutmask32(in, n, (uint32_t *)out, b);                                                                                                                              
     case SC_FOR:
     case SC_FORDA:
     case SC_SIMDPACK128:if(b < 0) b =    maxbits(in), *out++ = b; return (unsigned char *)simdpack_length(in, n, (__m128i *)out, b);
-        #ifdef __AVX2__
-    case SC_SIMDPACK256:if(b < 0) b = avxmaxbits(in), *out++ = b; return (unsigned char *)avxpackwithoutmaskn(in, n, (unsigned *)out, b);
-        #endif
       #endif
-
+      #if C_SIMDCOMP256
+    case SC_SIMDPACK256:if(b < 0) b = avxmaxbits(in), *out++ = b; return (unsigned char *)avxpackwithoutmaskn(in, n, (unsigned *)out, b);
+      #endif
 	  #if C_STREAMVBYTE
     case P_STREAMVBYTE: return out + streamvbyte_encode(in, n, out); 
       #endif   

@@ -22,7 +22,7 @@
   { FP_GROUPSIMPLE,	"FP_GROUPSIMPLE", 	C_FASTPFOR128,	    0,    	 0,"","Group Simple" },
 
   { SC_SIMDPACK128,	"SC_SIMDPack128", 	C_SIMDCOMP128,	BLK_V128,0,"","Bit packing (SSE4.1)"},
-  { SC_SIMDPACK256,	"SC_SIMDPack256", 	C_SIMDCOMP128,	BLK_V256,0,"","Bit packing (SSE4.1)"},
+  { SC_SIMDPACK256,	"SC_SIMDPack256", 	C_SIMDCOMP256,	BLK_V256,0,"","Bit packing (SSE4.1)"},
   { SC_FOR,		   	"SC_For", 	        C_SIMDCOMP128,	BLK_V128,0,"","For (SSE4.1)"},
   { SC_FORDA,	 	"SC_ForDA", 		C_SIMDCOMP128,	BLK_V128,0,"","For direct access (SSE4.1)"},
 

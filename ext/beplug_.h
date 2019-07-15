@@ -90,7 +90,7 @@ extern "C" {
 }
 #endif
   
-  #if C_SIMDCOMP
+  #if C_SIMDCOMP128
 #undef SIMDBITPACKING_H_
 #include "vabyte.h"                                     // Standard Variable Byte
 #include "simdcomp/include/simdcomp.h"  
@@ -112,7 +112,9 @@ unsigned char *simdfor_selectx( unsigned char *__restrict in, unsigned n, unsign
     unsigned i; 
     for(i=0; i < n;i++) out[i] = simdselectFOR(start, (const __m128i *)in, b, i); return in + simdpackFOR_compressedbytes(n, b); 
 }
-    #ifdef __AVX2__
+  #endif
+  #if C_SIMDCOMP256
+#undef SIMDBITPACKING_H_
 unsigned char *avxpackwithoutmaskn(uint32_t *in, uint32_t n, uint32_t *out, uint32_t b) {
   uint32_t *ip;
   for(ip = in; ip != in+(n&~(256-1)); ip += 256,out += 8 * b)
@@ -125,7 +127,6 @@ unsigned char *avxunpackn(uint32_t *in, uint32_t n, uint32_t *out, uint32_t b) {
 	avxunpack((__m256i *)in, op, b); 
   return (unsigned char *)simdunpack_shortlength((__m128i *)in,  n & (256-1), op, b);
 }  
-    #endif
   #endif
 
   #if C_BITSHUFFLE

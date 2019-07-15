@@ -18,7 +18,7 @@
       return (unsigned char *)ip; 
     }
 
-	case FP_SIMDFASTPFOR:  { 	
+	case FP_SIMDFASTPFOR:  {
 	  size_t nvalue = n;
       FastPForLib::SIMDFastPFor<4> ic; const uint32_t *ip = ic.decodeArray((const uint32_t *)(in+4), ctou32(in), out, nvalue);
       if(n & 127) { 
@@ -81,14 +81,14 @@
     case PC_OPTPFD : 	 return optpfddec32(   in, n, out); //if(n < 128) return vbytedec(in, n, out); else { unsigned all_array[2048]; return (unsigned char *)detailed_p4_decode(out, (unsigned *)in, all_array); }
      #endif
 
-      #if C_SIMDCOMP 
+      #if C_SIMDCOMP128 
 	//case SC_PACK:          if(b < 0) b = *in++; return fastunpack32((uint32_t *)in, n, out, b); 
     case SC_FOR:
     case SC_SIMDPACK128: if(b < 0) b = *in++; return (unsigned char *)simdunpack_length( (__m128i *)in, n, out, b); 
     case SC_FORDA:  	 if(b < 0) b = *in++; return simdfor_selectx(in, n, out, 0, b);            
-        #ifdef __AVX2__
+      #endif
+      #if C_SIMDCOMP256 
     case SC_SIMDPACK256: if(b < 0) b = *in++; return (unsigned char *)avxunpackn( (unsigned *)in, n, out, b); 
-        #endif
       #endif
 
 	  #if C_STREAMVBYTE 
