@@ -17,13 +17,36 @@ CXX ?= g++
 #CC=clang
 #CXX=clang++
 
+#CC = gcc-8
+#CXX = g++-8
+
+ifeq ($(OS),Windows_NT)
+  UNAME := Windows
+CC=gcc
+CXX=g++
+else
+  UNAME := $(shell uname -s)
+ifeq ($(UNAME),$(filter $(UNAME),Darwin FreeBSD GNU/kFreeBSD Linux NetBSD SunOS))
+LDFLAGS+=-lpthread -lrt 
+UNAMEM := $(shell uname -m)
+#ifeq ($(UNAMEM),aarch64)
+#NSIMD=1
+#endif
+endif
+endif
+
 DDEBUG=-DNDEBUG -s
 #DDEBUG=-g
 
+ifeq ($(UNAMEM),aarch64)
+# ARMv8 
+MSSE=-march=native
+else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
+endif
 
 # Minimum CPU architecture 
 MARCH=-march=native
@@ -33,7 +56,11 @@ MARCH=-march=native
 ifeq ($(NSIMD),1)
 DEFS+=-DNSIMD
 else
-CFLAGS+=-DUSE_SSE -mssse3
+CFLAGS+=-DUSE_SSE 
+ifeq ($(UNAMEM),aarch64)
+else
+CFLAGS+=-mssse3
+endif
 CXXFLAGS+=-DUSE_SSE
 endif
 
@@ -43,6 +70,11 @@ CFLAGS+=-DUSE_AVX2
 CXXFLAGS+=-DUSE_AVX2
 else
 AVX2=0
+endif
+
+ifeq ($(CODEC1),1)
+LZ4=1
+BITSHUFFLE=1
 endif
 
 #----------------------------------------------
@@ -76,7 +108,7 @@ endif
 #---------------------- make args --------------------------
 ifeq ($(CODEC1),1)
 DEFS+=-DCODEC1=1
-CFLAGS+=-Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include
+CFLAGS+=-Iext/lz4/lib -Iext/simdcomp/include -Iext/MaskedVByte/include -Iext/LittleIntPacker/include -Iext/streamvbyte/include -Iext/streamvbyte/src
 endif
 
 ifeq ($(CODEC2),1)
@@ -183,40 +215,54 @@ varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h
 
 #-------------------------------------------------------------------
 ifeq ($(CODEC1), 1)
-OB+=ext/streamvbyte/src/streamvbyte.o ext/streamvbyte/src/streamvbytedelta.o 
+ifeq ($(UNAMEM),aarch64)
+CFLAGS+=-D__ARM_NEON__
+endif
+OB+=ext/libfor/for.o
+
+OB+=ext/LittleIntPacker/src/bitpacking32.o ext/LittleIntPacker/src/turbobitpacking32.o ext/LittleIntPacker/src/scpacking32.o
+
+SV=ext/streamvbyte/src/
+XLIB+=$(SV)streamvbyte_decode.o $(SV)streamvbyte_encode.o $(SV)streamvbytedelta_encode.o $(SV)streamvbytedelta_decode.o $(SV)streamvbyte_0124_encode.o  $(SV)streamvbyte_0124_decode.o $(SV)streamvbyte_zigzag.o
+
+OB+=ext/rc.o
+
+OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o  
+LZ4=1
+BITSHUFFLE=1
+
+ifeq ($(UNAMEM),aarch64)
+#OB+=ext/LittleIntPacker/src/util.o
+else
+# Only x86
+OB+=ext/LittleIntPacker/src/horizontalpacking32.o
 OB+=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 OB+=ext/simdcomp/src/simdintegratedbitpacking.o ext/simdcomp/src/simdcomputil.o ext/simdcomp/src/simdbitpacking.o ext/simdcomp/src/simdpackedselect.o 
 OB+=ext/simdcomp_/simdfor.o
 
 ifeq ($(AVX2),1)
 OB+=ext/simdcomp/src/avxbitpacking.o 
-endif
-
-OB+=ext/LittleIntPacker/src/bitpacking32.o ext/LittleIntPacker/src/turbobitpacking32.o ext/LittleIntPacker/src/scpacking32.o ext/LittleIntPacker/src/horizontalpacking32.o
-ifeq ($(AVX2),1)
 OB+=ext/LittleIntPacker/src/bmipacking32.o
 endif
 
-OB+=ext/libfor/for.o
 ifeq ($(QMX),1)
 OB+=ext/JASSv2/source/compress_integer_qmx_improved.o ext/JASSv2/source/asserts.o
 endif
 OB+=ext/varintg8iu.o
-OB+=ext/rc.o
-OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o  
-LZ4=1
-BITSHUFFLE=1
+endif
 endif
 
 #----------------------------------------
 ifeq ($(CODEC2), 1)
+OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
+
+OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o
+
 ext/polycom/optpfd.o: ext/polycom/optpfd.c
 	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@ 
 
 OB+=ext/polycom/optpfd.o
 OB+=ext/polycom/polyvbyte.o
-
-OB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o
 OB+=ext/simple8b.o 
 
 ifeq ($(HAVE_ZLIB), 1)
@@ -230,6 +276,10 @@ else
 #ZD=zlib/
 #OB+=$(ZD)adler32.o $(ZD)crc32.o $(ZD)compress.o $(ZD)deflate.o $(ZD)infback.o $(ZD)inffast.o $(ZD)inflate.o $(ZD)inftrees.o $(ZD)trees.o $(ZD)uncompr.o $(ZD)zutil.o
 endif
+
+ifeq ($(UNAMEM),aarch64)
+else
+OB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o
 
 ifeq ($(BLOSC),1)
 LDFLAGS+=-lpthread 
@@ -245,24 +295,20 @@ ext/c-blosc/blosc/bitshuffle-generic.o ext/c-blosc/blosc/bitshuffle-sse2.o
 
 #OB+=ext/c-blosc2/blosc/delta.o ext/c-blosc2/blosc/schunk.o 
 else
-ifeq ($(AVX2),1)
-#CFLAGS+=-DUSEAVX2
 endif
-OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o
 endif
 
-endif
-
-OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
 ifeq ($(AVX2),1)
 OB+=transpose_avx2.o 
 endif
+endif
 
+OB+=$(XLIB)
 #------------------------
-ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o ext/trlec.o ext/trled.o eliasfano.o
+ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o trlec.o trled.o eliasfano.o
 
 ifeq ($(LZTURBO),1)
-include ~/dev/x/lzturbo.mk
+include lzturbo.mak
 endif
 
 ifeq ($(LZ4),1)
@@ -305,7 +351,7 @@ idxseg:   idxseg.o $(ICLIB)
 ictest:   ictest.o $(ICLIB)
 	$(CC) $^ $(LDFLAGS) -o ictest
 
-icapp:   icapp.o $(ICLIB)
+icapp:   icapp.o $(ICLIB) $(XLIB)
 	$(CC) $^ $(LDFLAGS) -o icapp
 
 ifeq ($(UNAME), Linux)
@@ -321,7 +367,7 @@ idxqry:  idxqry.o $(ICLIB)
 
 clean:
 	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete -or -name "icbench" -delete -or -name "idxqry" -delete
-	@find . -type f -name "icbench" -delete -or -name "idxqry" -delete -or -name "idxseg" -delete -or -name "idxcr" -delete
+	@find . -type f -name "icbench" -delete -or -name "idxqry" -delete -or -name "idxseg" -delete -or -name "idxcr" -delete -or -name "icapp" -delete
 
 cleanw:
 	del /S ..\*.o
