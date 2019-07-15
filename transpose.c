@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,9 @@
 #include <tmmintrin.h>
   #elif defined(__SSE2__)
 #include <emmintrin.h>
+  #elif defined(__ARM_NEON)
+#include <arm_neon.h>
+#include "sse_neon.h"
   #endif
 #pragma warning( disable : 4005) 
   
@@ -118,12 +121,13 @@
 
 //--------------------- CPU detection -------------------------------------------
 #if (_MSC_VER >=1300) || defined (__INTEL_COMPILER)
-#include <intrin.h>
+#include <x86intrin.h>
 #endif
 
-#if !defined(SSE2_ON) && !defined(AVX2_ON) 
+#if !defined(SSE2_ON) && !defined(AVX2_ON)
+  #if defined(__i386__) || defined(__x86_64__)
 static inline void cpuid(int reg[4], int id) {	
-    #if defined (_MSC_VER) || defined (__INTEL_COMPILER)       
+    #if defined (_MSC_VER) //|| defined (__INTEL_COMPILER)       
   __cpuidex(reg, id, 0);                   
     #elif defined(__i386__) || defined(__x86_64__) 
   __asm("cpuid" : "=a"(reg[0]),"=b"(reg[1]),"=c"(reg[2]),"=d"(reg[3]) : "a"(id),"c"(0) : );
@@ -145,11 +149,13 @@ static inline uint64_t xgetbv (int ctr) {
 
 static int _cpuiset;                                  
 int cpuini(int cpuiset) { if(cpuiset) _cpuiset = cpuiset; return _cpuiset; }
+
 char *cpustr(int cpuiset) { 
-       if(_cpuiset >= 52) return "avx2";
-  else if(_cpuiset >= 41) return "sse4.1";
-  else if(_cpuiset >= 31) return "sse3";
-  else if(_cpuiset >= 20) return "ss2";
+       if(cpuiset >= 52) return "avx2";
+  else if(cpuiset >= 50) return "avx";
+  else if(cpuiset >= 41) return "sse4.1";
+  else if(cpuiset >= 31) return "sse3";
+  else if(cpuiset >= 20) return "sse2";
   else return "none";
 }
 
@@ -177,7 +183,10 @@ int cpuiset(void) {
 	}}}}}}}}} 
   return _cpuiset;
 }
-
+  #else
+int cpuini(int cpuiset) { return 0; }
+int cpuiset(void) { return 0; }
+  #endif
 //---------------------------------------------------------------------------------
 typedef void (*TPFUNC)( unsigned char *in, unsigned n, unsigned char *out);
 
@@ -197,7 +206,7 @@ void tpini(int id) {
   if(tpset) return; 
   tpset++;   
   i = id?id:cpuiset();
-  #if defined(USE_AVX2)
+  #ifdef USE_AVX2
   if(i >= 52) {  
     _tpe[2] = tpenc256v2; _tpd[2] = tpdec256v2; _tp4e[2] = tp4enc256v2; _tp4d[2] = tp4dec256v2; 
     _tpe[4] = tpenc256v4; _tpd[4] = tpdec256v4; _tp4e[4] = tp4enc256v4; _tp4d[4] = tp4dec256v4; 
@@ -348,13 +357,13 @@ void TEMPLATE2(TPDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
 
 #if ESIZE == 2 || ESIZE == 4 || ESIZE == 8
 
-  #if defined(__SSE2__) && defined(SSE2_ON)  
+  #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(SSE2_ON)  
 void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {   
   unsigned       v = n&~(ESIZE*16-1); 
   unsigned stride = v/STRIDE; 
   unsigned char *op,*ip;
 
-    #ifdef __SSE3__
+    #if defined(__SSE3__) || defined(__ARM_NEON)
 	  #if ESIZE == 2
   __m128i sv = _mm_set_epi8(15, 13, 11, 9, 7, 5, 3, 1, 
                             14, 12, 10, 8, 6, 4, 2, 0);
@@ -381,7 +390,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
   for(ip = in, op = out; ip != in+v; op += ESIZE*16/STRIDE) { unsigned char *p = op;
     __m128i iv[ESIZE],ov[ESIZE];
-      #ifdef __SSSE3__
+      #if defined(__SSSE3__) || defined(__ARM_NEON)
         #if   ESIZE == 2
     ov[0] = LD128((__m128i *)ip);      ov[0] = _mm_shuffle_epi8(ov[0], sv); 
     ov[1] = LD128((__m128i *)(ip+16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); ip+= 32; PREFETCH(ip);
@@ -445,7 +454,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[7] = _mm_unpackhi_epi64(ov[3], ov[7]);
         #endif        
 																			
-      #elif defined(__SSE2__)
+      #elif defined(__SSE2__) || defined(__ARM_NEON)
         #if ESIZE == 2
     iv[0] = LD128((__m128i *)ip); ip += 16;
     iv[1] = LD128((__m128i *)ip); ip += 16;		PREFETCH(ip);
