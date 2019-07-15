@@ -188,7 +188,7 @@ unsigned char *bitunpack32( const unsigned char *__restrict in, unsigned n, uint
 unsigned char *bitunpack64( const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, unsigned b);
 
 // ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------
-  #ifndef NTURBOPFOR_DAC
+  #ifdef TURBOPFOR_DAC
     #if defined(__AVX2__) && defined(AVX2_ON)
 #include <immintrin.h>
 #define bzhi64(_u_, _b_) _bzhi_u64(_u_, _b_)
