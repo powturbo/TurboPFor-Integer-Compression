@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,12 @@
 **/
 //  "Integer Compression" variable simple
   #ifndef USIZE
-  #ifdef __SSE2__
+    #ifdef __SSE2__
 #include <emmintrin.h>
-  #endif
+    #elif defined(__ARM_NEON)
+#include <arm_neon.h>
+#include "sse_neon.h"
+    #endif
 #pragma warning( disable : 4005) 
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
@@ -326,7 +329,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
       case 0: { 
         uint_t *q = op; 
         unsigned r = (w>>4)&0xf; 
-          #ifdef __SSE2__
+            #if defined(__SSE2__) || defined(__ARM_NEON)
         __m128i zv = _mm_setzero_si128();
           #endif 
 		ip++; 
@@ -337,7 +340,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
         }          
 		op += r+1; 
         while(q < op) { 
-            #ifdef __SSE2__
+            #if defined(__SSE2__) || defined(__ARM_NEON)
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
           _mm_storeu_si128((__m128i *)q,zv); q = (uint_t *)((unsigned char *)q+16);
             #else
@@ -457,7 +460,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
           else { vbxget32(ip, r); }
         } 
         op += r+1; TEMPLATE2(vbxget, USIZE)(ip,u);  
-          #if defined(__SSE2__) && USIZE == 32
+          #if (defined(__SSE2__) || defined(__ARM_NEON)) && USIZE == 32
 		{ __m128i v = _mm_set1_epi32(u);
           while(q < op) { 
             _mm_storeu_si128((__m128i *)q,v); q += 4;
