@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -1062,7 +1062,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, unsigned isize, FILE *
 	in = malloc(n*isize+OVD); 												if(!in) die("malloc err=%u", nmax);
 	
     zipfgen((unsigned *)in, n, a, rm, rx);    								//{ int i; for(i = 0; i < n; i++) in[i] = i; } 
-																			//int i;for(i = 1; i <= n; i++) xbits[bsr32(ctou32(in+i*4))]++; 
+																			int i;for(i = 1; i <= n; i++) xbits[bsr32(ctou32(in+i*4))]++; 
     if(be_mindelta == 0 || be_mindelta == 1) {                                                       	
       unsigned *ip = (unsigned *)in, v;										stprint("delta"); 
       for(ip[0]=0,v = 1; v < n; v++) { 
@@ -1145,7 +1145,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, unsigned isize, FILE *
 }
 
 void usage(char *pgm) {
-  fprintf(stderr, "\nIcBench Copyright (c) 2013-2018 Powturbo %s\n", __DATE__);
+  fprintf(stderr, "\nIcBench Copyright (c) 2013-2019 Powturbo %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   fprintf(stderr, " -eS      S = compressors/groups separated by '/' Parameter can be specified after ','\n");
   fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
@@ -1253,6 +1253,35 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
 
 #define TEST64
   #ifdef TEST64
+
+static int memdump( FILE *file, unsigned char *buf, int buflen )
+{
+  int i;
+  int j;
+  if(!buf)
+    return -1;
+
+  //fprintf(file, "\n");
+  for(i = 0; i < ((buflen+15)/16)*16; i++) {
+    if(i < buflen)
+      fprintf(file, "%.2x ", (int)buf[i]);
+    else
+      fprintf(file, "   ");
+    fflush(file);
+    if((i+1) % 16 == 0 ) {
+      for(j = i - 15; j <= i; j++)
+        if(j >= 0 && j < buflen)
+          fprintf(file,"%c",(buf[j]>=' ' && buf[j]<127)?buf[j]:'.');
+      fprintf(file, "\n");
+    }
+    fflush(file);
+  }
+  //fprintf(file, "\n");
+  fflush(file);
+  return 0;
+}
+
+
 #define R64 ((uint64_t)rand()) 
 #define RND64 ( (R64<<60) ^ (R64<<45) ^ (R64<<30) ^ (R64<<15) ^ (R64<<0) )
 #define NN (4*1024*1024)
@@ -1262,55 +1291,61 @@ uint64_t _in[NN+256],_cpy[NN+256];
 unsigned char out[NN*16];
 
 void vstest64(int id, int rm,int rx, unsigned n) {   
-  unsigned b,i;																				fprintf(stderr,"64 bits test.n=%d [%d-%d]", n, rm, min(rx,64)); 
+  unsigned b,i;																				fprintf(stderr,"64 bits test.id=%d n=%d [%d-%d] bits", id, n, rm, min(rx,64)); 
   uint64_t *in = _in,*cpy = _cpy;
   if(n > NN) n = NN;  																		//if(id==5) n = 128;
   for(b = rm; b <= min(rx,64); b++) {    
     uint64_t start = 0, msk = b==64?0xffffffffffffffffull:(((uint64_t)1 << b)-1);
     unsigned char *op;																		fprintf(stderr,"\nb=%d:", b);  
     for(i = 0; i < n; i++) {
-      in[i] = be_rand?(RND64&msk)>>(rand() & 3):msk; //(/*start +=*/ RND64 & msk);						//fprintf(stderr, ".%llx ", in[0]); 
+      in[i] = be_rand?(RND64&msk)>>(rand() & 3):msk; //(/*start +=*/ RND64 & msk);						
+                                                                                            //fprintf(stderr, "%llx,", in[i]); 
       if(bsr64(in[i]) > b) die("Fatal error at b=%d ", b);
-    }
+    }                                                                                       //fprintf(stderr,"\n"); 
     in[0]   = msk;
     in[n-1] = msk;
     switch(id) { 
-      case  0: op = vbenc64(   in, n, out);    break;
-      case  1: op = bitpack64( in, n, out, b); break;
-      case  2: op = out+bitnpack64(in, n, out); break;
-      case  3: op = out+bitnpack128v64(in, n, out); break;
-      case  4: op = out+p4nenc64(   in, n, out);    break;
-      case  5: op = out+p4nenc128v64(in, n, out); break;
-      case  6: op = vsenc64(   in, n, out);    break;
-      case  7: op = out+bitndpack64(in, n, out); break;
-      case  8: op = out+bitnd1pack64(in, n, out); break;
-      case  9: op = out+bitnzpack64(in, n, out); break;
-      case 10: op = vbzenc64(in, n, out, 0); break;
-      case 11: op = out+p4nzenc64(in, n, out); break;
-	  default: die("Fatal error function %d \n", id);
+      case  0: fprintf(stderr,"vbenc64 ");        op = vbenc64(           in, n, out);   break;
+      case  1: fprintf(stderr,"bitpack64 ");      op = bitpack64(         in, n, out, b);break;
+      case  2: fprintf(stderr,"bitnpack64 ");     op = out+bitnpack64(    in, n, out);   break;
+      case  3: fprintf(stderr,"bitnpack128v64 "); op = out+bitnpack128v64(in, n, out);   break;
+      case  4: fprintf(stderr,"p4nenc64 ");       op = out+p4nenc64(      in, n, out);   break;
+      case  5: fprintf(stderr,"p4nenc128v64 ");   op = out+p4nenc128v64(  in, n, out);   break;
+      case  6: fprintf(stderr,"vsenc64 ");        op = vsenc64(           in, n, out);   break;
+      case  7: fprintf(stderr,"bitndpack64 ");    op = out+bitndpack64(   in, n, out);   break;
+      case  8: fprintf(stderr,"bitnd1pack64 ");   op = out+bitnd1pack64(  in, n, out);   break;
+      case  9: fprintf(stderr,"bitnzpack64 ");    op = out+bitnzpack64(   in, n, out);   break;
+      case 10: fprintf(stderr,"vbzenc64 ");       op = vbzenc64(          in, n, out, 0);break;
+      case 11: fprintf(stderr,"p4nzenc64 ");      op = out+p4nzenc64(     in, n, out);   break;
+	  default: die("Fatal error: function %d not found\n", id);
       //case 5: op = efanoenc64(in, n, out, 0); break;
-    }
-    fprintf(stderr,"%d %.2f ", (int)(op-out),  ((double)(op-out)*100.0)/(double)(n*8));  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
+    }                                                                                  
+    fprintf(stderr,"%d %.2f%% ", (int)(op-out),  ((double)(op-out)*100.0)/(double)(n*8));  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
     memrcpy(cpy, in, n*sizeof(in[0]));
     switch(id) {
-      case  0: vbdec64(    out, n, cpy);      break;
-      case  1: bitunpack64(out, n, cpy, b);   break;
-      case  2: bitnunpack64(out, n, cpy);   break;
+      case  0: vbdec64(         out, n, cpy);   break;
+      case  1: bitunpack64(     out, n, cpy, b);break;
+      case  2: bitnunpack64(    out, n, cpy);   break;
       case  3: bitnunpack128v64(out, n, cpy);   break;
-      case  4: p4ndec64(    out, n, cpy);      break;
-      case  5: p4ndec128v64(    out, n, cpy);      break;
-      case  6: vsdec64(    out, n, cpy);      break;
-      case  7: bitndunpack64(out, n, cpy);   break;
-      case  8: bitnd1unpack64(out, n, cpy);   break;
-      case  9: bitnzunpack64(out, n, cpy);   break;
-      case 10: vbzdec64(    out, n, cpy, 0);      break;
-      case 11: p4nzdec64(    out, n, cpy);      break;
+      case  4: p4ndec64(        out, n, cpy);   break;
+      case  5: p4ndec128v64(    out, n, cpy);   break;
+      case  6: vsdec64(         out, n, cpy);   break;
+      case  7: bitndunpack64(   out, n, cpy);   break;
+      case  8: bitnd1unpack64(  out, n, cpy);   break;
+      case  9: bitnzunpack64(   out, n, cpy);   break;
+      case 10: vbzdec64(        out, n, cpy, 0);break;
+      case 11: p4nzdec64(       out, n, cpy);   break;
       //case 5: efanodec64( out, n, cpy, 0);   break;
     }
-	for(i = 0; i < n; i++) 
+	for(i = 0; i < n; i++) {
       if(in[i] != cpy[i]) {
-        fprintf(stderr, "Error b=%d at '%d' (in=%x,%x cpy=%x,%x)", b, i, in[i], in[i+1], cpy[i], cpy[i+1]); break;
+        fprintf(stderr, "Error b=%d at '%d' (in=%llx,%llx,%llx,%llx,%llx,%llx,%llx,%llx cpy=%llx,%llx,%llx,%llx,%llx,%llx,%llx,%llx, out=%x,%x,%x,%x,%x,%x,%x,%x)", b, i, 
+          in[i],  in[i+1],  in[i+2], in[i+3], in[i+4], in[i+5], in[i+6], in[i+7],
+         cpy[i], cpy[i+1], cpy[i+2],cpy[i+3],cpy[i+4],cpy[i+5],cpy[i+6],cpy[i+7],
+         out[i], out[i+1], out[i+2],out[i+3],out[i+4],out[i+5],out[i+6],out[i+7]); 
+         break;
       }
+    } 
   }
   fprintf(stderr,"\n");  
   exit(0);
@@ -1332,28 +1367,35 @@ void vstest16(int id, int rm,int rx, unsigned n) {
     in[0]   = msk;
     in[n-1] = msk;
     switch(id) { 
-      case 0: op = vbenc16(   in, n, out);    break;
-//      case 1: op = bitpack16( in, n, out, b); break;
-      case 2: op = out+bitnpack16(in, n, out); break;
-      case 3: op = out+bitnpack128v16(in, n, out); break;
-      case 4: op = out+p4nenc16(   in, n, out);    break;
-      case 5: op = out+p4nzenc16(   in, n, out);    break;
-      case 6: op = out+p4nenc128v16(   in, n, out);    break;
-//    case 4: op = vsenc16(   in, n, out);    break;
-      //case 5: op = efanoenc64(in, n, out, 0); break;
+      case  0: fprintf(stderr,"vbenc16 ");        op = vbenc16(           in, n, out);   break;
+      case  1: fprintf(stderr,"bitpack16 ");      op = bitpack16(         in, n, out, b);break;
+      case  2: fprintf(stderr,"bitnpack16 ");     op = out+bitnpack16(    in, n, out);   break;
+      case  3: fprintf(stderr,"bitnpack128v16 "); op = out+bitnpack128v16(in, n, out);   break;
+      case  4: fprintf(stderr,"p4nenc16 ");       op = out+p4nenc16(      in, n, out);   break;
+      case  5: fprintf(stderr,"p4nenc128v16 ");   op = out+p4nenc128v16(  in, n, out);   break;
+      case  6: fprintf(stderr,"vsenc16 ");        op = vsenc16(           in, n, out);   break;
+      case  7: fprintf(stderr,"bitndpack16 ");    op = out+bitndpack16(   in, n, out);   break;
+      case  8: fprintf(stderr,"bitnd1pack16 ");   op = out+bitnd1pack16(  in, n, out);   break;
+      case  9: fprintf(stderr,"bitnzpack16 ");    op = out+bitnzpack16(   in, n, out);   break;
+      case 10: fprintf(stderr,"vbzenc16 ");       op = vbzenc16(          in, n, out, 0);break;
+      case 11: fprintf(stderr,"p4nzenc16 ");      op = out+p4nzenc16(     in, n, out);   break;
+	  default: die("Fatal error: function %d not found\n", id);
     }
-    fprintf(stderr,"%d ", (int)(op-out) );  												if(op-out>sizeof(out)) die("vstest64:Overflow %d\n", op-out);
+    fprintf(stderr,"%d %.2f%% ", (int)(op-out),  ((double)(op-out)*100.0)/(double)(n*8));  								if(op-out>sizeof(out)) die("vstest16:Overflow %d\n", op-out);
     memrcpy(cpy, in, n*sizeof(in[0]));
     switch(id) {
-      case 0: vbdec16(    out, n, cpy);      break;
-//      case 1: bitunpack16(out, n, cpy, b);   break;
-      case 2: bitnunpack16(out, n, cpy);   break;
-      case 3: bitnunpack128v16(out, n, cpy);   break;
-      case 4: p4ndec16(    out, n, cpy);      break;
-      case 5: p4nzdec16(    out, n, cpy);      break;
-      case 6: p4ndec128v16(    out, n, cpy);      break;
-      //case 4: vsdec64(    out, n, cpy);      break;
-      //case 5: efanodec64( out, n, cpy, 0);   break;
+      case  0: vbdec16(         out, n, cpy);   break;
+      case  1: bitunpack16(     out, n, cpy, b);break;
+      case  2: bitnunpack16(    out, n, cpy);   break;
+      case  3: bitnunpack128v16(out, n, cpy);   break;
+      case  4: p4ndec16(        out, n, cpy);   break;
+      case  5: p4ndec128v16(    out, n, cpy);   break;
+      case  6: vsdec16(         out, n, cpy);   break;
+      case  7: bitndunpack16(   out, n, cpy);   break;
+      case  8: bitnd1unpack16(  out, n, cpy);   break;
+      case  9: bitnzunpack16(   out, n, cpy);   break;
+      case 10: vbzdec16(        out, n, cpy, 0);break;
+      case 11: p4nzdec16(       out, n, cpy);   break;
     }
 	uint16_t *p = cpy;
 	for(i = 0; i < n; i++) 
@@ -1374,7 +1416,7 @@ extern int _CRT_glob=1;
   #endif
 int main(int argc, char* argv[]) {
   int 				 xstdout=-1,xstdin=-1;
-  int                recurse  = 0, xplug = 0,tm_Repk=1,plot=-1,fmt=0,fno,merge=0,rprio=1,dfmt = 0,kid=1,skiph=0,decs=2,divs=1,k;
+  int                recurse  = 0, xplug = 0,tm_Repk=1,plot=-1,fmt=0,fno,merge=0,rprio=1,dfmt = 0,kid=1,skiph=0,decs=2,divs=1,k,vtest=-1,id;
   unsigned           bsize    = 128*4, bsizex=0, n=25000000;
   uint64_t filenmax = 0;
   char               *scmd = NULL,*trans=NULL,*beb=NULL,*rem="",s[2049];
@@ -1401,6 +1443,7 @@ int main(int argc, char* argv[]) {
       case 'd': mdelta   = atoi(optarg);             break;
       case 'e': scmd     = optarg;            		 break;
       case 'f': { char *s = optarg; 
+        dfmt = 0; 
 	         if(*s=='c') { dfmt = T_CHAR; s++;} 
 		else if(*s=='t') { dfmt = T_TXT; if(*++s > '0' && *s <= '9') { kid = s[0] - '0'; s++; } } 
 		else if(*s=='u') { dfmt = T_TST; s++;} 
@@ -1456,8 +1499,8 @@ int main(int argc, char* argv[]) {
       case 'n': n       = argtoi(optarg,1);   break;
       case 'm': rm      = argtoi(optarg,1);   break;
       case 'M': rx      = argtoi(optarg,1);  break;
-	  case 'y': vstest16(atoi(optarg),rm,rx,n); break;
-	  case 'z': vstest64(atoi(optarg),rm,rx,n); break;
+	  case 'y': vtest = 16; id=atoi(optarg); break;
+	  case 'z': vtest = 64; id=atoi(optarg); break;
       BEOPT;
 	  case 'h':
       default: 
@@ -1465,6 +1508,8 @@ int main(int argc, char* argv[]) {
         exit(0); 
     }
   }
+        if(vtest==64) vstest64(id,rm,rx,n);
+   else if(vtest==16) vstest16(id,rm,rx,n);
   if(xplug) { 
     xplug==1?plugsprt():plugsprtv(stdout, fmt); 
     exit(0); 
