@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -163,7 +163,7 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
 #define HYBRID 1
 #define P4BITS _p4bits
 
-  #if defined(__SSE2__) && defined(SSE2_ON)
+  #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(SSE2_ON)
 #define VSIZE 128 
 #define _P4ENC    _p4enc128v
 #define  P4ENC     p4enc128v
