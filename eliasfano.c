@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,6 @@
 //    eliasfano.c - "Integer Compression" Elias Fano
 #ifndef USIZE
 #include <string.h>
-  #ifdef __SSE2__
-#include <emmintrin.h>
-  #endif
 #pragma warning( disable : 4005) 
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
@@ -95,7 +92,7 @@
 #undef EFANODEC
 
 //----------------------
-  #if defined(__SSE2__) && defined(USE_SSE)
+  #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(USE_SSE)
 #define VSIZE 128
 
 #define BITPACK   bitpack128v
