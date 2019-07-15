@@ -1254,34 +1254,6 @@ void ftest(struct plug *plug, unsigned k,unsigned n, unsigned bsize) {
 #define TEST64
   #ifdef TEST64
 
-static int memdump( FILE *file, unsigned char *buf, int buflen )
-{
-  int i;
-  int j;
-  if(!buf)
-    return -1;
-
-  //fprintf(file, "\n");
-  for(i = 0; i < ((buflen+15)/16)*16; i++) {
-    if(i < buflen)
-      fprintf(file, "%.2x ", (int)buf[i]);
-    else
-      fprintf(file, "   ");
-    fflush(file);
-    if((i+1) % 16 == 0 ) {
-      for(j = i - 15; j <= i; j++)
-        if(j >= 0 && j < buflen)
-          fprintf(file,"%c",(buf[j]>=' ' && buf[j]<127)?buf[j]:'.');
-      fprintf(file, "\n");
-    }
-    fflush(file);
-  }
-  //fprintf(file, "\n");
-  fflush(file);
-  return 0;
-}
-
-
 #define R64 ((uint64_t)rand()) 
 #define RND64 ( (R64<<60) ^ (R64<<45) ^ (R64<<30) ^ (R64<<15) ^ (R64<<0) )
 #define NN (4*1024*1024)
