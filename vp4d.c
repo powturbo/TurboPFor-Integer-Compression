@@ -29,8 +29,9 @@
 
 #include "conf.h"
 #include "bitutil.h"
-#include "bitpack.h"
 #include "vint.h"
+#define TURBOPFOR_DAC
+#include "bitpack.h"
 #include "vp4.h"
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
