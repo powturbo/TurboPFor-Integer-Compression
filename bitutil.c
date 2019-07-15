@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -182,6 +182,34 @@ unsigned bitd132(uint32_t *in, unsigned n, uint32_t start) {
   BITDE(uint32_t, in, n, 1, b |= x);
 	#endif
   return bsr32(b); 
+}
+
+unsigned bits128v16(uint16_t *in, unsigned n, uint16_t start) { 
+    #if defined(__SSE2__) && defined(USE_SSE)
+  unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(8);
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
+    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
+	bv = _mm_or_si128(bv,_mm_sub_epi16(SUBI128x16(iv,sv),cv)); 
+	sv = iv; 
+  }
+  start = (unsigned short)_mm_cvtsi128_si32(_mm_srli_si128(sv,14));
+  HOR128x16(bv, b);
+  return bsr16(b); 
+	#endif
+}
+
+unsigned bits128v32(uint32_t *in, unsigned n, uint32_t start) {
+    #if defined(__SSE2__) && defined(USE_SSE)
+  unsigned *ip,b; __m128i bv = _mm_setzero_si128(), sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(4);
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4) {
+    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
+	bv = _mm_or_si128(bv,_mm_sub_epi32(SUBI128x32(iv,sv),cv)); 
+	sv = iv;
+  }
+  start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(sv,12));
+  HOR128x32(bv, b);
+  return bsr32(b); 
+	#endif
 }
 
 void bitd1dec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDD(uint8_t,  p, n, 1); } 
@@ -442,13 +470,14 @@ unsigned bitfm64(uint64_t *in, unsigned n, uint64_t *pmin) { uint64_t mi,mx; BIT
 
 
 //----------- Lossy floating point conversion: pad the trailing mantissa bits with zeros according to the error e (ex. 0.00001)  -----------------------------------
+union r { uint64_t u; double d; };
 static inline double efloat64(double d, double e, int lg2e) {
-  uint64_t u, du = ctou64(&d);
-  int      v = (du>>52 & 0x7ff)-0x3fe;
+  union r u,du; du.d = d; //ctou64(&d);
+  int      v = (du.u>>52 & 0x7ff)-0x3fe;
   if((v = 54 - v - lg2e) <= 0) return d;
   v = v > 52?52:v;
-  do u = du & (~((1ull<<(--v))-1)); while(fabs((ctof64(&u) - d)/d) > e);
-  return ctof64(&u);
+  do u.u = du.u & (~((1ull<<(--v))-1)); while(fabs((u.d - d)/d) > e);
+  return u.d;
 }
 
 void padfloat64(double *in, size_t n, double *out, double e) { int lg2e = -log(e)/log(2.0); double *ip; for(ip = in; ip < in+n; ip++,out++) *out = efloat64(*ip, e, lg2e); }
