@@ -254,12 +254,13 @@ SC_SIMDPACK256,
   #if C_TURBOPFOR  
 #include "vint.h"       
 #include "vsimple.h"
-#include "bitpack.h"
 #include "eliasfano.h"
 #include "bitutil.h"
 #include "transpose.h"
-#include "vp4.h"
 #include "fp.h"
+#define TURBOPFOR_DAC
+#include "bitpack.h"
+#include "vp4.h"
   #endif
 
 #define BLK_SIZE  (64*1024*4)
