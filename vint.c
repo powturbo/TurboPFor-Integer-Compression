@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//   vint.c - "Integer Compression" variable byte     
+//    vint.c - "Integer Compression" variable byte     
   #ifndef USIZE
 #include <stdio.h>
 #include <string.h>
@@ -267,7 +267,7 @@ unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n
   
   if(in[0] == VB_MAX) { 
     in++; 
-      #if defined(__SSE2__) && USIZE == 32
+      #if (defined(__SSE2__) || defined(__ARM_NEON)) && USIZE == 32
 	    #if VDELTA == 0
 	if(n) BITZERO32(out, n, start);
 	    #else
