@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -38,8 +38,7 @@
 #define P4DELTA(a)
 #define P4DELTA_(a)
 
-  #ifdef __SSSE3__
-#include <tmmintrin.h>
+  #if defined(__SSSE3__) || defined(__ARM_NEON)
 extern char _shuffle_32[16][16];  // defined in bitunpack.c
 extern char _shuffle_16[256][16]; 
   #endif
@@ -128,7 +127,7 @@ extern char _shuffle_16[256][16];
 #undef USIZE
 #undef DELTA
 
-#if defined(__SSSE3__) && defined(SSE2_ON)
+#if (__SSSE3__ != 0 || __ARM_NEON != 0) && defined(SSE2_ON)
 
 #define VSIZE 128
 #define P4DELTA(a)
@@ -310,7 +309,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
         } //out += 64; 
       }
 	}
-      #elif defined(__SSSE3__) && USIZE == 32
+      #elif (__SSSE3__ != 0 || __ARM_NEON != 0) && USIZE == 32
     { uint_t *_op=out,*op,*pex = ex; 	
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf; 
@@ -318,7 +317,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
         } _op+=64;
       }
     }	
-      #elif defined(__SSSE3__) && USIZE == 16
+      #elif (__SSSE3__ != 0 || __ARM_NEON != 0) && USIZE == 16
     { uint_t *_op=out,*op,*pex = ex; 	
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 8,op+=8) { const unsigned char m = bb[i]; 
@@ -374,7 +373,7 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   unsigned b, bx, i;  
   if(!n) return in;
   b = *in++;
-  if((b & 0xc0) == 0xc0) {
+  if((b & 0xc0) == 0xc0) {  // all items are equal
 	b &= 0x3f;
       #if USIZE == 64 
     b = b == 63?64:b;
@@ -385,13 +384,13 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
     TEMPLATE2(BITUNDD, USIZE)(out, n, start);
       #endif
 	return in+(b+7)/8;
-  }	else if(likely(!(b & 0x40))) {
+  }	else if(likely(!(b & 0x40))) { // PFOR
     if(b & 0x80)
 	  bx = *in++;
     return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx);
   }
     #if USIZE > 8  
-  else {
+  else {  // Variable byte
     uint_t ex[P4D_MAX+64],*pex=ex; 
 	b  &= 0x3f; 	
     bx = *in++;                															    /*if(b && *in++ == 0x80) { uint_t u = TEMPLATE2(ctou, USIZE)(in); if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b); int i; for(i = 0; i < n; i++) out[i] = u; in+=(b+7)/8;  } else*/
