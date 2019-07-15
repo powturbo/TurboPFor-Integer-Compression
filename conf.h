@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -39,8 +39,8 @@
 #define popcnt64(_x_) 	__builtin_popcountll(_x_)
 
     #if defined(__i386__) || defined(__x86_64__)
-//__bsr32     1:0,2:1,3:1,4:2,5:2,6:2,7:2,8:3,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:5
-//bsr32:  0:0,1:1,2:2,3:2,4:3,5:3,6:3,7:3,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:5,17:5,18:5,19:5,20:5,21:5,22:5,23:5,24:5,25:5,26:5,27:5,28:5,29:5,30:5,31:5,32:6,
+//__bsr32:     1:0,2:1,3:1,4:2,5:2,6:2,7:2,8:3,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:5
+//  bsr32: 0:0,1:1,2:2,3:2,4:3,5:3,6:3,7:3,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:5,17:5,18:5,19:5,20:5,21:5,22:5,23:5,24:5,25:5,26:5,27:5,28:5,29:5,30:5,31:5,32:6,
 static inline int    __bsr32(               int x) {             asm("bsr  %1,%0" : "=r" (x) : "rm" (x) ); return x; }
 static inline int      bsr32(               int x) { int b = -1; asm("bsrl %1,%0" : "+r" (b) : "rm" (x) ); return b + 1; }
 static inline int      bsr64(uint64_t x) { return x?64 - __builtin_clzll(x):0; }
@@ -61,7 +61,7 @@ static inline unsigned ror64(unsigned x, int s) { return x >> s | x << (64 - s);
     #endif
 
 #define ctz64(_x_) __builtin_ctzll(_x_)
-#define ctz32(_x_) __builtin_ctz(_x_)
+#define ctz32(_x_) __builtin_ctz(_x_)    // 0:32  ctz32(1<<a) = a (a=1..31)
 #define clz64(_x_) __builtin_clzll(_x_)
 #define clz32(_x_) __builtin_clz(_x_)
 
@@ -128,10 +128,9 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define clz8(_x_)  (clz32(_x_)-24)
 #define clz16(_x_) (clz32(_x_)-16)
 
-#define BZHI32(_u_, _b_) ((_u_) & ((1u  <<(_b_))-1))
-#define BZHI8(_u_, _b_)  BZHI32(_u_, _b_)
-#define BZHI16(_u_, _b_) BZHI32(_u_, _b_)
-#define BZHI64(_u_, _b_) ((_u_) & ((1ull<<(_b_))-1))
+#define popcnt8(x)  popcnt32(x) 
+#define popcnt16(x) popcnt32(x) 
+
 //--------------- Unaligned memory access -------------------------------------
 /*# || defined(i386) || defined(_X86_) || defined(__THW_INTEL)*/
   #if defined(__i386__) || defined(__x86_64__) || \
@@ -192,7 +191,7 @@ static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (un
 
 #define ctou24(_cp_) (ctou32(_cp_) & 0xffffff)
 #define ctou48(_cp_) (ctou64(_cp_) & 0xffffffffffffull)
-#define ctou8(_cp_) (*_cp_)
+#define ctou8(_cp_) (*(_cp_))
 //--------------------- wordsize ----------------------------------------------
   #if defined(__64BIT__) || defined(_LP64) || defined(__LP64__) || defined(_WIN64) ||\
     defined(__x86_64__) || defined(_M_X64) ||\
@@ -208,6 +207,11 @@ static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (un
 #endif
 
 //---------------------misc ---------------------------------------------------
+#define BZHI64(_u_, _b_) ((_u_) & ((1ull<<(_b_))-1))
+#define BZHI32(_u_, _b_) ((_u_) & ((1u  <<(_b_))-1))
+#define BZHI16(_u_, _b_) BZHI32(_u_, _b_)
+#define BZHI8(_u_, _b_)  BZHI32(_u_, _b_)
+
 #define SIZE_ROUNDUP(_n_, _a_) (((size_t)(_n_) + (size_t)((_a_) - 1)) & ~(size_t)((_a_) - 1))
 #define ALIGN_DOWN(__ptr, __a) ((void *)((uintptr_t)(__ptr) & ~(uintptr_t)((__a) - 1)))
   
@@ -217,6 +221,8 @@ static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (un
 #define TEMPLATE3_(_x_,_y_,_z_) _x_##_y_##_z_
 #define TEMPLATE3(_x_,_y_,_z_) TEMPLATE3_(_x_, _y_, _z_)
 
+#define CACHE_LINE_SIZE     64
+#define PREFETCH_DISTANCE   (CACHE_LINE_SIZE*4)
 //--- NDEBUG -------
 #include <stdio.h>
   #ifdef _MSC_VER
