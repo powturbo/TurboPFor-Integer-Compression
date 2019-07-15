@@ -714,7 +714,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s) {
     "lz               lz",
     "bitshuffle+lz    bit transpose+lz",
     "streamvbyte      externanal lib",
-    "",
+    "                  externanal lib",
     "",
     "",
     "memcpy           memcpy" //80
@@ -894,7 +894,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case  4: TMBENCH("",l=p4ndenc32(       in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4ndenc32       ",p4nddec32(         out, m, cpy)   ,n); break;
     case  5: TMBENCH("",l=p4ndenc128v32(   in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4ndenc128v32   ",p4nddec128v32(     out, m, cpy)   ,n); break;
 	  #if defined(__AVX2__) && defined(USE_AVX2)
-    case  6: TMBENCH("",l=p4ndenc256v32( in, m, out)  ,n);   	    pr(l,n); TMBENCH2("p4ndenc256v32 ", p4nddec256v32( out, m, cpy)   ,n); break;
+    case  6: TMBENCH("",l=p4ndenc256v32( in, m, out)  ,n);   	    pr(l,n); TMBENCH2("p4ndenc256v32   ", p4nddec256v32( out, m, cpy)   ,n); break;
       #endif
                                                                                                        
     case  7: TMBENCH("",l=p4nd1enc32(      in, m, out)  ,n); 	    pr(l,n); TMBENCH2("p4nd1enc32      ",p4nd1dec32(        out, m, cpy)   ,n); break;
