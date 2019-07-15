@@ -21,18 +21,18 @@
   { FP_SIMPLE8BRLE,	"FP_Simple8bRLE", 	C_FASTPFOR,	    0,    	 0,"","Simple-8b + rle" },
   { FP_GROUPSIMPLE,	"FP_GROUPSIMPLE", 	C_FASTPFOR,	    0,    	 0,"","Group Simple" },
 
-  { SC_SIMDPACK128,	"SC_SIMDPack128", 	C_SIMDCOMP,		BLK_V128,0,"","Bit packing (SSE4.1)"},
-  { SC_SIMDPACK256,	"SC_SIMDPack256", 	C_SIMDCOMP,		BLK_V256,0,"","Bit packing (SSE4.1)"},
-  { SC_FOR,		   	"SC_For", 	C_SIMDCOMP,		BLK_V128,0,"","For (SSE4.1)"},
-  { SC_FORDA,	 	"SC_ForDA", 		C_SIMDCOMP,		BLK_V128,0,"","For direct access (SSE4.1)"},
+  { SC_SIMDPACK128,	"SC_SIMDPack128", 	C_SIMDCOMP128,	BLK_V128,0,"","Bit packing (SSE4.1)"},
+  { SC_SIMDPACK256,	"SC_SIMDPack256", 	C_SIMDCOMP128,	BLK_V256,0,"","Bit packing (SSE4.1)"},
+  { SC_FOR,		   	"SC_For", 	        C_SIMDCOMP128,	BLK_V128,0,"","For (SSE4.1)"},
+  { SC_FORDA,	 	"SC_ForDA", 		C_SIMDCOMP128,	BLK_V128,0,"","For direct access (SSE4.1)"},
 
-//{ CL_FASTPFORD1,	"CL.SIMDPFORD1", 	C_SIMDCOMP, 	"", 0,BLK_V128},
+//{ CL_FASTPFORD1,	"CL.SIMDPFORD1", 	C_SIMDCOMP128, 	"", 0,BLK_V128},
   { P_BS_LZ,  		"blosc_lz",			C_C_BLOSC, 		BLK_SIZE,0, "","TurboPFor's [delta]+transpose+lz4" }, 
   { P_BS_LZ4,  		"blosc_lz4",		C_C_BLOSC, 		BLK_SIZE,0, "","TurboPFor's [delta]+transpose+lz4" }, 
   { P_BS_ZLIB,  	"blosc_zlib",		C_C_BLOSC, 		BLK_SIZE,0, "","TurboPFor's [delta]+transpose+lz4" }, 
 
-  { LF_FOR,			"LibFor_For", 		C_SIMDCOMP, 	BLK_V128,0,"","For"},
-  { LF_FORX,		"LibFor_ForDA",		C_SIMDCOMP, 	BLK_V128,0,"","For direct access"},
+  { LF_FOR,			"LibFor_For", 		C_SIMDCOMP128, 	BLK_V128,0,"","For"},
+  { LF_FORX,		"LibFor_ForDA",		C_SIMDCOMP128, 	BLK_V128,0,"","For direct access"},
 
   { LI_PACK,		"LI_Pack",			C_LITTLEPACK,	0,    	 0,"","Bit packing (scalar)" },
   { LI_TURBOPACK,	"LI_TurboPack",		C_LITTLEPACK,	0,    	 0,"","Bit packing (scalar)" },
