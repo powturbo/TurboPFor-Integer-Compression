@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2015-2018
+    Copyright (C) powturbo 2015-2019
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -343,7 +343,7 @@ int memcheck(unsigned char *in, unsigned n, unsigned char *cpy) {
   for(i = 0; i < n; i++)
     if(in[i] != cpy[i]) {
 	  if(cmp > 3) abort(); // crash (AFL) fuzzing
-      printf("ERROR at %d:in=%x,%x dec=%x,%x\n", i, in[i], in[i+1], cpy[i],cpy[i+1]);
+      printf("ERROR at %d:in=%x,%x dec=%x,%x cmp=%d\n", i, in[i], in[i+1], cpy[i],cpy[i+1], cmp);
 	  if(cmp > 2) exit(EXIT_FAILURE);  
 	  return i+1; 
 	} 
@@ -368,7 +368,13 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
 #include "eliasfano.h"
 #include "vsimple.h"
 #include "transpose.h"
-#include "ext/trle.h"  
+#include "trle.h"  
+
+  #ifdef CODEC1                  
+#include "streamvbyte/include/streamvbyte.h"
+#include "streamvbyte/include/streamvbytedelta.h"
+#undef VARINTDECODE_H_
+  #endif
 
   #ifdef CODEC1
 #define LZ4 
@@ -410,8 +416,8 @@ unsigned char *vszdec64(unsigned char *in, unsigned n, unsigned char *out) { uns
 #define RLE16 0xdadau 
 #define RLE32 0xdadadadau 
 #define RLE64 0xdadadadadadadadaull 
-unsigned trlezc( uint8_t      *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc8(in, n, tmp, 0, 0); return trlec(tmp, n, out); }
-unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) { trled(in, inlen, out, n); bitzdec8(out, n, 0); return n; }
+unsigned trlezc( uint8_t      *in, unsigned n, unsigned char *out, unsigned char *tmp) { bitzenc8(in, n, tmp, 0, 0); unsigned rc = trlec(tmp, n, out); if(rc >=n) { rc = n; memcpy(out,in,n); } return rc; }
+unsigned trlezd(unsigned char *in, unsigned inlen, uint8_t *out, unsigned n) { if(inlen >= n) { memcpy(out,in,n); return inlen; } trled(in, inlen, out, n); bitzdec8(out, n, 0); return n; }
 
 unsigned srlezc8( uint8_t  *in, unsigned n, unsigned char *out, unsigned char *tmp, uint8_t  e) { bitzenc8( in, n/( 8/8), tmp, 0, 0); return srlec8( tmp, n, out, e); }
 unsigned srlezc16(uint16_t *in, unsigned n, unsigned char *out, unsigned char *tmp, uint16_t e) { bitzenc16(in, n/(16/8), tmp, 0, 0); return srlec16(tmp, n, out, e); }
@@ -594,6 +600,7 @@ unsigned bslzdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esi
   #endif
 #endif
 
+#ifdef CODEC1
 //---------------------SPDP -------------------------
 #define NMAIN
 #include "ext/SPDP_10.c"
@@ -624,9 +631,98 @@ size_t spdpdec(unsigned char *in, size_t n, unsigned char *out, unsigned bsize, 
   } 
   return ip - in;
 }
+#endif
 //--------------------------------------------------------------
 
 #define ID_MEMCPY 80
+unsigned char *bestr(unsigned id, unsigned b, unsigned char *s) { 
+  static char *fmt[] = { 
+    "",
+    "p4nenc%d         TurboPFor",          //1
+    "p4nenc128v%d     TurboPForV",
+    "p4nenc256v%d     TurboPFor256", 
+    "p4ndenc%d        TurboPFor    delta",
+    "p4ndenc128v%d    TurboPForV   delta",
+    "p4ndenc256v%d    TurboPFor256 delta",  
+    "p4nd1enc%d       TurboPFor    delta 1",
+    "p4nd1enc128v%d   TurboPForV   delta 1",
+    "p4nd1enc256v%d   TurboPFor256 delta 1",
+    "p4nzenc%d        TurboPFor    zigzag",//10
+    "p4nzenc128v%d    TurboPForV   zigzag",
+    "p4nzenc256v%d    TurboPFor256 zigzag",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "bitnpack%d       TurboPack",//20
+    "bitnpack128v%d   TurboPackV",
+	"bitnpack256v%d   TurboPack256",
+    "bitndpack%d      TurboPack    delta",
+    "bitndpack128v%d  TurboPackV   delta",
+    "bitndpack256v%d  TurboPack256 delta",
+    "bitnd1pack%d     TurboPack    delta 1",
+    "bitnd1pack128v%d TurboPackV   delta 1",
+    "bitnd1pack256v%d TurboPack256 delta 1",
+    "bitnzpack%d      TurboPack    zigzag",
+    "bitnzpack128v%d  TurboPackV   zigzag",//30
+    "bitnzpack256v%d  TurboPack256 zigzag",
+    "bitnfpack%d      TurboPack    FOR",
+    "bitnfpack128v%d  TurboPackV   FOR",
+    "bitnfpack256v%d  TurboPack256 FOR",
+    "",
+    "",
+    "",
+    "",
+    "",  
+    "vbenc%d          TurboVByte",//40
+    "vbzenc%d         TurboVByte   zigzag",
+    "vsenc%d          TurboVSimple",
+    "vszenc%d         TurboVSimple zigzag",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "bvzzenc%d        bitio zigzag of delta",//50 
+    "bvzenc%d         bitio zigzag",
+    "fpgenc%d         bitio TurboGorilla",
+    "",
+    "",
+    "fpzzenc%d        TurboPFor zigzag of delta",
+    "fpfcmenc%d       TurboPFor FCM",
+    "fpdfcmenc%d      TurboPFor DFCM", 
+    "fp2dfcmenc%d     TurboPFor DFCM 2D",
+    "", 
+    "trle             TurboRLE",//60
+    "trlez            TurboRLE   zigzag",
+    "srle%d           TurboRLE%d escape",
+    "srlez%d          TurboRLE%d escape ",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "SPDP             SPDP Floating Point",
+
+    "tpbyte+lz        Byte transpose+lz",//70
+    "tpnibble+lz      Nibble transpose+lz",
+    "tpnibbleZ+lz     Nibble transpose+zigzag+lz",
+    "tpnibbleX+lz     Nibble transpose+xor+lz",
+    "lz               lz",
+    "bitshuffle+lz    bit transpose+lz",
+    "streamvbyte      externanal lib",
+    "",
+    "",
+    "",
+    "memcpy           memcpy" //80
+  };
+  sprintf(s,fmt[id]+17, b,b);
+  return s;
+}     
 
 unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int lev) { 
   unsigned l,m = n/(8/8),rc = 0, sorted=1;
@@ -655,7 +751,8 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
  
     case 29: TMBENCH("",l=bitnzpack8(     in, m, out)  ,n);	        pr(l,n); TMBENCH2("bitnzpack8     ",bitnzunpack8(     out, m, cpy)   ,n); break;
       
-    case 32: if(!sorted) return 0; TMBENCH("",l=bitnfpack8(     in, m, out)  ,n); pr(l,n); TMBENCH2("bitnfpack8     ",bitnfunpack8(     out, m, cpy)   ,n); break;
+    case 32: if(!sorted) return 0; TMBENCH("",l=bitnfpack8(in, m, out)  ,n); pr(l,n); 
+                                                                             TMBENCH2("bitnfpack8     ",bitnfunpack8(     out, m, cpy)   ,n); break;
 
     case 41: TMBENCH("",l=vbzenc8(        in, m, out,0)-out,n);     pr(l,n); TMBENCH2("vbzenc8        ",vbzdec8(          out, m, cpy,0) ,n); break; 
     case 42: TMBENCH("",l=vsenc8(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc8         ",vsdec8(           out, m, cpy) ,n); break;   // vsimple : variable simple
@@ -670,24 +767,28 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 57: TMBENCH("",l=fpdfcmenc8(     in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpdfcmenc8     ",fpdfcmdec8(       out, m, cpy,0) ,n); break;
     case 58: TMBENCH("",l=fp2dfcmenc8(    in, m, out,0),n); 	    pr(l,n); TMBENCH2("fp2dfcmenc8    ",fp2dfcmdec8(      out, m, cpy,0) ,n); break;
 
-    case 60: TMBENCH("",l=trlec(          in, n,out),n);            pr(l,n); TMBENCH2("trle            ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
-    case 61: TMBENCH("",l=trlezc(         in, n,out,tmp),n);        pr(l,n); TMBENCH2("trlez           ",trlezd(            out,l,cpy, n),n);      break;  
+    case 60: TMBENCH("",l=trlec(          in, n,out),n);            pr(l,n); TMBENCH2("trle           ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
+    case 61: TMBENCH("",l=trlezc(         in, n,out,tmp),n);        pr(l,n); TMBENCH2("trlez          ",trlezd(            out,l,cpy, n),n);      break;  
     case 62: TMBENCH("",l=srlec8(         in, n,out,RLE8),n);       pr(l,n); TMBENCH2("srle8          ",srled8(           out,l,cpy, n,RLE8),n);break;
     case 63: TMBENCH("",l=srlezc8(        in, n,out,tmp,RLE8),n);   pr(l,n); TMBENCH2("srlez8         ",srlezd8(          out,l,cpy, n,RLE8),n);break;
+
       #ifdef USE_LZ
-    case 69: TMBENCH("",l=spdpenc(in,m*(8/8),out,SPDP_BSIZE,lev),n);pr(l,n);TMBENCH2("SPDP            ",spdpdec(           out, m*(8/8), cpy,SPDP_BSIZE,lev); ,n); break;
-    case 70: TMBENCH("",l=tplzenc(    in, n,out,8/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpbyte+lz       ",tplzdec(           out,n,cpy,8/8,tmp) ,n); break;
-    case 71: TMBENCH("",l=tp4lzenc(   in, n,out,8/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibble+lz     ",tp4lzdec(          out,n,cpy,8/8,tmp) ,n); break;
-    case 72: TMBENCH("",l=tp4lzzenc8(in, n,out,     tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibbleZ+lz    ",tp4lzzdec8(       out,n,cpy,     tmp) ,n); break;
-    case 73: TMBENCH("",l=tp4lzxenc8(in, n,out,     tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibbleX+lz    ",tp4lzxdec8(       out,n,cpy,     tmp) ,n); break;
-    case 74: TMBENCH("",l=lzcomp(      in, n,out,         lev) ,n); pr(l,n); TMBENCH2("lz              ",lzdecomp(          out,n,cpy)          ,n);break;
+        #ifdef CODEC1
+    case 69: TMBENCH("",l=spdpenc(in,m*(8/8),out,SPDP_BSIZE,lev),n);pr(l,n); TMBENCH2("SPDP           ",spdpdec(           out, m*(8/8), cpy,SPDP_BSIZE,lev); ,n); break;
+        #endif
+    case 70: TMBENCH("",l=tplzenc(    in, n,out,8/8,tmp,lev) ,n);  pr(l,n);  TMBENCH2("tpbyte+lz      ",tplzdec(           out,n,cpy,8/8,tmp) ,n); break;
+    case 71: TMBENCH("",l=tp4lzenc(   in, n,out,8/8,tmp,lev) ,n);  pr(l,n);  TMBENCH2("tpnibble+lz    ",tp4lzdec(          out,n,cpy,8/8,tmp) ,n); break;
+    case 72: TMBENCH("",l=tp4lzzenc8(in, n,out,     tmp,lev) ,n);  pr(l,n);  TMBENCH2("tpnibbleZ+lz   ",tp4lzzdec8(       out,n,cpy,     tmp) ,n); break;
+    case 73: TMBENCH("",l=tp4lzxenc8(in, n,out,     tmp,lev) ,n);  pr(l,n);  TMBENCH2("tpnibbleX+lz   ",tp4lzxdec8(       out,n,cpy,     tmp) ,n); break;
+    case 74: TMBENCH("",l=lzcomp(      in, n,out,         lev) ,n); pr(l,n); TMBENCH2("lz             ",lzdecomp(          out,n,cpy)          ,n);break;
 	    #ifdef BITSHUFFLE
-    case 75: TMBENCH("",l=bslzenc(    in,n,out,8/8,tmp,lev), n);  pr(l,n);  TMBENCH2("bitshuffle+lz   ",bslzdec(out,n,cpy,8/8,tmp), n); break;
+    case 75: TMBENCH("",l=bslzenc(    in,n,out,8/8,tmp,lev), n);  pr(l,n);   TMBENCH2("bitshuffle+lz  ",bslzdec(out,n,cpy,8/8,tmp), n); break;
         #endif
       #endif
-    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy(  in,out,n) ,n); pr(n,n); TMBENCH2("memcpy         ", libmemcpy( out,cpy,n) ,n); return n;
+    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy( out,in,n) ,n); pr(n,n); TMBENCH2("memcpy         ", libmemcpy( cpy,out,n) ,n); break;
 	default: return l;
   }
+  { char s[65]; printf("%-30s ", bestr(id,8,s)); } 
   rc = memcheck(in,m*(8/8),cpy);
   if(tmp) free(tmp);
   if(!rc)
@@ -752,7 +853,9 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 62: TMBENCH("",l=srlec16(         in, n,out,RLE16),n);     pr(l,n); TMBENCH2("srle16          ",srled16(           out,l,cpy, n,RLE16),n);break;
     case 63: TMBENCH("",l=srlezc16(        in, n,out,tmp,RLE16),n); pr(l,n); TMBENCH2("srlez16         ",srlezd16(          out,l,cpy, n,RLE16),n);break;
       #ifdef USE_LZ
+        #ifdef CODEC1
     case 69: TMBENCH("",l=spdpenc(in,m*(16/8),out,SPDP_BSIZE,lev),n);pr(l,n);TMBENCH2("SPDP            ",spdpdec(           out, m*(16/8), cpy,SPDP_BSIZE,lev); ,n); break;
+        #endif
     case 70: TMBENCH("",l=tplzenc(    in, n,out,16/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpbyte+lz       ",tplzdec(           out,n,cpy,16/8,tmp) ,n); break;
     case 71: TMBENCH("",l=tp4lzenc(   in, n,out,16/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibble+lz     ",tp4lzdec(          out,n,cpy,16/8,tmp) ,n); break;
     case 72: TMBENCH("",l=tp4lzzenc16(in, n,out,     tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibbleZ+lz    ",tp4lzzdec16(       out,n,cpy,     tmp) ,n); break;
@@ -762,10 +865,11 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 75: TMBENCH("",l=bslzenc(    in,n,out,16/8,tmp,lev), n);  pr(l,n);  TMBENCH2("bitshuffle+lz   ",bslzdec(out,n,cpy,16/8,tmp), n); break;
         #endif
       #endif
-    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy(  in,out,n) ,n); pr(n,n); TMBENCH2("memcpy         ", libmemcpy( out,cpy,n) ,n); return n;
+    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy( out,in,n) ,n); pr(n,n); TMBENCH2("memcpy          ", libmemcpy( cpy,out,n) ,n); break;
 	default: return l;
   }
-  rc = memcheck(in,m*(16/8),cpy);
+  { char s[65]; printf("%-30s ", bestr(id,16,s)); } 
+  if(cpy) rc = memcheck(in,m*(16/8),cpy);
   if(tmp) free(tmp);
   if(!rc)
     printf("\t%s\n", inname);
@@ -842,7 +946,6 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 41: TMBENCH("",l=vbzenc32(        in, m, out,0)-out,n);    pr(l,n); TMBENCH2("vbzenc32        ",vbzdec32(          out, m, cpy,0) ,n); break; 
     case 42: TMBENCH("",l=vsenc32(         in, m, out)-out,n); 	    pr(l,n); TMBENCH2("vsenc32         ",vsdec32(           out, m, cpy) ,n); break;   // vsimple : variable simple
     case 43: TMBENCH("",l=vszenc32(        in, m, out,tmp)-out,n);  pr(l,n); TMBENCH2("vszenc32        ",vszdec32(          out, m, cpy) ,n); break;  
-	   
     case 50: TMBENCH("",l=bvzzenc32(       in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzzenc32       ",bvzzdec32(         out, m, cpy,0) ,n); break; // bitio	
     case 51: TMBENCH("",l=bvzenc32(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("bvzenc32        ",bvzdec32(          out, m, cpy,0) ,n); break; 
     case 52: TMBENCH("",l=fpgenc32(        in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpgenc32        ",fpgdec32(          out, m, cpy,0) ,n); break;  
@@ -857,7 +960,9 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 62: TMBENCH("",l=srlec32(         in, n,out,RLE32),n);     pr(l,n); TMBENCH2("srle32          ",srled32(           out,l,cpy, n,RLE32),n);break;
     case 63: TMBENCH("",l=srlezc32(        in, n,out,tmp,RLE32),n); pr(l,n); TMBENCH2("srlez32         ",srlezd32(          out,l,cpy, n,RLE32),n);break;
       #ifdef USE_LZ
+        #ifdef CODEC1
     case 69: TMBENCH("",l=spdpenc(in,m*(32/8),out,SPDP_BSIZE,lev),n);pr(l,n);TMBENCH2("SPDP            ",spdpdec(           out, m*(32/8), cpy,SPDP_BSIZE,lev); ,n); break;
+        #endif
     case 70: TMBENCH("",l=tplzenc(    in, n,out,32/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpbyte+lz       ",tplzdec(           out,n,cpy,32/8,tmp) ,n); break;
     case 71: TMBENCH("",l=tp4lzenc(   in, n,out,32/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibble+lz     ",tp4lzdec(          out,n,cpy,32/8,tmp) ,n); break;
     case 72: TMBENCH("",l=tp4lzzenc32(in, n,out,     tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibbleZ+lz    ",tp4lzzdec32(       out,n,cpy,     tmp) ,n); break;
@@ -867,9 +972,14 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 75: TMBENCH("",l=bslzenc(    in,n,out,32/8,tmp,lev), n);  pr(l,n);  TMBENCH2("bitshuffle+lz   ",bslzdec(out,n,cpy,32/8,tmp), n); break;
         #endif
       #endif
-    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy(  in,out,n) ,n); pr(n,n); TMBENCH2("memcpy         ", libmemcpy( out,cpy,n) ,n); return n;
+        #ifdef CODEC1                  
+    case 76: TMBENCH("",l=streamvbyte_encode(in, m, out),n);        pr(l,n); TMBENCH2("streamvbyte     ",streamvbyte_decode(out, cpy, m),n); break;
+    case 77: TMBENCH("",l=streamvbyte_delta_encode(in, m, out,0),n);  pr(l,n); TMBENCH2("streamvbyte delta",streamvbyte_delta_decode(out, cpy, m,0),n); break;
+        #endif
+    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy(out,in,n) ,n); pr(n,n); TMBENCH2("memcpy          ", libmemcpy( cpy,out,n) ,n); break;
 	default: return l;
   }
+  { char s[65]; printf("%-30s ", bestr(id,32,s)); }
   rc = memcheck(in,m*(32/8),cpy);
   if(tmp) free(tmp);
   if(!rc)
@@ -921,13 +1031,16 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 56: TMBENCH("",l=fpfcmenc64(      in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpfcmenc64      ",fpfcmdec64(        out, m, cpy,0) ,n); break;
     case 57: TMBENCH("",l=fpdfcmenc64(     in, m, out,0),n); 	    pr(l,n); TMBENCH2("fpdfcmenc64     ",fpdfcmdec64(       out, m, cpy,0) ,n); break;
     case 58: TMBENCH("",l=fp2dfcmenc64(    in, m, out,0),n); 	    pr(l,n); TMBENCH2("fp2dfcmenc64    ",fp2dfcmdec64(      out, m, cpy,0) ,n); break;
-
+ 
     case 60: TMBENCH("",l=trlec(           in, n,out),n);           pr(l,n); TMBENCH2("trle            ",trled(             out,l,cpy, n),n);      break;  // TurboRLE
     case 61: TMBENCH("",l=trlezc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2("trlez           ",trlezd(            out,l,cpy, n),n);      break;  
     case 62: TMBENCH("",l=srlec64(         in, n,out,RLE64),n);     pr(l,n); TMBENCH2("srle64          ",srled64(           out,l,cpy, n,RLE64),n);break;
     case 63: TMBENCH("",l=srlezc64(        in, n,out,tmp,RLE64),n); pr(l,n); TMBENCH2("srlez64         ",srlezd64(          out,l,cpy, n,RLE64),n);break;
-      #ifdef USE_LZ
+
+        #ifdef USE_LZ
+          #ifdef CODEC1
     case 69: TMBENCH("",l=spdpenc(in,m*(64/8),out,SPDP_BSIZE,lev),n);pr(l,n);TMBENCH2("SPDP            ",spdpdec(           out, m*(64/8), cpy,SPDP_BSIZE,lev); ,n); break;
+          #endif
     case 70: TMBENCH("",l=tplzenc(    in, n,out,64/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpbyte+lz       ",tplzdec(           out,n,cpy,64/8,tmp) ,n); break;
     case 71: TMBENCH("",l=tp4lzenc(   in, n,out,64/8,tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibble+lz     ",tp4lzdec(          out,n,cpy,64/8,tmp) ,n); break;
     case 72: TMBENCH("",l=tp4lzzenc64(in, n,out,     tmp,lev) ,n);  pr(l,n); TMBENCH2("tpnibbleZ+lz    ",tp4lzzdec64(       out,n,cpy,     tmp) ,n); break;
@@ -937,9 +1050,10 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 75: TMBENCH("",l=bslzenc(    in,n,out,64/8,tmp,lev), n);  pr(l,n);  TMBENCH2("bitshuffle+lz   ",bslzdec(out,n,cpy,64/8,tmp), n); break;
         #endif
       #endif
-    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy(  in,out,n) ,n); pr(n,n); TMBENCH2("memcpy         ", libmemcpy( out,cpy,n) ,n); return n;
+    case ID_MEMCPY: if(!mcpy) return l; TMBENCH( "", libmemcpy( out,in,n) ,n); pr(n,n); TMBENCH2("memcpy          ", libmemcpy( cpy,out,n) ,n); break;
 	default: return l;
   }
+  { char s[65]; printf("%-30s ", bestr(id,64,s)); }
   rc = memcheck(in,m*(64/8),cpy);
   if(tmp) free(tmp);
   if(!rc)
@@ -948,7 +1062,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 }
 
 void usage(char *pgm) {
-  fprintf(stderr, "\nIcApp Copyright (c) 2013-2018 Powturbo %s\n", __DATE__);
+  fprintf(stderr, "\nIcApp Copyright (c) 2013-2019 Powturbo %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
   fprintf(stderr, " -B#s     # = max. benchmark filesize (default 1GB) ex. -B4G\n");
@@ -957,7 +1071,7 @@ void usage(char *pgm) {
   fprintf(stderr, " -i#/-j#  # = Minimum  de/compression iterations per run (default=auto)\n");
   fprintf(stderr, " -I#/-J#  # = Number of de/compression runs (default=3)\n");
   fprintf(stderr, "File format:\n");
-  fprintf(stderr, " -f[Xx[k][H]][.d][s]\n");
+  fprintf(stderr, " -F[Xx[k][H]][.d][s]\n");
   fprintf(stderr, "    X = file format:\n");
   fprintf(stderr, "        t = text:one integer per line, k=column number in multiple columns line\n");
   fprintf(stderr, "        c = text:integers separated by non digit char\n");
@@ -991,16 +1105,16 @@ void usage(char *pgm) {
 } 
 
 int main(int argc, char* argv[]) {
-  unsigned cmp=1, b = 1 << 30, lz=0, fno,idmin=1,idmax=-1,m=1000000; int isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,be_mindelta=0,lev=1;
+  unsigned b = 1 << 30, lz=0, fno,idmin=1,idmax=-1,m=1000000; int isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,be_mindelta=0,lev=1;
   unsigned char *in=NULL,*out,*cpy;
   double mdelta=-10,errlim=0.0;
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
   static struct option long_options[] = { {"blocsize", 	0, 0, 'b'}, {0, 0, 0}  };
   for(;;) {
-    if((c = getopt_long(argc, argv, "a:B:cC:e:D:E:f:F:g:i:I:j:J:k:K:Hl:m:M:n:s:v:V:y", long_options, &option_index)) == -1) break;
+    if((c = getopt_long(argc, argv, "a:B:C:e:D:E:f:F:g:i:I:j:J:k:K:Hl:m:M:n:s:v:V:y", long_options, &option_index)) == -1) break;
     switch(c) {
       case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;								
-      case 'C': cmp    = atoi(optarg);  break;
+      case 'C': cmp      = atoi(optarg); break;
       case 'e': idmin  = atoi(optarg); if(idmax == -1) idmax = idmin; break;
       case 'E': idmax  = atoi(optarg);  break;
       case 'D': decs   = atoi(optarg);  break;
@@ -1035,7 +1149,7 @@ int main(int argc, char* argv[]) {
       case 'J': if((tm_Rep2 = atoi(optarg))<=0) tm_rep2=tm_Rep2=1; break;
       case 's': isize = argtoi(optarg,1); 	 break;
       case 'B': b = argtoi(optarg,1); 	     break;
-      case 'c': cmp++; 				  	     break;
+      //case 'c': cmp++; 				  	     break;
       case 'l': lev = atoi(optarg);  	     break;
       case 'y': mcpy=0; 			  	     break;
 	  
@@ -1092,7 +1206,7 @@ int main(int argc, char* argv[]) {
     if(n <= 0) exit(0); 
     if(fno == optind)
       tm_init(tm_Rep, 1); 
-    if(verbose || fno == optind) printf("   E MB/s     size     ratio    D MB/s  function\n");  
+    if(verbose || fno == optind) printf("   E MB/s     size     ratio   D MB/s  function (%s size=%d bits)\n", isize>0?"integer":"floating point", abs(isize)*8);  
 
     if(errlim > 0.0) {  // convert input for lossy floating point compression
            if(isize == -4) padfloat32(in,n/4,in,errlim);
