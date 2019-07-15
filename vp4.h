@@ -284,7 +284,7 @@ unsigned char *p4zdec256v32(  unsigned char *__restrict in, unsigned n, uint32_t
 unsigned char *p4zdec64(      unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
 
 //---------------- Direct Access functions to compressed TurboPFor array p4encx16/p4encx32 -------------------------------------------------------
-  #ifndef NTURBOPFOR_DAC
+  #ifdef TURBOPFOR_DAC
 #include "conf.h"
 #define P4D_PAD8(_x_) 		( (((_x_)+8-1)/8) )
 #define P4D_B(_x_)  		((_x_) & 0x7f)
