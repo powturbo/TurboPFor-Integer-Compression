@@ -361,7 +361,6 @@ void pr(unsigned l, unsigned n) { double r = (double)l*100.0/n; if(r>0.1) printf
 //-------------------------------------
 #include "bitutil.h"
 #include "bitpack.h"
-#define NTURBOPFOR_DAC
 #include "vp4.h"
 #include "vint.h"
 #include "fp.h"
