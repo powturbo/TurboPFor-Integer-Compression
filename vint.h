@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2018
+    Copyright (C) powturbo 2013-2019
     GPL v2 License
   
     This program is free software; you can redistribute it and/or modify
@@ -140,8 +140,8 @@ extern unsigned char _vtab32_[];
 #define fputc_unlocked(_c_, _f_) fputc(_c_,_f_)
 #define fgetc_unlocked(_f_) 	 fgetc(_f_)
 #else
-#define fputc_unlocked(_c_, _f_) _IO_putc_unlocked(_c_,_f_)
-#define fgetc_unlocked(_f_) 	 _IO_getc_unlocked(_f_)
+#define fputc_unlocked(_c_, _f_) fputc(_c_,_f_) //_IO_putc_unlocked(_c_,_f_)
+#define fgetc_unlocked(_f_) 	 fgetc(_f_) //_IO_getc_unlocked(_f_)
 #endif
 
 #define leb128put(_op_, _x_)  { uint64_t _x = _x_; while(_x > 0x7f) { *_op_++ =      _x & 0x7f;       _x >>= 7; }  *_op_++ =     _x | 0x80; }
