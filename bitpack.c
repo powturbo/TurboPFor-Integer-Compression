@@ -351,6 +351,7 @@ size_t bitnfpack128v32( uint32_t *__restrict in, size_t n, unsigned char *__rest
 
 #if defined(__AVX2__) && defined(AVX2_ON)
 #include <immintrin.h>
+#include "bitpack_.h"
 
 #define OPPE(__op)
 #define IPPE(__op)
