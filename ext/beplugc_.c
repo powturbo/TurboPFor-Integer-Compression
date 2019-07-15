@@ -3,7 +3,7 @@
     case AM_SIMPLE8B:return vs8benc(  in, n, out);
       #endif
 	  
-	  #if C_FASTPFOR
+	  #if C_FASTPFOR128
 	case FP_FASTPFOR: {   
       size_t nvalue = outsize/4;
       FastPForLib::FastPFor<4> ic; ic.encodeArray((const uint32_t *)in, n & (~127), (uint32_t *)(out+4), nvalue);

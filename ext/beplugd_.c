@@ -6,7 +6,7 @@
     case AM_SIMPLE8B:					 		return vs8bdec(  in, n, out); 
       #endif
 	  
-      #if C_FASTPFOR
+      #if C_FASTPFOR128
 	case FP_FASTPFOR: { 	
 	  size_t nvalue = n;
       FastPForLib::FastPFor<4> ic; const uint32_t *ip = ic.decodeArray((const uint32_t *)(in+4), ctou32(in), out, nvalue);

@@ -2,7 +2,7 @@
 #define C_VINTG8IU 		0
 #define C_MASKEDVBYTE 	0			
   #endif
-  #if C_FASTPFOR
+  #if C_FASTPFOR128
 #include "FastPFor/headers/variablebyte.h"
 #include "FastPFor/headers/simple16.h"
 #include "FastPFor/headers/simple8b_rle.h"
