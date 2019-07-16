@@ -8,8 +8,9 @@
 CC = cl /nologo
 LD = link /nologo
 AR = lib /nologo
-CFLAGS = /MD /O2 -I. 
+CFLAGS = /MD /O2 -I. /W0 
 LDFLAGS = 
+ARCH =
 
 LIB_LIB = libic.lib
 LIB_DLL = ic.dll
@@ -17,29 +18,29 @@ LIB_IMP = ic.lib
 
 OBJS = bitpack.obj bitunpack.obj vp4c.obj vp4d.obj transpose.obj bitutil.obj fp.obj vsimple.obj vint.obj
 
-!if "$(AVX2)" == "1"
-OBJS = $(OBJS) bitpack_avx2.obj bitunpack_avx2.obj transpose_avx2.obj vp4c_avx2.obj vp4d_avx2.obj 
-DEFS = $(DEFS) /D__AVX2__
-!endif
-
 !if "$(NSIMD)" == "1"
-DEFS = $(DEFS) /DNSIMD
+CFLAGS = $(CFLAGS) /DNSIMD
 !else
 OBJS = $(OBJS) transpose_sse.obj bitpack_sse.obj bitunpack_sse.obj vp4c_sse.obj vp4d_sse.obj
-DEFS = $(DEFS) /D__SSE2__ /D__SSSE3__
-CFLAGS = $(CFLAGS) /DUSE_SSE
+CFLAGS = $(CFLAGS) /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSSE3__ /D__SSE4_1__ /D__SSE4_2__ /DUSE_SSE
+ARCH = /arch:SSE2
+!if "$(AVX2)" == "1"
+OBJS = $(OBJS) bitpack_avx2.obj bitunpack_avx2.obj transpose_avx2.obj vp4c_avx2.obj vp4d_avx2.obj 
+CFLAGS = $(CFLAGS) /D__AVX2__ /DUSE_AVX2
+ARCH = /arch:AVX2
+!endif
 !endif
 
 !if "$(CODEC1)" == "1"
-DEFS = $(DEFS) /DCODEC1
+CFLAGS = $(CFLAGS) /DCODEC1
 !endif
 
 !IF "$(CODEC2)" == "1"
-DEFS = $(DEFS) /DCODEC2
+CFLAGS = $(CFLAGS) /DCODEC2
 !endif
 
 !IF "($(BLOSC)" == "1"
-DEFS = $(DEFS) /DBLOSC
+CFLAGS = $(CFLAGS) /DBLOSC
 !endif
 
 DLL_OBJS = $(OBJS:.obj=.dllobj)
@@ -49,60 +50,14 @@ all: $(LIB_LIB) icbench.exe
 #$(LIB_DLL) $(LIB_IMP) 
 
 #------------
-vp4c.obj: vp4c.c
-	$(CC) /O2 $(CFLAGS) -c vp4c.c /Fovp4c.obj
-
-vp4c_sse.obj: vp4c.c
-	$(CC) /O2 $(CFLAGS) /DSSE2_ON /D__SSSE3__ /arch:SSSE3 /D__SSE2__ /arch:SSE2 /c vp4c.c /Fovp4c_sse.obj
-
-vp4c_avx2.obj: vp4c.c
-	$(CC) /O2 $(CFLAGS) /DAVX2_ON /D__AVX2__ /arch:avx2 /c vp4c.c /Fovp4c_avx2.obj
-#------------
-vp4d.obj: vp4d.c
-	$(CC) /O2 $(CFLAGS) -c vp4d.c /Fovp4d.obj
-
-vp4d_sse.obj: vp4d.c
-	$(CC) /O2 $(CFLAGS) /DSSE2_ON /D__SSSE3__ /arch:SSSE3 /D__SSE2__ /arch:SSE2 /c vp4d.c /Fovp4d_sse.obj
-
-vp4d_avx2.obj: vp4d.c
-	$(CC) /O2 $(CFLAGS) /DAVX2_ON /D__AVX2__ /arch:avx2 /c vp4d.c /Fovp4d_avx2.obj
-#------------
-bitpack.obj: bitpack.c
-	$(CC)  $(CFLAGS) -c bitpack.c /Fobitpack.obj
-
-bitpack_sse.obj: bitpack.c
-	$(CC) /O2 $(CFLAGS) /DSSE2_ON /D__SSE2__ /arch:SSE2 /c bitpack.c /Fobitpack_sse.obj
-
-bitpack_avx2.obj: bitpack.c
-	$(CC) /O2 $(CFLAGS) /DAVX2_ON /D__AVX2__ /arch:avx2 /c bitpack.c /Fobitpack_avx2.obj
-
-#------------
-bitunpack.obj: bitunpack.c
-	$(CC) /O2 $(CFLAGS) -c bitunpack.c /Fobitunpack.obj
-
-bitunpack_sse.obj: bitunpack.c
-	$(CC) /O2 $(CFLAGS) /DSSE2_ON /D__SSSE3__ /arch:SSSE3 /D__SSE2__ /arch:SSE2 /c bitunpack.c /Fobitunpack_sse.obj
-
-bitunpack_avx2.obj: bitunpack.c
-	$(CC) /O2 $(CFLAGS) /DAVX2_ON /D__AVX2__ /arch:avx2 /c bitunpack.c /Fobitunpack_avx2.obj
-	
-transpose.obj: transpose.c
-	$(CC) /O2 $(CFLAGS) -c transpose.c /Fotranspose.obj
-
-transpose_sse.obj: transpose.c
-	$(CC) /O2 $(CFLAGS) /DSSE2_ON /D__SSE2__ /arch:SSE2 /c transpose.c /Fotranspose_sse.obj
-
-transpose_avx2.obj: transpose.c
-	$(CC) /O2 $(CFLAGS) /DAVX2_ON /D__AVX2__ /arch:avx2 /c transpose.c /Fotranspose_avx2.obj
-
 .c.obj:
-	$(CC) -c /Fo$@ /O2 $(CFLAGS) /arch:SSSE3 /D__SSSE3__ $(DEFS) $**
+	$(CC) -c /Fo$@ /O2 $(CFLAGS) $(ARCH) $**
 
 .cc.obj:
-	$(CC) -c /Fo$@ /O2 $(CFLAGS) /arch:SSSE3 /D__SSSE3__ $(DEFS) $**
+	$(CC) -c /Fo$@ /O2 $(CFLAGS) $(ARCH) $**
 
 .c.dllobj:
-	$(CC) -c /Fo$@ /O2 $(CFLAGS) $(DEFS) /DLIB_DLL $**
+	$(CC) -c /Fo$@ /O2 $(CFLAGS) $(ARCH) /DLIB_DLL $**
 
 $(LIB_LIB): $(OBJS)
 	$(AR) $(ARFLAGS) -out:$@ $(OBJS)
