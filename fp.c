@@ -40,7 +40,11 @@
 #define bitflush(   _bw_,_br_,_op_)      ctou64(_op_) = _bw_, _op_ += (_br_+7)>>3, _bw_=_br_=0
 
   #ifdef __AVX2__
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#include <intrin.h>
+#else
 #include <x86intrin.h>
+#endif
   #else
 #define _bzhi_u64(_u_, _b_)              ((_u_) & ((1ull<<(_b_))-1))
 #define _bzhi_u32(_u_, _b_)              ((_u_) & ((1u  <<(_b_))-1))
