@@ -371,7 +371,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
 }
 
 unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start) ) {   
-  unsigned b, bx, i;  
+  unsigned b, bx = 0, i;  
   if(!n) return in;
   b = *in++;
   if((b & 0xc0) == 0xc0) {  // all items are equal
@@ -431,7 +431,7 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
   --n;
     #endif
   for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {            
-    unsigned b = *ip++, bx, i;  										 __builtin_prefetch(ip+512);//ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));
+    unsigned b = *ip++, bx = 0, i;  										 __builtin_prefetch(ip+512);//ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));
 	
     if((b & 0xc0) == 0xc0) {
 	  b &= 0x3f;
