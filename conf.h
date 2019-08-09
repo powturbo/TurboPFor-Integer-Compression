@@ -85,7 +85,7 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
 #define __builtin_prefetch(x,a) _mm_prefetch(x, _MM_HINT_NTA)
     #endif
 	
-#define ALIGNED(x)		__declspec(align(x))
+#define ALIGNED(t,v,n)  __declspec(align(n)) t v
 #define ALWAYS_INLINE	__forceinline
 #define NOINLINE		__declspec(noinline)
 #define THREADLOCAL		__declspec(thread)
@@ -109,8 +109,12 @@ static inline int clz64(uint64_t x) { unsigned long z;   _BitScanReverse64(&z, x
 #define bswap32(x) _byteswap_ulong(x)
 #define bswap64(x) _byteswap_uint64(x)
 
-#define popcnt32(x) __popcnt(x) 
+#define popcnt32(x) __popcnt(x)
+#ifdef _WIN64
 #define popcnt64(x) __popcnt64(x)
+#else
+#define popcnt64(x) (popcnt32(x) + popcnt32(x>>32))
+#endif
 
 #define sleep(x)    Sleep(x/1000)
 #define fseeko      _fseeki64

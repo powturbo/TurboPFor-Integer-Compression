@@ -764,7 +764,7 @@ size_t bitnfunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__re
 #define mm256_maskz_expand_epi32(_m_,_v_) _mm256_maskz_expand_epi32(_m_,_v_)
 #define mm256_maskz_loadu_epi32( _m_,_v_) _mm256_maskz_loadu_epi32( _m_,_v_)
   #else
-static unsigned char permv[256][8] __attribute__((aligned(32))) = {
+static ALIGNED(unsigned char, permv[256][8], 32) = {
 0,0,0,0,0,0,0,0,
 0,1,1,1,1,1,1,1,
 1,0,1,1,1,1,1,1,
