@@ -390,14 +390,14 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
 	  bx = *in++;
     return TEMPLATE2(_P4DEC, USIZE)(in, n, out P4DELTA(start), b, bx);
   }
-    #if USIZE > 8  
   else {  // Variable byte
+#if USIZE > 8
     uint_t ex[P4D_MAX+64],*pex=ex; 
 	b  &= 0x3f; 	
     bx = *in++;                															    /*if(b && *in++ == 0x80) { uint_t u = TEMPLATE2(ctou, USIZE)(in); if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b); int i; for(i = 0; i < n; i++) out[i] = u; in+=(b+7)/8;  } else*/
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b); 
     in = TEMPLATE2(vbdec,     USIZE)(in, bx, ex);
-	#define ST(j) out[in[i+j]] |= ex[i+j] << b;
+	#define ST(j) out[in[i+j]] |= ex[i+j] << b
 	//#define ST(j) out[*ip++] |= (*pex++) << b;
 	//unsigned char *ip;for(ip = in; ip != in + (bx & ~3); ) 
     for(i  = 0;  i != (bx & ~7); i+=8) 
@@ -408,9 +408,10 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
       #ifdef BITUNDD
     TEMPLATE2(BITUNDD, USIZE)(out, n, start);
 	  #endif
+    #undef ST
+#endif // USIZE > 8
     return in;
   }
-    #endif
 }
 
 #ifdef VSIZE

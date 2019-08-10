@@ -183,7 +183,7 @@ unsigned datagen(unsigned char *in, unsigned n, int isize, double be_mindelta) {
       if(mindelta == 0 || mindelta == 1) {                                                       	
         uint64_t *ip = (uint64_t *)in, v;										stprint("delta"); 
         for(ip[0]=0,v = 1; v < n; v++) { 
-          ip[v] += ip[v-1] + mindelta;                                     if(ip[v]>=(1u<<31)) die("overflow generating sorted array %d\n", ip[v]);  
+          ip[v] += ip[v-1] + mindelta;                                     if(ip[v]>=(1u<<31)) die("overflow generating sorted array %llu\n", ip[v]);  
         }
       } else stprint("");
       break;
