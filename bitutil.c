@@ -482,6 +482,13 @@ static inline double efloat64(double d, double e, int lg2e) {
 
 void padfloat64(double *in, size_t n, double *out, double e) { int lg2e = -log(e)/log(2.0); double *ip; for(ip = in; ip < in+n; ip++,out++) *out = efloat64(*ip, e, lg2e); }
 
+#ifdef _MSC_VER
+static inline float fabsf(float x)
+{
+  return (float)fabs(x);
+}
+#endif
+
 static inline float efloat32(float d, float e, int lg2e) {
   uint32_t u, du = ctou32(&d);
   int      v = (du>>23 & 0xff)-0x7e;
@@ -492,4 +499,3 @@ static inline float efloat32(float d, float e, int lg2e) {
 }
 
 void padfloat32(float *in, size_t n, float *out, float e) { int lg2e = -log(e)/log(2.0); float *ip; for(ip = in; ip < in+n; ip++,out++) *out = efloat32(*ip, e, lg2e); }
-
