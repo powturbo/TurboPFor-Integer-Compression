@@ -764,6 +764,11 @@ size_t bitnfunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__re
 #define mm256_maskz_expand_epi32(_m_,_v_) _mm256_maskz_expand_epi32(_m_,_v_)
 #define mm256_maskz_loadu_epi32( _m_,_v_) _mm256_maskz_loadu_epi32( _m_,_v_)
   #else
+#if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
+static inline __m128i _mm_cvtsi64_si128(__int64 a) {
+  return _mm_loadl_epi64((__m128i*)&a);
+}
+#endif
 static ALIGNED(unsigned char, permv[256][8], 32) = {
 0,0,0,0,0,0,0,0,
 0,1,1,1,1,1,1,1,

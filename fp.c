@@ -45,6 +45,9 @@
 #else
 #include <x86intrin.h>
 #endif
+#if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
+#define _bzhi_u64(_u_, _b_)              ((_u_) & ((1ull<<(_b_))-1))
+#endif
   #else
 #define _bzhi_u64(_u_, _b_)              ((_u_) & ((1ull<<(_b_))-1))
 #define _bzhi_u32(_u_, _b_)              ((_u_) & ((1u  <<(_b_))-1))
