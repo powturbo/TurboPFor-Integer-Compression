@@ -95,6 +95,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/w24003 /w24005 /w24028 /w24047 /w24090 /w24133 /w24146 /w24333 /w24789 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,6 +112,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/w24003 /w24005 /w24028 /w24047 /w24090 /w24133 /w24146 /w24333 /w24789 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +132,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/w24003 /w24005 /w24028 /w24047 /w24090 /w24133 /w24146 /w24333 /w24789 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,6 +154,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/w24003 /w24005 /w24028 /w24047 /w24090 /w24133 /w24146 /w24333 /w24789 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,26 +165,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\bitpack.c" />
-    <ClCompile Include="..\..\bitpack_avx2.c" />
-    <ClCompile Include="..\..\bitpack_sse.c" />
     <ClCompile Include="..\..\bitunpack.c" />
-    <ClCompile Include="..\..\bitunpack_avx2.c" />
-    <ClCompile Include="..\..\bitunpack_sse.c" />
     <ClCompile Include="..\..\bitutil.c" />
     <ClCompile Include="..\..\fp.c" />
     <ClCompile Include="..\..\transpose.c" />
-    <ClCompile Include="..\..\transpose_avx2.c" />
-    <ClCompile Include="..\..\transpose_sse.c" />
     <ClCompile Include="..\..\trlec.c" />
     <ClCompile Include="..\..\trled.c" />
     <ClCompile Include="..\..\vint.c" />
     <ClCompile Include="..\..\vp4c.c" />
-    <ClCompile Include="..\..\vp4c_avx2.c" />
-    <ClCompile Include="..\..\vp4c_sse.c" />
     <ClCompile Include="..\..\vp4d.c" />
-    <ClCompile Include="..\..\vp4d_avx2.c" />
-    <ClCompile Include="..\..\vp4d_sse.c" />
     <ClCompile Include="..\..\vsimple.c" />
+    <ClCompile Include="..\bitpack_avx2.c" />
+    <ClCompile Include="..\bitpack_sse.c" />
+    <ClCompile Include="..\bitunpack_avx2.c" />
+    <ClCompile Include="..\bitunpack_sse.c" />
+    <ClCompile Include="..\transpose_avx2.c" />
+    <ClCompile Include="..\transpose_sse.c" />
+    <ClCompile Include="..\vp4c_avx2.c" />
+    <ClCompile Include="..\vp4c_sse.c" />
+    <ClCompile Include="..\vp4d_avx2.c" />
+    <ClCompile Include="..\vp4d_sse.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\bitpack.h" />

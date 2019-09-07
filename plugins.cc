@@ -708,7 +708,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
  	  #if C_TURBOPFOR256
     case TB_FOR256V: vbxget32(in, x); b = *in++;return bitfunpack256v32( in, n, out, x, b);
 
-    case TB_PF256V : __builtin_prefetch(in+256);return n == 256?p4dec256v32(in, n, out):p4dec32(in, n, out);
+    case TB_PF256V : __builtin_prefetch((char*)in+256);return n == 256?p4dec256v32(in, n, out):p4dec32(in, n, out);
     case TB_PFN256V :      				 		return in+p4ndec256v32(in, n, out);
     case TB_BP256V: if(b < 0) b = *in++; 		return n != 256?bitunpack32(in, n, out, b):bitunpack256v32(in, n, out, b);
     case TB_BPN256V:  		                    return in+bitnunpack256v32(in, n, out);

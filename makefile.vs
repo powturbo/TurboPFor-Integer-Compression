@@ -16,16 +16,17 @@ LIB_LIB = libic.lib
 LIB_DLL = ic.dll
 LIB_IMP = ic.lib
 
-OBJS = bitpack.obj bitunpack.obj vp4c.obj vp4d.obj transpose.obj bitutil.obj fp.obj vsimple.obj vint.obj
+OBJS = bitpack.obj bitunpack.obj bitutil.obj vp4c.obj vp4d.obj transpose.obj fp.obj trlec.obj trled.obj vint.obj vsimple.obj vsimple.obj
+OBJS_SSE = vs\bitpack_sse.obj vs\bitunpack_sse.obj vs\vp4c_sse.obj vs\vp4d_sse.obj vs\transpose_sse.obj
+OBJS_AVX2 = vs\bitpack_avx2.obj vs\bitunpack_avx2.obj vs\vp4c_avx2.obj vs\vp4d_avx2.obj vs\transpose_avx2.obj
 
 !if "$(NSIMD)" == "1"
 CFLAGS = $(CFLAGS) /DNSIMD
 !else
-OBJS = $(OBJS) transpose_sse.obj bitpack_sse.obj bitunpack_sse.obj vp4c_sse.obj vp4d_sse.obj
+OBJS = $(OBJS) $(OBJS_SSE)
 CFLAGS = $(CFLAGS) /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSSE3__ /D__SSE4_1__ /D__SSE4_2__ /DUSE_SSE
-ARCH = /arch:SSE2
 !if "$(AVX2)" == "1"
-OBJS = $(OBJS) bitpack_avx2.obj bitunpack_avx2.obj transpose_avx2.obj vp4c_avx2.obj vp4d_avx2.obj 
+OBJS = $(OBJS) $(OBJS_AVX2)
 CFLAGS = $(CFLAGS) /D__AVX2__ /DUSE_AVX2
 ARCH = /arch:AVX2
 !endif
@@ -45,7 +46,7 @@ CFLAGS = $(CFLAGS) /DBLOSC
 
 DLL_OBJS = $(OBJS:.obj=.dllobj)
 
-all: $(LIB_LIB) icbench.exe 
+all: $(LIB_LIB) icbench.exe icapp.exe
 
 #$(LIB_DLL) $(LIB_IMP) 
 
@@ -67,8 +68,11 @@ $(LIB_DLL): $(DLL_OBJS)
 
 $(LIB_IMP): $(LIB_DLL)
 
-icbench.exe: icbench.obj vs/getopt.obj plugins.obj eliasfano.obj vsimple.obj $(LIB_LIB)
+icbench.exe: icbench.obj vs\getopt.obj plugins.obj eliasfano.obj $(LIB_LIB)
+	$(LD) $(LDFLAGS) -out:$@ $**
+
+icapp.exe: icapp.obj vs\getopt.obj plugins.obj eliasfano.obj $(LIB_LIB)
 	$(LD) $(LDFLAGS) -out:$@ $**
 
 clean:
-	-del *.dll *.exe *.exp *.obj *.dllobj *.lib *.manifest 2>nul
+	-del *.obj vs\*.obj *.dll *.exe *.exp *.dllobj *.lib *.manifest 2>nul
