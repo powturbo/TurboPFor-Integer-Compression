@@ -236,6 +236,9 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 ###### Windows visual c++
 		nmake /f makefile.vs
 
+###### Windows visual studio c++
+                project files under vs/vs2017
+  
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
   + benchmark groups of "integer compression" functions <br />
@@ -418,9 +421,10 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 ### Environment:
 ###### OS/Compiler (64 bits):
 - Linux: GNU GCC (>=4.6)
-- clang (>=3.2)
-- Windows: MinGW-w64 (no parallel query processing demo app)
-- Visual c++ (VS2008-VS2017)
+- Clang (>=3.2)
+- Windows: MinGW-w64 makefile
+- Windows: Visual c++ (>=VS2008) - makefile.vs (for nmake)
+- Windows: Visual Studio project file - vs/vs2017 - Thanks to [PavelP](https://github.com/pps83)
 - Linux aarch64 for 64 bits ARM CPU : gcc
 
 ###### Multithreading:
