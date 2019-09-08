@@ -40,7 +40,9 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
   * :sparkles: Revolutionary Parallel Query Processing on Multicores **> 7000!!! queries/sec** on a simple quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
+   
  ![Promo video](turbopfor.jpg?raw=true)
+ 
 ### Integer Compression Benchmark:
 - :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
