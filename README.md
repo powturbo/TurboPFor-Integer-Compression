@@ -40,7 +40,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
   * :sparkles: Revolutionary Parallel Query Processing on Multicores **> 7000!!! queries/sec** on a simple quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
-   
+ ![Promo video](turbopfor.jpg?raw=true)
 ### Integer Compression Benchmark:
 - :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
@@ -460,7 +460,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  15 Jul 2019
+Last update:  08 Sep 2019
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
