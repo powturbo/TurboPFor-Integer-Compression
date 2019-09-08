@@ -1,4 +1,5 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
+![Promo video](turbopfor.jpg?raw=true)
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
   * :new: (2019.7) all TurboPFor functions now available under 64 bits ARMv8 including NEON SIMD.
@@ -41,8 +42,6 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * :sparkles: Revolutionary Parallel Query Processing on Multicores **> 7000!!! queries/sec** on a simple quad core PC.<br>
    **...forget** ~~Map Reduce, Hadoop, multi-node clusters,~~ ...
    
- ![Promo video](turbopfor.jpg?raw=true)
- 
 ### Integer Compression Benchmark:
 - :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
