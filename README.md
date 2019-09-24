@@ -462,7 +462,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
   * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
-Last update:  08 Sep 2019
+Last update:  24 Sep 2019
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
@@ -503,10 +503,10 @@ TurboPForN       PFor (SSE2) large blocks
 TurboPFor256     PFor (AVX2)
 TurboPFor256N    PFor (AVX2) large blocks
 TurboPForDA      PFor direct access
-TurboPForDI      PFord min                                        
-TurboPForZZ      PFor zigzag of delta                             
-TurboFor         FOR                                              
-TurboForV        FOR (SIMD)                                       
+TurboPForDI      PFord min
+TurboPForZZ      PFor zigzag of delta
+TurboFor         FOR
+TurboForV        FOR (SIMD)
 TurboFor256V     FOR (AVX2)                                       
 TurboForDA       FOR direct access                                
 TurboPackDA      Bit packing direct access                        
