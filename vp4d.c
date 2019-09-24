@@ -27,10 +27,13 @@
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
 
+#define VINT_IN
+#define BITPACK_DAC
+#define TURBOPFOR_DAC
+#define BITUTIL_IN
 #include "conf.h"
 #include "bitutil.h"
 #include "vint.h"
-#define TURBOPFOR_DAC
 #include "bitpack.h"
 #include "vp4.h"
 
