@@ -31,8 +31,10 @@
 
 #include "conf.h"
 #include "bitpack.h"
+#define BITUTIL_IN
 #include "bitutil.h"
 #include "eliasfano.h"
+
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
   #ifdef __SSE42__
@@ -175,7 +177,7 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
 	return in;
    
   if(!lb) { 
-      #if defined(__SSE2__) && USIZE == 32
+      #if (defined(__SSE2__) || defined(__ARM_NEON)) && USIZE == 32
         #if EF_INC == 1
     BITFORZERO32(out, n, start, 1);
         #else
@@ -190,7 +192,7 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
   ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
   #define EFD(i) if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i;
   
-  for(i=j=0;; j += sizeof(uint64_t)*8) {											//__builtin_prefetch(ip+256);
+  for(i=j=0;; j += sizeof(uint64_t)*8) {											//PREFETCH(ip+256,0);
     for(b = ctou64(ip+(j>>3)); ; ) { 
 	  EFD(i); EFD(i); EFD(i); EFD(i); 
 	  if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC;
