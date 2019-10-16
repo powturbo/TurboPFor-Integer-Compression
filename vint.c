@@ -29,6 +29,8 @@
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
 
+#define BITUTIL_IN
+#define VINT_IN
 #include "conf.h"
 #include "vint.h"
 #include "bitutil.h"
@@ -99,7 +101,7 @@ unsigned char *TEMPLATE2(vbdec, USIZE)(unsigned char  *__restrict in, unsigned n
 	  #if UN > 4
     VBE(4); VBE(5); VBE(6); VBE(7);	  
       #endif
-													__builtin_prefetch(in+16*USIZE, 0); 
+													PREFETCH(in+16*USIZE, 0); 
   }
   while(op != out+n) 
     TEMPLATE2(_vbget, USIZE)(in, x, *op++ = x );
@@ -112,7 +114,7 @@ unsigned char *TEMPLATE2(vbenc, USIZE)(uint_t *__restrict in, unsigned n, unsign
   unsigned char *op = out;
 
   #define VBD(_i_) x = ip[_i_]; TEMPLATE2(_vbput, USIZE)(op, x, ;);
-  for(ip = in; ip != in+(n&~(UN-1)); ip += UN) {  		__builtin_prefetch(ip+USIZE*8, 0);
+  for(ip = in; ip != in+(n&~(UN-1)); ip += UN) {  		PREFETCH(ip+USIZE*8, 0);
     VBD(0); VBD(1); VBD(2); VBD(3); 
 	  #if UN > 4
     VBD(4); VBD(5); VBD(6); VBD(7);
@@ -178,7 +180,7 @@ unsigned char *TEMPLATE2(vbdddec, USIZE)(unsigned char *__restrict in, unsigned 
   unsigned char *bp=in; in+=(n+7)/8;
   for(op = out; op != out+(n&~(8-1)); op+=8,bp++) { 
     if(!bp[0]) { op[0]=(start+=pd); op[1]=(start+=pd); op[2]=(start+=pd); op[3]=(start+=pd); op[4]=(start+=pd); op[5]=(start+=pd); op[6]=(start+=pd); op[7]=(start+=pd); continue; }
-    VBDDD(0); VBDDD(1); VBDDD(2); VBDDD(3); VBDDD(4); VBDDD(5); VBDDD(6); VBDDD(7);											__builtin_prefetch(in+16*USIZE, 0);	
+    VBDDD(0); VBDDD(1); VBDDD(2); VBDDD(3); VBDDD(4); VBDDD(5); VBDDD(6); VBDDD(7);											PREFETCH(in+16*USIZE, 0);	
   }
   for(p=op; p != out+n; p++) VBDDD(p-op); 
   return in;
@@ -205,7 +207,7 @@ unsigned char *TEMPLATE2(vbzdec, USIZE)(unsigned char *__restrict in, unsigned n
 	  #if UN > 4
     VBZD; VBZD; VBZD; VBZD;
       #endif
-											__builtin_prefetch(in+16*USIZE, 0);	
+											PREFETCH(in+16*USIZE, 0);	
   }
   while(op != out+n) VBZD; 
 
@@ -241,16 +243,21 @@ unsigned TEMPLATE2(vbzgeteq, USIZE)(unsigned char **__restrict in, unsigned n, u
 
 unsigned char *TEMPLATE2(VBDENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
   unsigned char *op = out; 
-  uint_t *ip, b=0,v; 
+  uint_t        *ip, b = 0,v; 
   if(!n) return out;
-  #define VBDE { v = (*ip)-start-VDELTA; start = *ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); b |= (v /*^ x*/); }
-  for(ip = in; ip != in + (n&~(UN-1)); ) { VBDE;VBDE;VBDE;VBDE; 
+    #if USIZE == 64
+  #define VB_MX 255
+    #else
+  #define VB_MX VB_MAX		
+    #endif
+  #define VBDE { v = ip[0]-start-VDELTA; start = *ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); b |= (v /*^ x*/); }
+  for(ip = in; ip != in + (n&~(UN-1)); ) { VBDE; VBDE; VBDE; VBDE; 
 	  #if UN > 4
     VBDE; VBDE; VBDE; VBDE; 	  
       #endif
   }
   while(ip != in+n) VBDE;
-  if(!b) { op = out; *op++ = VB_MAX; } // if (x) { op = out; *op++ = VB_MAX-2; TEMPLATE2(_vbput, USIZE)(op, x, ;); }
+  if(!b) { op = out; *op++ = VB_MX; } // if (x) { op = out; *op++ = VB_MAX-2; TEMPLATE2(_vbput, USIZE)(op, x, ;); }
     #if USIZE < 64
   OVERFLOWE(in,n,out,op,VB_MAX-1);
     #endif
@@ -261,23 +268,24 @@ unsigned char *TEMPLATE2(VBDENC, USIZE)(uint_t *__restrict in, unsigned n, unsig
 unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) { 
   uint_t x,*op; 
   if(!n) return in;
+  
     #if USIZE < 64
   OVERFLOWD(in,n,out,VB_MAX-1);
     #endif
   
-  if(in[0] == VB_MAX) { 
+  if(in[0] == VB_MX) {
     in++; 
       #if (defined(__SSE2__) || defined(__ARM_NEON)) && USIZE == 32
 	    #if VDELTA == 0
-	if(n) BITZERO32(out, n, start);
+	if(n) TEMPLATE2(BITZERO, USIZE)(out, n, start);
 	    #else
-	if(n) BITDIZERO32(out, n, start, VDELTA);
+	if(n) TEMPLATE2(BITDIZERO,USIZE)(out, n, start, VDELTA);
         #endif
 	  #else 
 	    #if VDELTA == 0
     for(x = 0; x < n; x++) out[x] = start;
 	    #else
-    for(x = 0; x < n; x++) out[x] = start+x+VDELTA;
+    for(x = 0; x < n; x++) out[x] = start+x*VDELTA;
         #endif		
       #endif
 	return in;
@@ -294,13 +302,13 @@ unsigned char *TEMPLATE2(VBDDEC, USIZE)(unsigned char *__restrict in, unsigned n
 	return in;
   }
     #endif
-  #define VBDD(i) { TEMPLATE2(_vbget, USIZE)(in, x, x+=VDELTA); op[i] = (start += x); }
+ #define VBDD(i) { TEMPLATE2(_vbget, USIZE)(in, x, x+=VDELTA); op[i] = (start += x); }
   for(op = out; op != out+(n&~(UN-1)); op+=UN) { 
     VBDD(0); VBDD(1); VBDD(2); VBDD(3); 
 	  #if UN > 4
     VBDD(4); VBDD(5); VBDD(6); VBDD(7); 	  
       #endif
-												__builtin_prefetch(in+16*USIZE, 0);
+												PREFETCH(in+16*USIZE, 0);
   }
   for(;op != out+n;op++) VBDD(0);
   return in;
