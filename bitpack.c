@@ -24,12 +24,19 @@
 //  "Integer Compression" bit packing 
 
 #include <stdio.h>
+#define BITUTIL_IN
+#define VINT_IN
 #include "conf.h" 
 #include "bitutil.h" 
 #include "vint.h"
 #include "bitpack.h"
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+768,0)//#define PREFETCH(ip)
+
+  #ifdef __ARM_NEON
+#define PREFETCH(_ip_,_rw_)
+  #else
+#define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
+  #endif
 
 #pragma warning( disable : 4005) 
 #pragma warning( disable : 4090) 
@@ -171,10 +178,11 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 
 #define BITNPACK(in, n, out, _csize_, _usize_) { unsigned char *op = out;\
   for(ip = in, in += n; ip < in;) { \
-    unsigned iplen = in - ip,b;\
-    if(iplen > _csize_) iplen = _csize_;							PREFETCH(ip+512);\
-    TEMPLATE2(BITSIZE,_usize_)(ip, iplen, b);\
-	*op++ = b; op = TEMPLATE2(bitpacka, _usize_)[b](ip, iplen, op); \
+	TEMPLATE3(uint, _usize_, _t) o,x;\
+    unsigned iplen = in - ip,b; \
+    if(iplen > _csize_) iplen = _csize_;							PREFETCH(ip+512,0);\
+    o = TEMPLATE2(bit,_usize_)(ip, iplen, &x); b = TEMPLATE2(bsr,_usize_)(o);\
+	*op++ = b; op = TEMPLATE2(bitpacka, _usize_)[b](ip, iplen, op);\
 	ip += iplen;\
   }\
   return op - out;\
@@ -182,17 +190,20 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 
 #define BITNDPACK(in, n, out, _csize_, _usize_, _bitd_, _bitpacka_) { if(!n) return 0;\
   unsigned char *op = out; \
+  TEMPLATE3(uint, _usize_, _t) o,x;\
   start = *in++; \
   TEMPLATE2(vbxput, _usize_)(op, start);\
-  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512);\
-                         unsigned b = TEMPLATE2(_bitd_, _usize_)(ip, _csize_, start); *op++ = b; op = TEMPLATE2(_bitpacka_, _usize_)[b](ip, _csize_, op, start); ip += _csize_; start = ip[-1];\
-  } if(n&=(_csize_-1)) { unsigned b = TEMPLATE2(_bitd_, _usize_)(ip, n,       start); *op++ = b; op = TEMPLATE2(_bitpacka_, _usize_)[b](ip, n,     op, start); }\
+  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { unsigned b;		PREFETCH(ip+512,0);\
+    o = TEMPLATE2(_bitd_, _usize_)(ip, _csize_, &x, start); b = TEMPLATE2(bsr,_usize_)(o); *op++ = b; op = TEMPLATE2(_bitpacka_,_usize_)[b](ip, _csize_, op, start); ip += _csize_; start = ip[-1];\
+  }\
+  if(n&=(_csize_-1)) { unsigned b;\
+    o = TEMPLATE2(_bitd_, _usize_)(ip, n,       &x, start); b = TEMPLATE2(bsr,_usize_)(o); *op++ = b; op = TEMPLATE2(_bitpacka_,_usize_)[b](ip, n,       op, start);\
+  }\
   return op - out;\
 }
 
 size_t bitnpack8(   uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) { uint8_t  *ip,start; BITNPACK(in, n, out, 128,  8); }
 size_t bitnpack16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; BITNPACK(in, n, out, 128, 16); }
-
 size_t bitnpack32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; BITNPACK(in, n, out, 128, 32); }
 size_t bitnpack64(  uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip,start; BITNPACK(in, n, out, 128, 64); }
 
@@ -206,33 +217,33 @@ size_t bitnd1pack16(uint16_t *__restrict in, size_t n, unsigned char *__restrict
 size_t bitnd1pack32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitd1, bitd1packa); }
 size_t bitnd1pack64(uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitd1, bitd1packa); }
 
-size_t bitnzpack8(  uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) {  uint8_t  *ip,start; BITNDPACK(in, n, out, 128,  8, bitz, bitzpacka); }
-size_t bitnzpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint16_t *ip,start; BITNDPACK(in, n, out, 128, 16, bitz, bitzpacka); }
-size_t bitnzpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitz, bitzpacka); }
-size_t bitnzpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitz, bitzpacka); }
+size_t bitnzpack8(  uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) { uint8_t  *ip,start; BITNDPACK(in, n, out, 128,  8, bitz, bitzpacka); }
+size_t bitnzpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; BITNDPACK(in, n, out, 128, 16, bitz, bitzpacka); }
+size_t bitnzpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitz, bitzpacka); }
+size_t bitnzpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitz, bitzpacka); }
 
-size_t bitnfpack8(  uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) {  uint8_t  *ip,start; BITNDPACK(in, n, out, 128,  8, bitf, bitfpacka); }
-size_t bitnfpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint16_t *ip,start; BITNDPACK(in, n, out, 128, 16, bitf, bitfpacka); }
-size_t bitnfpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitf, bitfpacka); }
-size_t bitnfpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) {  uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitf, bitfpacka); }
+size_t bitnfpack8(  uint8_t  *__restrict in, size_t n, unsigned char *__restrict out) { uint8_t  *ip,start; BITNDPACK(in, n, out, 128,  8, bitf, bitfpacka); }
+size_t bitnfpack16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start; BITNDPACK(in, n, out, 128, 16, bitf, bitfpacka); }
+size_t bitnfpack32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start; BITNDPACK(in, n, out, 128, 32, bitf, bitfpacka); }
+size_t bitnfpack64( uint64_t *__restrict in, size_t n, unsigned char *__restrict out) { uint64_t *ip,start; BITNDPACK(in, n, out, 128, 64, bitf, bitfpacka); }
 
 #endif
 
 #define _BITNPACKV(in, n, out, _csize_, _usize_, _bitpackv_) {\
-  unsigned char *op = out;\
-  for(ip = in; ip != in + (n&~(_csize_-1)); ip += _csize_) { 				PREFETCH(ip+512);\
-                       unsigned b; TEMPLATE2(BITSIZE,_usize_)(ip, _csize_, b); *op++ = b; op = TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, b); \
-  } if(n&=(_csize_-1)) { unsigned b; TEMPLATE2(BITSIZE,_usize_)(ip, n,     b); *op++ = b; op = TEMPLATE2(bitpack,    _usize_)(ip, n,     op, b); }\
+  unsigned char *op = out; TEMPLATE3(uint, _usize_, _t) _o,_x;\
+  for(ip = in; ip != in + (n&~(_csize_-1)); ip += _csize_) { 		PREFETCH(ip+512,0);\
+                         unsigned _b; _o = TEMPLATE2(bit,_usize_)(ip, _csize_, &_x); _b = TEMPLATE2(bsr,_usize_)(_o); *op++ = _b; op = TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, _b);\
+  } if(n&=(_csize_-1)) { unsigned _b; _o = TEMPLATE2(bit,_usize_)(ip, n,       &_x); _b = TEMPLATE2(bsr,_usize_)(_o); *op++ = _b; op = TEMPLATE2(bitpack,    _usize_)(ip, n,       op, _b); }\
   return op - out;\
 }
 
 #define _BITNDPACKV(in, n, out, _csize_, _usize_, _bitdv_, _bitpackv_,  _bitd_, _bitpack_) { if(!n) return 0;\
-  unsigned char *op = out; \
+  unsigned char *op = out; TEMPLATE3(uint, _usize_, _t) _o,_x;\
   start = *in++; \
   TEMPLATE2(vbxput, _usize_)(op, start);\
-  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512);\
-                         unsigned b = TEMPLATE2(_bitdv_, _usize_)(ip, _csize_, start); *op++ = b; op = TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, start, b); ip += _csize_; start = ip[-1];\
-  } if(n&=(_csize_-1)) { unsigned b = TEMPLATE2(_bitd_,  _usize_)(ip, n,       start); *op++ = b; op = TEMPLATE2(_bitpack_,  _usize_)(ip, n,     op, start, b); }\
+  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512,0);\
+                         unsigned _b; _o = TEMPLATE2(_bitdv_, _usize_)(ip, _csize_, &_x, start); _b = TEMPLATE2(bsr,_usize_)(_o); *op++ = _b; op = TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, start, _b); ip += _csize_; start = ip[-1];\
+  } if(n&=(_csize_-1)) { unsigned _b; _o = TEMPLATE2(_bitd_,  _usize_)(ip, n,       &_x, start); _b = TEMPLATE2(bsr,_usize_)(_o); *op++ = _b; op = TEMPLATE2(_bitpack_,  _usize_)(ip, n,       op, start, _b); }\
   return op - out;\
 }
 
@@ -261,8 +272,8 @@ unsigned char *bitpack128v64(uint64_t       *__restrict in, unsigned n, unsigned
   if(b<=32) { unsigned char *pout = out+PAD8(128*b); BITPACK128V32(in, b, out, 0); return pout; } else return bitpack64(in,n,out,b);   
 }  
 
-#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x16(v,_sv_); _sv_ = v
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v
+#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = mm_delta_epi16(v,_sv_); _sv_ = v
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = mm_delta_epi32(v,_sv_); _sv_ = v
 #define IP16(ip, i, _iv_) _iv_
 #define IP32(ip, i, _iv_) _iv_
 #include "bitpack_.h" 
@@ -285,8 +296,8 @@ unsigned char *bitfpack128v32(unsigned       *__restrict in, unsigned n, unsigne
   __m128i v, sv = _mm_set1_epi32(start); BITPACK128V32(in, b, out, sv);  return pout;
 }
  
-#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi16(DELTA128x16(v,_sv_),cv); _sv_ = v
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi32(DELTA128x32(v,_sv_),cv); _sv_ = v
+#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi16(mm_delta_epi16(v,_sv_),cv); _sv_ = v
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi32(mm_delta_epi32(v,_sv_),cv); _sv_ = v
 #define IP16(ip, i, _iv_) _iv_
 #define IP32(ip, i, _iv_) _iv_
 unsigned char *bitd1pack128v16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
@@ -296,8 +307,8 @@ unsigned char *bitd1pack128v32(unsigned       *__restrict in, unsigned n, unsign
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1); BITPACK128V32(in, b, out, sv); return pout; 
 }
 
-#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi16(SUBI128x16(v,_sv_),cv); _sv_ = v
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi32(SUBI128x32(v,_sv_),cv); _sv_ = v
+#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi16(SUBI16x8(v,_sv_),cv); _sv_ = v
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = _mm_sub_epi32(SUBI32x4(v,_sv_),cv); _sv_ = v
 #define IP16(ip, i, _iv_) _iv_
 #define IP32(ip, i, _iv_) _iv_
 unsigned char *bits1pack128v16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
@@ -319,11 +330,11 @@ unsigned char *bitf1pack128v32(unsigned       *__restrict in, unsigned n, unsign
   __m128i v, sv = _mm_set_epi32(                                start+4,start+3,start+2,start+1), cv = _mm_set1_epi32(4); BITPACK128V32(in, b, out, sv); return pout; 
 }
 
-#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x16(v,_sv_); _sv_ = v; _iv_ = ZIGZAG128x16(_iv_)
+#define VI16(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = mm_delta_epi16(v,_sv_); _sv_ = v; _iv_ = mm_zzage_epi16(_iv_)
 unsigned char *bitzpack128v16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(1); BITPACK128V16(in, b, out, sv); return pout; 
 }
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = DELTA128x32(v,_sv_); _sv_ = v; _iv_ = ZIGZAG128x32(_iv_)
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm_loadu_si128(_ip_++); _iv_ = mm_delta_epi32(v,_sv_); _sv_ = v; _iv_ = mm_zzage_epi32(_iv_)
 unsigned char *bitzpack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b) { unsigned char *pout = out+PAD8(128*b);
   __m128i v, sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(1); BITPACK128V32(in, b, out, sv); return pout; 
 }
@@ -384,7 +395,7 @@ unsigned char *bitf1pack256v32(unsigned       *__restrict in, unsigned n, unsign
   BITPACK256V32(in, b, out, sv); return pout; 
 }
 
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = DELTA256x32(v,_sv_); _sv_ = v
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = mm256_delta_epi32(v,_sv_); _sv_ = v
 #define IP32(ip, i, _iv_) _iv_
 #include "bitpack_.h" 
 unsigned char *bitdpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
@@ -393,14 +404,14 @@ unsigned char *bitdpack256v32(unsigned       *__restrict in, unsigned n, unsigne
   return pout;
 }
 
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = _mm256_sub_epi32(DELTA256x32(v,_sv_),cv); _sv_ = v
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = _mm256_sub_epi32(mm256_delta_epi32(v,_sv_),cv); _sv_ = v
 unsigned char *bitd1pack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
   __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
   BITPACK256V32(in, b, out, sv); 
   return pout; 
 }
 
-#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = DELTA256x32(v,_sv_); _sv_ = v; _iv_ = ZIGZAG256x32(_iv_)
+#define VI32(_ip_, _i_, _iv_, _sv_) v = _mm256_loadu_si256(_ip_++); _iv_ = mm256_delta_epi32(v,_sv_); _sv_ = v; _iv_ = mm256_zzage_epi32(_iv_)
 unsigned char *bitzpack256v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b) { unsigned char *pout = out+PAD8(256*b);
   __m256i v, sv = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
   BITPACK256V32(in, b, out, sv); 
