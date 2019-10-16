@@ -2261,14 +2261,14 @@
 #ifndef DELTA
 #define USIZE 8
 unsigned char *TEMPLATE2(_BITPACK_,8_0)( uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,8_1)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint8_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_2)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint8_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_3)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint8_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_4)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint8_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_5)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint8_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_6)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint8_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_7)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint8_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_8)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint8_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_1)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint8_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_2)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint8_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_3)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint8_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_4)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint8_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_5)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint8_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_6)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint8_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_7)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint8_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_8)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint8_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_F8 TEMPLATE2(_BITPACK_,a8)[] = {
   &TEMPLATE2(_BITPACK_,8_0),
   &TEMPLATE2(_BITPACK_,8_1),
@@ -2284,22 +2284,22 @@ unsigned char *TEMPLATE2(_BITPACK_,8)( uint8_t *__restrict in, unsigned n, const
 
 #define USIZE 16
 unsigned char *TEMPLATE2(_BITPACK_,16_0)( uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,16_1)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint16_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_2)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint16_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_3)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint16_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_4)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint16_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_5)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint16_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_6)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint16_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_7)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint16_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_8)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint16_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_9)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*9); uint16_t v,x;do { BITPACK64_9( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_10)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*10); uint16_t v,x;do { BITPACK64_10( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_11)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*11); uint16_t v,x;do { BITPACK64_11( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_12)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*12); uint16_t v,x;do { BITPACK64_12( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_13)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*13); uint16_t v,x;do { BITPACK64_13( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_14)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*14); uint16_t v,x;do { BITPACK64_14( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_15)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*15); uint16_t v,x;do { BITPACK64_15( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_16)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*16); uint16_t v,x;do { BITPACK64_16( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_1)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint16_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_2)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint16_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_3)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint16_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_4)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint16_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_5)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint16_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_6)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint16_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_7)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint16_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_8)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint16_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_9)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*9); uint16_t v,x;do { BITPACK64_9( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_10)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*10); uint16_t v,x;do { BITPACK64_10( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_11)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*11); uint16_t v,x;do { BITPACK64_11( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_12)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*12); uint16_t v,x;do { BITPACK64_12( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_13)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*13); uint16_t v,x;do { BITPACK64_13( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_14)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*14); uint16_t v,x;do { BITPACK64_14( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_15)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*15); uint16_t v,x;do { BITPACK64_15( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_16)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*16); uint16_t v,x;do { BITPACK64_16( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_F16 TEMPLATE2(_BITPACK_,a16)[] = {
   &TEMPLATE2(_BITPACK_,16_0),
   &TEMPLATE2(_BITPACK_,16_1),
@@ -2323,38 +2323,38 @@ unsigned char *TEMPLATE2(_BITPACK_,16)( uint16_t *__restrict in, unsigned n, con
 
 #define USIZE 32
 unsigned char *TEMPLATE2(_BITPACK_,32_0)( uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,32_1)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint32_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_2)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint32_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_3)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint32_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_4)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint32_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_5)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint32_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_6)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint32_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_7)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint32_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_8)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint32_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_9)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*9); uint32_t v,x;do { BITPACK64_9( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_10)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*10); uint32_t v,x;do { BITPACK64_10( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_11)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*11); uint32_t v,x;do { BITPACK64_11( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_12)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*12); uint32_t v,x;do { BITPACK64_12( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_13)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*13); uint32_t v,x;do { BITPACK64_13( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_14)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*14); uint32_t v,x;do { BITPACK64_14( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_15)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*15); uint32_t v,x;do { BITPACK64_15( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_16)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*16); uint32_t v,x;do { BITPACK64_16( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_17)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*17); uint32_t v,x;do { BITPACK64_17( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_18)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*18); uint32_t v,x;do { BITPACK64_18( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_19)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*19); uint32_t v,x;do { BITPACK64_19( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_20)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*20); uint32_t v,x;do { BITPACK64_20( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_21)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*21); uint32_t v,x;do { BITPACK64_21( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_22)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*22); uint32_t v,x;do { BITPACK64_22( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_23)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*23); uint32_t v,x;do { BITPACK64_23( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_24)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*24); uint32_t v,x;do { BITPACK64_24( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_25)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*25); uint32_t v,x;do { BITPACK64_25( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_26)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*26); uint32_t v,x;do { BITPACK64_26( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_27)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*27); uint32_t v,x;do { BITPACK64_27( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_28)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*28); uint32_t v,x;do { BITPACK64_28( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_29)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*29); uint32_t v,x;do { BITPACK64_29( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_30)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*30); uint32_t v,x;do { BITPACK64_30( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_31)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*31); uint32_t v,x;do { BITPACK64_31( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_32)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*32); uint32_t v,x;do { BITPACK64_32( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_1)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint32_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_2)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint32_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_3)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint32_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_4)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint32_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_5)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint32_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_6)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint32_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_7)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint32_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_8)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint32_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_9)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*9); uint32_t v,x;do { BITPACK64_9( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_10)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*10); uint32_t v,x;do { BITPACK64_10( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_11)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*11); uint32_t v,x;do { BITPACK64_11( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_12)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*12); uint32_t v,x;do { BITPACK64_12( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_13)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*13); uint32_t v,x;do { BITPACK64_13( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_14)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*14); uint32_t v,x;do { BITPACK64_14( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_15)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*15); uint32_t v,x;do { BITPACK64_15( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_16)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*16); uint32_t v,x;do { BITPACK64_16( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_17)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*17); uint32_t v,x;do { BITPACK64_17( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_18)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*18); uint32_t v,x;do { BITPACK64_18( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_19)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*19); uint32_t v,x;do { BITPACK64_19( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_20)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*20); uint32_t v,x;do { BITPACK64_20( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_21)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*21); uint32_t v,x;do { BITPACK64_21( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_22)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*22); uint32_t v,x;do { BITPACK64_22( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_23)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*23); uint32_t v,x;do { BITPACK64_23( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_24)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*24); uint32_t v,x;do { BITPACK64_24( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_25)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*25); uint32_t v,x;do { BITPACK64_25( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_26)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*26); uint32_t v,x;do { BITPACK64_26( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_27)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*27); uint32_t v,x;do { BITPACK64_27( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_28)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*28); uint32_t v,x;do { BITPACK64_28( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_29)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*29); uint32_t v,x;do { BITPACK64_29( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_30)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*30); uint32_t v,x;do { BITPACK64_30( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_31)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*31); uint32_t v,x;do { BITPACK64_31( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_32)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*32); uint32_t v,x;do { BITPACK64_32( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_F32 TEMPLATE2(_BITPACK_,a32)[] = {
   &TEMPLATE2(_BITPACK_,32_0),
   &TEMPLATE2(_BITPACK_,32_1),
@@ -2394,70 +2394,70 @@ unsigned char *TEMPLATE2(_BITPACK_,32)( uint32_t *__restrict in, unsigned n, con
 
 #define USIZE 64
 unsigned char *TEMPLATE2(_BITPACK_,64_0)( uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,64_1)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint64_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_2)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint64_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_3)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint64_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_4)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint64_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_5)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint64_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_6)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint64_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_7)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint64_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_8)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint64_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_9)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*9); uint64_t v,x;do { BITPACK64_9( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_10)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*10); uint64_t v,x;do { BITPACK64_10( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_11)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*11); uint64_t v,x;do { BITPACK64_11( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_12)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*12); uint64_t v,x;do { BITPACK64_12( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_13)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*13); uint64_t v,x;do { BITPACK64_13( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_14)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*14); uint64_t v,x;do { BITPACK64_14( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_15)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*15); uint64_t v,x;do { BITPACK64_15( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_16)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*16); uint64_t v,x;do { BITPACK64_16( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_17)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*17); uint64_t v,x;do { BITPACK64_17( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_18)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*18); uint64_t v,x;do { BITPACK64_18( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_19)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*19); uint64_t v,x;do { BITPACK64_19( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_20)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*20); uint64_t v,x;do { BITPACK64_20( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_21)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*21); uint64_t v,x;do { BITPACK64_21( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_22)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*22); uint64_t v,x;do { BITPACK64_22( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_23)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*23); uint64_t v,x;do { BITPACK64_23( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_24)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*24); uint64_t v,x;do { BITPACK64_24( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_25)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*25); uint64_t v,x;do { BITPACK64_25( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_26)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*26); uint64_t v,x;do { BITPACK64_26( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_27)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*27); uint64_t v,x;do { BITPACK64_27( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_28)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*28); uint64_t v,x;do { BITPACK64_28( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_29)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*29); uint64_t v,x;do { BITPACK64_29( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_30)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*30); uint64_t v,x;do { BITPACK64_30( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_31)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*31); uint64_t v,x;do { BITPACK64_31( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_32)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*32); uint64_t v,x;do { BITPACK64_32( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_33)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*33); uint64_t v,x;do { BITPACK64_33( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_34)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*34); uint64_t v,x;do { BITPACK64_34( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_35)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*35); uint64_t v,x;do { BITPACK64_35( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_36)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*36); uint64_t v,x;do { BITPACK64_36( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_37)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*37); uint64_t v,x;do { BITPACK64_37( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_38)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*38); uint64_t v,x;do { BITPACK64_38( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_39)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*39); uint64_t v,x;do { BITPACK64_39( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_40)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*40); uint64_t v,x;do { BITPACK64_40( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_41)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*41); uint64_t v,x;do { BITPACK64_41( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_42)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*42); uint64_t v,x;do { BITPACK64_42( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_43)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*43); uint64_t v,x;do { BITPACK64_43( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_44)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*44); uint64_t v,x;do { BITPACK64_44( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_45)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*45); uint64_t v,x;do { BITPACK64_45( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_46)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*46); uint64_t v,x;do { BITPACK64_46( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_47)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*47); uint64_t v,x;do { BITPACK64_47( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_48)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*48); uint64_t v,x;do { BITPACK64_48( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_49)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*49); uint64_t v,x;do { BITPACK64_49( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_50)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*50); uint64_t v,x;do { BITPACK64_50( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_51)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*51); uint64_t v,x;do { BITPACK64_51( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_52)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*52); uint64_t v,x;do { BITPACK64_52( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_53)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*53); uint64_t v,x;do { BITPACK64_53( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_54)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*54); uint64_t v,x;do { BITPACK64_54( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_55)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*55); uint64_t v,x;do { BITPACK64_55( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_56)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*56); uint64_t v,x;do { BITPACK64_56( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_57)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*57); uint64_t v,x;do { BITPACK64_57( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_58)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*58); uint64_t v,x;do { BITPACK64_58( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_59)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*59); uint64_t v,x;do { BITPACK64_59( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_60)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*60); uint64_t v,x;do { BITPACK64_60( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_61)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*61); uint64_t v,x;do { BITPACK64_61( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_62)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*62); uint64_t v,x;do { BITPACK64_62( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_63)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*63); uint64_t v,x;do { BITPACK64_63( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_64)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*64); uint64_t v,x;do { BITPACK64_64( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_1)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*1); uint64_t v,x;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_2)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*2); uint64_t v,x;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_3)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*3); uint64_t v,x;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_4)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*4); uint64_t v,x;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_5)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*5); uint64_t v,x;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_6)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*6); uint64_t v,x;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_7)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*7); uint64_t v,x;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_8)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*8); uint64_t v,x;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_9)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*9); uint64_t v,x;do { BITPACK64_9( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_10)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*10); uint64_t v,x;do { BITPACK64_10( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_11)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*11); uint64_t v,x;do { BITPACK64_11( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_12)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*12); uint64_t v,x;do { BITPACK64_12( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_13)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*13); uint64_t v,x;do { BITPACK64_13( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_14)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*14); uint64_t v,x;do { BITPACK64_14( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_15)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*15); uint64_t v,x;do { BITPACK64_15( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_16)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*16); uint64_t v,x;do { BITPACK64_16( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_17)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*17); uint64_t v,x;do { BITPACK64_17( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_18)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*18); uint64_t v,x;do { BITPACK64_18( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_19)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*19); uint64_t v,x;do { BITPACK64_19( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_20)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*20); uint64_t v,x;do { BITPACK64_20( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_21)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*21); uint64_t v,x;do { BITPACK64_21( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_22)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*22); uint64_t v,x;do { BITPACK64_22( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_23)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*23); uint64_t v,x;do { BITPACK64_23( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_24)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*24); uint64_t v,x;do { BITPACK64_24( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_25)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*25); uint64_t v,x;do { BITPACK64_25( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_26)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*26); uint64_t v,x;do { BITPACK64_26( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_27)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*27); uint64_t v,x;do { BITPACK64_27( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_28)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*28); uint64_t v,x;do { BITPACK64_28( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_29)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*29); uint64_t v,x;do { BITPACK64_29( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_30)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*30); uint64_t v,x;do { BITPACK64_30( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_31)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*31); uint64_t v,x;do { BITPACK64_31( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_32)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*32); uint64_t v,x;do { BITPACK64_32( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_33)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*33); uint64_t v,x;do { BITPACK64_33( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_34)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*34); uint64_t v,x;do { BITPACK64_34( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_35)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*35); uint64_t v,x;do { BITPACK64_35( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_36)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*36); uint64_t v,x;do { BITPACK64_36( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_37)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*37); uint64_t v,x;do { BITPACK64_37( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_38)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*38); uint64_t v,x;do { BITPACK64_38( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_39)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*39); uint64_t v,x;do { BITPACK64_39( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_40)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*40); uint64_t v,x;do { BITPACK64_40( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_41)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*41); uint64_t v,x;do { BITPACK64_41( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_42)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*42); uint64_t v,x;do { BITPACK64_42( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_43)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*43); uint64_t v,x;do { BITPACK64_43( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_44)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*44); uint64_t v,x;do { BITPACK64_44( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_45)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*45); uint64_t v,x;do { BITPACK64_45( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_46)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*46); uint64_t v,x;do { BITPACK64_46( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_47)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*47); uint64_t v,x;do { BITPACK64_47( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_48)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*48); uint64_t v,x;do { BITPACK64_48( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_49)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*49); uint64_t v,x;do { BITPACK64_49( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_50)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*50); uint64_t v,x;do { BITPACK64_50( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_51)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*51); uint64_t v,x;do { BITPACK64_51( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_52)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*52); uint64_t v,x;do { BITPACK64_52( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_53)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*53); uint64_t v,x;do { BITPACK64_53( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_54)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*54); uint64_t v,x;do { BITPACK64_54( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_55)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*55); uint64_t v,x;do { BITPACK64_55( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_56)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*56); uint64_t v,x;do { BITPACK64_56( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_57)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*57); uint64_t v,x;do { BITPACK64_57( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_58)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*58); uint64_t v,x;do { BITPACK64_58( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_59)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*59); uint64_t v,x;do { BITPACK64_59( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_60)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*60); uint64_t v,x;do { BITPACK64_60( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_61)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*61); uint64_t v,x;do { BITPACK64_61( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_62)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*62); uint64_t v,x;do { BITPACK64_62( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_63)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*63); uint64_t v,x;do { BITPACK64_63( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_64)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out  ) { unsigned char *out_=out+PAD8(n*64); uint64_t v,x;do { BITPACK64_64( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_F64 TEMPLATE2(_BITPACK_,a64)[] = {
   &TEMPLATE2(_BITPACK_,64_0),
   &TEMPLATE2(_BITPACK_,64_1),
@@ -2530,14 +2530,14 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 #else
 #define USIZE 8
 unsigned char *TEMPLATE2(_BITPACK_,8_0)( uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,8_1)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*1); uint8_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_2)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*2); uint8_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_3)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*3); uint8_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_4)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*4); uint8_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_5)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*5); uint8_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_6)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*6); uint8_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_7)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*7); uint8_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,8_8)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*8); uint8_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_1)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*1); uint8_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_2)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*2); uint8_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_3)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*3); uint8_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_4)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*4); uint8_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_5)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*5); uint8_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_6)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*6); uint8_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_7)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*7); uint8_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,8_8)(uint8_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint8_t start ) { unsigned char *out_=out+PAD8(n*8); uint8_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_D8 TEMPLATE2(_BITPACK_,a8)[] = {
   &TEMPLATE2(_BITPACK_,8_0),
   &TEMPLATE2(_BITPACK_,8_1),
@@ -2553,22 +2553,22 @@ unsigned char *TEMPLATE2(_BITPACK_,8)( uint8_t *__restrict in, unsigned n, const
 
 #define USIZE 16
 unsigned char *TEMPLATE2(_BITPACK_,16_0)( uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,16_1)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*1); uint16_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_2)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*2); uint16_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_3)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*3); uint16_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_4)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*4); uint16_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_5)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*5); uint16_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_6)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*6); uint16_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_7)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*7); uint16_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_8)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*8); uint16_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_9)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*9); uint16_t v,x=0;do { BITPACK64_9( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_10)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*10); uint16_t v,x=0;do { BITPACK64_10( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_11)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*11); uint16_t v,x=0;do { BITPACK64_11( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_12)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*12); uint16_t v,x=0;do { BITPACK64_12( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_13)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*13); uint16_t v,x=0;do { BITPACK64_13( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_14)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*14); uint16_t v,x=0;do { BITPACK64_14( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_15)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*15); uint16_t v,x=0;do { BITPACK64_15( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,16_16)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*16); uint16_t v,x=0;do { BITPACK64_16( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_1)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*1); uint16_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_2)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*2); uint16_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_3)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*3); uint16_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_4)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*4); uint16_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_5)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*5); uint16_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_6)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*6); uint16_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_7)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*7); uint16_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_8)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*8); uint16_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_9)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*9); uint16_t v,x=0;do { BITPACK64_9( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_10)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*10); uint16_t v,x=0;do { BITPACK64_10( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_11)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*11); uint16_t v,x=0;do { BITPACK64_11( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_12)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*12); uint16_t v,x=0;do { BITPACK64_12( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_13)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*13); uint16_t v,x=0;do { BITPACK64_13( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_14)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*14); uint16_t v,x=0;do { BITPACK64_14( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_15)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*15); uint16_t v,x=0;do { BITPACK64_15( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,16_16)(uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint16_t start ) { unsigned char *out_=out+PAD8(n*16); uint16_t v,x=0;do { BITPACK64_16( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_D16 TEMPLATE2(_BITPACK_,a16)[] = {
   &TEMPLATE2(_BITPACK_,16_0),
   &TEMPLATE2(_BITPACK_,16_1),
@@ -2592,38 +2592,38 @@ unsigned char *TEMPLATE2(_BITPACK_,16)( uint16_t *__restrict in, unsigned n, con
 
 #define USIZE 32
 unsigned char *TEMPLATE2(_BITPACK_,32_0)( uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,32_1)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*1); uint32_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_2)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*2); uint32_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_3)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*3); uint32_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_4)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*4); uint32_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_5)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*5); uint32_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_6)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*6); uint32_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_7)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*7); uint32_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_8)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*8); uint32_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_9)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*9); uint32_t v,x=0;do { BITPACK64_9( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_10)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*10); uint32_t v,x=0;do { BITPACK64_10( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_11)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*11); uint32_t v,x=0;do { BITPACK64_11( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_12)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*12); uint32_t v,x=0;do { BITPACK64_12( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_13)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*13); uint32_t v,x=0;do { BITPACK64_13( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_14)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*14); uint32_t v,x=0;do { BITPACK64_14( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_15)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*15); uint32_t v,x=0;do { BITPACK64_15( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_16)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*16); uint32_t v,x=0;do { BITPACK64_16( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_17)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*17); uint32_t v,x=0;do { BITPACK64_17( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_18)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*18); uint32_t v,x=0;do { BITPACK64_18( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_19)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*19); uint32_t v,x=0;do { BITPACK64_19( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_20)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*20); uint32_t v,x=0;do { BITPACK64_20( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_21)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*21); uint32_t v,x=0;do { BITPACK64_21( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_22)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*22); uint32_t v,x=0;do { BITPACK64_22( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_23)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*23); uint32_t v,x=0;do { BITPACK64_23( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_24)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*24); uint32_t v,x=0;do { BITPACK64_24( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_25)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*25); uint32_t v,x=0;do { BITPACK64_25( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_26)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*26); uint32_t v,x=0;do { BITPACK64_26( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_27)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*27); uint32_t v,x=0;do { BITPACK64_27( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_28)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*28); uint32_t v,x=0;do { BITPACK64_28( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_29)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*29); uint32_t v,x=0;do { BITPACK64_29( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_30)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*30); uint32_t v,x=0;do { BITPACK64_30( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_31)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*31); uint32_t v,x=0;do { BITPACK64_31( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,32_32)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*32); uint32_t v,x=0;do { BITPACK64_32( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_1)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*1); uint32_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_2)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*2); uint32_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_3)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*3); uint32_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_4)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*4); uint32_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_5)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*5); uint32_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_6)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*6); uint32_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_7)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*7); uint32_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_8)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*8); uint32_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_9)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*9); uint32_t v,x=0;do { BITPACK64_9( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_10)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*10); uint32_t v,x=0;do { BITPACK64_10( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_11)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*11); uint32_t v,x=0;do { BITPACK64_11( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_12)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*12); uint32_t v,x=0;do { BITPACK64_12( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_13)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*13); uint32_t v,x=0;do { BITPACK64_13( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_14)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*14); uint32_t v,x=0;do { BITPACK64_14( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_15)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*15); uint32_t v,x=0;do { BITPACK64_15( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_16)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*16); uint32_t v,x=0;do { BITPACK64_16( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_17)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*17); uint32_t v,x=0;do { BITPACK64_17( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_18)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*18); uint32_t v,x=0;do { BITPACK64_18( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_19)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*19); uint32_t v,x=0;do { BITPACK64_19( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_20)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*20); uint32_t v,x=0;do { BITPACK64_20( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_21)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*21); uint32_t v,x=0;do { BITPACK64_21( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_22)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*22); uint32_t v,x=0;do { BITPACK64_22( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_23)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*23); uint32_t v,x=0;do { BITPACK64_23( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_24)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*24); uint32_t v,x=0;do { BITPACK64_24( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_25)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*25); uint32_t v,x=0;do { BITPACK64_25( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_26)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*26); uint32_t v,x=0;do { BITPACK64_26( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_27)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*27); uint32_t v,x=0;do { BITPACK64_27( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_28)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*28); uint32_t v,x=0;do { BITPACK64_28( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_29)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*29); uint32_t v,x=0;do { BITPACK64_29( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_30)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*30); uint32_t v,x=0;do { BITPACK64_30( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_31)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*31); uint32_t v,x=0;do { BITPACK64_31( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,32_32)(uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint32_t start ) { unsigned char *out_=out+PAD8(n*32); uint32_t v,x=0;do { BITPACK64_32( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_D32 TEMPLATE2(_BITPACK_,a32)[] = {
   &TEMPLATE2(_BITPACK_,32_0),
   &TEMPLATE2(_BITPACK_,32_1),
@@ -2663,70 +2663,70 @@ unsigned char *TEMPLATE2(_BITPACK_,32)( uint32_t *__restrict in, unsigned n, con
 
 #define USIZE 64
 unsigned char *TEMPLATE2(_BITPACK_,64_0)( uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { return out; }
-unsigned char *TEMPLATE2(_BITPACK_,64_1)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*1); uint64_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_2)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*2); uint64_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_3)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*3); uint64_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_4)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*4); uint64_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_5)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*5); uint64_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_6)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*6); uint64_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_7)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*7); uint64_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_8)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*8); uint64_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_9)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*9); uint64_t v,x=0;do { BITPACK64_9( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_10)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*10); uint64_t v,x=0;do { BITPACK64_10( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_11)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*11); uint64_t v,x=0;do { BITPACK64_11( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_12)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*12); uint64_t v,x=0;do { BITPACK64_12( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_13)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*13); uint64_t v,x=0;do { BITPACK64_13( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_14)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*14); uint64_t v,x=0;do { BITPACK64_14( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_15)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*15); uint64_t v,x=0;do { BITPACK64_15( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_16)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*16); uint64_t v,x=0;do { BITPACK64_16( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_17)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*17); uint64_t v,x=0;do { BITPACK64_17( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_18)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*18); uint64_t v,x=0;do { BITPACK64_18( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_19)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*19); uint64_t v,x=0;do { BITPACK64_19( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_20)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*20); uint64_t v,x=0;do { BITPACK64_20( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_21)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*21); uint64_t v,x=0;do { BITPACK64_21( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_22)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*22); uint64_t v,x=0;do { BITPACK64_22( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_23)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*23); uint64_t v,x=0;do { BITPACK64_23( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_24)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*24); uint64_t v,x=0;do { BITPACK64_24( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_25)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*25); uint64_t v,x=0;do { BITPACK64_25( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_26)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*26); uint64_t v,x=0;do { BITPACK64_26( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_27)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*27); uint64_t v,x=0;do { BITPACK64_27( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_28)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*28); uint64_t v,x=0;do { BITPACK64_28( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_29)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*29); uint64_t v,x=0;do { BITPACK64_29( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_30)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*30); uint64_t v,x=0;do { BITPACK64_30( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_31)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*31); uint64_t v,x=0;do { BITPACK64_31( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_32)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*32); uint64_t v,x=0;do { BITPACK64_32( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_33)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*33); uint64_t v,x=0;do { BITPACK64_33( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_34)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*34); uint64_t v,x=0;do { BITPACK64_34( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_35)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*35); uint64_t v,x=0;do { BITPACK64_35( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_36)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*36); uint64_t v,x=0;do { BITPACK64_36( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_37)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*37); uint64_t v,x=0;do { BITPACK64_37( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_38)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*38); uint64_t v,x=0;do { BITPACK64_38( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_39)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*39); uint64_t v,x=0;do { BITPACK64_39( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_40)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*40); uint64_t v,x=0;do { BITPACK64_40( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_41)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*41); uint64_t v,x=0;do { BITPACK64_41( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_42)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*42); uint64_t v,x=0;do { BITPACK64_42( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_43)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*43); uint64_t v,x=0;do { BITPACK64_43( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_44)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*44); uint64_t v,x=0;do { BITPACK64_44( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_45)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*45); uint64_t v,x=0;do { BITPACK64_45( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_46)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*46); uint64_t v,x=0;do { BITPACK64_46( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_47)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*47); uint64_t v,x=0;do { BITPACK64_47( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_48)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*48); uint64_t v,x=0;do { BITPACK64_48( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_49)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*49); uint64_t v,x=0;do { BITPACK64_49( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_50)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*50); uint64_t v,x=0;do { BITPACK64_50( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_51)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*51); uint64_t v,x=0;do { BITPACK64_51( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_52)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*52); uint64_t v,x=0;do { BITPACK64_52( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_53)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*53); uint64_t v,x=0;do { BITPACK64_53( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_54)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*54); uint64_t v,x=0;do { BITPACK64_54( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_55)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*55); uint64_t v,x=0;do { BITPACK64_55( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_56)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*56); uint64_t v,x=0;do { BITPACK64_56( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_57)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*57); uint64_t v,x=0;do { BITPACK64_57( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_58)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*58); uint64_t v,x=0;do { BITPACK64_58( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_59)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*59); uint64_t v,x=0;do { BITPACK64_59( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_60)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*60); uint64_t v,x=0;do { BITPACK64_60( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_61)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*61); uint64_t v,x=0;do { BITPACK64_61( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_62)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*62); uint64_t v,x=0;do { BITPACK64_62( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_63)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*63); uint64_t v,x=0;do { BITPACK64_63( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
-unsigned char *TEMPLATE2(_BITPACK_,64_64)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*64); uint64_t v,x=0;do { BITPACK64_64( in, out, start); PREFETCH(in); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_1)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*1); uint64_t v,x=0;do { BITPACK64_1( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_2)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*2); uint64_t v,x=0;do { BITPACK64_2( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_3)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*3); uint64_t v,x=0;do { BITPACK64_3( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_4)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*4); uint64_t v,x=0;do { BITPACK64_4( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_5)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*5); uint64_t v,x=0;do { BITPACK64_5( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_6)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*6); uint64_t v,x=0;do { BITPACK64_6( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_7)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*7); uint64_t v,x=0;do { BITPACK64_7( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_8)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*8); uint64_t v,x=0;do { BITPACK64_8( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_9)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*9); uint64_t v,x=0;do { BITPACK64_9( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_10)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*10); uint64_t v,x=0;do { BITPACK64_10( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_11)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*11); uint64_t v,x=0;do { BITPACK64_11( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_12)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*12); uint64_t v,x=0;do { BITPACK64_12( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_13)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*13); uint64_t v,x=0;do { BITPACK64_13( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_14)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*14); uint64_t v,x=0;do { BITPACK64_14( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_15)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*15); uint64_t v,x=0;do { BITPACK64_15( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_16)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*16); uint64_t v,x=0;do { BITPACK64_16( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_17)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*17); uint64_t v,x=0;do { BITPACK64_17( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_18)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*18); uint64_t v,x=0;do { BITPACK64_18( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_19)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*19); uint64_t v,x=0;do { BITPACK64_19( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_20)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*20); uint64_t v,x=0;do { BITPACK64_20( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_21)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*21); uint64_t v,x=0;do { BITPACK64_21( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_22)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*22); uint64_t v,x=0;do { BITPACK64_22( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_23)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*23); uint64_t v,x=0;do { BITPACK64_23( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_24)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*24); uint64_t v,x=0;do { BITPACK64_24( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_25)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*25); uint64_t v,x=0;do { BITPACK64_25( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_26)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*26); uint64_t v,x=0;do { BITPACK64_26( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_27)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*27); uint64_t v,x=0;do { BITPACK64_27( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_28)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*28); uint64_t v,x=0;do { BITPACK64_28( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_29)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*29); uint64_t v,x=0;do { BITPACK64_29( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_30)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*30); uint64_t v,x=0;do { BITPACK64_30( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_31)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*31); uint64_t v,x=0;do { BITPACK64_31( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_32)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*32); uint64_t v,x=0;do { BITPACK64_32( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_33)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*33); uint64_t v,x=0;do { BITPACK64_33( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_34)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*34); uint64_t v,x=0;do { BITPACK64_34( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_35)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*35); uint64_t v,x=0;do { BITPACK64_35( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_36)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*36); uint64_t v,x=0;do { BITPACK64_36( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_37)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*37); uint64_t v,x=0;do { BITPACK64_37( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_38)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*38); uint64_t v,x=0;do { BITPACK64_38( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_39)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*39); uint64_t v,x=0;do { BITPACK64_39( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_40)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*40); uint64_t v,x=0;do { BITPACK64_40( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_41)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*41); uint64_t v,x=0;do { BITPACK64_41( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_42)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*42); uint64_t v,x=0;do { BITPACK64_42( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_43)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*43); uint64_t v,x=0;do { BITPACK64_43( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_44)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*44); uint64_t v,x=0;do { BITPACK64_44( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_45)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*45); uint64_t v,x=0;do { BITPACK64_45( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_46)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*46); uint64_t v,x=0;do { BITPACK64_46( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_47)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*47); uint64_t v,x=0;do { BITPACK64_47( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_48)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*48); uint64_t v,x=0;do { BITPACK64_48( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_49)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*49); uint64_t v,x=0;do { BITPACK64_49( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_50)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*50); uint64_t v,x=0;do { BITPACK64_50( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_51)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*51); uint64_t v,x=0;do { BITPACK64_51( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_52)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*52); uint64_t v,x=0;do { BITPACK64_52( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_53)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*53); uint64_t v,x=0;do { BITPACK64_53( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_54)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*54); uint64_t v,x=0;do { BITPACK64_54( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_55)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*55); uint64_t v,x=0;do { BITPACK64_55( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_56)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*56); uint64_t v,x=0;do { BITPACK64_56( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_57)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*57); uint64_t v,x=0;do { BITPACK64_57( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_58)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*58); uint64_t v,x=0;do { BITPACK64_58( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_59)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*59); uint64_t v,x=0;do { BITPACK64_59( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_60)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*60); uint64_t v,x=0;do { BITPACK64_60( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_61)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*61); uint64_t v,x=0;do { BITPACK64_61( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_62)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*62); uint64_t v,x=0;do { BITPACK64_62( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_63)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*63); uint64_t v,x=0;do { BITPACK64_63( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
+unsigned char *TEMPLATE2(_BITPACK_,64_64)(uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out , uint64_t start ) { unsigned char *out_=out+PAD8(n*64); uint64_t v,x=0;do { BITPACK64_64( in, out, start); PREFETCH(in+512,0); } while(out<out_); return out_; }
 BITPACK_D64 TEMPLATE2(_BITPACK_,a64)[] = {
   &TEMPLATE2(_BITPACK_,64_0),
   &TEMPLATE2(_BITPACK_,64_1),
@@ -2820,8 +2820,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_1(ip,  op, parm) {\
-  BITBLK128V16_1(ip, 0, op, parm);\
-  BITBLK128V16_1(ip, 1, op, parm);  IPPE(ip); OPPE(op += 1*4/sizeof(op[0]));\
+  BITBLK128V16_1(ip, 0, op, parm); IPPE(ip); OPPE(op += 1*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_2(ip, i, op, parm) { __m128i ov,iv;\
@@ -2837,9 +2836,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 
 #define BITPACK128V16_2(ip,  op, parm) {\
   BITBLK128V16_2(ip, 0, op, parm);\
-  BITBLK128V16_2(ip, 1, op, parm);\
-  BITBLK128V16_2(ip, 2, op, parm);\
-  BITBLK128V16_2(ip, 3, op, parm);  IPPE(ip); OPPE(op += 2*4/sizeof(op[0]));\
+  BITBLK128V16_2(ip, 1, op, parm); IPPE(ip); OPPE(op += 2*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_3(ip, i, op, parm) { __m128i ov,iv;\
@@ -2862,8 +2859,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_3(ip,  op, parm) {\
-  BITBLK128V16_3(ip, 0, op, parm);\
-  BITBLK128V16_3(ip, 1, op, parm);  IPPE(ip); OPPE(op += 3*4/sizeof(op[0]));\
+  BITBLK128V16_3(ip, 0, op, parm);  IPPE(ip); OPPE(op += 3*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_4(ip, i, op, parm) { __m128i ov,iv;\
@@ -2877,11 +2873,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
   BITBLK128V16_4(ip, 0, op, parm);\
   BITBLK128V16_4(ip, 1, op, parm);\
   BITBLK128V16_4(ip, 2, op, parm);\
-  BITBLK128V16_4(ip, 3, op, parm);\
-  BITBLK128V16_4(ip, 4, op, parm);\
-  BITBLK128V16_4(ip, 5, op, parm);\
-  BITBLK128V16_4(ip, 6, op, parm);\
-  BITBLK128V16_4(ip, 7, op, parm);  IPPE(ip); OPPE(op += 4*4/sizeof(op[0]));\
+  BITBLK128V16_4(ip, 3, op, parm); IPPE(ip); OPPE(op += 4*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_5(ip, i, op, parm) { __m128i ov,iv;\
@@ -2904,8 +2896,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_5(ip,  op, parm) {\
-  BITBLK128V16_5(ip, 0, op, parm);\
-  BITBLK128V16_5(ip, 1, op, parm);  IPPE(ip); OPPE(op += 5*4/sizeof(op[0]));\
+  BITBLK128V16_5(ip, 0, op, parm); IPPE(ip); OPPE(op += 5*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_6(ip, i, op, parm) { __m128i ov,iv;\
@@ -2921,9 +2912,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 
 #define BITPACK128V16_6(ip,  op, parm) {\
   BITBLK128V16_6(ip, 0, op, parm);\
-  BITBLK128V16_6(ip, 1, op, parm);\
-  BITBLK128V16_6(ip, 2, op, parm);\
-  BITBLK128V16_6(ip, 3, op, parm);  IPPE(ip); OPPE(op += 6*4/sizeof(op[0]));\
+  BITBLK128V16_6(ip, 1, op, parm); IPPE(ip); OPPE(op += 6*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_7(ip, i, op, parm) { __m128i ov,iv;\
@@ -2946,8 +2935,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_7(ip,  op, parm) {\
-  BITBLK128V16_7(ip, 0, op, parm);\
-  BITBLK128V16_7(ip, 1, op, parm);  IPPE(ip); OPPE(op += 7*4/sizeof(op[0]));\
+  BITBLK128V16_7(ip, 0, op, parm); IPPE(ip); OPPE(op += 7*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_8(ip, i, op, parm) { __m128i ov,iv;\
@@ -2963,15 +2951,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
   BITBLK128V16_8(ip, 4, op, parm);\
   BITBLK128V16_8(ip, 5, op, parm);\
   BITBLK128V16_8(ip, 6, op, parm);\
-  BITBLK128V16_8(ip, 7, op, parm);\
-  BITBLK128V16_8(ip, 8, op, parm);\
-  BITBLK128V16_8(ip, 9, op, parm);\
-  BITBLK128V16_8(ip, 10, op, parm);\
-  BITBLK128V16_8(ip, 11, op, parm);\
-  BITBLK128V16_8(ip, 12, op, parm);\
-  BITBLK128V16_8(ip, 13, op, parm);\
-  BITBLK128V16_8(ip, 14, op, parm);\
-  BITBLK128V16_8(ip, 15, op, parm);  IPPE(ip); OPPE(op += 8*4/sizeof(op[0]));\
+  BITBLK128V16_8(ip, 7, op, parm); IPPE(ip); OPPE(op += 8*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_9(ip, i, op, parm) { __m128i ov,iv;\
@@ -2994,8 +2974,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_9(ip,  op, parm) {\
-  BITBLK128V16_9(ip, 0, op, parm);\
-  BITBLK128V16_9(ip, 1, op, parm);  IPPE(ip); OPPE(op += 9*4/sizeof(op[0]));\
+  BITBLK128V16_9(ip, 0, op, parm); IPPE(ip); OPPE(op += 9*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_10(ip, i, op, parm) { __m128i ov,iv;\
@@ -3011,9 +2990,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 
 #define BITPACK128V16_10(ip,  op, parm) {\
   BITBLK128V16_10(ip, 0, op, parm);\
-  BITBLK128V16_10(ip, 1, op, parm);\
-  BITBLK128V16_10(ip, 2, op, parm);\
-  BITBLK128V16_10(ip, 3, op, parm);  IPPE(ip); OPPE(op += 10*4/sizeof(op[0]));\
+  BITBLK128V16_10(ip, 1, op, parm); IPPE(ip); OPPE(op += 10*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_11(ip, i, op, parm) { __m128i ov,iv;\
@@ -3036,8 +3013,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_11(ip,  op, parm) {\
-  BITBLK128V16_11(ip, 0, op, parm);\
-  BITBLK128V16_11(ip, 1, op, parm);  IPPE(ip); OPPE(op += 11*4/sizeof(op[0]));\
+  BITBLK128V16_11(ip, 0, op, parm); IPPE(ip); OPPE(op += 11*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_12(ip, i, op, parm) { __m128i ov,iv;\
@@ -3051,11 +3027,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
   BITBLK128V16_12(ip, 0, op, parm);\
   BITBLK128V16_12(ip, 1, op, parm);\
   BITBLK128V16_12(ip, 2, op, parm);\
-  BITBLK128V16_12(ip, 3, op, parm);\
-  BITBLK128V16_12(ip, 4, op, parm);\
-  BITBLK128V16_12(ip, 5, op, parm);\
-  BITBLK128V16_12(ip, 6, op, parm);\
-  BITBLK128V16_12(ip, 7, op, parm);  IPPE(ip); OPPE(op += 12*4/sizeof(op[0]));\
+  BITBLK128V16_12(ip, 3, op, parm); IPPE(ip); OPPE(op += 12*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_13(ip, i, op, parm) { __m128i ov,iv;\
@@ -3078,8 +3050,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_13(ip,  op, parm) {\
-  BITBLK128V16_13(ip, 0, op, parm);\
-  BITBLK128V16_13(ip, 1, op, parm);  IPPE(ip); OPPE(op += 13*4/sizeof(op[0]));\
+  BITBLK128V16_13(ip, 0, op, parm); IPPE(ip); OPPE(op += 13*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_14(ip, i, op, parm) { __m128i ov,iv;\
@@ -3095,9 +3066,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 
 #define BITPACK128V16_14(ip,  op, parm) {\
   BITBLK128V16_14(ip, 0, op, parm);\
-  BITBLK128V16_14(ip, 1, op, parm);\
-  BITBLK128V16_14(ip, 2, op, parm);\
-  BITBLK128V16_14(ip, 3, op, parm);  IPPE(ip); OPPE(op += 14*4/sizeof(op[0]));\
+  BITBLK128V16_14(ip, 1, op, parm); IPPE(ip); OPPE(op += 14*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_15(ip, i, op, parm) { __m128i ov,iv;\
@@ -3120,8 +3089,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 }
 
 #define BITPACK128V16_15(ip,  op, parm) {\
-  BITBLK128V16_15(ip, 0, op, parm);\
-  BITBLK128V16_15(ip, 1, op, parm);  IPPE(ip); OPPE(op += 15*4/sizeof(op[0]));\
+  BITBLK128V16_15(ip, 0, op, parm); IPPE(ip); OPPE(op += 15*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V16_16(ip, i, op, parm) { __m128i ov,iv;\
@@ -3144,23 +3112,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
   BITBLK128V16_16(ip, 12, op, parm);\
   BITBLK128V16_16(ip, 13, op, parm);\
   BITBLK128V16_16(ip, 14, op, parm);\
-  BITBLK128V16_16(ip, 15, op, parm);\
-  BITBLK128V16_16(ip, 16, op, parm);\
-  BITBLK128V16_16(ip, 17, op, parm);\
-  BITBLK128V16_16(ip, 18, op, parm);\
-  BITBLK128V16_16(ip, 19, op, parm);\
-  BITBLK128V16_16(ip, 20, op, parm);\
-  BITBLK128V16_16(ip, 21, op, parm);\
-  BITBLK128V16_16(ip, 22, op, parm);\
-  BITBLK128V16_16(ip, 23, op, parm);\
-  BITBLK128V16_16(ip, 24, op, parm);\
-  BITBLK128V16_16(ip, 25, op, parm);\
-  BITBLK128V16_16(ip, 26, op, parm);\
-  BITBLK128V16_16(ip, 27, op, parm);\
-  BITBLK128V16_16(ip, 28, op, parm);\
-  BITBLK128V16_16(ip, 29, op, parm);\
-  BITBLK128V16_16(ip, 30, op, parm);\
-  BITBLK128V16_16(ip, 31, op, parm);  IPPE(ip); OPPE(op += 16*4/sizeof(op[0]));\
+  BITBLK128V16_16(ip, 15, op, parm); IPPE(ip); OPPE(op += 16*4/sizeof(op[0]));\
 }
 
 #define BITBLK128V32_1(ip, i, op, parm) { __m128i ov,iv;\
