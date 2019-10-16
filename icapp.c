@@ -1414,8 +1414,9 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 	  
     case 107: l = n; TMBENCH("", tpenc( in, n, out,USIZE),n);           pr(l,n); TMBENCH2("107", tpdec( out, n,cpy, USIZE),n); break;
     case 108: l = n; TMBENCH("", tp4enc(in, n, out,USIZE),n);           pr(l,n); TMBENCH2("108", tp4dec(out, n,cpy, USIZE),n); break;
+      #ifdef BITSHUFFLE
     case 109: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);      pr(l,n); TMBENCH2("109", bitunshuffle(out, n,cpy, USIZE),n); break;
-	
+	  #endif
     case ID_MEMCPY: if(!mcpy) goto end; 
 	                 TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
 	default: goto end; 
@@ -1561,8 +1562,9 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	  
     case 107: l = n; TMBENCH("", tpenc( in, n, out,USIZE),n);           pr(l,n); TMBENCH2("107", tpdec( out, n,cpy, USIZE),n); break;
     case 108: l = n; TMBENCH("", tp4enc(in, n, out,USIZE),n);           pr(l,n); TMBENCH2("108", tp4dec(out, n,cpy, USIZE),n); break;
+      #ifdef BITSHUFFLE
     case 109: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);      pr(l,n); TMBENCH2("109", bitunshuffle(out, n,cpy, USIZE),n); break;
-	
+	  #endif
     case ID_MEMCPY: if(!mcpy) goto end;  
 	                 TMBENCH( "", libmemcpy(out,in,n) ,n);              pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
 
@@ -1748,8 +1750,9 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
         #endif
     case 107: l = n; TMBENCH("", tpenc( in, n, out,USIZE),n);       pr(l,n); TMBENCH2("107", tpdec( out, n,cpy, USIZE),n); break;
     case 108: l = n; TMBENCH("", tp4enc(in, n, out,USIZE),n);       pr(l,n); TMBENCH2("108", tp4dec(out, n,cpy, USIZE),n); break;
+      #ifdef BITSHUFFLE
     case 109: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);  pr(l,n); TMBENCH2("109", bitunshuffle(out, n,cpy, USIZE),n); break;
-	
+	  #endif
     case ID_MEMCPY: if(!mcpy) goto end;  
 	                 TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
     //case 111: TMBENCH("",fppad32(in, m, out,errlim),n);              pr(n,n); TMBENCH2("fppad32      ", fppad32(in, m, out,errlim),n); break;
@@ -1886,8 +1889,9 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
       #endif	  
     case 107: l = n; TMBENCH("", tpenc( in, n, out,USIZE),n);       pr(l,n); TMBENCH2("107", tpdec( out, n,cpy, USIZE),n); break;
     case 108: l = n; TMBENCH("", tp4enc(in, n, out,USIZE),n);       pr(l,n); TMBENCH2("108", tp4dec(out, n,cpy, USIZE),n); break;
+      #ifdef BITSHUFFLE
     case 109: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);  pr(l,n); TMBENCH2("109", bitunshuffle(out, n,cpy, USIZE),n); break;
-	
+	  #endif
     case ID_MEMCPY: if(!mcpy) goto end;  
 	                 TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
 	default: goto end;  
