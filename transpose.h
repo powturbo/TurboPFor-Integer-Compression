@@ -35,9 +35,20 @@ extern "C" {
 void tpenc(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // tranpose
 void tpdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // reverse transpose
 
+void tp2denc(unsigned char *in,             unsigned x, unsigned y,             unsigned char *out, unsigned esize);
+void tp2ddec(unsigned char *in,             unsigned x, unsigned y,             unsigned char *out, unsigned esize);
+void tp3denc(unsigned char *in,             unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
+void tp3ddec(unsigned char *in,             unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
+void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
+void tp4ddec(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
+
 // Nibble transpose
 void tp4enc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 void tp4dec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+
+// bit transpose
+void tp1enc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+void tp1dec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
 //---------- Low level functions ------------------------------------
 void tpenc2(      unsigned char *in, unsigned n, unsigned char *out);  // scalar
@@ -65,6 +76,13 @@ void tp4enc128v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec128v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp4enc128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec128v8( unsigned char *in, unsigned n, unsigned char *out);
+
+void tp1enc128v2( unsigned char *in, unsigned n, unsigned char *out);
+void tp1dec128v2( unsigned char *in, unsigned n, unsigned char *out);
+void tp1enc128v4( unsigned char *in, unsigned n, unsigned char *out);
+void tp1dec128v4( unsigned char *in, unsigned n, unsigned char *out);
+void tp1enc128v8( unsigned char *in, unsigned n, unsigned char *out);
+void tp1dec128v8( unsigned char *in, unsigned n, unsigned char *out);
 
 void tpenc256v2(  unsigned char *in, unsigned n, unsigned char *out);   // avx2   
 void tpdec256v2(  unsigned char *in, unsigned n, unsigned char *out);
