@@ -31,7 +31,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
   * Point wise relative error bound **lossy** floating point compression
-  * :new: (2019.10) **TurboFloat** novel efficient floating point compression using TurboPFor
+  * :new: (2019.11) **TurboFloat** novel efficient floating point compression using TurboPFor
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
