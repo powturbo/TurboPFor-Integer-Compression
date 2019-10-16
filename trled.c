@@ -41,6 +41,12 @@
   #endif
 #include "sse_neon.h"
 
+  #ifdef __ARM_NEON
+#define PREFETCH(_ip_,_rw_)
+  #else
+#define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
+  #endif
+
 #include "trle.h"
 #include "trle_.h"        
 //------------------------------------- RLE 8 with Escape char ------------------------------------------------------------------
@@ -74,9 +80,9 @@ unsigned _srled8(const unsigned char *__restrict in, unsigned char *__restrict o
               v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(_mm_cmpeq_epi8(v, ev)); if(mask) goto a; ip += 16; op += 16; 
             #endif
           #endif
-	  	 															            __builtin_prefetch(ip+512, 0);    
+	  	 															            PREFETCH(ip+512, 0);    
       continue;
-      a: r = ctz32(mask); ip += r+1;                                            __builtin_prefetch(ip+512, 0);
+      a: r = ctz32(mask); ip += r+1;                                            PREFETCH(ip+512, 0);
       op += r;                               
         #else
       if(likely((c = *ip++) != e)) { *op++ = c; continue; }
@@ -198,7 +204,7 @@ unsigned _trled(const unsigned char *__restrict in, unsigned char *__restrict ou
 	  vlzget(ip, i, m, c-1);
 	  c  = *ip++;       					
 	  i += TMIN; 							     
-	  rmemset(op,c,i); 														__builtin_prefetch(ip+512, 0);												
+	  rmemset(op,c,i); 														PREFETCH(ip+512, 0);												
     } 
 
   while(op < out+outlen) {					    		
@@ -294,22 +300,22 @@ unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned c
       uint32_t mask;
       __m256i v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(TEMPLATE2(_mm256_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 32; op += 256/USIZE;
               v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(TEMPLATE2(_mm256_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 32; op += 256/USIZE;
-	  																			__builtin_prefetch(ip+512, 0);
+	  																			PREFETCH(ip+512, 0);
       continue;
       a: r = ctz32(mask)/(USIZE/8); 
       op += r; 
-      ip += (r+1)*sizeof(uint_t);												__builtin_prefetch(ip+512, 0);			
+      ip += (r+1)*sizeof(uint_t);												PREFETCH(ip+512, 0);			
         #elif (__SSE__ != 0 /*|| __ARM_NEON != 0*/) && USIZE != 64
       uint32_t mask;  
     __m128i v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
             v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
             v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
             v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
-																				__builtin_prefetch(ip+512, 0); 
+																				PREFETCH(ip+512, 0); 
       continue;
       a: r = ctz32(mask)/(USIZE/8); 
       op += r;
-      ip += (r+1)*sizeof(uint_t);  												__builtin_prefetch(ip+512, 0);	                                        
+      ip += (r+1)*sizeof(uint_t);  												PREFETCH(ip+512, 0);	                                        
        #else      
     if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;								 
     if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;								 
@@ -318,9 +324,9 @@ unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned c
     if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;								 
     if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;								 
     if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;								 
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;		     __builtin_prefetch(ip +512, 0);	
+    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;		     PREFETCH(ip +512, 0);	
     continue;		
-	a: ip += sizeof(uint_t);	                                                __builtin_prefetch(ip +512, 0);			
+	a: ip += sizeof(uint_t);	                                                PREFETCH(ip +512, 0);			
 	   #endif
       vlget32(ip, r);
 	  if(likely(r) >= 3) { 
