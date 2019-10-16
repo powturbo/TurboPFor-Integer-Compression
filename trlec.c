@@ -28,6 +28,11 @@
 #include "conf.h"
 #include "trle.h"
 #include "trle_.h"
+  #ifdef __ARM_NEON
+#define PREFETCH(_ip_,_rw_)
+  #else
+#define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
+  #endif
 
 //------------------------------------- Fastet Histogram : https://github.com/powturbo/TurboHist -------------------------------------------
 #define cnt_t unsigned
@@ -51,7 +56,7 @@ static unsigned cntcalc32(const unsigned char *__restrict in, unsigned inlen, cn
   unsigned char *ip = in; 
   if(inlen >= 64) {
     unsigned ux = ctou32(ip), vx = ctou32(ip+4);
-    for(; ip != in+(inlen&~(64-1))-64; ip += 64) { INC4_32(0); INC4_32(16); INC4_32(32); INC4_32(48); __builtin_prefetch(ip+512, 0); }
+    for(; ip != in+(inlen&~(64-1))-64; ip += 64) { INC4_32(0); INC4_32(16); INC4_32(32); INC4_32(48); PREFETCH(ip+512, 0); }
   }
   while(ip != in+inlen) 
     c[0][*ip++]++; 
@@ -89,11 +94,11 @@ unsigned _srlec8(const unsigned char *__restrict in, unsigned inlen, unsigned ch
   if(inlen > SRLE8+1)
     while(ip < ie-1-SRLE8) {		
         #if __WORDSIZE == 64
-      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						__builtin_prefetch(ip +256, 0);					
+      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						PREFETCH(ip +256, 0);					
       continue;                                                                                               
       a: ip += ctz64(z)>>3;									    																						  
         #else
-      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						__builtin_prefetch(ip +256, 0);      
+      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						PREFETCH(ip +256, 0);      
       continue;                                                                                             
       a: ip += ctz32(z)>>3;									    
         #endif
@@ -212,11 +217,11 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
   if(inlen > SRLE8+1)                                           // encode    
     while(ip < ie-1-SRLE8) {	
         #if __WORDSIZE == 64	
-      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						__builtin_prefetch(ip +256, 0);					
+      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						PREFETCH(ip +256, 0);					
       continue;                                                                                             
       a: ip += ctz64(z)>>3;																																								  
         #else
-      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						__builtin_prefetch(ip +256, 0);      
+      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						PREFETCH(ip +256, 0);      
       continue;                                                                                             
       a: ip += ctz32(z)>>3;										
         #endif
@@ -277,7 +282,7 @@ unsigned TEMPLATE2(_srlec, USIZE)(const unsigned char *__restrict cin, unsigned 
   #define SZ1 if(ip[0] != ip[1]) goto a; ++ip;
   if(n > 6+1)                                                    
     while(ip < ie-1-6) {		                                // fast encode
-      SZ1; SZ1; SZ1; SZ1; SZ1; SZ1; 			                __builtin_prefetch(ip +128*USIZE/8, 0);					
+      SZ1; SZ1; SZ1; SZ1; SZ1; SZ1; 			                PREFETCH(ip +128*USIZE/8, 0);					
       continue;                                                 																					  
       a: 													    		
       SRLEPUT(pp, ip, e, op);
