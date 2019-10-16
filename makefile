@@ -14,8 +14,8 @@
 # Linux: "export CC=clang" "export CXX=clang". windows mingw: "set CC=gcc" "set CXX=g++" or uncomment the CC,CXX lines
 CC ?= gcc
 CXX ?= g++
-#CC=clang
-#CXX=clang++
+#CC=clang-8
+#CXX=clang++-8
 
 #CC = gcc-8
 #CXX = g++-8
@@ -40,7 +40,12 @@ DDEBUG=-DNDEBUG -s
 
 ifeq ($(UNAMEM),aarch64)
 # ARMv8 
-MSSE=-march=native
+ifneq (,$(findstring clang, $(CC)))
+MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -fomit-frame-pointer 
+else
+MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-functions -falign-jumps -fomit-frame-pointer
+endif
+#-floop-optimize 
 else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
@@ -49,8 +54,8 @@ MAVX2=-march=haswell
 endif
 
 # Minimum CPU architecture 
-MARCH=-march=native
-#MARCH=$(MSSE)
+#MARCH=-march=native
+MARCH=$(MSSE)
 #MARCH=-march=broadwell 
 
 ifeq ($(NSIMD),1)
@@ -75,6 +80,10 @@ endif
 ifeq ($(CODEC1),1)
 LZ4=1
 BITSHUFFLE=1
+endif
+
+ifeq ($(FLOAT16),1)
+CFLAGS+=-DUSE_FLOAT16
 endif
 
 #----------------------------------------------
@@ -147,11 +156,11 @@ cpp: $(CPPF)
 	$(CC) -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
 bitutil.o: bitutil.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32 $< -c -o $@
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops $< -c -o $@
 #----------
 
 vp4c.o: vp4c.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -DUSE_AVX2 -falign-loops=32 -c vp4c.c -o vp4c.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -DUSE_AVX2 -falign-loops -c vp4c.c -o vp4c.o
 
 vp4c_sse.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4c.c -o vp4c_sse.o
@@ -160,7 +169,7 @@ vp4c_avx2.o: vp4c.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c vp4c.c -o vp4c_avx2.o
 #---
 vp4d.o: vp4d.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE  -DUSE_AVX2 -falign-loops=32 -c vp4d.c -o vp4d.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE  -DUSE_AVX2 -falign-loops -c vp4d.c -o vp4d.o
 
 vp4d_sse.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c vp4d.c -o vp4d_sse.o
@@ -169,7 +178,7 @@ vp4d_avx2.o: vp4d.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2)  -c vp4d.c -o vp4d_avx2.o
 #------------
 bitpack.o: bitpack.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops=32 -c bitpack.c -o bitpack.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops -c bitpack.c -o bitpack.o
 
 bitpack_sse.o: bitpack.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c bitpack.c -o bitpack_sse.o
@@ -178,7 +187,7 @@ bitpack_avx2.o: bitpack.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitpack.c -o bitpack_avx2.o
 #---
 bitunpack.o: bitunpack.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops=32 -c bitunpack.c -o bitunpack.o
+	$(CC) -O3 $(CFLAGS) $(MARCH) -DUSE_SSE -falign-loops -c bitunpack.c -o bitunpack.o
 
 bitunpack_sse.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DSSE2_ON $(MSSE) -c bitunpack.c -o bitunpack_sse.o
@@ -187,10 +196,13 @@ bitunpack_avx2.o: bitunpack.c
 	$(CC) -O3 $(CFLAGS) -DAVX2_ON $(MAVX2) -c bitunpack.c -o bitunpack_avx2.o
 #------------
 fp.o: fp.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c fp.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops  -c fp.c
 
 vint.o: vint.c
-	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops=32  -c vint.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops  -c vint.c
+
+v8.o: v8.c
+	$(CC) -O3 $(CFLAGS) $(MARCH) -falign-loops  -c v8.c
 
 vsimple.o: vsimple.c
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c vsimple.c
@@ -236,7 +248,7 @@ ifeq ($(UNAMEM),aarch64)
 else
 # Only x86
 OB+=ext/LittleIntPacker/src/horizontalpacking32.o
-OB+=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
+XLIB+=ext/MaskedVByte/src/varintencode.o ext/MaskedVByte/src/varintdecode.o
 OB+=ext/simdcomp/src/simdintegratedbitpacking.o ext/simdcomp/src/simdcomputil.o ext/simdcomp/src/simdbitpacking.o ext/simdcomp/src/simdpackedselect.o 
 OB+=ext/simdcomp_/simdfor.o
 
@@ -257,6 +269,8 @@ ifeq ($(CODEC2), 1)
 OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
 
 OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o
+
+XLIB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o ext/fastpfor.o
 
 ext/polycom/optpfd.o: ext/polycom/optpfd.c
 	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@ 
@@ -279,7 +293,6 @@ endif
 
 ifeq ($(UNAMEM),aarch64)
 else
-OB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o
 
 ifeq ($(BLOSC),1)
 LDFLAGS+=-lpthread 
@@ -305,7 +318,7 @@ endif
 
 OB+=$(XLIB)
 #------------------------
-ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o vint.o vsimple.o transpose.o transpose_sse.o trlec.o trled.o eliasfano.o
+ICLIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o bitutil.o fp.o v8.o vint.o vsimple.o transpose.o transpose_sse.o trlec.o trled.o eliasfano.o
 
 ifeq ($(LZTURBO),1)
 include lzturbo.mak
@@ -352,7 +365,7 @@ ictest:   ictest.o $(ICLIB)
 	$(CC) $^ $(LDFLAGS) -o ictest
 
 icapp:   icapp.o $(ICLIB) $(XLIB)
-	$(CC) $^ $(LDFLAGS) -o icapp
+	$(CXX) $^ $(LDFLAGS) -o icapp
 
 ifeq ($(UNAME), Linux)
 para: CFLAGS += -DTHREADMAX=32	
