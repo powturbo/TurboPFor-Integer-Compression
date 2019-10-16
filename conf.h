@@ -162,7 +162,9 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define ctof64(_cp_)       (*(double   *)(_cp_))
     #elif defined(__ARM_FEATURE_UNALIGNED)
 struct _PACKED longu     { uint64_t l; };
+struct _PACKED doubleu   { double   d; };
 #define ctou64(_cp_) ((struct longu     *)(_cp_))->l
+#define ctof64(_cp_) ((struct doubleu   *)(_cp_))->d
     #endif
 
   #elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7S__)
