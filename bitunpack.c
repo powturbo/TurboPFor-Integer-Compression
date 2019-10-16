@@ -28,6 +28,7 @@
 #include "bitutil.h" 
 #include "bitpack.h"
 #include "vint.h"
+
 #define PAD8(_x_) (((_x_)+7)/8)
 
 #pragma warning( disable : 4005) 
@@ -48,8 +49,6 @@ typedef unsigned char *(*BITUNPACK_D32)(const unsigned char *__restrict in, unsi
 typedef unsigned char *(*BITUNPACK_F64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out);
 typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
    
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+512,0)//#define PREFETCH(ip)
-
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
 
   #if 0   //????
@@ -91,7 +90,7 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 
 #define BITNUNPACK(in, n, out, _csize_, _usize_) {\
   unsigned char *ip = in;\
-  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > _csize_) oplen = _csize_;		PREFETCH(in+512);\
+  for(op = out,out+=n; op < out;) { unsigned oplen = out - op,b; if(oplen > _csize_) oplen = _csize_;		PREFETCH(ip+512,0);\
     b = *ip++; ip = TEMPLATE2(bitunpacka, _usize_)[b](ip, oplen, op);\
 	op += oplen;\
   } \
@@ -101,7 +100,7 @@ typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsi
 #define BITNDUNPACK(in, n, out, _csize_, _usize_, _bitunpacka_) { if(!n) return 0;\
   unsigned char *ip = in;\
   TEMPLATE2(vbxget, _usize_)(ip, start);\
-  for(*out++ = start,--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512);\
+  for(*out++ = start,--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512,0);\
                          unsigned b = *ip++; ip = TEMPLATE2(_bitunpacka_, _usize_)[b](ip, _csize_, op, start); op += _csize_; start = op[-1];\
   } if(n&=(_csize_-1)) { unsigned b = *ip++; ip = TEMPLATE2(_bitunpacka_, _usize_)[b](ip, n,       op, start); }\
   return ip - in;\
@@ -135,22 +134,22 @@ size_t bitnfunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restri
 
 #define _BITNUNPACKV(in, n, out, _csize_, _usize_, _bitunpackv_) {\
   unsigned char *ip = in;\
-  for(op = out; op != out+(n&~(_csize_-1)); op += _csize_) { 													PREFETCH(in+512);\
+  for(op = out; op != out+(n&~(_csize_-1)); op += _csize_) { 													PREFETCH(in+512,0);\
                        unsigned b = *ip++; ip = TEMPLATE2(_bitunpackv_, _usize_)(ip, _csize_, op,b);\
   } if(n&=(_csize_-1)) { unsigned b = *ip++; ip = TEMPLATE2(bitunpack,    _usize_)(ip, n,     op,b); }\
   return ip - in;\
-}
+} 
 
 #define _BITNDUNPACKV(in, n, out, _csize_, _usize_, _bitunpackv_, _bitunpack_) { if(!n) return 0;\
   unsigned char *ip = in;\
   TEMPLATE2(vbxget, _usize_)(ip, start); \
   *out++ = start;\
-  for(--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512);\
+  for(--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512,0);\
                          unsigned b = *ip++; ip = TEMPLATE2(_bitunpackv_, _usize_)(ip, _csize_, op, start,b); op += _csize_; start = op[-1];\
   } if(n&=(_csize_-1)) { unsigned b = *ip++; ip = TEMPLATE2(_bitunpack_,  _usize_)(ip, n,     op, start,b); }\
   return ip - in;\
 }
-
+ 
 #if (defined(__SSE2__) || defined(__ARM_NEON))  && defined(SSE2_ON)  
 #define VO16( _op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, ov)
 #define VO32( _op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, ov)
@@ -175,7 +174,7 @@ size_t bitnfunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restri
   VOZ16(_op_, 13, ov, _parm_);\
   VOZ16(_op_, 14, ov, _parm_);\
   VOZ16(_op_, 15, ov, _parm_);\
-  VOZ16(_op_, 16, ov, _parm_);\
+  /*VOZ16(_op_, 16, ov, _parm_);\
   VOZ16(_op_, 17, ov, _parm_);\
   VOZ16(_op_, 18, ov, _parm_);\
   VOZ16(_op_, 19, ov, _parm_);\
@@ -190,7 +189,7 @@ size_t bitnfunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restri
   VOZ16(_op_, 28, ov, _parm_);\
   VOZ16(_op_, 29, ov, _parm_);\
   VOZ16(_op_, 30, ov, _parm_);\
-  VOZ16(_op_, 31, ov, _parm_);\
+  VOZ16(_op_, 31, ov, _parm_);*/\
 }
 
 #define BITUNBLK128V32_0(ip, _i_, _op_, _parm_) {__m128i ov;\
@@ -260,7 +259,7 @@ unsigned char *bitunpack128v64( const unsigned char *__restrict in, unsigned n, 
 //------------------------------SSE -----------------------------------------------
   #if defined(__SSSE3__) || defined(__ARM_NEON)
     #define _ 0x80
-char _shuffle_32[16][16] = {
+ALIGNED(char, _shuffle_32[16][16],16) = {
         { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
         { 0,1,2,3, _,_,_,_, _,_, _, _,  _, _, _,_  },
         { _,_,_,_, 0,1,2,3, _,_, _, _,  _, _, _,_  },
@@ -278,7 +277,7 @@ char _shuffle_32[16][16] = {
         { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  8, 9,10,11 },
         { 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15 },
 };
-char _shuffle_16[256][16] = {
+ALIGNED(char, _shuffle_16[256][16],16) = {
   { _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ },
   { 0, 1, _, _, _, _, _, _, _, _, _, _, _, _, _, _ },
   { _, _, 0, 1, _, _, _, _, _, _, _, _, _, _, _, _ },
@@ -539,10 +538,10 @@ char _shuffle_16[256][16] = {
     #undef _
   #endif
   
-#define VO16( _op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m)
-#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m)
-#define VOZ16(_op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_16[m]) ) );  pex += popcnt32(m)
-#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_32[m]) ) );  pex += popcnt32(m)
+#define VO16( _op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m)
+#define VOZ16(_op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) );  pex += popcnt32(m)
+#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) );  pex += popcnt32(m)
 #define BITUNPACK0(_parm_) //_parm_ = _mm_setzero_si128()
 #include "bitunpack_.h"
 
@@ -562,8 +561,8 @@ unsigned char *_bitunpack256w32( const unsigned char *__restrict in, unsigned n,
 //#define STOZ64(_op_, _ov_) _mm_storeu_si128(_op_++, _ov_); _mm_storeu_si128(_op_++, _ov_)
 #define STO64( _op_, _ov_, _zv_) _mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_ov_,_zv_));_mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_mm_srli_si128(_ov_,8),_zv_))
 
-#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) ); STO64(_op_, _wv, zv);} pex += popcnt32(m)
-#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_32[m]) ) ;  STO64(_op_, _wv, zv);} pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ); STO64(_op_, _wv, zv);} pex += popcnt32(m)
+#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ;  STO64(_op_, _wv, zv);} pex += popcnt32(m)
 #define BITUNPACK0(_parm_)
 
 #include "bitunpack_.h"
@@ -580,8 +579,8 @@ unsigned char *_bitunpack128v64( const unsigned char *__restrict in, unsigned n,
 //-------------------------------------------------------------------
 #define VOZ16(_op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _parm_)
 #define VOZ32(_op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _parm_)
-#define VO16( _op_, _i_, _ov_, _sv_) _ov_ = UNZIGZAG128x16(_ov_); SCAN128x16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
-#define VO32( _op_, _i_, _ov_, _sv_) _ov_ = UNZIGZAG128x32(_ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#define VO16( _op_, _i_, _ov_, _sv_) _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#define VO32( _op_, _i_, _ov_, _sv_) _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
@@ -591,8 +590,8 @@ unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n,
   const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
 }
 
-#define VO32(_op_, i, _ov_, _sv_) SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
-#define VO16(_op_, i, _ov_, _sv_) SCAN128x16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#define VO16(_op_, i, _ov_, _sv_) _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitdunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) { 
@@ -615,15 +614,15 @@ unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n,
 
 //---------------------------- SSE ----------------------------------------------
   #if defined(__SSSE3__) || defined(__ARM_NEON)
-#define VX32(_i_, _ov_)         if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
-#define VXZ32(_i_, _ov_)        if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
-#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32( _i_, _ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VX32(_i_, _ov_)         if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
+#define VXZ32(_i_, _ov_)        if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32(_i_, _ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
 
-#define VX16(_i_, _ov_)         m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
-#define VXZ16(_i_, _ov_)        m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
-#define VO16( _op_, _i_, _ov_, _sv_)   VX16(  _i_, _ov_); SCAN128x16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_)   VXZ16( _i_, _ov_); SCAN128x16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VX16(_i_, _ov_)         m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
+#define VXZ16(_i_, _ov_)        m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
+#define VO16( _op_, _i_, _ov_, _sv_)   VX16(  _i_, _ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_)   VXZ16( _i_, _ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *_bitdunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) { 
@@ -634,21 +633,21 @@ unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n
 }
 
 /*
-#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); SCAN128x32(_ov_,_sv_);   STO64( _op_, _sv_) //_mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32( _i_, _ov_); SCAN128x32(_ov_,_sv_); STOZ64( _op_, _sv_, zv) //_mm_storeu_si128(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); mm_scan_epi32(_ov_,_sv_);   STO64( _op_, _sv_) //_mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32( _i_, _ov_); mm_scan_epi32(_ov_,_sv_); STOZ64( _op_, _sv_, zv) //_mm_storeu_si128(_op_++, _sv_);
 unsigned char *_bitdunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, uint64_t       *__restrict pex, unsigned char *bb) {
   const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start),zv = _mm_setzero_si128(); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
 }*/
 
-#define VX16(_i_, _ov_)              m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
-#define VXZ16(_i_, _ov_)             m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
-#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _ov_ = UNZIGZAG128x16(_ov_); SCAN128x16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _ov_ = UNZIGZAG128x16(_ov_); SCAN128x16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VX16(_i_, _ov_)              m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
+#define VXZ16(_i_, _ov_)             m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
+#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
 
-#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) ); pex += popcnt32(m)
-#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_32[m]) ); pex += popcnt32(m)
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _ov_ = UNZIGZAG128x32(_ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _ov_ = UNZIGZAG128x32(_ov_); SCAN128x32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ); pex += popcnt32(m)
+#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ); pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
 
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
@@ -660,8 +659,8 @@ unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n
 }
   #endif 
   
-#define VO16(_op_, i, _ov_, _sv_) SCANI128x16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32(_op_, i, _ov_, _sv_) SCANI128x32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO16(_op_, i, _ov_, _sv_) _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
 #define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi16(_parm_, cv)
 #define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi32(_parm_, cv)
 #include "bitunpack_.h"
@@ -674,8 +673,8 @@ unsigned char *bitd1unpack128v32( const unsigned char *__restrict in, unsigned n
   const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
 }
 
-#define VO16(_op_, i, _ov_, _sv_) ADDI128x16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32(_op_, i, _ov_, _sv_) ADDI128x32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO16(_op_, i, _ov_, _sv_) ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32(_op_, i, _ov_, _sv_) ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
 #define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi16(_parm_, cv)
 #define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi32(_parm_, cv)
 #include "bitunpack_.h"
@@ -701,15 +700,15 @@ unsigned char *bitf1unpack128v32( const unsigned char *__restrict in, unsigned n
 }
 
   #if defined(__SSSE3__) || defined(__ARM_NEON)
-#define VX16(_i_, _ov_)                                                    m =  *bb++;       _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]))); pex += popcnt32(m)
-#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
-#define VXZ16(_i_, _ov_)                                                   m =  *bb++;       _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_16[m]));  pex += popcnt32(m)
-#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_load_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
+#define VX16(_i_, _ov_)                                                    m =  *bb++;       _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]))); pex += popcnt32(m)
+#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
+#define VXZ16(_i_, _ov_)                                                   m =  *bb++;       _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]));  pex += popcnt32(m)
+#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
 
-#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  SCANI128x16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); SCANI128x16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  SCANI128x32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); SCANI128x32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
 
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
@@ -721,10 +720,10 @@ unsigned char *_bitd1unpack128v32( const unsigned char *__restrict in, unsigned 
   const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(        4,3,2,1); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
 }
 
-#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  ADDI128x16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); ADDI128x16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  ADDI128x32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); ADDI128x32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
 
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
@@ -1092,23 +1091,23 @@ unsigned char *_bitunpack256v32( const unsigned char *__restrict in, unsigned n,
 }     
 
 #define VOZ32(_op_, _i_, ov, _parm_) _mm256_storeu_si256(_op_++, _parm_)
-#define VO32(_op_, i, _ov_, _sv_) _ov_ = UNZIGZAG256x32(_ov_); SCAN256x32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_)
+#define VO32(_op_, i, _ov_, _sv_) _ov_ = mm256_zzagd_epi32(_ov_); _sv_ = mm256_scan_epi32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_)
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
   const unsigned char *ip = in+PAD8(256*b); 
-  __m256i sv = _mm256_set1_epi32(start), zv = _mm256_setzero_si256(); 
+  __m256i sv = _mm256_set1_epi32(start);//, zv = _mm256_setzero_si256(); 
   BITUNPACK256V32(in, b, out, sv); 
   return (unsigned char *)ip; 
 } 
  
  
-#define VO32(_op_, i, _ov_, _sv_) SCAN256x32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_)
+#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm256_scan_epi32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_)
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { 
   const unsigned char *ip = in+PAD8(256*b); 
-  __m256i sv = _mm256_set1_epi32(start), zv = _mm256_setzero_si256();
+  __m256i sv = _mm256_set1_epi32(start);// zv = _mm256_setzero_si256();
   BITUNPACK256V32(in, b, out, sv);
   return (unsigned char *)ip; 
 }
@@ -1126,21 +1125,21 @@ unsigned char *bitfunpack256v32( const unsigned char *__restrict in, unsigned n,
 #define VX32(_i_, _ov_)  xm = *bb++; _ov_ = _mm256_add_epi32(_ov_, _mm256_slli_epi32(mm256_maskz_loadu_epi32(xm,(__m256i*)pex), b) ); pex += popcnt32(xm)
 #define VXZ32(_i_, _ov_) xm = *bb++; _ov_ =                                          mm256_maskz_loadu_epi32(xm,(__m256i*)pex);       pex += popcnt32(xm)
  
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); SCAN256x32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); SCAN256x32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _sv_ = mm256_scan_epi32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _sv_ = mm256_scan_epi32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
   const unsigned char *ip = in+PAD8(256*b); unsigned xm;
-  __m256i sv = _mm256_set1_epi32(start),zv = _mm256_setzero_si256(), tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
+  __m256i sv = _mm256_set1_epi32(start), tv = _mm256_set_epi32(0,1,2,3,4,5,6,7),zv = _mm256_setzero_si256();
   BITUNPACK256V32(in, b, out, sv); 
   return (unsigned char *)ip;
 } 
   
 #define VX32(_i_, _ov_)  xm = *bb++; _ov_ = _mm256_add_epi32(_ov_, _mm256_slli_epi32(mm256_maskz_loadu_epi32(xm,(__m256i*)pex), b) ); pex += popcnt32(xm)
 #define VXZ32(_i_, _ov_) xm = *bb++; _ov_ =                                          mm256_maskz_loadu_epi32(xm,(__m256i*)pex);       pex += popcnt32(xm)
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _ov_ = UNZIGZAG256x32(_ov_); SCAN256x32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _ov_ = UNZIGZAG256x32(_ov_); SCAN256x32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _ov_ = mm256_zzagd_epi32(_ov_); _sv_ = mm256_scan_epi32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _ov_ = mm256_zzagd_epi32(_ov_); _sv_ = mm256_scan_epi32(_ov_,_sv_); _mm256_storeu_si256(_op_++, _sv_);
 
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
@@ -1148,7 +1147,7 @@ unsigned char *_bitzunpack256v32( const unsigned char *__restrict in, unsigned n
   const unsigned char *ip = in+PAD8(256*b); unsigned xm; __m256i sv = _mm256_set1_epi32(start),zv = _mm256_setzero_si256(), tv = _mm256_set_epi32(0,1,2,3,4,5,6,7); BITUNPACK256V32(in, b, out, sv); return (unsigned char *)ip; 
 }
 
-#define VO32(_op_, i, _ov_, _sv_)    SCANI256x32(_ov_,_sv_,cv); _mm256_storeu_si256(_op_++, _sv_);
+#define VO32(_op_, i, _ov_, _sv_)    _sv_ = mm256_scani_epi32(_ov_,_sv_,cv); _mm256_storeu_si256(_op_++, _sv_);
 #define VOZ32(_op_, _i_, ov, _parm_) _mm256_storeu_si256(_op_++, _parm_); _parm_ = _mm256_add_epi32(_parm_, cv)
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) _parm_ = _mm256_add_epi32(_parm_, cv); cv = _mm256_set1_epi32(8)
@@ -1170,8 +1169,8 @@ unsigned char *bitf1unpack256v32( const unsigned char *__restrict in, unsigned n
   return (unsigned char *)ip; 
 }
 
-#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); SCANI256x32(_ov_,_sv_,cv); _mm256_storeu_si256(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32(_i_, _ov_); SCANI256x32(_ov_,_sv_,cv); _mm256_storeu_si256(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); _sv_ = mm256_scani_epi32(_ov_,_sv_,cv); _mm256_storeu_si256(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32(_i_, _ov_); _sv_ = mm256_scani_epi32(_ov_,_sv_,cv); _mm256_storeu_si256(_op_++, _sv_);
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) mv = _mm256_set1_epi32(0) //_parm_ = _mm_setzero_si128()
 unsigned char *_bitd1unpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
