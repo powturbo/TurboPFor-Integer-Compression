@@ -1,15 +1,15 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
-  * :new: (2019.7) all TurboPFor functions now available under 64 bits ARMv8 including NEON SIMD.
+  * :new: (2019.11) **ALL** TurboPFor functions now available under **64 bits ARMv8** including **NEON** SIMD.
   * 100% C (C++ headers), as simple as memcpy
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
   * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Delta of Delta/Zigzag for sorted/unsorted arrays
-  * :new: **16 bits** + **64 bits** SIMD integrated functions
+  * **16 bits** + **64 bits** SIMD integrated functions
 * **For/PFor/PForDelta**
-  * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**. :new:**+RLE**
+  * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**. **+RLE**
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
   * Compress 70 times faster and decompress up to 4 times faster than OptPFD
 * **Bit Packing**
@@ -17,20 +17,23 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
   * Scalar **"Bit Packing"** decoding nearly as fast as SIMD-Packing in realistic (No "pure cache") scenarios
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
-  * Scalar **"Variable Byte"** faster than **ANY** other (incl. SIMD) implementation
+  * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
+  * :new: (2019.11) SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,...
+  * :new: (2019.11) **TurboByte+TurboPackV** novel hybrid scheme combining the fastest SIMD codecs.
 * **Simple family**
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 + **Transform**
   * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, Transpose/Shuffle, 
-  * :new: **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77
+  * **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77
 * **Floating Point Compression**
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
-  * :new: Error bound **lossy** floating point compression
-* :new: **Time Series Compression**
-  * **Fastest Gorilla** 16/32/64 bits style compression (:new: **zigzag of delta** + **RLE**).
+  * Point wise relative error bound **lossy** floating point compression
+  * :new: (2019.10) **TurboFloat** novel efficient floating point compression using TurboPFor
+* **Time Series Compression**
+  * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
@@ -47,7 +50,7 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 - :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
-- CPU: Skylake i7-6700 3.4GHz gcc 7.2 **single** thread 
+- CPU: Skylake i7-6700 3.4GHz gcc 8.3 **single** thread 
 
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
@@ -55,30 +58,32 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded.
 
         ./icbench -a1.5 -m0 -M255 -n100M ZIPF
-	
-|C Size|ratio%|Bits/Integer|C MB/s|D MB/s|Name|
+
+|C Size|ratio%|Bits/Integer|C MB/s|D MB/s|Name  2019.11|
 |--------:|-----:|--------:|----------:|----------:|--------------|
-|62,939,886| 15.7| 5.04|**1588**|**9400**|**TurboPFor256**|
-|63,392,759| 15.8| 5.07|1320|6432|**TurboPFor**|
+|62,939,886| 15.7| 5.04|**2369**|**10950**|**TurboPFor256**|
+|63,392,759| 15.8| 5.07|1359|7803|**TurboPFor128**|
 |63,392,801| 15.8| 5.07|1328|924|**TurboPForDA**|
 |65,060,504| 16.3| 5.20|60|2748|[FP_SIMDOptPFor](#FastPFor)|
 |65,359,916|16.3| 5.23| 32|2436|PC_OptPFD|
 |73,477,088|18.4| 5.88|408|2484|PC_Simple16|
 |73,481,096| 18.4| 5.88|624|8748|[FP_SimdFastPFor](#FastPFor) 64Ki *|
-|76,345,136| 19.1| 6.11|980|2612|**VSimple**|
+|76,345,136| 19.1| 6.11|1072|2878|**VSimple**|
 |91,947,533| 23.0| 7.36|284|11737|[QMX](#QMX) 64k *|
 |93,285,864| 23.3| 7.46|1568|10232|[FP_GroupSimple](#FastPFor) 64Ki *|
 |95,915,096|24.0| 7.67|  848|3832|Simple-8b|
-|99,910,930| 25.0| 7.99|**13976**|**11872**|**TurboPackV**|
-|99,910,930| 25.0| 7.99|9468|9404|**TurboPack**|
+|99,910,930| 25.0| 7.99|**17298**|**12408**|**TurboByte+TurboPack**|
+|99,910,930| 25.0| 7.99|**17357**|**12363**|**TurboPackV** sse|
+|99,910,930| 25.0| 7.99|11694|10138|**TurboPack** scalar|
 |99,910,930| 25.0| 7.99|8420|8876|**TurboFor**|
-|100,332,929| 25.1| 8.03|**14320**|**12124**|**TurboPack256V**|
-|101,015,650| 25.3| 8.08|9520|9484|**TurboVByte**|
-|102,074,663| 25.5| 8.17|5712|7916|[MaskedVByte](#MaskedVByte)|
+|100,332,929| 25.1| 8.03|17077|11170|**TurboPack256V** avx2|
+|101,015,650| 25.3| 8.08|11191|10333|**TurboVByte**|
+|102,074,663| 25.5| 8.17|6689|9524|[MaskedVByte](#MaskedVByte)|
 |102,074,663| 25.5| 8.17|2260|4208|[PC_Vbyte](#PolyCom)|
 |102,083,036| 25.5| 8.17|5200|4268|[FP_VByte](#FastPFor)|
-|112,500,000| 28.1| 9.00|1528|**12140**|[VarintG8IU](#VarintG8IU)|
-|125,000,000| 31.2|10.00|4788|11288|[StreamVbyte](#StreamVByte)|
+|112,500,000| 28.1| 9.00|1528|12140|[VarintG8IU](#VarintG8IU)|
+|125,000,000| 31.2|10.00|13039|12366|**TurboByte**|
+|125,000,000| 31.2|10.00|11197|11984|[StreamVbyte 2019](#StreamVByte)|
 |400,000,000|	100.00|	32.00| 8960|8948|Copy|
 |         |      |     |   N/A  | N/A   |EliasFano|
 
@@ -97,28 +102,29 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
 ![Speed/Ratio](ext/gov2.png "Speed/Ratio: Decompression")
 
-|Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function |
+|Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function 2019.11|
 |-----------:|------:|-----:|-------:|-------:|---------------------|
 | 3,321,663,893| 13.9| 4.44|**1320**|**6088**|**TurboPFor**| 
 | 3,339,730,557| 14.0| 4.47|  32| 2144|PC.OptPFD|
 | 3,350,717,959| 14.0| 4.48|**1536**|**7128**|**TurboPFor256**| 
-| 3,501,671,314| 14.6| 4.68| 56| 2840|**VSimple**|
+| 3,501,671,314| 14.6| 4.68|  56| 2840|**VSimple**|
 | 3,768,146,467| 15.8| 5.04|**3228**| 3652|**EliasFanoV**|
 | 3,822,161,885| 16.0| 5.11| 572| 2444|PC_Simple16|
+| 4,411,714,936| 18.4| 5.90|**9304**|**10444**|**TurboByte+TurboPack**|
 | 4,521,326,518| 18.9| 6.05| 836| 3296|Simple-8b|
-| 4,649,671,427| 19.4| 6.22|3084|3848|**TurboVbyte**|
-| 4,955,740,045| 20.7| 6.63|**7064**|**10268**|**TurboPackV**|
-| 4,955,740,045| 20.7| 6.63|5724|8020|**TurboPack**|
-| 5,205,324,760|21.8| 6.96|6952|9488|SC_SIMDPack128|
-| 5,393,769,503| 22.5| 7.21|**9912**|**11588**|**TurboPackV256**|
-| 6,221,886,390| 26.0| 8.32|6668|6952|**TurboFor**|
+| 4,649,671,427| 19.4| 6.22|3084| 3848|**TurboVbyte**|
+| 4,955,740,045| 20.7| 6.63|7064|10268|**TurboPackV**|
+| 4,955,740,045| 20.7| 6.63|5724| 8020|**TurboPack**|
+| 5,205,324,760| 21.8| 6.96|6952| 9488|SC_SIMDPack128|
+| 5,393,769,503| 22.5| 7.21|**14466**|**11902**|**TurboPackV256**|
+| 6,221,886,390| 26.0| 8.32|6668| 6952|**TurboFor**|
 | 6,221,886,390| 26.0| 8.32|6644| 2260|**TurboForDA**|
-| 6,699,519,000| 28.0| 8.96| 1888| 1980|FP_Vbyte|
-| 6,700,989,563| 28.0| 8.96| 2740| 3384|MaskedVByte|
-| 7,622,896,878| 31.9|10.20| 836|4792|VarintG8IU|
-| 8,060,125,035| 33.7|11.50| 3536|8684|Streamvbyte|
-| 8,594,342,216| 35.9|11.50|5228|6376|libfor|
-|23,918,861,764|100.0|32.00|5824|5924|Copy|
+| 6,699,519,000| 28.0| 8.96|1888| 1980|FP_Vbyte|
+| 6,700,989,563| 28.0| 8.96|2740| 3384|MaskedVByte|
+| 7,622,896,878| 31.9|10.20| 836| 4792|VarintG8IU|
+| 8,060,125,035| 33.7|11.50|8456| 9476|Streamvbyte 2019|
+| 8,594,342,216| 35.9|11.50|5228| 6376|libfor|
+|23,918,861,764|100.0|32.00|5824| 5924|Copy|
 
 Block size: 64Ki = 256k bytes. Ki=1024 Integers
 
@@ -174,7 +180,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
         ./icapp -Ftf file         " text file (1 entry per line)
         ./icapp -Ftf file -v5     " + display the first entries read
         ./icapp -Ftf file.csv -K3 " but 3th column in a csv file (ex. number,Text,456.5 -> 456.5
-        ./icapp -Ftf file -g.001  " lossy compression with allowed error 0.001
+        ./icapp -Ftf file -g.001  " lossy compression with allowed pointwise relative error 0.001
 
 - see also [TurboTranspose](https://github.com/powturbo/TurboTranspose)
 
