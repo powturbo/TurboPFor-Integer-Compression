@@ -27,6 +27,8 @@
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
 
+#define VINT_IN
+#define BITUTIL_IN
 #include "conf.h"
 #include "bitpack.h"
 #include "vint.h"		
@@ -118,12 +120,11 @@
 #undef  P4ENC
 #undef  BITPACK 
 
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+768,0)//#define PREFETCH(ip)
 #define P4NDENC(in, n, out, _csize_, _usize_, _p4c_) { if(!n) return 0;\
   unsigned char *op = out; \
   start = *in++;\
   TEMPLATE2(vbxput, _usize_)(op, start);\
-  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512);\
+  for(n--,ip = in; ip != in + (n&~(_csize_-1)); ) { PREFETCH(ip+512,0);\
                          op = TEMPLATE2(_p4c_, _usize_)(ip, _csize_, op, start); ip += _csize_; start = ip[-1];\
   } if(n&=(_csize_-1)) { op = TEMPLATE2(_p4c_, _usize_)(ip, n,       op, start); }\
   return op - out;\
@@ -132,15 +133,15 @@
 #define P4NDDEC(in, n, out, _csize_, _usize_, _p4d_) { if(!n) return 0;\
   unsigned char *ip = in;\
   TEMPLATE2(vbxget, _usize_)(ip, start);\
-  for(*out++ = start,--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512);\
+  for(*out++ = start,--n,op = out; op != out+(n&~(_csize_-1)); ) { 								PREFETCH(ip+512,0);\
                          ip = TEMPLATE2(_p4d_, _usize_)(ip, _csize_, op, start); op += _csize_; start = op[-1];\
   } if(n&=(_csize_-1)) { ip = TEMPLATE2(_p4d_, _usize_)(ip, n,       op, start); }\
   return ip - in;\
 }
 
-unsigned char *p4senc16(uint16_t *in, unsigned n, unsigned char *out, uint16_t x) { uint16_t pa[128+32], mdelta = bitdi16(in, n, x); vbput16(out, mdelta); bitdienc16(in, n, pa, x, mdelta); return p4enc16(pa, n, out);}
-unsigned char *p4senc32(uint32_t *in, unsigned n, unsigned char *out, uint32_t x) { uint32_t pa[128+32], mdelta = bitdi32(in, n, x); vbput32(out, mdelta); bitdienc32(in, n, pa, x, mdelta); return p4enc32(pa, n, out);}
-unsigned char *p4senc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t x) { uint64_t pa[128+64], mdelta = bitdi64(in, n, x); vbput64(out, mdelta); bitdienc64(in, n, pa, x, mdelta); return p4enc64(pa, n, out);}
+unsigned char *p4senc16(uint16_t *in, unsigned n, unsigned char *out, uint16_t x) { uint16_t pa[128+32],eq, mdelta = bitdi16(in, n, 0, x); vbput16(out, mdelta); bitdienc16(in, n, pa, x, mdelta); return p4enc16(pa, n, out);}
+unsigned char *p4senc32(uint32_t *in, unsigned n, unsigned char *out, uint32_t x) { uint32_t pa[128+32],eq, mdelta = bitdi32(in, n, 0, x); vbput32(out, mdelta); bitdienc32(in, n, pa, x, mdelta); return p4enc32(pa, n, out);}
+unsigned char *p4senc64(uint64_t *in, unsigned n, unsigned char *out, uint64_t x) { uint64_t pa[128+64],eq, mdelta = bitdi64(in, n, 0, x); vbput64(out, mdelta); bitdienc64(in, n, pa, x, mdelta); return p4enc64(pa, n, out);}
 
 unsigned char *p4sdec16(unsigned char *in, unsigned n, uint16_t *out, uint16_t x) { uint16_t mdelta; vbget16(in, mdelta); in = p4dec16(in, n, out); bitdidec16(out, n, x, mdelta); return in; }
 unsigned char *p4sdec32(unsigned char *in, unsigned n, uint32_t *out, uint32_t x) { uint32_t mdelta; vbget32(in, mdelta); in = p4dec32(in, n, out); bitdidec32(out, n, x, mdelta); return in; }
@@ -389,7 +390,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   unsigned char *op = out; 
   uint_t *ip; 
 
-  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { unsigned bx, b;			__builtin_prefetch(ip+512,0); 
+  for(ip = in; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { unsigned bx, b;			PREFETCH(ip+512,0); 
     b = TEMPLATE2(P4BITS, USIZE)(ip, CSIZE, &bx); 									
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
     op = TEMPLATE2(_P4ENC, USIZE)(ip, CSIZE, op, b, bx);
@@ -411,7 +412,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
     return out;
 
   TEMPLATE2(vbxput, USIZE)(op, start);
-  for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	uint_t _in[P4D_MAX+8];unsigned bx, b;			__builtin_prefetch(ip+512,0);
+  for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) {	uint_t _in[P4D_MAX+8];unsigned bx, b;			PREFETCH(ip+512,0);
     TEMPLATE2(BITDELTA, USIZE)(ip, CSIZE, _in, start, P4DELTA);
     b = TEMPLATE2(_p4bits, USIZE)(_in, CSIZE, &bx); 									
     TEMPLATE2(P4HVE, USIZE)(op,b,bx);
