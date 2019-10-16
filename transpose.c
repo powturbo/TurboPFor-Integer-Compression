@@ -42,8 +42,11 @@
 #include "conf.h"
 #include "transpose.h"
 
-#define PREFETCH(_ip_) __builtin_prefetch(_ip_+512,0)
-//#define PREFETCH(ip)
+  #ifdef __ARM_NEON
+#define PREFETCH(_ip_,_rw_)
+  #else
+#define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
+  #endif
 
 #define powof2(n) !((n)&((n)-1))
  
@@ -120,9 +123,7 @@
 #include "transpose.c"
 
 //--------------------- CPU detection -------------------------------------------
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#include <intrin.h>
-#elif defined(__INTEL_COMPILER)
+#if (_MSC_VER >=1300) || defined (__INTEL_COMPILER)
 #include <x86intrin.h>
 #endif
 
@@ -245,7 +246,7 @@ void tpdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   if(!tpset) tpini(0); 
   if(esize <= 16 && (f = _tpd[esize])) f(in,n,out);	
   else {
-    unsigned i,stride=n/esize; 
+    unsigned i, stride = n/esize; 
     unsigned char *op,*ip; 
     for(op = out,ip = in; op < out+stride*esize; ip++)
 	  for(i = 0; i < esize; i++) 
@@ -253,6 +254,57 @@ void tpdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
     for(ip = in+esize*stride; op < out+n;) 
 	  *op++ = *ip++;
   }
+}  
+
+#define ODX2 e + (_x + _y * x) * esize  //_x + e + _y * x //+ e * y * x
+void tp2denc(unsigned char *in, unsigned x, unsigned y, unsigned char *out, unsigned esize) { 
+  unsigned _x,_y; int e; uint8_t *op = out, *ip = in;
+  for(e = esize-1; e >= 0; e--)
+    for(  _x = 0; _x < x; _x++)
+      for(_y = 0; _y < y; _y++) op[ODX2] = *ip++; 
+}  
+
+void tp2ddec(unsigned char *in, unsigned x, unsigned y, unsigned char *out, unsigned esize) { 
+  unsigned _x,_y; int e; uint8_t *op=out,*ip=in;
+  for(e = esize-1; e >= 0; e--)
+    for(  _x = 0; _x < x; _x++)
+      for(_y = 0; _y < y; _y++) *op++/*[_x * y * z + _y * z + _z]*/ = ip[ODX2];
+}  
+
+#define ODX3 e + (_x + _y * x + _z * y * x) * esize
+void tp3denc(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) { //memcpy(out,in, x*y*z*esize); return;
+  unsigned _x,_y,_z; int e; uint8_t *op = out, *ip=in;
+  for(e = esize-1; e >= 0; e--)
+    for(    _x = 0; _x < x; _x++)
+      for(  _y = 0; _y < y; _y++)
+        for(_z = 0; _z < z; _z++) op[ODX3] = *ip++; 
+}
+
+void tp3ddec(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {  //memcpy(out,in, x*y*z*esize); return;
+  unsigned _x,_y,_z; int e; uint8_t *op=out,*ip=in;
+  for(e = esize-1; e >= 0; e--)
+    for(_x = 0; _x < x; ++_x)
+      for(_y = 0; _y < y; ++_y)
+        for(_z = 0; _z < z; ++_z) *op++= ip[ODX3]; /*[_x * y * z + _y * z + _z]*/ 
+}  
+
+#define ODX4 e + (_w + _x * w + _y * x * w + _z * x * y * w) * esize
+void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) { //memcpy(out,in, x*y*z*esize); return;
+  unsigned _w,_x,_y,_z; int e; uint8_t *op = out, *ip=in;
+  for(e = esize-1; e >= 0; e--)
+    for(      _w = 0; _w < w; _w++)
+      for(    _x = 0; _x < x; _x++)
+        for(  _y = 0; _y < y; _y++)
+          for(_z = 0; _z < z; _z++) op[ODX4] = *ip++; 
+}
+
+void tp4ddec(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {  //memcpy(out,in, x*y*z*esize); return;
+  unsigned _w,_x,_y,_z; int e; uint8_t *op=out,*ip=in;
+  for(e = esize-1; e >= 0; e--)
+    for(      _w = 0; _w < w; _w++)
+      for(    _x = 0; _x < x; ++_x)
+        for(  _y = 0; _y < y; ++_y)
+          for(_z = 0; _z < z; ++_z) *op++= ip[ODX4]; /*[_x * y * z + _y * z + _z]*/ 
 }  
 
   #ifdef USE_SSE
@@ -395,14 +447,14 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
       #if defined(__SSSE3__) || defined(__ARM_NEON)
         #if   ESIZE == 2
     ov[0] = LD128((__m128i *)ip);      ov[0] = _mm_shuffle_epi8(ov[0], sv); 
-    ov[1] = LD128((__m128i *)(ip+16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); ip+= 32; PREFETCH(ip);
+    ov[1] = LD128((__m128i *)(ip+16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); ip+= 32; PREFETCH(ip+512,0);
 	iv[0] = _mm_unpacklo_epi64(ov[0], ov[1]);
     iv[1] = _mm_unpackhi_epi64(ov[0], ov[1]);
         #elif ESIZE == 4
     iv[0] = LD128((__m128i *) ip    ); iv[0] = _mm_shuffle_epi8(iv[0], sv);
     iv[1] = LD128((__m128i *)(ip+16)); iv[1] = _mm_shuffle_epi8(iv[1], sv); 
     iv[2] = LD128((__m128i *)(ip+32)); iv[2] = _mm_shuffle_epi8(iv[2], sv); 
-    iv[3] = LD128((__m128i *)(ip+48)); iv[3] = _mm_shuffle_epi8(iv[3], sv); ip += 64; PREFETCH(ip);
+    iv[3] = LD128((__m128i *)(ip+48)); iv[3] = _mm_shuffle_epi8(iv[3], sv); ip += 64; PREFETCH(ip+512,0);
 
 	ov[0] = _mm_unpacklo_epi32(iv[0], iv[1]);
     ov[1] = _mm_unpackhi_epi32(iv[0], iv[1]);
@@ -433,7 +485,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[4] = LD128((__m128i *) ip    ); ov[4] = _mm_shuffle_epi8(ov[4], sv); 
     ov[5] = LD128((__m128i *)(ip+16)); ov[5] = _mm_shuffle_epi8(ov[5], sv);  
     ov[6] = LD128((__m128i *)(ip+32)); ov[6] = _mm_shuffle_epi8(ov[6], sv); 
-    ov[7] = LD128((__m128i *)(ip+48)); ov[7] = _mm_shuffle_epi8(ov[7], sv); ip += 64; PREFETCH(ip);
+    ov[7] = LD128((__m128i *)(ip+48)); ov[7] = _mm_shuffle_epi8(ov[7], sv); ip += 64; PREFETCH(ip+512,0);
 
 	iv[4] = _mm_unpacklo_epi16(ov[4], ov[5]);
     iv[5] = _mm_unpackhi_epi16(ov[4], ov[5]);
@@ -459,7 +511,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
       #elif defined(__SSE2__) || defined(__ARM_NEON)
         #if ESIZE == 2
     iv[0] = LD128((__m128i *)ip); ip += 16;
-    iv[1] = LD128((__m128i *)ip); ip += 16;		PREFETCH(ip);
+    iv[1] = LD128((__m128i *)ip); ip += 16;		PREFETCH(ip+512,0);
 	
     ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
     ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
@@ -476,7 +528,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[0] = LD128((__m128i *) ip   ); 
     iv[1] = LD128((__m128i *)(ip+16)); 
     iv[2] = LD128((__m128i *)(ip+32)); 
-    iv[3] = LD128((__m128i *)(ip+48)); ip += 64;	PREFETCH(ip);				
+    iv[3] = LD128((__m128i *)(ip+48)); ip += 64;	PREFETCH(ip+512,0);				
 
     ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
     ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
@@ -505,7 +557,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[4] = LD128((__m128i *)(ip+ 64)); 
     iv[5] = LD128((__m128i *)(ip+ 80)); 					
     iv[6] = LD128((__m128i *)(ip+ 96)); 
-    iv[7] = LD128((__m128i *)(ip+112)); ip += 128; PREFETCH(ip);
+    iv[7] = LD128((__m128i *)(ip+112)); ip += 128; PREFETCH(ip+512,0);
 
 	ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]); 
     ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]); 
@@ -546,7 +598,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
       #endif
 
       #if STRIDE <= ESIZE
-    _mm_storeu_si128((__m128i *) p,         iv[0]);
+    _mm_storeu_si128((__m128i *) p,          iv[0]);
     _mm_storeu_si128((__m128i *)(p+=stride), iv[1]);
         #if ESIZE > 2
     _mm_storeu_si128((__m128i *)(p+=stride), iv[2]);
@@ -576,7 +628,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb);         
     ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
 
-    _mm_storel_epi64((__m128i *) p,         ov[0]);
+    _mm_storel_epi64((__m128i *) p,          ov[0]);
     _mm_storel_epi64((__m128i *)(p+=stride), ov[1]);
     _mm_storel_epi64((__m128i *)(p+=stride), ov[2]);
     _mm_storel_epi64((__m128i *)(p+=stride), ov[3]); 
@@ -764,7 +816,7 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           #endif
         #endif
       #endif
-																	PREFETCH(ip+(ESIZE*16/STRIDE));
+																	PREFETCH(ip+(ESIZE*16/STRIDE),0);
         #if ESIZE == 2
     ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]); ST128((__m128i *)op,      ov[0]); 
     ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]); ST128((__m128i *)(op+16), ov[1]); op += 32;
@@ -903,12 +955,12 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 	  #if   ESIZE == 2
 	   #if 0
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv);  
-    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv); 	PREFETCH(ip);	
+    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv); 	PREFETCH(ip+512,0);	
 	iv[0] = _mm256_permute4x64_epi64(_mm256_unpacklo_epi64(ov[0], ov[1]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[1] = _mm256_permute4x64_epi64(_mm256_unpackhi_epi64(ov[0], ov[1]), _MM_SHUFFLE(3, 1, 2, 0));
 	   #else
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *)ip), sv0);       
-    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)),sv1); 											PREFETCH(ip);
+    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)),sv1); 											PREFETCH(ip+512,0);
     iv[0] = _mm256_permute4x64_epi64(_mm256_blend_epi32(ov[0], ov[1],0b11001100),_MM_SHUFFLE(3, 1, 2, 0));
     iv[1] = _mm256_blend_epi32(ov[0], ov[1],0b00110011); 
 	iv[1] = _mm256_permute4x64_epi64(_mm256_shuffle_epi32(iv[1],_MM_SHUFFLE(1, 0, 3, 2)),_MM_SHUFFLE(3, 1, 2, 0));
@@ -917,7 +969,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv0);      
     iv[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv1);  
     iv[2] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+64)), sv0);       
-    iv[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv1); 										PREFETCH(ip);
+    iv[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv1); 										PREFETCH(ip+512,0);
       #if 0
 	ov[0] = _mm256_unpacklo_epi32(iv[0], iv[1]);
     ov[1] = _mm256_unpackhi_epi32(iv[0], iv[1]);
@@ -963,7 +1015,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[4] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+128)), sv); 
     ov[5] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+160)), sv);  
     ov[6] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+192)), sv); 
-    ov[7] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+224)), sv); PREFETCH(ip);	
+    ov[7] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+224)), sv); PREFETCH(ip+512,0);	
 
 	iv[4] = _mm256_unpacklo_epi16(ov[4], ov[5]);
     iv[5] = _mm256_unpackhi_epi16(ov[4], ov[5]);
@@ -1143,7 +1195,7 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           #endif
         #endif
       #endif
-														PREFETCH(ip+ESIZE*32/STRIDE);
+														PREFETCH(ip+ESIZE*32/STRIDE,0);
       #if ESIZE == 2 
 	ov[0] = _mm256_permute4x64_epi64(iv[0], _MM_SHUFFLE(3, 1, 2, 0));
 	ov[1] = _mm256_permute4x64_epi64(iv[1], _MM_SHUFFLE(3, 1, 2, 0));
