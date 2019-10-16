@@ -36,6 +36,12 @@
 #include "conf.h"
 #include "vsimple.h"
 
+  #ifdef __ARM_NEON
+#define PREFETCH(_ip_,_rw_)
+  #else
+#define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
+  #endif
+
   #ifndef SV_LIM32
 #define USE_RLE
 
@@ -90,16 +96,18 @@ static SV_LIM64;
 #include <stdio.h>
 #include <stdlib.h>
 #include "conf.h"
+#define VINT_IN
 #include "vint.h"
 #define uint_t TEMPLATE3(uint, USIZE, _t)
 
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
-unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict op) {
+unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
   unsigned xm,m,r,x; 
   uint_t *e = in+n,*ip,*sp;
-  for(ip = in; ip < e; ) { 										__builtin_prefetch(ip+64, 0);
+  unsigned char *op = out,*op_ = out+n*(USIZE/8);
+  for(ip = in; ip < e; ) { 										PREFETCH(ip+256, 0);
     sp = ip;
       #ifdef USE_RLE 
     if(ip+4 < e && *ip == *(ip+1)) { 
@@ -119,7 +127,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned
     a:; //printf("%d,", m);
     switch(m) {
       case 0: ip += r; 
-        if(--r >= 0xf) { 
+        if(r >= 0xf) { 
           *op++ = 0xf0; 
           if(n <= 0x100)
             *op++ = r; 
@@ -311,7 +319,8 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned
         break;
         #endif
 
-    } 
+    }
+    if(op > op_) { *out++ = 0; memcpy(out, in, n*(USIZE/8)); return out+n*(USIZE/8); }
   } 
   return op;   
 }
@@ -324,11 +333,12 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned
 unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, uint_t *__restrict op) { 
   uint_t *op_ = op+n;
   while(op < op_) { 
-    uint64_t w = *(uint64_t *)ip; 												__builtin_prefetch(ip+64, 0);
+    uint64_t w = *(uint64_t *)ip; 												PREFETCH(ip+256, 0);
     switch(w & 0xf) {
       case 0: { 
         uint_t *q = op; 
-        unsigned r = (w>>4)&0xf; 
+        unsigned r = (w>>4)&0xf;
+		if(!r) { memcpy(op,ip+1, n*(USIZE/8)); return ip+n*(USIZE/8); }
             #if defined(__SSE2__) || defined(__ARM_NEON)
         __m128i zv = _mm_setzero_si128();
           #endif 
@@ -337,7 +347,8 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
           if(n <= 0x100)
             r = (w>>8)&0xff, ip++; 
           else { vbxget32(ip, r); }
-        }          
+        }
+        r -= 1;		
 		op += r+1; 
         while(q < op) { 
             #if defined(__SSE2__) || defined(__ARM_NEON)
