@@ -131,7 +131,7 @@ extern char _shuffle_16[256][16];
 #undef USIZE
 #undef DELTA
 
-#if (__SSSE3__ != 0 || __ARM_NEON != 0) && defined(SSE2_ON)
+#if (defined(__SSSE3__) || defined(__ARM_NEON)) && defined(SSE2_ON)
 
 #define VSIZE 128
 #define P4DELTA(a)
@@ -313,7 +313,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
         } //out += 64; 
       }
 	}
-      #elif (__SSSE3__ != 0 || __ARM_NEON != 0) && USIZE == 32
+      #elif (defined(__SSSE3__) || defined(__ARM_NEON)) && USIZE == 32
     { uint_t *_op=out,*op,*pex = ex; 	
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf; 
@@ -321,12 +321,12 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
         } _op+=64;
       }
     }	
-      #elif (__SSSE3__ != 0 || __ARM_NEON != 0) && USIZE == 16
-    { uint_t *_op=out,*op,*pex = ex; 	
+      #elif (defined(__SSSE3__) || defined(__ARM_NEON)) && USIZE == 16
+    { uint_t *_op = out, *op, *pex = ex; 	
       for(i = 0; i < p4dn; i++) {
-        for(op=_op;  bb[i]; bb[i] >>= 8,op+=8) { const unsigned char m = bb[i]; 
+        for(op = _op;  bb[i]; bb[i] >>= 8,op += 8) { const unsigned char m = bb[i]; 
           _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
-        } _op+=64;
+        } _op += 64;
       }
     }	
       #else
@@ -435,7 +435,7 @@ size_t TEMPLATE2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *
   --n;
     #endif
   for(op = out; op != out+(n&~(CSIZE-1)); op += CSIZE) {            
-    unsigned b = *ip++, bx = 0, i;  										 __builtin_prefetch(ip+512);//ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));
+    unsigned b = *ip++, bx = 0, i;  										 PREFETCH(ip+512,0);//ip = TEMPLATE2(P4DEC, USIZE)(ip, CSIZE, op P4DELTA(start));
 	
     if((b & 0xc0) == 0xc0) {
 	  b &= 0x3f;
