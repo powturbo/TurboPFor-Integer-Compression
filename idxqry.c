@@ -43,6 +43,7 @@
 #include <getopt.h>
 
 #include "conf.h"
+#define VINT_IN
 #include "vint.h"
 #include "bitpack.h"
 #include "vp4.h"
