@@ -443,7 +443,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 *   [TurboPFor: an analysis](https://michael.stapelberg.ch/posts/2019-02-05-turbopfor-analysis/)
 
 * **Applications:**
-  * [Debian Code Search](https://github.com/Debian/dcs/) 
+  * [Debian Code Search](https://github.com/Debian/dcs/)</br>
     [Debian Code Search: positional index, TurboPFor-compressed](https://michael.stapelberg.ch/posts/2019-09-29-dcs-positional-turbopfor-index/)
   * [Graph500](https://github.com/julianromera/graph500)
   * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
