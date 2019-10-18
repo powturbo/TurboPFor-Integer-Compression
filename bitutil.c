@@ -38,9 +38,9 @@ uint8_t  bit8( uint8_t  *in, unsigned n, uint8_t  *px) { uint8_t  o,x,u0,*ip; BI
 uint64_t bit64(uint64_t *in, unsigned n, uint64_t *px) { uint64_t o,x,u0,*ip; BIT(in, n, 64); if(px) *px = x; return o; }
 
 uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
-  uint16_t o, x, u0, *ip;
+  uint16_t o, x, u0 = in[0], *ip;
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi16(*in), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
+  __m128i vb0 = _mm_set1_epi16(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
                                      vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();
   for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
@@ -61,7 +61,7 @@ uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
 }
 
 uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) { 
-  uint32_t o,x,u0,*ip;
+  uint32_t o,x,u0 = in[0], *ip;
     #if defined(__AVX2__) && defined(USE_AVX2)
   __m256i vb0 = _mm256_set1_epi32(*in), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
                                         vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256();
@@ -76,7 +76,7 @@ uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
   vo0 = _mm256_or_si256(vo0, vo1); o = mm256_hor_epi32(vo0);
   vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);
     #elif defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi32(*in), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
+  __m128i vb0 = _mm_set1_epi32(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
                                      vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();
   for(ip = in; ip != in+(n&~(8-1)); ip += 8) {            						PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
