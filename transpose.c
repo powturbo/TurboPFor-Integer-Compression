@@ -124,7 +124,7 @@
 
 //--------------------- CPU detection -------------------------------------------
 #if (_MSC_VER >=1300) || defined (__INTEL_COMPILER)
-#include <x86intrin.h>
+//#include <x86intrin.h>
 #endif
 
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
