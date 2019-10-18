@@ -440,6 +440,15 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 
 ### References:
 
+*   [TurboPFor: an analysis](https://michael.stapelberg.ch/posts/2019-02-05-turbopfor-analysis/)
+
+* **Applications:**
+  * [Debian Code Search](https://github.com/Debian/dcs/) 
+    [Debian Code Search: positional index, TurboPFor-compressed](https://michael.stapelberg.ch/posts/2019-09-29-dcs-positional-turbopfor-index/)
+  * [Graph500](https://github.com/julianromera/graph500)
+  * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
+  * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
+
 * **Benchmark references:**
   * <a name="FastPFor"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU, StreamVbyte, GroupSimple
   * <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16 (limited to 28 bits integers)
@@ -462,11 +471,6 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[Efficient Compression of Scientific Floating-Point Data and An Application in Structural Analysis](https://www.jstage.jst.go.jp/article/jsces/2017/0/2017_20170002/_article)
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
-
-* **Applications:**
-  * [Graph500](https://github.com/julianromera/graph500)
-  * [Small Polygon Compression](https://arxiv.org/abs/1509.05505) + [Poster](http://abhinavjauhri.me/publications/dcc_poster_2016.pdf) + [code](https://github.com/ajauhri/bignum_compression)
-  * [Parallel Graph Analysis (Lecture 18)](http://www.cs.rpi.edu/~slotag/classes/FA16/) + [code](http://www.cs.rpi.edu/~slotag/classes/FA16/handson/lec18-comp2.cpp)
 
 Last update:  17 Oct 2019
 
