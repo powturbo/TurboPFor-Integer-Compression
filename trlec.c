@@ -28,6 +28,7 @@
 #include "conf.h"
 #include "trle.h"
 #include "trle_.h"
+
   #ifdef __ARM_NEON
 #define PREFETCH(_ip_,_rw_)
   #else
@@ -56,7 +57,7 @@ static unsigned cntcalc32(const unsigned char *__restrict in, unsigned inlen, cn
   unsigned char *ip = in; 
   if(inlen >= 64) {
     unsigned ux = ctou32(ip), vx = ctou32(ip+4);
-    for(; ip != in+(inlen&~(64-1))-64; ip += 64) { INC4_32(0); INC4_32(16); INC4_32(32); INC4_32(48); PREFETCH(ip+512, 0); }
+    for(; ip != in+(inlen&~(64-1))-64; ip += 64) { INC4_32(0); INC4_32(16); INC4_32(32); INC4_32(48); __builtin_prefetch(ip+512, 0); }
   }
   while(ip != in+inlen) 
     c[0][*ip++]++; 
@@ -77,6 +78,9 @@ static unsigned cntcalc32(const unsigned char *__restrict in, unsigned inlen, cn
 #define PUTC(_op_, _x_) *_op_++ = _x_
 #define PUTE(_op_, _e_) do { PUTC(_op_, _e_); vlput32(_op_, 0); } while(0)
 
+#define SZ64 if((z = (ctou64(ip) ^ ctou64(ip+1)))) goto a; ip += 8;		
+#define SZ32 if((z = (ctou32(ip) ^ ctou32(ip+1)))) break; ip += 4;
+
 #define SRLEPUT8(_pp_, _ip_, _e_, _op_) do {\
   unsigned _r = (_ip_ - _pp_)+1;\
   if(_r >= 4)  { PUTC(_op_, _e_); _r = (_r-4)+3; vlput32(_op_, _r); PUTC(_op_, pp[0]); }\
@@ -85,20 +89,17 @@ static unsigned cntcalc32(const unsigned char *__restrict in, unsigned inlen, cn
   } else while(_r--) PUTC(_op_, pp[0]);\
 } while(0) 
 
-#define SZ64 if((z = (ctou64(ip) ^ ctou64(ip+1)))) goto a; ip += 8;		
-#define SZ32 if((z = (ctou32(ip) ^ ctou32(ip+1)))) break; ip += 4;
-
 unsigned _srlec8(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, uint8_t e) {
   uint8_t *ip = in, *pp = in, *ie = in+inlen, *op = out; 
     
   if(inlen > SRLE8+1)
     while(ip < ie-1-SRLE8) {		
         #if __WORDSIZE == 64
-      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						PREFETCH(ip +256, 0);					
+      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						__builtin_prefetch(ip +256, 0);					
       continue;                                                                                               
       a: ip += ctz64(z)>>3;									    																						  
         #else
-      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						PREFETCH(ip +256, 0);      
+      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						__builtin_prefetch(ip +256, 0);      
       continue;                                                                                             
       a: ip += ctz32(z)>>3;									    
         #endif
@@ -118,25 +119,66 @@ unsigned _srlec8(const unsigned char *__restrict in, unsigned inlen, unsigned ch
   }							  									//AS(ip == ie,"FatalI ip!=ie=%d ", ip-ie)  
   return op - out;
 }
+
+#define SRLEPUT8X(_pp_, _ip_, _e_, _op_) do {\
+  unsigned _r = (_ip_ - _pp_)+1, _cr = pp[0];\
+  if(_r >= 4 /*|| _r == 3 && _cr == ix*/) { PUTC(_op_, _e_); _r = ((_r-4)+3)<<1; if(_cr == ix) { vlput32(_op_, _r); } else { vlput32(_op_, _r|1); PUTC(_op_, pp[0]); } }\
+  else if(_cr == _e_) { PUTC(_op_, _e_); _r = (_r-1)<<1|1; vlput32(_op_, _r);  /*1-3:Escape char -> 2-6 bytes */ } \
+  else while(_r--) PUTC(_op_, _cr);\
+} while(0) 
+
+static inline unsigned _srlec8x(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, uint8_t e, uint8_t ix) {
+  uint8_t *ip = in, *pp = in, *ie = in+inlen, *op = out; 
+    
+  if(inlen > SRLE8+1)
+    while(ip < ie-1-SRLE8) {		
+        #if __WORDSIZE == 64
+      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						__builtin_prefetch(ip +256, 0);					
+      continue;                                                                                               
+      a: ip += ctz64(z)>>3;									    																						  
+        #else
+      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						__builtin_prefetch(ip +256, 0);      
+      continue;                                                                                             
+      a: ip += ctz32(z)>>3;									    
+        #endif
+      SRLEPUT8X(pp, ip, e, op);
+	  pp = ++ip;												
+    }
+	   
+  while(ip < ie-1) {                              		 
+    while(ip < ie-1 && ip[1] == *pp) ip++;
+	SRLEPUT8X(pp, ip, e, op);
+	pp = ++ip; 
+  }
+  if(ip < ie) { 
+    unsigned c = *ip++;
+    if(c == e) PUTE(op,e);
+	else PUTC(op, c);
+  }							  									//AS(ip == ie,"FatalI ip!=ie=%d ", ip-ie)  
+  return op - out;
+}
   #endif
 
 unsigned srlec(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out) { // Automatic escape char determination
-  unsigned cnt[256] = {0}, a, m = -1, mi = 0, i; 
-  unsigned l;
+  unsigned cnt[256] = {0}, a, m = -1, x = 0, im = 0, i, ix, l; 
   if(!inlen) return 0; 
 
   a = cntcalc32(in, inlen, cnt);  		
   if(cnt[a-1] == inlen) {            
     *out = *in;
-    return 1;                        					// RETURN 1 = memset 
+    return 1;                        							// RETURN 1 = memset 
   }
-  if(a < 256) mi = a;                					// determine escape char (min frequency)
-  else 
-	for(i = 0; i < a; i++)
-      if(cnt[i] < m) 
-		m = cnt[i],mi = i;
-  *out = mi; 
-  if((l = _srlec8(in, inlen, out+1, mi)+1) < inlen) 
+
+  if(a != 256) {                    						    // determine escape char
+    for(im = a, i = m = 0; i < a; i++) 
+      if(cnt[i] > x) x = cnt[i],ix = i;
+  } else for(i = 0; i < a; i++) {
+    if(cnt[i] < m) m = cnt[i],im = i;  						    // minimum for ESC char
+    if(cnt[i] > x) x = cnt[i],ix = i;                           // maximum for embeding in the run length
+  } 
+  out[0] = im; 
+  out[1] = ix; 
+  if((l = _srlec8x(in, inlen, out+2, im, ix)+2) < inlen) 
     return l;
   memcpy(out, in, inlen);
   return inlen;
@@ -147,63 +189,38 @@ unsigned srlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
   int _r_ = (ip - pp)+1;\
   if(_r_ >= TMIN) { \
     unsigned char *q = op; /*checkpoint*/\
-    vlzput(op, _r_ - TMIN, m, rmap); *op++ = pp[0]; \
+    if(pp[0] == ix) { unsigned _r = (_r_ - TMIN)<<1|1; vlzput(op, _r, m, rmap); } else { unsigned _r = (_r_ - TMIN)<<1; vlzput(op, _r, m, rmap); *op++ = pp[0]; }\
     if(op-q >= _r_) { op = q; while(_r_--) *op++ = pp[0]; }  /*rollback rle*/\
   } else while(_r_--) *op++ = pp[0];\
 } while(0)
 
 unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out) {
-  unsigned      cnt[256] = {0}, m=-1, mi, i, a, c; 
-  unsigned char rmap[256], *op=out, *ie = in+inlen, *ip = in,*pp = in;
+  unsigned      cnt[256] = {0}, m=-1, x=0, im, i, a, c; 
+  unsigned char rmap[256], *op=out, *ie = in+inlen, *ip = in,*pp = in, ix;
   if(!inlen) return 0; 											// RETURN 0 = zero length
 
   a = cntcalc32(in, inlen, cnt);  		
   if(cnt[a-1] == inlen) {
     *out = *in;
     return 1;          											// RETURN 1 = memset
-  }
-
-  if(a != 256) m = 0, mi = a;                   				// determine escape char
-  else 
-    for(i = 0; i < a; i++)
-      if(cnt[i] < m) 
-	    m = cnt[i],mi = i;                                      
+  }															
+  
+  if(a != 256) {                    						    // determine escape char
+    for(im = a, i = m = 0; i < a; i++) 
+      if(cnt[i] > x) x = cnt[i],ix = i;
+  } else for(i = 0; i < a; i++) {
+    if(cnt[i] < m) m = cnt[i],im = i;  						    // minimum for ESC char
+    if(cnt[i] > x) x = cnt[i],ix = i;                           // maximum for embeding in the run length
+  } 
   if(m) {  														// no unused bytes found 
     PUTC(op, 0);      						    				// 0: srle mode
-	PUTC(op, mi);					    						// _srlec8 escape char
-    op += _srlec8(in, inlen, op, mi);
+	PUTC(op, im);					    						// _srlec8 escape char
+    op += _srlec8(in, inlen, op, im);
     if(op - out < inlen) return op - out;       				// RETURN rle/escape
     memcpy(out, in, inlen);  				    				// no compression, use memcpy 
     return inlen; 						    					// RETURN outlen = inlen (memcpy)
   }																	
-  
-
-    #if 0 //def TRLEVER2 
-  c = (a+7)/8; 								    				 
-  PUTC(op, c);  								    			// c = bitmap length in bytes 
-  { unsigned char *q = op;                                      // set level 0+1 bitmap for unused chars 
-    unsigned u = 0;
-    ctou32(op) = 0; op += (c+7)/8;                              // init level 0 
-    for(m = i = 0; i != c*8; i++) {								
-      if(!cnt[i]) u |= 1<<(i&7), rmap[m++] = i;                 // level 1 bitmap
-      if(u && !((i+1)&7)) BIT_SET(q, i/8), *op++=u,u=0;     	// level 0 bitmap
-    }
-  } 
-  for(; i != 256; i++) rmap[m++] = i;
-    #elif 0
-  c = (a+31)/31; 								    				 
-  PUTC(op, c);  								    			// c = bitmap length in bytes 
-  unsigned char *q = op;                                      // set level 0+1 bitmap for unused chars 
-  unsigned u = 0;
-  *op++ = 0;                               // init level 0 
-  for(m = i = 0; i != c*32; i++) {
-    if(!cnt[i]) u |= 1 << (i&31), rmap[m++] = i;                 // level 1 bitmap
-    if(u && !((i+1)&31)) { BIT_SET(q, i/32); 
-  	  ctou32(op) = u; op += 4; u = 0;     	// level 0 bitmap
-	} 
-  } 
-  for(; i != 256; i++) BIT_SET(q, i/32),rmap[m++] = i;
-    #else
+ 
   c = (a+7)/8; 								    				 
   PUTC(op, c);  								    			// c = bitmap length in bytes 
   memset(op, 0, 32);
@@ -211,17 +228,19 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
     if(!cnt[i]) op[i>>3] |= 1<<(i&7), rmap[m++] = i;
   op += c; 
   for(; i != 256; i++) rmap[m++] = i;
-    #endif
+
   m--;                                 							 
+  PUTC(op, ix);   
 
   if(inlen > SRLE8+1)                                           // encode    
     while(ip < ie-1-SRLE8) {	
         #if __WORDSIZE == 64	
-      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						PREFETCH(ip +256, 0);					
+      uint64_t z; SZ64; SZ64; SZ64; SZ64; 						__builtin_prefetch(ip +256, 0);					
       continue;                                                                                             
       a: ip += ctz64(z)>>3;																																								  
         #else
-      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						PREFETCH(ip +256, 0);      
+      uint32_t z;
+      uint32_t z; SZ32; SZ32; SZ32; SZ32; 						__builtin_prefetch(ip +256, 0);      
       continue;                                                                                             
       a: ip += ctz32(z)>>3;										
         #endif
@@ -234,7 +253,7 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
 	TRLEPUT(pp, ip, m, rmap, op);
 	pp = ++ip; 
   }
-  if(ip < ie) PUTC(op, *ip++);              						AS(ip == ie, "Fatal ip>ie=%td ", ip-ie);    
+  if(ip < ie) PUTC(op, *ip++);              						AS(ip == ie, "Fatal ip>ie=%d ", ip-ie);    
 
   if(op - out < inlen) 
     return op - out;       										// RETURN length = rle
@@ -282,7 +301,7 @@ unsigned TEMPLATE2(_srlec, USIZE)(const unsigned char *__restrict cin, unsigned 
   #define SZ1 if(ip[0] != ip[1]) goto a; ++ip;
   if(n > 6+1)                                                    
     while(ip < ie-1-6) {		                                // fast encode
-      SZ1; SZ1; SZ1; SZ1; SZ1; SZ1; 			                PREFETCH(ip +128*USIZE/8, 0);					
+      SZ1; SZ1; SZ1; SZ1; SZ1; SZ1; 			                __builtin_prefetch(ip +128*USIZE/8, 0);					
       continue;                                                 																					  
       a: 													    		
       SRLEPUT(pp, ip, e, op);
