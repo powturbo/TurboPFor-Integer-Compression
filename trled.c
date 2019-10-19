@@ -36,7 +36,6 @@
   #elif defined(__SSE2__)
 #include <emmintrin.h>
   #elif defined(__ARM_NEON)
-#define ARM_NEON_ON
 #include <arm_neon.h>
   #endif
 #include "sse_neon.h"
@@ -65,8 +64,6 @@ unsigned _srled8(const unsigned char *__restrict in, unsigned char *__restrict o
   __m256i ev = _mm256_set1_epi8(e);
     #elif defined(__SSE__) 
   __m128i ev = _mm_set1_epi8(e);
-    #elif  defined(__ARM_NEON)
-  uint8x8_t ev = vdup_n_u8(e);
     #endif 
   if(outlen >= SRLE8)
     while(op < out+(outlen-SRLE8)) {	
@@ -112,20 +109,82 @@ unsigned _srled8(const unsigned char *__restrict in, unsigned char *__restrict o
     }													 
   return ip - in;
 } 
+
+static inline unsigned _srled8x(const unsigned char *__restrict in, unsigned char *__restrict out, unsigned outlen, unsigned char e, unsigned char ix) {
+  uint8_t *ip = in, *op = out, c, *oe = out+outlen; 
+  uint32_t r;
+    
+    #ifdef __AVX2__    
+  __m256i ev = _mm256_set1_epi8(e);
+    #elif defined(__SSE__) 
+  __m128i ev = _mm_set1_epi8(e);
+    #elif  defined(__ARM_NEON)
+  uint8x8_t ev = vdup_n_u8(e);
+    #endif 
+  if(outlen >= SRLE8)
+    while(op < out+(outlen-SRLE8)) {	
+        #if defined(__AVX2__) || defined(__SSE__) //|| defined(__ARM_NEON)
+      uint32_t mask;
+          #ifdef __AVX2__
+      __m256i v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(_mm256_cmpeq_epi8(v, ev)); if(mask) goto a; op += 32; ip += 32;
+          #elif defined(__SSE__)
+      __m128i v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(_mm_cmpeq_epi8(v, ev)); if(mask) goto a; ip += 16; op += 16; 
+            #if SRLE8 >= 32
+              v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(_mm_cmpeq_epi8(v, ev)); if(mask) goto a; ip += 16; op += 16; 
+            #endif
+          #endif
+	  	 															            PREFETCH(ip+512, 0);    
+      continue;
+      a: r = ctz32(mask); ip += r+1;                                            PREFETCH(ip+512, 0);
+      op += r;                               
+        #else
+      if(likely((c = *ip++) != e)) { *op++ = c; continue; }
+        #endif     
+      vlget32(ip, r);
+      
+      int f = r&1; r >>= 1; 
+      if(likely(r) >= 3) { 
+	    uint8_t y=ip[0],c = f?y:ix; ip+=f;
+	    r = r-3+4;
+	    rmemset(op, c, r);
+	  } else { r++;  rmemset8(op, e, r);
+  		/*switch(r) {
+		  case 3: *op++ = c;	
+		  case 2: *op++ = c;	
+		  case 1: *op++ = c;	
+		  case 0: *op++ = c;	
+		}*/ 
+      }
+    }
+	 
+  while(op < out+outlen) 
+    if(likely((c = *ip++) != e)) {                     
+	  *op++ = c; 										 
+	} else { 
+	  vlget32(ip, r); 							 	
+      int f = r&1; r >>= 1; 
+      if(likely(r) >= 3) { 
+	    uint8_t c = f?ip[0]:ix; ip+=f;
+	    r = r-3+4;
+	    rmemset(op, c, r);
+	  } else { r++;
+	    rmemset8(op, e, r);
+      }
+    }													 
+  return ip - in;
+} 
   #endif
 
 unsigned _srled(const unsigned char *__restrict in, unsigned char *__restrict out, unsigned outlen) {
   return _srled8(in+1, out, outlen, *in); 
 }
   
-unsigned srled(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, unsigned outlen) { unsigned l; unsigned char *ip=in;
+unsigned srled(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, unsigned outlen) { unsigned l;
   if(inlen == outlen) 
-    memcpy(out, in, outlen); 
+    memcpy(out, in, outlen); 								//No compression	
   else if(inlen == 1) 
-    memset(out, in[0], outlen);
-  else { ip++;															
-    ip += _srled8(ip, out, outlen, *in);							//AS((ip-in) == inlen,"FatalI l>inlen %d ", (ip-in) - inlen); 
-  }
+    memset(out, in[0], outlen);                             //Only 1 char
+  else _srled8x(in+2, out, outlen, in[0], in[1]);							//AS((ip-in) == inlen,"FatalI l>inlen %d ", (ip-in) - inlen); 
   return inlen;
 }
 //------------------------------------- TurboRLE ------------------------------------------
@@ -139,37 +198,6 @@ unsigned _trled(const unsigned char *__restrict in, unsigned char *__restrict ou
   if(!(c = *ip++)) 
     return _srled8(ip+1, out, outlen, *ip)+2;
 
-    #if 0 //def TRLEVER2
-  for(ip += (c+7)/8, i = 0; i != c; i++) { uint8_t *pb = &rmap[i<<3], *q = in+1; 
-    if(BIT_ISSET(q,i)) {
-      unsigned u = *ip++,v;                    
-	  v = (u >> 0) & 1; m += v; pb[0] = v?m:0;
-	  v = (u >> 1) & 1; m += v; pb[1] = v?m:0;
-	  v = (u >> 2) & 1; m += v; pb[2] = v?m:0;
-	  v = (u >> 3) & 1; m += v; pb[3] = v?m:0;
-	  v = (u >> 4) & 1; m += v; pb[4] = v?m:0;
-	  v = (u >> 5) & 1; m += v; pb[5] = v?m:0;
-	  v = (u >> 6) & 1; m += v; pb[6] = v?m:0;
-	  v = (u >> 7) & 1; m += v; pb[7] = v?m:0;
-    }
-  }
-  for(i = c*8; i != 256; i++) rmap[i] = ++m;
-   #elif 0
-  for(ip += 1, i = 0; i != 32; i++) { uint8_t *pb = &rmap[i<<3], *q = in+1; unsigned j = i/4;
-    if(BIT_ISSET(q,j)) {
-      unsigned u = *ip++,v;                    
-	  v = (u >> 0) & 1; m += v; pb[0] = v?m:0;
-	  v = (u >> 1) & 1; m += v; pb[1] = v?m:0;
-	  v = (u >> 2) & 1; m += v; pb[2] = v?m:0;
-	  v = (u >> 3) & 1; m += v; pb[3] = v?m:0;
-	  v = (u >> 4) & 1; m += v; pb[4] = v?m:0;
-	  v = (u >> 5) & 1; m += v; pb[5] = v?m:0;
-	  v = (u >> 6) & 1; m += v; pb[6] = v?m:0;
-	  v = (u >> 7) & 1; m += v; pb[7] = v?m:0;
-    }
-  }
-  //for(i = c*8; i != 256; i++) rmap[i] = ++m;
-    #else
   for(i = 0; i != c; i++) { uint8_t *pb = &rmap[i<<3]; unsigned u = ip[i],v;
 	v = (u >> 0) & 1; m += v; pb[0] = v?m:0;
 	v = (u >> 1) & 1; m += v; pb[1] = v?m:0;
@@ -182,8 +210,9 @@ unsigned _trled(const unsigned char *__restrict in, unsigned char *__restrict ou
   }
   ip += c; 
   for(i = c*8; i != 256; i++) rmap[i] = ++m;
-    #endif
+
   m--;
+  unsigned char ix = *ip++; 
 
   if(outlen >= 32)
     while(op < out+(outlen-32)) {
@@ -202,8 +231,7 @@ unsigned _trled(const unsigned char *__restrict in, unsigned char *__restrict ou
       ip += z; op += z;
       c = rmap[*ip++]; 
 	  vlzget(ip, i, m, c-1);
-	  c  = *ip++;       					
-	  i += TMIN; 							     
+	  if(i&1) c = ix; else c = *ip++; i = (i>>1) + TMIN; 							     
 	  rmemset(op,c,i); 														PREFETCH(ip+512, 0);												
     } 
 
@@ -212,8 +240,7 @@ unsigned _trled(const unsigned char *__restrict in, unsigned char *__restrict ou
     else { 
 	  ip++;										
 	  vlzget(ip, i, m, c-1);
-	  c  = *ip++;         
-	  i += TMIN; 								    												
+	  if(i&1) c = ix; else c = *ip++; i = (i>>1) + TMIN; 							     
 	  rmemset8(op,c,i); 					
     }								
   }								
@@ -252,10 +279,15 @@ unsigned trled(const unsigned char *__restrict in, unsigned inlen, unsigned char
 #include "trled.c"
 #undef rmemset
 #undef USIZE
-
+ 
  #else // ---------------------------- include 16, 32, 64----------------------------------------------
   #ifdef MEMSAFE
 #define rmemset(_op_, _c_, _i_) while(_i_--) *_op_++ = _c_
+  #elif (__AVX2__ != 0) && USIZE < 64
+#define rmemset(_op_, _c_, _i_) do {\
+  __m256i cv = TEMPLATE2(_mm256_set1_epi, USIZE)(_c_); unsigned char *_p = _op_; _op_ += _i_;\
+  do _mm256_storeu_si256((__m256i *)_p, cv),_p+=32; while(_p < _op_);\
+} while(0)
   #elif (__SSE__ != 0 || __ARM_NEON != 0) && USIZE < 64
 #define rmemset(_op_, _c_, _i_) do { \
   __m128i *_up = (__m128i *)_op_, cv = TEMPLATE2(_mm_set1_epi, USIZE)(_c_);\
