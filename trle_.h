@@ -58,9 +58,3 @@
 #define vlzput(_op_, _x_, _m_, _rmap_) do { if(unlikely((_x_) < _m_)) *_op_++ = _rmap_[_x_]; else { unsigned _xi = (_x_) - _m_; *_op_++ = _rmap_[_m_]; vlput32(_op_, _xi); } } while(0)
 #define vlzget(_ip_, _x_, _m_, _e_) { _x_ = _e_; if(unlikely(_x_ == _m_)) { vlget32(_ip_,_x_ ); _x_+=_m_; } }
 
-#define BITS 8
-#define BIT_SET(  p, n) (p[(n)/BITS] |=  (0x80>>((n)%BITS)))
-#define BIT_CLEAR(p, n) (p[(n)/BITS] &= ~(0x80>>((n)%BITS)))
-#define BIT_ISSET(p, n) (p[(n)/BITS] &   (0x80>>((n)%BITS)))
-
-#define TRLEVER2 
