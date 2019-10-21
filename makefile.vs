@@ -1,4 +1,4 @@
-# powturbo  (c) Copyright 2013-2018
+# powturbo  (c) Copyright 2013-2019
 # nmake /f makefile.vs
 # or
 # nmake "AVX2=1" /f makefile.vs
