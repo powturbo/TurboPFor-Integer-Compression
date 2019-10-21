@@ -50,7 +50,8 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 - :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
-- CPU: Skylake i7-6700 3.4GHz gcc 8.3 **single** thread 
+- Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2 **single** thread
+- Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz
 
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
