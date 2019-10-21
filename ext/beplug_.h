@@ -2,14 +2,16 @@
 #define C_VINTG8IU 		0
 #define C_MASKEDVBYTE 	0			
   #endif
+
   #if C_FASTPFOR128
 #include "FastPFor/headers/variablebyte.h"
 #include "FastPFor/headers/simple16.h"
 #include "FastPFor/headers/simple8b_rle.h"
 
 #include "FastPFor/headers/fastpfor.h"
-#include "FastPFor/headers/simdfastpfor.h"
 #include "FastPFor/headers/optpfor.h"
+
+#include "FastPFor/headers/simdfastpfor.h"
 #include "FastPFor/headers/simdoptpfor.h"
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
@@ -84,8 +86,10 @@ extern "C" {
 #include "LittleIntPacker/include/util.h"
   #endif
 
+#if C_SIMDCOMP128
 #include "simdcomp/include/simdbitpacking.h"  
-  
+#endif
+
 #ifdef __cplusplus
 }
 #endif
