@@ -429,11 +429,12 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 ### Environment:
 ###### OS/Compiler (64 bits):
 - Linux: GNU GCC (>=4.6)
-- Clang (>=3.2)
+- Linux: Clang (>=3.2) 
 - Windows: MinGW-w64 makefile
 - Windows: Visual c++ (>=VS2008) - makefile.vs (for nmake)
 - Windows: Visual Studio project file - vs/vs2017 - Thanks to [PavelP](https://github.com/pps83)
-- Linux aarch64 for 64 bits ARM CPU : gcc
+- Linux ARM: 64 bits aarch64 ARMv8:  gcc (>=6.3)
+- Linux ARM: 64 bits aarch64 ARMv8:  clang
 
 ###### Multithreading:
 - All TurboPFor integer compression functions are thread safe
@@ -472,7 +473,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  18 Oct 2019
+Last update:  21 Oct 2019
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
@@ -480,7 +481,7 @@ Last update:  18 Oct 2019
 <pre>
 TurboPFor               	https://github.com/powturbo/TurboPFor
 FastPFor (FP)              	https://github.com/lemire/FastPFor
-lz4                     	https://github.com/Cyan4973/lz4
+lz4				https://github.com/Cyan4973/lz4
 LittleIntPacker (LI)       	https://github.com/lemire/LittleIntPacker
 MaskedVbyte             	http://maskedvbyte.org
 Polycom (PC)               	https://github.com/encode84/bcm
@@ -517,67 +518,67 @@ TurboPForDI      PFord min
 TurboPForZZ      PFor zigzag of delta
 TurboFor         FOR
 TurboForV        FOR (SIMD)
-TurboFor256V     FOR (AVX2)                                       
-TurboForDA       FOR direct access                                
-TurboPackDA      Bit packing direct access                        
-TurboPack        Bit packing (scalar)                             
-TurboPackN       Bit packing (scalar) large blocks                
-TurboPackV       Bit packing (SSE2 Vertical)                      
-TurboPackH       Bit packing (SSE2 Horizontal)                    
-TurboPackVN      Bit packing (SSE2 large block)                   
-TurboPack256V    Bit packing (AVX2 Vertical)                      
-TurboPack256N    Bit packing (AVX2 large block)                   
-TurboVByte       Variable byte (scalar)                           
-VSimple          Variable simple (scalar)                         
-EliasFano        Elias fano (scalar)                              
-EliasFanoV       Eliasfano  (SSE2)                                
-EliasFano256V    Elias fano (AVX2                                 
-memcpy           memcpy                                           
-copy             Integer copy                                     
-tpbyte4s         Byte Transpose (scalar)                          
-tpbyte           Byte transpose (simd)                            2,4,8
-tpnibble         Nibble transpose (simd)                          2,4,8
-ZigZag32         ZigZag encoding (sse2)                           
-Delta32          Delta encoding (sse2)                            
-DDelta32         Delta of delta encoding (sse2)                   
-Xor32            Xor encoding (sse2)                              
-FP_PREV64        Floating point PFOR                              
-FP_FCM64         Floating point PFOR (FCM)                        
-FP_DFCM64        Floating point PFOR (DFCM)                       
-TurboPFor64      PFOR 64                                          
-TurboPFor64V     PFOR 64                                          
-Simple8b         64 bits Simple family (instable)                 
-PC_Simple16      Simple 16. limited to 28 bits                    
-PC_OptPFD        OptPFD. limited to 28 bits                       
-PC_Vbyte         Variable byte                                    
-PC_Rice          Rice coding (instable)                           
-VarintG8IU       Variable byte SIMD                               
-MaskedVbyte      Variable byte SIMD                               
-StreamVbyte      Variable byte SIMD                               
-FP_FastPFor      PFor scalar (inefficient for small blocks)       
-FP_SimdFastPFor  PFor SIMD (inefficient for small blocks)         
-FP_OptPFor       OptPFor scalar                                   
-FP_SIMDOptPFor   OptPFor SIMD                                     
-FP_VByte         Variable byte                                    
-FP_Simple8bRLE   Simple-8b + rle                                  
-FP_GROUPSIMPLE   Group Simple                                     
-SC_SIMDPack128   Bit packing (SSE4.1)                             
-SC_SIMDPack256   Bit packing (SSE4.1)                             
-SC_For           For (SSE4.1)                                     
-SC_ForDA         For direct access (SSE4.1)                       
-LibFor_For       For                                              
-LibFor_ForDA     For direct access                                
-LI_Pack          Bit packing (scalar)                             
-LI_TurboPack     Bit packing (scalar)                             
-LI_SuperPack     Bit packing (scalar)                             
-LI_HorPack       Bit packing (sse4.1 horizontal)                  
-LI_BMIPack256    Bit packing (avx2)                               
-lz4              lz4                                              
-lz4_bit          Bitshuffle + [delta]+lz4                         2,4,8
-lz4_nibble       TurboPFor's [delta]+nibble transpose + lz4       2,4,8
-lz4_bitxor       Bitshuffle + [xor]+lz4                           2,4,8
-lz4_nibblexor    TurboPFor's [xor]+nibble transpose + lz4         2,4,8
-lz4_byte         TurboPFor's [delta]+byte transpose + lz4         2,4,8
-BitShuffle       Bit shuffle (simd)                               2,4,8
+TurboFor256V     FOR (AVX2)
+TurboForDA       FOR direct access
+TurboPackDA      Bit packing direct access
+TurboPack        Bit packing (scalar)
+TurboPackN       Bit packing (scalar) large blocks
+TurboPackV       Bit packing (SSE2 Vertical)
+TurboPackH       Bit packing (SSE2 Horizontal)
+TurboPackVN      Bit packing (SSE2 large block)
+TurboPack256V    Bit packing (AVX2 Vertical)
+TurboPack256N    Bit packing (AVX2 large block)
+TurboVByte       Variable byte (scalar)
+VSimple          Variable simple (scalar)
+EliasFano        Elias fano (scalar)
+EliasFanoV       Eliasfano  (SSE2)
+EliasFano256V    Elias fano (AVX2)
+memcpy           memcpy
+copy             Integer copy
+tpbyte4s         Byte Transpose (scalar)
+tpbyte           Byte transpose (simd)  2,4,8
+tpnibble         Nibble transpose (simd)  2,4,8
+ZigZag32         ZigZag encoding (sse2)
+Delta32          Delta encoding (sse2)
+DDelta32         Delta of delta encoding (sse2)
+Xor32            Xor encoding (sse2)
+FP_PREV64        Floating point PFOR
+FP_FCM64         Floating point PFOR (FCM)
+FP_DFCM64        Floating point PFOR (DFCM)
+TurboPFor64      PFOR 64
+TurboPFor64V     PFOR 64
+Simple8b         64 bits Simple family (instable)
+PC_Simple16      Simple 16. limited to 28 bits
+PC_OptPFD        OptPFD. limited to 28 bits
+PC_Vbyte         Variable byte
+PC_Rice          Rice coding (instable)
+VarintG8IU       Variable byte SIMD
+MaskedVbyte      Variable byte SIMD
+StreamVbyte      Variable byte SIMD
+FP_FastPFor      PFor scalar (inefficient for small blocks)
+FP_SimdFastPFor  PFor SIMD (inefficient for small blocks)
+FP_OptPFor       OptPFor scalar 
+FP_SIMDOptPFor   OptPFor SIMD
+FP_VByte         Variable byte
+FP_Simple8bRLE   Simple-8b + rle
+FP_GROUPSIMPLE   Group Simple
+SC_SIMDPack128   Bit packing (SSE4.1)
+SC_SIMDPack256   Bit packing (SSE4.1)
+SC_For           For (SSE4.1)
+SC_ForDA         For direct access (SSE4.1)
+LibFor_For       For
+LibFor_ForDA     For direct access
+LI_Pack          Bit packing (scalar)
+LI_TurboPack     Bit packing (scalar)
+LI_SuperPack     Bit packing (scalar)
+LI_HorPack       Bit packing (sse4.1 horizontal) 
+LI_BMIPack256    Bit packing (avx2)
+lz4              lz4
+lz4_bit          Bitshuffle + [delta]+lz4 2,4,8
+lz4_nibble       TurboPFor's [delta]+nibble transpose + lz4 2,4,8
+lz4_bitxor       Bitshuffle + [xor]+lz4 2,4,8
+lz4_nibblexor    TurboPFor's [xor]+nibble transpose + lz4 2,4,8
+lz4_byte         TurboPFor's [delta]+byte transpose + lz4 2,4,8
+BitShuffle       Bit shuffle (simd) 2,4,8
 </pre>
 
