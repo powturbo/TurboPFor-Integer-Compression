@@ -132,7 +132,7 @@ static ALWAYS_INLINE __m128i mm_delta_epi32(__m128i v, __m128i sv) { return _mm_
 static ALWAYS_INLINE __m128i mm_xore_epi32( __m128i v, __m128i sv) { return _mm_xor_epi32(v, _mm_or_si128(_mm_srli_si128(sv, 12), _mm_slli_si128(v, 4))); }
   #endif
 
-  #if defined(__SSE2__)
+  #if defined(__SSE2__) || defined(__ARM_NEON)
 #define MM_HDEC_EPI32(_v_,_sv_,_hop_) { _v_ = _hop_(_v_, _mm_slli_si128(_v_, 4)); _v_ = _hop_(mm_shuffle_nnnn_epi32(_sv_, 3), _hop_(_mm_slli_si128(_v_, 8), _v_)); }
 static ALWAYS_INLINE __m128i mm_scan_epi32(__m128i v, __m128i sv) { MM_HDEC_EPI32(v,sv,_mm_add_epi32); return v; }
 static ALWAYS_INLINE __m128i mm_xord_epi32(__m128i v, __m128i sv) { MM_HDEC_EPI32(v,sv,_mm_xor_si128); return v; }
