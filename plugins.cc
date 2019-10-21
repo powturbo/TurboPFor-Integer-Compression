@@ -133,7 +133,11 @@ enum {
   P_BS_ZLIB,
   P_BS_SHUFFLE, 	
 
-#define C_FASTPFOR		CODEC2
+  #ifdef __ARM_NEON
+#define C_FASTPFOR     0
+  #else
+#define C_FASTPFOR     CODEC2
+  #endif
   FP_VBYTE,
   FP_SIMPLE8BRLE,
   FP_GROUPSIMPLE,
@@ -153,7 +157,11 @@ enum {
   LF_FOR,
   LF_FORX,
 
+  #ifdef __ARM_NEON
+#define C_LITTLEPACK	0
+  #else
 #define C_LITTLEPACK	CODEC1
+  #endif
   LI_PACK,
   LI_TURBOPACK,
   LI_SCPACK,
@@ -203,7 +211,7 @@ enum {
   #ifdef __ARM_NEON
 #define C_SIMDCOMP128	0
   #else
-#define C_SIMDCOMP128	CODEC1
+#define C_SIMDCOMP128	CODEC2
   #endif
   SC_PACK,
   SC_FOR,    	
