@@ -1742,7 +1742,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 101:TMBENCH("",l=streamvbyte_delta_encode(in, m, out,0),n);pr(l,n); TMBENCH2("101", streamvbyte_delta_decode( out, cpy, m,0),n); break;
     case 102:TMBENCH("",l=streamvbyte_zzag_encode(in,m,out,0,tmp),n);pr(l,n);TMBENCH2("102", streamvbyte_zzag_decode(out, cpy, m,0,tmp),n); break;
         #endif
-        #ifdef CODEC2                  
+        #if defined(CODEC2) && defined(__SSE4_1__)
 	case 103: TMBENCH("",l=vbyte_encode(in, m, out),n);             pr(l,n); TMBENCH2("103", masked_vbyte_decode(out, cpy, m),n); break;
     case 104: TMBENCH("",l=FastPFore32(    in, m, out,CBUF(n)),n);  pr(l,n); TMBENCH2("104", FastPFord32(    out, m, cpy),n); break;
     case 105: TMBENCH("",l=FastPFore128v32(in, m, out,CBUF(n)),n);  pr(l,n); TMBENCH2("105", FastPFord128v32(out, m, cpy),n); break;
