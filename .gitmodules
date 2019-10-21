@@ -31,3 +31,4 @@
 [submodule "ext/JASSv2"]
 	path = ext/JASSv2
 	url = https://github.com/andrewtrotman/JASSv2
+
