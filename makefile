@@ -270,7 +270,9 @@ OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
 
 OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o
 
+ifneq ($(UNAMEM),aarch64)
 XLIB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o ext/fastpfor.o
+endif
 
 ext/polycom/optpfd.o: ext/polycom/optpfd.c
 	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@ 
