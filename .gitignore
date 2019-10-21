@@ -4,3 +4,4 @@ msvc.build/
 *.obj
 *.exe
 *.lib
+*.o
