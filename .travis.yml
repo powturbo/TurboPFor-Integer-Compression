@@ -3,7 +3,7 @@ sudo: required
 language: c
 
 arch: 
-  - amd64
+  - ppc64
 
 branches:
   only:
