@@ -429,13 +429,15 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 
 ### Environment:
 ###### OS/Compiler (64 bits):
-- Linux: GNU GCC (>=4.6)
-- Linux: Clang (>=3.2) 
 - Windows: MinGW-w64 makefile
 - Windows: Visual c++ (>=VS2008) - makefile.vs (for nmake)
 - Windows: Visual Studio project file - vs/vs2017 - Thanks to [PavelP](https://github.com/pps83)
-- Linux ARM: 64 bits aarch64 ARMv8:  gcc (>=6.3)
-- Linux ARM: 64 bits aarch64 ARMv8:  clang
+- Linux amd64: GNU GCC (>=4.6)
+- Linux amd64: Clang (>=3.2) 
+- Linux arm64: 64 bits aarch64 ARMv8:  gcc (>=6.3)
+- Linux arm64: 64 bits aarch64 ARMv8:  clang
+- MaxOS: XCode (>=9)
+- PowerPC ppc64le (incl. SIMD): gcc (>=8.0)
 
 ###### Multithreading:
 - All TurboPFor integer compression functions are thread safe
