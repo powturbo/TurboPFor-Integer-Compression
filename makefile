@@ -24,17 +24,15 @@ ifeq ($(OS),Windows_NT)
   UNAME := Windows
 CC=gcc
 CXX=g++
+CFLAGS+=-D__int64_t=int64_t
 else
   UNAME := $(shell uname -s)
-ifeq ($(UNAME),$(filter $(UNAME),Darwin FreeBSD GNU/kFreeBSD Linux NetBSD SunOS))
+ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
 LDFLAGS+=-lpthread
 ifneq ($(UNAME),$(filter $(UNAME),Darwin))
 LDFLAGS+=-lrt
 endif
 UNAMEM := $(shell uname -m)
-#ifeq ($(UNAMEM),aarch64)
-#NSIMD=1
-#endif
 endif
 endif
 
@@ -90,18 +88,6 @@ CFLAGS+=-DUSE_FLOAT16
 endif
 
 #----------------------------------------------
-ifeq ($(OS),Windows_NT)
-  UNAME := Windows
-CC=gcc
-CXX=g++
-CFLAGS+=-D__int64_t=int64_t
-else
-  UNAME := $(shell uname -s)
-ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS+=-lpthread -lrt -lm
-endif
-endif
-
 ifeq ($(STATIC),1)
 LDFLAGS+=-static
 endif
