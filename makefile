@@ -48,13 +48,13 @@ MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-fu
 #-floop-optimize 
 endif
 else
-ifeq ($(UNAME),$(filter $(UNAME),ppc64le))
-MSSE=-msse2
-else
+ifneq ($(UNAME),$(filter $(UNAME),ppc64le))
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
+else
+MSSE=-msse2
 endif
 endif
 
