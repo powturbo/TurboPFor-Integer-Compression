@@ -265,7 +265,7 @@ void tpdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   }
 }  
 
-#define ODX2 e + (_x + _y * x) * esize  //_x + e + _y * x //+ e * y * x
+#define ODX2 e + (_x + _y * x) * esize  
 void tp2denc(unsigned char *in, unsigned x, unsigned y, unsigned char *out, unsigned esize) { 
   unsigned _x,_y; int e; uint8_t *op = out, *ip = in;
   for(e = esize-1; e >= 0; e--)
@@ -281,7 +281,7 @@ void tp2ddec(unsigned char *in, unsigned x, unsigned y, unsigned char *out, unsi
 }  
 
 #define ODX3 e + (_x + _y * x + _z * y * x) * esize
-void tp3denc(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) { //memcpy(out,in, x*y*z*esize); return;
+void tp3denc(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {
   unsigned _x,_y,_z; int e; uint8_t *op = out, *ip=in;
   for(e = esize-1; e >= 0; e--)
     for(    _x = 0; _x < x; _x++)
@@ -289,7 +289,7 @@ void tp3denc(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned cha
         for(_z = 0; _z < z; _z++) op[ODX3] = *ip++; 
 }
 
-void tp3ddec(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {  //memcpy(out,in, x*y*z*esize); return;
+void tp3ddec(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {
   unsigned _x,_y,_z; int e; uint8_t *op=out,*ip=in;
   for(e = esize-1; e >= 0; e--)
     for(_x = 0; _x < x; ++_x)
@@ -298,7 +298,7 @@ void tp3ddec(unsigned char *in, unsigned x, unsigned y, unsigned z, unsigned cha
 }  
 
 #define ODX4 e + (_w + _x * w + _y * x * w + _z * x * y * w) * esize
-void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) { //memcpy(out,in, x*y*z*esize); return;
+void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) { 
   unsigned _w,_x,_y,_z; int e; uint8_t *op = out, *ip=in;
   for(e = esize-1; e >= 0; e--)
     for(      _w = 0; _w < w; _w++)
@@ -307,7 +307,7 @@ void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, 
           for(_z = 0; _z < z; _z++) op[ODX4] = *ip++; 
 }
 
-void tp4ddec(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {  //memcpy(out,in, x*y*z*esize); return;
+void tp4ddec(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize) {  
   unsigned _w,_x,_y,_z; int e; uint8_t *op=out,*ip=in;
   for(e = esize-1; e >= 0; e--)
     for(      _w = 0; _w < w; _w++)
