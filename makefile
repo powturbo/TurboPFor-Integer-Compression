@@ -49,6 +49,7 @@ endif
 #-floop-optimize 
 else
 ifeq (,$(findstring ppc64le, $(UNAMEM)))
+MSSE=-msse2
 else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
