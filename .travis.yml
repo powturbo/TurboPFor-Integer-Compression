@@ -5,7 +5,6 @@ compiler:
   - clang
 
 arch:
-  - arm64
   - amd64
 
 branches:
@@ -22,6 +21,11 @@ matrix:
   include:
     - name: Linux
       os: linux
+      arch: arm64
+      compiler: gcc
+ 
+    - name: Linux
+      os: linux
 
     - name: ppc64le
       os: linux-ppc64le
@@ -34,12 +38,8 @@ matrix:
     - name: macOS, xcode11
       os: osx
       osx_image: xcode11
-      script:
-        - make
 
     - name: macOS, xcode9.4
       os: osx
       osx_image: xcode9.4
-      script:
-        - make
 
