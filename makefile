@@ -50,7 +50,7 @@ endif
 else
 UNAMEA := $(shell uname -a)
 ifeq (,$(findstring ppc64le, $(UNAMEA)))
-MSSE=-mssse3
+MSSE=-mcpu=power9
 CFLAGS+=-DNO_WARN_X86_INTRINSICS
 else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
