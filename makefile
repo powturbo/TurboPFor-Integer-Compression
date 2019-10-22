@@ -49,7 +49,7 @@ MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-fu
 endif
 else
 UNAMEA := $(shell uname -a)
-ifeq (,$(findstring ppc64le, $(UNAMEA)))
+ifneq (,$(findstring ppc64le, $(UNAMEA)))
 MSSE=-mcpu=power9
 CFLAGS+=-DNO_WARN_X86_INTRINSICS
 else
