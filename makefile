@@ -26,7 +26,7 @@ CC=gcc
 CXX=g++
 CFLAGS+=-D__int64_t=int64_t
 else
-  UNAME := $(shell uname -s)
+  UNAME := $(shell uname -a)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
 LDFLAGS+=-lpthread -lm
 ifneq ($(UNAME),$(filter $(UNAME),Darwin))
