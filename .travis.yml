@@ -1,23 +1,12 @@
 sudo: required
-
-language: c
-
-compiler: 
-  - gcc
-  - clang
-
-arch: 
-  - amd64
-
-branches:
-  only:
-    - master 
-
-script:
-  - make
-  - ./icapp ZIPF
-
-- addons:
+language: generic
+matrix:
+  include:
+  - language: c++
+    compiler: clang
+  - language: c++
+    compiler: gcc
+  - addons:
       apt:
         sources:
         - ubuntu-toolchain-r-test
@@ -28,39 +17,18 @@ script:
     env:
     - CC=gcc-8 CXX=g++-8
     - CXXFLAGS="-fuse-ld=gold"
-
 cache: apt
-
 addons:
   apt:
     packages:
     - libtbb-dev
-
-matrix:
-  include:
-    - name: Linux arm
-      os: linux
-      arch: arm64
-      compiler: gcc
- 
-    - name: Linux amd64
-      os: linux
-
-    - name: Windows-MinGW
-      os: windows
-      script: 
-        - mingw32-make
-        - ./icapp ZIPF
-
-    - name: macOS, xcode11
-      os: osx
-      osx_image: xcode11
-
-    - name: macOS, xcode9.4
-      os: osx
-      osx_image: xcode9.4
-
-    - name: Power ppc64le
-      os: linux-ppc64le
-      compiler: gcc     
-
+# branches:
+#   only:
+#   - master
+#   - cleaner_parsing
+#   - scaling-old-parsing
+#   - batch_parsing
+#   - batch_parsing_output
+#   - blocked_input
+#   - bug_fixes
+script: make 
