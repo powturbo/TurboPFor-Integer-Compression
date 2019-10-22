@@ -434,7 +434,9 @@ unsigned char *codcomps(unsigned char *_in, unsigned _n, unsigned char *out, int
       if(mdelta) { b = bsr32(bitf132(in, n, 0,x)); *out++=b;	return bitf1pack32(in, n, out, x, b); }
       else {       b = bsr32(bitf32( in, n, 0,x)); *out++=b;	return bitfpack32( in, n, out, x, b); }
 
+      #if C_TURBOPFORH
     case TB_BP128H:
+      #endif
     case TB_BP:     x = *in++; --n; vbxput32(out, x); 
       if(mdelta) { b = bsr32(bitd132(in, n, 0,x)); *out++=b;		return bitd1pack32(in, n, out, x, b); }
       else {    b = bsr32(bitd32( in, n, 0, x)); *out++=b;		return bitdpack32( in, n, out, x, b); } 
@@ -645,8 +647,10 @@ unsigned char *codcomp(unsigned char *_in, unsigned _n, unsigned char *out, int 
     case TB_FOR :  
     case TB_FORDA:   b = bsr32(bitfm32( in, n, 0, &x)); vbxput32(out, x); *out++=b; return bitfpack32( in, n, out, x, b); 
 
-    case TB_BPDA:
+      #if C_TURBOPFORH
     case TB_BP128H:
+      #endif 
+    case TB_BPDA:
     case TB_BP:      if(b < 0) { b = bsr32(bit32(in, n, 0)); *out++ = b; } 
 	                 return bitpack32(in, n, out, b);
     case TB_BPN:     return out+bitnpack32(in, n, out);
@@ -733,7 +737,7 @@ unsigned char *coddecomp(unsigned char *in, unsigned _n, unsigned char *_out, in
     case TB_BYTE128V : 							return in+v8ndec128v32(in, n, out);
       #endif
 
-	  #if C_TURBOPFORH
+      #if C_TURBOPFORH
     case TB_BP128H: if(b < 0) b = *in++; 		return n == 128?bitunpack128h32(in, n, out, b):bitunpack32(in, n, out, b);
       #endif
 
