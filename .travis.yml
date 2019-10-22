@@ -2,9 +2,6 @@ sudo: required
 
 language: c
 
-arch: 
-  - ppc64
-
 branches:
   only:
     - master 
