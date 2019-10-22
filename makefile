@@ -27,7 +27,10 @@ CXX=g++
 else
   UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Darwin FreeBSD GNU/kFreeBSD Linux NetBSD SunOS))
-LDFLAGS+=-lpthread -lrt 
+LDFLAGS+=-lpthread
+ifneq ($(UNAME),$(filter $(UNAME),Darwin))
+LDFLAGS+=-lrt
+endif
 UNAMEM := $(shell uname -m)
 #ifeq ($(UNAMEM),aarch64)
 #NSIMD=1
