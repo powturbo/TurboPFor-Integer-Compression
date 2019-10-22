@@ -2,10 +2,19 @@ language: c
 
 compiler: gcc
 
+arch:
+  - arm64
+  - amd64
+
 branches:
   only:
-    - master   
+    - master 
+
 script:
-    - make
+  - make
+  - ./icapp ZIPF
+  - ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
+  - ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100M ZIPF
+
 os:
   - linux
