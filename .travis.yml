@@ -29,11 +29,11 @@ matrix:
 
     - name: Power ppc64le
       os: linux-ppc64le
-      script: uname -a
        
     - name: Windows-MinGW
       os: windows
-      script: mingw32-make
+      script: 
+        - mingw32-make
         - ./icapp ZIPF
 
     - name: macOS, xcode11
