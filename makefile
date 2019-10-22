@@ -19,8 +19,8 @@ CXX ?= g++
 
 #CC = gcc-8
 #CXX = g++-8
-CC=powerpc64le-linux-gnu-gcc
-CXX=powerpc64le-linux-gnu-g++
+#CC=powerpc64le-linux-gnu-gcc
+#CXX=powerpc64le-linux-gnu-g++
 
 DDEBUG=-DNDEBUG -s
 #DDEBUG=-g
