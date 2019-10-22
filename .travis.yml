@@ -19,20 +19,23 @@ script:
 
 matrix:
   include:
-    - name: Linux ARM
+    - name: Linux arm
       os: linux
       arch: arm64
       compiler: gcc
  
-    - name: Linux
+    - name: Linux amd64
       os: linux
 
-    - name: ppc64le
+    - name: Power - ppc64le
       os: linux-ppc64le
-
-    - name: Windows, MinGW
+      script: uname -a
+        make
+       
+    - name: Windows-MinGW
       os: windows
       script: mingw32-make
+        - ./icapp ZIPF
 
     - name: macOS, xcode11
       os: osx
