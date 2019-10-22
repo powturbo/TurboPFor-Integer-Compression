@@ -122,7 +122,7 @@ unsigned OptPFord128v32(const unsigned char *in, unsigned n, uint32_t *out) {
   if(n & 127) { 
     nvalue = n - nvalue;
 	FastPForLib::VariableByte vc;
-	return (unsigned char *)vc.decodeArray(ip, (const uint32_t *)in+1+ctou32(in) - ip, out + (n&(~127)), nvalue);	  //return vbdec32((unsigned char *)ip, n & 127, out + mynvalue1);
+	ip = vc.decodeArray(ip, (const uint32_t *)in+1+ctou32(in) - ip, out + (n&(~127)), nvalue);	  //return vbdec32((unsigned char *)ip, n & 127, out + mynvalue1);
   }
-  return (unsigned char *)ip; 
+  return (unsigned char *)ip-in; 
 }
