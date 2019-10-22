@@ -19,7 +19,7 @@ script:
 
 matrix:
   include:
-    - name: Linux
+    - name: Linux ARM
       os: linux
       arch: arm64
       compiler: gcc
