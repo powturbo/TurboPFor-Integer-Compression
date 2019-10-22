@@ -1,8 +1,8 @@
-language: c
+#language: c
 
-compiler: 
-  - gcc
-  - clang
+#compiler: 
+#  - gcc
+#  - clang
 
 branches:
   only:
@@ -14,6 +14,11 @@ script:
 
 matrix:
   include:
+    - language: c
+      compiler: clang
+    - language: c
+      compiler: gcc
+
     - name: Linux amd64
       os: linux
       arch: amd64
