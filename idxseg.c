@@ -26,8 +26,12 @@
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <stdio.h>
+#ifdef __APPLE__
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
  
 #include <getopt.h>
 #include "conf.h"
