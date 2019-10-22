@@ -58,6 +58,7 @@ else
 MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
+CFLAGS+=-mssse3
 endif
 endif
 
@@ -70,10 +71,10 @@ ifeq ($(NSIMD),1)
 DEFS+=-DNSIMD
 else
 CFLAGS+=-DUSE_SSE 
-ifeq ($(UNAMEM),aarch64)
-else
-CFLAGS+=-mssse3
-endif
+#ifeq ($(UNAMEM),aarch64)
+#else
+#CFLAGS+=-mssse3
+#endif
 CXXFLAGS+=-DUSE_SSE
 endif
 
