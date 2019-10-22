@@ -30,7 +30,6 @@ matrix:
     - name: Power - ppc64le
       os: linux-ppc64le
       script: uname -a
-        - make
        
     - name: Windows-MinGW
       os: windows
