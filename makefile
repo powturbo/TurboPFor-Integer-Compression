@@ -55,7 +55,8 @@ MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
 else
-MSSE=-mtune=power9
+MARCH=-mcpu=power9, -mtune=power9
+#MSSE=-mtune=power9
 CFLAGS+=-DNO_WARN_X86_INTRINSICS
 endif
 endif
