@@ -19,10 +19,6 @@ script:
 
 matrix:
   include:
-    - name: Power ppc64le
-      os: linux-ppc64le
-      compiler: gcc-8     
-
     - name: Linux arm
       os: linux
       arch: arm64
@@ -44,4 +40,25 @@ matrix:
     - name: macOS, xcode9.4
       os: osx
       osx_image: xcode9.4
+
+    - name: Power ppc64le
+      os: linux-ppc64le
+      compiler: gcc     
+
+- addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - gcc-8
+        - g++-8
+        - libtbb-dev
+    env:
+    - CC=gcc-8 CXX=g++-8
+    - CXXFLAGS="-fuse-ld=gold"
+cache: apt
+addons:
+  apt:
+    packages:
+    - libtbb-dev
 
