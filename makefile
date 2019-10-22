@@ -37,9 +37,9 @@ else
 ifeq (,$(filter $(UNAMEA),aarch64))
   OS := arm64
 endif
-ifeq (,$(filter $(UNAMEA),ppc64le))
-  OS := ppc64le
-endif
+#ifeq (,$(filter $(UNAMEA),ppc64le))
+#  OS := ppc64le
+#endif
 #ifneq (,$(findstring ppc64le, $(CC)))
 #  OS := ppc64le
 #endif
