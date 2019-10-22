@@ -35,20 +35,20 @@ extern "C" {
 void tpenc(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // tranpose
 void tpdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // reverse transpose
 
-void tp2denc(unsigned char *in,             unsigned x, unsigned y,             unsigned char *out, unsigned esize);
+void tp2denc(unsigned char *in,             unsigned x, unsigned y,             unsigned char *out, unsigned esize); //2D transpose
 void tp2ddec(unsigned char *in,             unsigned x, unsigned y,             unsigned char *out, unsigned esize);
-void tp3denc(unsigned char *in,             unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
+void tp3denc(unsigned char *in,             unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize); //3D transpose
 void tp3ddec(unsigned char *in,             unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
-void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
+void tp4denc(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize); //4D transpose
 void tp4ddec(unsigned char *in, unsigned w, unsigned x, unsigned y, unsigned z, unsigned char *out, unsigned esize);
 
-// Nibble transpose
+// Nibble transpose SIMD (SSE2,AVX2, ARM Neon)
 void tp4enc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 void tp4dec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
 // bit transpose
-void tp1enc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
-void tp1dec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+//void tp1enc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+//void tp1dec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
 //---------- Low level functions ------------------------------------
 void tpenc2(      unsigned char *in, unsigned n, unsigned char *out);  // scalar
