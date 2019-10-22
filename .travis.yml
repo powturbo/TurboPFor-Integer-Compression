@@ -27,7 +27,7 @@ matrix:
     - name: Linux amd64
       os: linux
 
-    - name: Power - ppc64le
+    - name: Power ppc64le
       os: linux-ppc64le
       script: uname -a
        
