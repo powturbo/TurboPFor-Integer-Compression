@@ -32,9 +32,7 @@ matrix:
        
     - name: Windows-MinGW
       os: windows
-      script: 
-        - mingw32-make
-        - ./icapp ZIPF
+      script: mingw32-make
 
     - name: macOS, xcode11
       os: osx
