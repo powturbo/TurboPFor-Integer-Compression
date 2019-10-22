@@ -71,10 +71,6 @@ ifeq ($(NSIMD),1)
 DEFS+=-DNSIMD
 else
 CFLAGS+=-DUSE_SSE 
-#ifeq ($(UNAMEM),aarch64)
-#else
-#CFLAGS+=-mssse3
-#endif
 CXXFLAGS+=-DUSE_SSE
 endif
 
