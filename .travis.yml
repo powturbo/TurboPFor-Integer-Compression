@@ -17,6 +17,9 @@ matrix:
     env:
     - CC=gcc-8 CXX=g++-8
     - CXXFLAGS="-fuse-ld=gold"
+  - name: Power ppc64le
+    os: linux-ppc64le
+
 cache: apt
 addons:
   apt:
