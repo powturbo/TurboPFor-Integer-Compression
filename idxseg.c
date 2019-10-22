@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; char *path=""
     strcpy(outname, path); 
     char *p = strrchr(inname,'/'); if(!p) p = strrchr(inname,'\\'); if(!p) p=inname; strcat(outname, p); strcat(outname,".s");
 
-    FILE *fi = fopen64(inname, "rb"); if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
+    FILE *fi = fopen(inname, "rb"); if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
     FILE *fo[SEGMAX] = {0};
     unsigned as[SEGMAX] = {0}, an[SEGMAX] = {0},s;
 
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; char *path=""
         FILE *f = fo[s];
         if(!f) {
           char oname[257]; sprintf(oname, "%s%.2d", outname, s); 
-          f = fopen64(oname,"wb"); if(!f) { fprintf(stderr, "creat error '%s'", oname); perror(oname); exit(-1); }
+          f = fopen(oname,"wb"); if(!f) { fprintf(stderr, "creat error '%s'", oname); perror(oname); exit(-1); }
           fo[s] = f;
           int i; for(i = 0; i < tid; i++) { unsigned z = 0; if(fwrite(&z, 1, 4, f) != 4) die("write error"); printf("#");fflush(stdout); }
         }
