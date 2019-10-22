@@ -34,10 +34,10 @@ CFLAGS+=-D__int64_t=int64_t
 else
   OS := $(shell uname -s)
   UNAMEA := shell uname -a
-ifneq (,$(filter $(UNAMEA),aarch64))
+ifeq (,$(filter $(UNAMEA),aarch64))
   OS := arm64
 endif
-ifneq (,$(filter $(UNAMEA),ppc64le))
+ifeq (,$(filter $(UNAMEA),ppc64le))
   OS := ppc64le
 endif
 ifeq (,$(findstring ppc64le, $(CC)))
