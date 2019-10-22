@@ -45,10 +45,10 @@ ifneq (,$(findstring clang, $(CC)))
 MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -fomit-frame-pointer 
 else
 MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-functions -falign-jumps -fomit-frame-pointer
-endif
 #-floop-optimize 
+endif
 else
-ifeq (,$(findstring ppc64le, $(UNAMEM)))
+ifeq ($(UNAME),$(filter $(UNAME),ppc64le))
 MSSE=-msse2
 else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
