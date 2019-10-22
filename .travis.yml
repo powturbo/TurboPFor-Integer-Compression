@@ -28,6 +28,7 @@ script:
     env:
     - CC=gcc-8 CXX=g++-8
     - CXXFLAGS="-fuse-ld=gold"
+
 cache: apt
 addons:
   apt:
