@@ -48,5 +48,6 @@
 typedef struct { uint8_t offseth; uint32_t offsetl; } __attribute__ ((packed)) tmap_t;   // 40 bits offsets -> 1 Terabyte
 
 #define TIDMAPSET(_t_, _ofs_) { (_t_)->offseth = (_ofs_)>>32; (_t_)->offsetl = (_ofs_) & 0xffffffff; }
-#define TIDMAPGET(_t_) ((__off64_t)(_t_)->offseth << 32 | (_t_)->offsetl)
+//#define TIDMAPGET(_t_) ((__off64_t)(_t_)->offseth << 32 | (_t_)->offsetl)
+#define TIDMAPGET(_t_) ((unsigned long long)(_t_)->offseth << 32 | (_t_)->offsetl)
 #define TIDMAP(_fdm_, _tid_) ({ unsigned char *_bp = _fdm_; tmap_t *_t = (tmap_t *)&_bp[(_tid_)*sizeof(tmap_t)]; TIDMAPGET(_t); })
