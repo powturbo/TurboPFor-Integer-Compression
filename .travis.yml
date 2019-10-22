@@ -19,10 +19,6 @@ matrix:
     - language: c
       compiler: gcc
 
-    - name: Linux amd64
-      os: linux
-      arch: amd64
-
     - name: Linux arm
       os: linux
       arch: arm64
@@ -37,6 +33,9 @@ matrix:
     - name: macOS, xcode
       os: osx
 
+#    - name: Linux amd64
+#      os: linux
+#      arch: amd64
 #    - name: Power ppc64le
 #      os: linux-ppc64le
 #      compiler: gcc     
