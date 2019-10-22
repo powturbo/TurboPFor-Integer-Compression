@@ -19,27 +19,41 @@ CXX ?= g++
 
 #CC = gcc-8
 #CXX = g++-8
-
-ifeq ($(OS),Windows_NT)
-  UNAME := Windows
-CC=gcc
-CXX=g++
-CFLAGS+=-D__int64_t=int64_t
-else
-  UNAME := $(shell uname -s)
-ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS+=-lpthread -lm
-ifneq ($(UNAME),$(filter $(UNAME),Darwin))
-LDFLAGS+=-lrt
-endif
-UNAMEM := $(shell uname -m)
-endif
-endif
+CC=powerpc64le-linux-gnu-gcc
+CXX=powerpc64le-linux-gnu-g++
 
 DDEBUG=-DNDEBUG -s
 #DDEBUG=-g
 
-ifeq ($(UNAMEM),aarch64)
+# arch
+ifeq ($(OS),Windows_NT)
+  OS := Windows
+CC=gcc
+CXX=g++
+CFLAGS+=-D__int64_t=int64_t
+else
+  OS := $(shell uname -s)
+  UNAMEA := shell uname -a
+ifneq (,$(filter $(UNAMEA),aarch64))
+  OS := arm64
+endif
+ifneq (,$(filter $(UNAMEA),ppc64le))
+  OS := ppc64le
+endif
+ifeq (,$(findstring ppc64le, $(CC)))
+  OS := ppc64le
+endif
+endif
+
+ifeq ($(OS),$(filter $(OS),Linux Darwin GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku aarch64 ppc64le))
+LDFLAGS+=-lpthread -lm
+ifneq ($(OS),Darwin)
+LDFLAGS+=-lrt
+endif
+endif
+
+# compiler: gcc, clang
+ifeq ($(OS),aarch64)
 # ARMv8 
 ifneq (,$(findstring clang, $(CC)))
 MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -fomit-frame-pointer 
@@ -48,24 +62,23 @@ MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-fu
 #-floop-optimize 
 endif
 else
-UNAMEA := $(shell uname -a)
-ifneq (,$(findstring ppc64le, $(UNAMEA)))
-MSSE=-D__SSE__ -D__SSE2__ -D__SSSE3__
+ifeq ($(OS),ppc64le)
+MSSE=-D__SSE__ -D__SSE2__ -D__SSE3__ -D__SSSE3__
 MARCH=-march=power9 -mtune=power9
 CFLAGS+=-DNO_WARN_X86_INTRINSICS
+CXXFLAGS+=-DNO_WARN_X86_INTRINSICS
 else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
+CFLAGS+=-mssse3
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
-CFLAGS+=-mssse3
 endif
 endif
 
 # Minimum CPU architecture 
 #MARCH=-march=native
 MARCH=$(MSSE)
-#MARCH=-march=broadwell 
 
 ifeq ($(NSIMD),1)
 DEFS+=-DNSIMD
