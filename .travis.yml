@@ -16,8 +16,6 @@ branches:
 script:
   - make
   - ./icapp ZIPF
-  - ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
-  - ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100M ZIPF
 
 matrix:
   include:
