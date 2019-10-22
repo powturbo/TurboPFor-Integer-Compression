@@ -91,8 +91,8 @@ int main(int argc, char *argv[]) {
     if(!p) p = strrchr(inname,'\\'); if(!p) p=inname; 
     strcat(outname, p); strcat(outname,".i");
 
-    FILE *fi = fopen64(inname, "rb");     if(!fi) { fprintf(stderr, "open error '%s'", inname);   perror(inname); exit(-1); }  int fdi = fileno(fi);
-    FILE *fo = fopen64(outname,"wb"),*fm; if(!fo) { fprintf(stderr, "creat error '%s'", outname); perror(outname); exit(-1); } fprintf(stderr, "file='%s'", outname);
+    FILE *fi = fopen(inname, "rb");     if(!fi) { fprintf(stderr, "open error '%s'", inname);   perror(inname); exit(-1); }  int fdi = fileno(fi);
+    FILE *fo = fopen(outname,"wb"),*fm; if(!fo) { fprintf(stderr, "creat error '%s'", outname); perror(outname); exit(-1); } fprintf(stderr, "file='%s'", outname);
     fseeko(fo, sizeof(unsigned)+sizeof(unsigned long long), SEEK_SET);
 
     tmap_t *tmap = calloc(1, TERMNUM*sizeof(tmap_t)); 
