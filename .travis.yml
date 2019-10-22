@@ -32,8 +32,6 @@ matrix:
 
     - name: Windows, MinGW
       os: windows
-      script:
-        - make
 
     - name: macOS, xcode11
       os: osx
