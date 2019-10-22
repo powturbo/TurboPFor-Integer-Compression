@@ -26,7 +26,7 @@ CC=gcc
 CXX=g++
 CFLAGS+=-D__int64_t=int64_t
 else
-  UNAME := $(shell uname -a)
+  UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
 LDFLAGS+=-lpthread -lm
 ifneq ($(UNAME),$(filter $(UNAME),Darwin))
@@ -48,13 +48,14 @@ MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-fu
 #-floop-optimize 
 endif
 else
-ifneq ($(UNAME),$(filter $(UNAME),ppc64le))
+UNAMEA := $(shell uname -a)
+ifeq (,$(findstring ppc64le, $(UNAMEA)))
+MSSE=-mssse3
+else
 #Minimum SSE = Sandy Bridge,  AVX2 = haswell 
 MSSE=-march=corei7-avx -mtune=corei7-avx
 # -mno-avx -mno-aes (add for Pentium based Sandy bridge)
 MAVX2=-march=haswell
-else
-MSSE=-msse2
 endif
 endif
 
