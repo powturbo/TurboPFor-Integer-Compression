@@ -2,10 +2,6 @@ sudo: required
 
 language: c
 
-compiler: 
-  - gcc
-  - clang
-
 arch: 
   - amd64
 
