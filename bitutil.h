@@ -36,8 +36,6 @@
 #include <emmintrin.h>
   #elif defined(__ARM_NEON)
 #include <arm_neon.h>
-#elif (defined(__GNUC__) || defined(__xlC__)) && (defined(__VEC__) || defined(__ALTIVEC__)) // XLC/GCC compiler, PowerPC w/ VMX/VSX 
-#include <altivec.h>
   #endif
   #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
@@ -67,11 +65,11 @@ static inline  int64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x
   #if defined(__SSE2__) || defined(__ARM_NEON)
 static ALWAYS_INLINE __m128i mm_zzage_epi16(__m128i v) { return _mm_xor_si128(_mm_slli_epi16(v,1), _mm_srai_epi16(v,15)); }
 static ALWAYS_INLINE __m128i mm_zzage_epi32(__m128i v) { return _mm_xor_si128(_mm_slli_epi32(v,1), _mm_srai_epi32(v,31)); }
-static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128(_mm_slli_epi64(v,1), _mm_srai_epi64(v,63)); }
+//static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128(_mm_slli_epi64(v,1), _mm_srai_epi64(v,63)); } 
 
 static ALWAYS_INLINE __m128i mm_zzagd_epi16(__m128i v) { return _mm_xor_si128(_mm_srli_epi16(v,1), _mm_srai_epi16(_mm_slli_epi16(v,15),15) ); }
 static ALWAYS_INLINE __m128i mm_zzagd_epi32(__m128i v) { return _mm_xor_si128(_mm_srli_epi32(v,1), _mm_srai_epi32(_mm_slli_epi32(v,31),31) ); }
-static ALWAYS_INLINE __m128i mm_zzagd_epi64(__m128i v) { return _mm_xor_si128(_mm_srli_epi64(v,1), _mm_srai_epi64(_mm_slli_epi64(v,63),63) ); }
+//static ALWAYS_INLINE __m128i mm_zzagd_epi64(__m128i v) { return _mm_xor_si128(_mm_srli_epi64(v,1), _mm_srai_epi64(_mm_slli_epi64(v,63),63) ); } 
 
   #endif
   #ifdef __AVX2__
