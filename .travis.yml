@@ -30,6 +30,7 @@ script:
     - CXXFLAGS="-fuse-ld=gold"
 
 cache: apt
+
 addons:
   apt:
     packages:
