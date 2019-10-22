@@ -26,7 +26,6 @@
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h> 
 #include <stdio.h>
 #include <math.h> 
 #include <time.h>
