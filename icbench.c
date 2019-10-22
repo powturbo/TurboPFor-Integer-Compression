@@ -33,7 +33,6 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <math.h>
-#include <malloc.h>			
 #ifdef __APPLE__
 #include <sys/malloc.h>
 #else
