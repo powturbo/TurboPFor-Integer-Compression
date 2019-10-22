@@ -33,14 +33,14 @@ CXX=g++
 CFLAGS+=-D__int64_t=int64_t
 else
   OS := $(shell uname -s)
-  UNAMEA := shell uname -a
+  UNAMEA := $(shell uname -a)
 ifeq (,$(filter $(UNAMEA),aarch64))
   OS := arm64
 endif
 ifeq (,$(filter $(UNAMEA),ppc64le))
   OS := ppc64le
 endif
-ifeq (,$(findstring ppc64le, $(CC)))
+ifneq (,$(findstring ppc64le, $(CC)))
   OS := ppc64le
 endif
 endif
