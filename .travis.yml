@@ -29,6 +29,7 @@ matrix:
 
     - name: Power ppc64le
       os: linux-ppc64le
+      compiler: gcc     
        
     - name: Windows-MinGW
       os: windows
