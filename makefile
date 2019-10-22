@@ -28,7 +28,7 @@ CFLAGS+=-D__int64_t=int64_t
 else
   UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin FreeBSD GNU/kFreeBSD))
-LDFLAGS+=-lpthread
+LDFLAGS+=-lpthread -lm
 ifneq ($(UNAME),$(filter $(UNAME),Darwin))
 LDFLAGS+=-lrt
 endif
