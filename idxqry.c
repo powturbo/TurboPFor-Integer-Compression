@@ -92,7 +92,7 @@ int idxopen(idxrd_t *idx, char *s) {
   CloseHandle( fd );
     #else
   int fd; 
-  if((fd = open(s, O_RDONLY| O_LARGEFILE)) < 0) 
+  if((fd = open(s, O_RDONLY/*| O_LARGEFILE*/)) < 0) 
     die("can't open index file '%s' rc=%d:%s\n", s, errno, strerror(errno));
 	
   struct stat sbuf;  fstat((int)fd, &sbuf); 
