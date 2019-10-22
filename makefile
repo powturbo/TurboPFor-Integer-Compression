@@ -40,7 +40,7 @@ endif
 ifeq (,$(filter $(UNAMEA),ppc64le))
   OS := ppc64le
 endif
-ifneq (,$(findstring ppc64le, $(CC)))
+ifeq (,$(findstring ppc64le, $(CC)))
   OS := ppc64le
 endif
 endif
