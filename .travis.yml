@@ -2,6 +2,13 @@ sudo: required
 
 language: c
 
+compiler: 
+  - gcc
+  - clang
+
+arch: 
+  - amd64
+
 branches:
   only:
     - master 
@@ -9,12 +16,6 @@ branches:
 script:
   - make
   - ./icapp ZIPF
-
-matrix:
-  include:
-    - name: Power ppc64le
-      os: linux-ppc64le
-      compiler: gcc     
 
 - addons:
       apt:
@@ -32,4 +33,32 @@ addons:
   apt:
     packages:
     - libtbb-dev
+
+matrix:
+  include:
+    - name: Linux arm
+      os: linux
+      arch: arm64
+      compiler: gcc
+ 
+    - name: Linux amd64
+      os: linux
+
+    - name: Windows-MinGW
+      os: windows
+      script: 
+        - mingw32-make
+        - ./icapp ZIPF
+
+    - name: macOS, xcode11
+      os: osx
+      osx_image: xcode11
+
+    - name: macOS, xcode9.4
+      os: osx
+      osx_image: xcode9.4
+
+    - name: Power ppc64le
+      os: linux-ppc64le
+      compiler: gcc     
 
