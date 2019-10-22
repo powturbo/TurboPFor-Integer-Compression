@@ -23,6 +23,14 @@ matrix:
     - name: Linux
       os: linux
 
+    - name: ppc64le
+      os: linux-ppc64le
+
+    - name: Windows, MinGW
+      os: windows
+      script:
+        - make
+
     - name: macOS, xcode11
       os: osx
       osx_image: xcode11
@@ -35,13 +43,3 @@ matrix:
       script:
         - make
 
-    - name: macOS, xcode7.3
-      os: osx
-      osx_image: xcode7.3
-      script:
-        - make
-
-    - name: Windows, MinGW
-      os: windows
-      script:
-        - make
