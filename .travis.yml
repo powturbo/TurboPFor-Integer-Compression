@@ -41,7 +41,7 @@ matrix:
       script:
         - make
 
-    - name: Windows, MinGW
+    - name: Basic tests (Windows, MinGW)
       os: windows
       script:
-        - mingw32-make
+        - make
