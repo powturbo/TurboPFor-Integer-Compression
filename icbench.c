@@ -30,10 +30,15 @@
 #include <stdlib.h> 
 //#include <float.h> 
 #include <errno.h>
-#include <malloc.h>			
 #include <sys/types.h>
 #include <ctype.h>
 #include <math.h>
+#include <malloc.h>			
+#ifdef __APPLE__
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
   #ifndef _WIN32
 #include <sys/resource.h>
   #endif 
