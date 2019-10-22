@@ -50,7 +50,7 @@ endif
 else
 UNAMEA := $(shell uname -a)
 ifneq (,$(findstring ppc64le, $(UNAMEA)))
-MSSE=-D__SSE__ -D__SSE2__ -D__SSSE3__
+MSSE=-D__SSE__ -D__SSE2__ 
 MARCH=-march=power9 -mtune=power9
 CFLAGS+=-DNO_WARN_X86_INTRINSICS
 else
