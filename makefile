@@ -27,8 +27,6 @@ DDEBUG=-DNDEBUG -s
 
 ifneq (,$(filter Windows%,$(OS)))
   OS := Windows
-#CC=gcc
-#CXX=g++
 CFLAGS+=-D__int64_t=int64_t
 else
   OS := $(shell uname -s)
