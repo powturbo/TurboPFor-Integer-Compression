@@ -107,12 +107,12 @@ endif
 
 LBITS := $(shell getconf LONG_BIT)
 ifeq ($(LBITS),64)
-ARCH=64
+WORDSISE=64
 else
-ifeq ($(ARCH),32)
+ifeq ($(WORDSIZE),32)
 CFLAGS=-fomit-frame-pointer
 else
-ARCH=64
+WORDSIZE=64
 endif
 endif
 
@@ -229,7 +229,7 @@ varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h
 
 #-------------------------------------------------------------------
 ifeq ($(CODEC1), 1)
-ifeq ($(UNAMEM),aarch64)
+ifeq ($(ARCH),aarch64)
 CFLAGS+=-D__ARM_NEON__
 endif
 OB+=ext/libfor/for.o
@@ -245,7 +245,7 @@ OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o
 LZ4=1
 BITSHUFFLE=1
 
-ifeq ($(UNAMEM),aarch64)
+ifeq ($(ARCH),aarch64)
 #OB+=ext/LittleIntPacker/src/util.o
 else
 # Only x86
@@ -272,7 +272,7 @@ OB+=eliasfano.o vsimple.o $(TRANSP) transpose.o transpose_sse.o
 
 OB+=ext/bitshuffle/src/bitshuffle.o ext/bitshuffle/src/iochain.o ext/bitshuffle/src/bitshuffle_core.o
 
-ifneq ($(UNAMEM),aarch64)
+ifneq ($(ARCH),aarch64)
 XLIB+=ext/FastPFor/src/bitpacking.o ext/FastPFor/src/simdbitpacking.o ext/FastPFor/src/simdunalignedbitpacking.o ext/fastpfor.o
 endif
 
@@ -295,7 +295,7 @@ else
 #OB+=$(ZD)adler32.o $(ZD)crc32.o $(ZD)compress.o $(ZD)deflate.o $(ZD)infback.o $(ZD)inffast.o $(ZD)inflate.o $(ZD)inftrees.o $(ZD)trees.o $(ZD)uncompr.o $(ZD)zutil.o
 endif
 
-ifeq ($(UNAMEM),aarch64)
+ifeq ($(ARCH),aarch64)
 else
 
 ifeq ($(BLOSC),1)
@@ -371,7 +371,7 @@ ictest:   ictest.o $(ICLIB)
 icapp:   icapp.o $(ICLIB) $(XLIB)
 	$(CXX) $^ $(LDFLAGS) -o icapp
 
-ifeq ($(UNAME), Linux)
+ifeq ($(OS), Linux)
 para: CFLAGS += -DTHREADMAX=32	
 para: idxqry
 endif
