@@ -19,13 +19,13 @@ CXX ?= g++
 
 #CC = gcc-8
 #CXX = g++-8
-CC=powerpc64le-linux-gnu-gcc
-CXX=powerpc64le-linux-gnu-g++
+#CC=powerpc64le-linux-gnu-gcc
+#CXX=powerpc64le-linux-gnu-g++
 
 DDEBUG=-DNDEBUG -s
 #DDEBUG=-g
 
-ifeq ($(OS),Windows_NT)
+ifneq (,$(filter Windows%,$(OS)))
   OS := Windows
 CC=gcc
 CXX=g++
@@ -33,14 +33,13 @@ CFLAGS+=-D__int64_t=int64_t
 else
   OS := $(shell uname -s)
   ARCH := $(shell uname -m)
-ifneq (,$(findstring aarch64,$(CC)))
-  ARCH = aarch64
-endif
 ifneq (,$(findstring powerpc64le,$(CC)))
   ARCH = ppc64le
 endif
+ifneq (,$(findstring aarch64,$(CC)))
+  ARCH = aarch64
 endif
-
+endif
 
 #------ ARMv8 
 ifeq ($(ARCH),aarch64)
