@@ -1,4 +1,4 @@
-# powturbo (c) Copyright 2013-2018
+# powturbo (c) Copyright 2013-2019
 # ----------- Downloading + Compiling ----------------------
 # Download or clone TurboPFor:
 # git clone git://github.com/powturbo/TurboPFor.git 
@@ -9,7 +9,8 @@
 #
 # To benchmark external libraries also:
 # git clone --recursive git://github.com/powturbo/TurboPFor.git 
-# make: "make CODEC1=1 CODEC2=1" 
+#        make: "make CODEC1=1 CODEC2=1" 
+# on arm make: "make CODEC1=1" 
 
 # Linux: "export CC=clang" "export CXX=clang". windows mingw: "set CC=gcc" "set CXX=g++" or uncomment the CC,CXX lines
 CC ?= gcc
@@ -19,6 +20,7 @@ CXX ?= g++
 
 #CC = gcc-8
 #CXX = g++-8
+
 #CC=powerpc64le-linux-gnu-gcc
 #CXX=powerpc64le-linux-gnu-g++
 
@@ -63,13 +65,13 @@ MAVX2=-march=haswell
 endif
 endif
 
-
 ifeq ($(OS),$(filter $(OS),Linux Darwin GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
 LDFLAGS+=-lpthread -lm
 ifneq ($(OS),Darwin)
 LDFLAGS+=-lrt
 endif
 endif
+
 # Minimum CPU architecture 
 #MARCH=-march=native
 MARCH=$(MSSE)
