@@ -33,13 +33,14 @@ CFLAGS+=-D__int64_t=int64_t
 else
   OS := $(shell uname -s)
   ARCH := $(shell uname -m)
-ifeq (,$(findstring aarch64, $(CC)))
-  ARCH := aarch64
+ifneq (,$(findstring aarch64,$(CC)))
+  ARCH = aarch64
 endif
-ifeq (,$(findstring ppc64le, $(CC)))
-  ARCH := ppc64le
+ifneq (,$(findstring powerpc64le,$(CC)))
+  ARCH = ppc64le
 endif
 endif
+
 
 #------ ARMv8 
 ifeq ($(ARCH),aarch64)
