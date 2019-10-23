@@ -137,9 +137,9 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b) {
 #define  mm_extract_epi32x(_a_,_u32_,_id_) 	    vst1q_lane_u32((uint32_t *)&(_u32_),              _a_,  _id_)
 #define _mm_extract_epi64x(_a_,_u64_,_id_)      vst1q_lane_u64((uint64_t *)&(_u64_), (uint64x2_t)(_a_), _id_)
 
-#define _mm_extract_epi8(_a_,        _id_)      vgetq_lane_s8( (int8x16_t)(_a_), _id_)
-#define _mm_extract_epi16(_a_,       _id_)      vgetq_lane_s16(_a_, _id_)
-#define _mm_extract_epi32(_a_,       _id_)      vgetq_lane_s32(_a_, _id_)
+#define _mm_extract_epi8(_a_,        _id_)      vgetq_lane_u8( (uint8x16_t)(_a_), _id_)
+#define _mm_extract_epi16(_a_,       _id_)      vgetq_lane_u16(_a_, _id_)
+#define _mm_extract_epi32(_a_,       _id_)      vgetq_lane_u32(_a_, _id_)
 #define  mm_extract_epu32(_a_,       _id_)      vgetq_lane_u32(_a_, _id_)
 #define _mm_cvtsi128_si32(_a_)  				vgetq_lane_u32((uint32x4_t)(_a_),0)
 #define _mm_cvtsi128_si64(_a_)  				vgetq_lane_u64((uint64x2_t)(_a_),0)
