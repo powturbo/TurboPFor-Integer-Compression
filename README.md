@@ -1,8 +1,8 @@
 TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor)
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
-  * :new: (2019.11) **ALL** TurboPFor functions now available under **64 bits ARMv8** including **NEON** SIMD.
-  * 100% C (C++ headers), as simple as memcpy
+  * :new: (2019.11) **ALL** functions now available for **64 bits ARMv8 NEON** & **Power9 Altivec**
+  * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
@@ -46,12 +46,12 @@ TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/po
 
 ![Promo video](turbopfor.jpg?raw=true)
 
-### Integer Compression Benchmark:
+### Integer Compression Benchmark (single thread):
 - :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
-- Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2 **single** thread
-- Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz
+- [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues/47)
+- [Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz](https://github.com/powturbo/TurboPFor/issues/49)
 
 ##### - Synthetic data:
  - Generate and test (zipfian) skewed distribution (100.000.000 integers, Block size=128/256)<br>
@@ -476,7 +476,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  21 Oct 2019
+Last update:  23 Oct 2019
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
