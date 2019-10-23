@@ -25,7 +25,6 @@ CXX ?= g++
 DDEBUG=-DNDEBUG -s
 #DDEBUG=-g
 
-# arch
 ifeq ($(OS),Windows_NT)
   OS := Windows
 CC=gcc
@@ -33,49 +32,46 @@ CXX=g++
 CFLAGS+=-D__int64_t=int64_t
 else
   OS := $(shell uname -s)
-  UNAMEA := $(shell uname -a)
-ifneq (,$(findstring aarch64, $(UNAMEA)))
-  OS := aarch64
+  ARCH := $(shell uname -m)
+ifneq (,$(findstring aarch64, $(CC)))
+  ARCH := aarch64
 endif
-#ifeq (,$(filter $(UNAMEA),ppc64le))
-#  OS := ppc64le
-#endif
-#ifneq (,$(findstring ppc64le, $(CC)))
-#  OS := ppc64le
-#endif
+ifneq (,$(findstring ppc64le, $(CC)))
+  ARCH := ppc64le
+endif
 endif
 
-ifeq ($(OS),$(filter $(OS),Linux Darwin GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku aarch64 ppc64le))
+#------ ARMv8 
+ifeq ($(ARCH),aarch64)
+ifneq (,$(findstring clang, $(CC)))
+MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -fomit-frame-pointer 
+else
+MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-functions -falign-jumps -fomit-frame-pointer
+endif
+
+else
+# ----- Power9
+ifeq ($(ARCH),ppc64le)
+MSSE=-D__SSE__ -D__SSE2__ -D__SSE3__ -D__SSSE3__
+MARCH=-march=power9 -mtune=power9
+CFLAGS+=-DNO_WARN_X86_INTRINSICS
+CXXFLAGS+=-DNO_WARN_X86_INTRINSICS
+#------ x86_64 : minimum SSE = Sandy Bridge,  AVX2 = haswell 
+else
+MSSE=-march=corei7-avx -mtune=corei7-avx
+# -mno-avx -mno-aes (add for Pentium based Sandy bridge)
+CFLAGS+=-mssse3
+MAVX2=-march=haswell
+endif
+endif
+
+
+ifeq ($(OS),$(filter $(OS),Linux Darwin GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
 LDFLAGS+=-lpthread -lm
 ifneq ($(OS),Darwin)
 LDFLAGS+=-lrt
 endif
 endif
-
-# compiler: gcc, clang
-ifeq ($(OS),aarch64)
-# ARMv8 
-ifneq (,$(findstring clang, $(CC)))
-MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -fomit-frame-pointer 
-else
-MSSE=-O3 -march=armv8-a -mcpu=cortex-a72 -falign-loops -falign-labels -falign-functions -falign-jumps -fomit-frame-pointer
-#-floop-optimize 
-endif
-else
-ifeq ($(OS),ppc64le)
-MSSE=-D__SSE__ -D__SSE2__ -D__SSE3__ -D__SSSE3__
-MARCH=-march=power9 -mtune=power9
-CFLAGS+=-DNO_WARN_X86_INTRINSICS
-CXXFLAGS+=-DNO_WARN_X86_INTRINSICS
-else
-#Minimum SSE = Sandy Bridge,  AVX2 = haswell 
-MSSE=-march=corei7-avx -mtune=corei7-avx
-CFLAGS+=-mssse3
-# -mno-avx -mno-aes (add for Pentium based Sandy bridge)
-MAVX2=-march=haswell
-endif
-endif
-
 # Minimum CPU architecture 
 #MARCH=-march=native
 MARCH=$(MSSE)
