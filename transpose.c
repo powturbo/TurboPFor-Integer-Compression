@@ -228,13 +228,13 @@ void tpini(int id) {
     _tpe[2] = tpenc128v2; _tpd[2] = tpdec128v2; _tp4e[2] = tp4enc128v2; _tp4d[2] = tp4dec128v2;
     _tpe[4] = tpenc128v4; _tpd[4] = tpdec128v4; _tp4e[4] = tp4enc128v4; _tp4d[4] = tp4dec128v4;
     _tpe[8] = tpenc128v8; _tpd[8] = tpdec128v8; _tp4e[8] = tp4enc128v8; _tp4d[8] = tp4dec128v8;
-	if(i == 35) _tpd[8] = tpdec8;  // ARM NEON scalar is faster    
+	if(i == 35) { /*_tpe[2] = tpenc2;*/ _tpd[8] = tpdec8; }  // ARM NEON scalar is faster 
   }
     #endif
 }
 
 void tpenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
-  TPFUNC f;	
+  TPFUNC f;	 
   if(!tpset) tpini(0);                                   
   if(esize <= 16 && (f = _tpe[esize])) f(in,n,out);
   else {
@@ -334,13 +334,16 @@ void tp4dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
 
 #else
 
-//#define SI(p,i)  (p+=stride)
-#define SI(_p_,_i_)  (_p_+ _i_*stride)
+#define SIE(p,i)  (p+=stride)
+//#define SIE(_p_,_i_)  (_p_+ _i_*stride)
+
+//#define SID(p,i)  (p+=stride)
+#define SID(_p_,_i_)  (_p_+ _i_*stride)
 
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
 
   #if STRIDE == ESIZE
-void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
+void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) { 
   unsigned char *op,*ip,*e;
   unsigned stride = n/STRIDE; 
 
@@ -352,26 +355,26 @@ void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
 	
   for(ip = in,op = out; ip < e; op++, ip+=ESIZE) { unsigned char *p = op;
 	p[0]      = ip[ 0]; 
-	*SI(p, 1) = ip[ 1];
+	*SIE(p, 1) = ip[ 1];
 	  #if ESIZE > 2
-	*SI(p, 2) = ip[ 2];
+	*SIE(p, 2) = ip[ 2];
 	    #if ESIZE > 3
-	*SI(p, 3) = ip[ 3];
+	*SIE(p, 3) = ip[ 3];
 	      #if ESIZE > 4
     uint32_t u = ctou32(p);
-	*SI(p, 4) = ip[ 4];
-	*SI(p, 5) = ip[ 5];
-	*SI(p, 6) = ip[ 6];
-	*SI(p, 7) = ip[ 7];
+	*SIE(p, 4) = ip[ 4];
+	*SIE(p, 5) = ip[ 5];
+	*SIE(p, 6) = ip[ 6];
+	*SIE(p, 7) = ip[ 7];
 	        #if ESIZE > 8
-	*SI(p, 8) = ip[ 8];
-	*SI(p, 9) = ip[ 9];
-	*SI(p,10) = ip[10];
-	*SI(p,11) = ip[11];
-	*SI(p,12) = ip[12];
-	*SI(p,13) = ip[13];
-	*SI(p,14) = ip[14];
-	*SI(p,15) = ip[15];
+	*SIE(p, 8) = ip[ 8];
+	*SIE(p, 9) = ip[ 9];
+	*SIE(p,10) = ip[10];
+	*SIE(p,11) = ip[11];
+	*SIE(p,12) = ip[12];
+	*SIE(p,13) = ip[13];
+	*SIE(p,14) = ip[14];
+	*SIE(p,15) = ip[15];
 	        #endif
 	      #endif
 	    #endif
@@ -392,25 +395,25 @@ void TEMPLATE2(TPDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
     #endif
   for(op = out,ip = in; op < e; ip++,op+=ESIZE) { unsigned char *p = ip; 
 	op[ 0] = *p;
-	op[ 1] = *SI(p,1); 
+	op[ 1] = *SID(p,1); 
 	  #if ESIZE > 2
-	op[ 2] = *SI(p,2);
+	op[ 2] = *SID(p,2);
 	    #if ESIZE > 3	
-	op[ 3] = *SI(p,3);
+	op[ 3] = *SID(p,3);
 	      #if ESIZE > 4
-	op[ 4] = *SI(p,4);
-	op[ 5] = *SI(p,5);
-	op[ 6] = *SI(p,6);
-	op[ 7] = *SI(p,7);
+	op[ 4] = *SID(p,4);
+	op[ 5] = *SID(p,5);
+	op[ 6] = *SID(p,6);
+	op[ 7] = *SID(p,7);
 	        #if ESIZE > 8
-	op[ 8] = *SI(p,8);
-	op[ 9] = *SI(p,9);
-	op[10] = *SI(p,10);
-	op[11] = *SI(p,11);
-	op[12] = *SI(p,12);
-	op[13] = *SI(p,13);
-	op[14] = *SI(p,14);
-	op[15] = *SI(p,15);
+	op[ 8] = *SID(p,8);
+	op[ 9] = *SID(p,9);
+	op[10] = *SID(p,10);
+	op[11] = *SID(p,11);
+	op[12] = *SID(p,12);
+	op[13] = *SID(p,13);
+	op[14] = *SID(p,14);
+	op[15] = *SID(p,15);
 	        #endif
 	      #endif
 	    #endif
@@ -426,7 +429,7 @@ void TEMPLATE2(TPDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
 
 
   #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(SSE2_ON)  
-void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {   
+void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
   unsigned      v = n&~(ESIZE*16-1); 
   unsigned      stride = v/STRIDE; 
   unsigned char *op,*ip;
@@ -661,15 +664,15 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
       #if STRIDE <= ESIZE
     _mm_storeu_si128((__m128i *) p,      iv[0]);
-    _mm_storeu_si128((__m128i *)SI(p,1), iv[1]);
+    _mm_storeu_si128((__m128i *)SIE(p,1), iv[1]);
         #if ESIZE > 2
-    _mm_storeu_si128((__m128i *)SI(p,2), iv[2]);
-    _mm_storeu_si128((__m128i *)SI(p,3), iv[3]); 
+    _mm_storeu_si128((__m128i *)SIE(p,2), iv[2]);
+    _mm_storeu_si128((__m128i *)SIE(p,3), iv[3]); 
           #if ESIZE > 4
-    _mm_storeu_si128((__m128i *)SI(p,4), iv[4]);
-    _mm_storeu_si128((__m128i *)SI(p,5), iv[5]); 
-    _mm_storeu_si128((__m128i *)SI(p,6), iv[6]);
-    _mm_storeu_si128((__m128i *)SI(p,7), iv[7]);   
+    _mm_storeu_si128((__m128i *)SIE(p,4), iv[4]);
+    _mm_storeu_si128((__m128i *)SIE(p,5), iv[5]); 
+    _mm_storeu_si128((__m128i *)SIE(p,6), iv[6]);
+    _mm_storeu_si128((__m128i *)SIE(p,7), iv[7]);   
           #endif						
         #endif
 
@@ -679,36 +682,36 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[2] = _mm_and_si128(iv[1], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128( ov[2],2));    				      					
     ov[3] = _mm_srli_epi16(_mm_and_si128(iv[1], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128( ov[3],2));    				      					
     _mm_storel_epi64((__m128i *)   p,    ov[0]);
-    _mm_storel_epi64((__m128i *)SI(p,1), ov[1]);
-    _mm_storel_epi64((__m128i *)SI(p,2), ov[2]);
-    _mm_storel_epi64((__m128i *)SI(p,3), ov[3]); 
+    _mm_storel_epi64((__m128i *)SIE(p,1), ov[1]);
+    _mm_storel_epi64((__m128i *)SIE(p,2), ov[2]);
+    _mm_storel_epi64((__m128i *)SIE(p,3), ov[3]); 
         #if ESIZE > 2
     ov[0] = _mm_and_si128(iv[2], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128( ov[0],2));    				      					
     ov[1] = _mm_srli_epi16(_mm_and_si128(iv[2], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
     ov[2] = _mm_and_si128(iv[3], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128( ov[2],2));    				      					
     ov[3] = _mm_srli_epi16(_mm_and_si128(iv[3], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128( ov[3],2));    				      					
-    _mm_storel_epi64((__m128i *)SI(p,4), ov[0]);
-    _mm_storel_epi64((__m128i *)SI(p,5), ov[1]);
-    _mm_storel_epi64((__m128i *)SI(p,6), ov[2]);
-    _mm_storel_epi64((__m128i *)SI(p,7), ov[3]);
+    _mm_storel_epi64((__m128i *)SIE(p,4), ov[0]);
+    _mm_storel_epi64((__m128i *)SIE(p,5), ov[1]);
+    _mm_storel_epi64((__m128i *)SIE(p,6), ov[2]);
+    _mm_storel_epi64((__m128i *)SIE(p,7), ov[3]);
           #if ESIZE > 4
     ov[0] = _mm_and_si128(iv[4], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128( ov[0],2));    				      					
     ov[1] = _mm_srli_epi16(_mm_and_si128(iv[4], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
     ov[2] = _mm_and_si128(iv[5], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128( ov[2],2));    				      					
     ov[3] = _mm_srli_epi16(_mm_and_si128(iv[5], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
-    _mm_storel_epi64((__m128i *)SI(p, 8), ov[0]);
-    _mm_storel_epi64((__m128i *)SI(p, 9), ov[1]);
-    _mm_storel_epi64((__m128i *)SI(p,10), ov[2]);
-    _mm_storel_epi64((__m128i *)SI(p,11), ov[3]); 
+    _mm_storel_epi64((__m128i *)SIE(p, 8), ov[0]);
+    _mm_storel_epi64((__m128i *)SIE(p, 9), ov[1]);
+    _mm_storel_epi64((__m128i *)SIE(p,10), ov[2]);
+    _mm_storel_epi64((__m128i *)SIE(p,11), ov[3]); 
 	
     ov[0] = _mm_and_si128(iv[6], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128(  ov[0],2));    				      					
     ov[1] = _mm_srli_epi16(_mm_and_si128(iv[6], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128(  ov[1],2));    				      					
     ov[2] = _mm_and_si128(iv[7], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128(  ov[2],2));    				      					
     ov[3] = _mm_srli_epi16(_mm_and_si128(iv[7], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
-    _mm_storel_epi64((__m128i *)SI(p,12), ov[0]);
-    _mm_storel_epi64((__m128i *)SI(p,13), ov[1]);
-    _mm_storel_epi64((__m128i *)SI(p,14), ov[2]);
-    _mm_storel_epi64((__m128i *)SI(p,15), ov[3]);	
+    _mm_storel_epi64((__m128i *)SIE(p,12), ov[0]);
+    _mm_storel_epi64((__m128i *)SIE(p,13), ov[1]);
+    _mm_storel_epi64((__m128i *)SIE(p,14), ov[2]);
+    _mm_storel_epi64((__m128i *)SIE(p,15), ov[3]);	
 	      #endif
         #endif												
       #endif															
@@ -730,66 +733,66 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
       #if STRIDE > ESIZE //------------ Nibble transpose -------------------
     ov[0] = _mm_loadl_epi64((__m128i *)   p   );
-    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,1));   
+    ov[1] = _mm_loadl_epi64((__m128i *)SID(p,1));   
     ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
     ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[0] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
  
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,2));
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,3));
+    ov[2] = _mm_loadl_epi64((__m128i *)SID(p,2));
+    ov[3] = _mm_loadl_epi64((__m128i *)SID(p,3));
     ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												  
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
     iv[1] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	
 	    #if ESIZE > 2
-    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,4));   
-    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,5));  
+    ov[0] = _mm_loadl_epi64((__m128i *)SID(p,4));   
+    ov[1] = _mm_loadl_epi64((__m128i *)SID(p,5));  
     ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
     ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[2] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
 
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,6));   
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,7));  
+    ov[2] = _mm_loadl_epi64((__m128i *)SID(p,6));   
+    ov[3] = _mm_loadl_epi64((__m128i *)SID(p,7));  
     ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
     iv[3] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	    							
         #endif
         #if ESIZE > 4
-    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,8));   
-    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,9));   
+    ov[0] = _mm_loadl_epi64((__m128i *)SID(p,8));   
+    ov[1] = _mm_loadl_epi64((__m128i *)SID(p,9));   
     ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
     ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[4] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
 
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,10));   
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,11));  
+    ov[2] = _mm_loadl_epi64((__m128i *)SID(p,10));   
+    ov[3] = _mm_loadl_epi64((__m128i *)SID(p,11));  
     ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); 						
     ov[3] = _mm_and_si128(ov[3], cl);												
     iv[5] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	
 
-    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,12));   
-    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,13));  
+    ov[0] = _mm_loadl_epi64((__m128i *)SID(p,12));   
+    ov[1] = _mm_loadl_epi64((__m128i *)SID(p,13));  
     ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
     ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[6] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
 
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,14));   
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,15));   
+    ov[2] = _mm_loadl_epi64((__m128i *)SID(p,14));   
+    ov[3] = _mm_loadl_epi64((__m128i *)SID(p,15));   
     ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
     iv[7] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);											
         #endif	
       #else // --------------------------- Byte transpose -------------------
     iv[0] = _mm_loadu_si128((__m128i *)   p   );   
-    iv[1] = _mm_loadu_si128((__m128i *)SI(p,1));   
+    iv[1] = _mm_loadu_si128((__m128i *)SID(p,1));   
         #if ESIZE > 2
-    iv[2] = _mm_loadu_si128((__m128i *)SI(p,2));   
-    iv[3] = _mm_loadu_si128((__m128i *)SI(p,3));	
+    iv[2] = _mm_loadu_si128((__m128i *)SID(p,2));   
+    iv[3] = _mm_loadu_si128((__m128i *)SID(p,3));	
           #if ESIZE > 4
-    iv[4] = _mm_loadu_si128((__m128i *)SI(p,4));   
-    iv[5] = _mm_loadu_si128((__m128i *)SI(p,5));	
-    iv[6] = _mm_loadu_si128((__m128i *)SI(p,6));   
-    iv[7] = _mm_loadu_si128((__m128i *)SI(p,7));  
+    iv[4] = _mm_loadu_si128((__m128i *)SID(p,4));   
+    iv[5] = _mm_loadu_si128((__m128i *)SID(p,5));	
+    iv[6] = _mm_loadu_si128((__m128i *)SID(p,6));   
+    iv[7] = _mm_loadu_si128((__m128i *)SID(p,7));  
           #endif
         #endif
       #endif
