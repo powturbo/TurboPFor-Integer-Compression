@@ -216,23 +216,21 @@ void tpini(int id) {
   if(tpset) return; 
   tpset++;   
   i = id?id:cpuiset();
-  #ifdef USE_AVX2
+    #ifdef USE_AVX2
   if(i >= 52) {  
-    _tpe[2] = tpenc256v2; _tpd[2] = tpdec256v2; _tp4e[2] = tp4enc256v2; _tp4d[2] = tp4dec256v2; 
-    _tpe[4] = tpenc256v4; _tpd[4] = tpdec256v4; _tp4e[4] = tp4enc256v4; _tp4d[4] = tp4dec256v4; 
+    _tpe[2] = tpenc128v2; _tpd[2] = tpdec256v2; _tp4e[2] = tp4enc256v2; _tp4d[2] = tp4dec256v2; //SSE encoding _tpe[2] is faster
+    _tpe[4] = tpenc128v4; _tpd[4] = tpdec256v4; _tp4e[4] = tp4enc256v4; _tp4d[4] = tp4dec256v4; //SSE encoding _tpe[4] is faster
     _tpe[8] = tpenc256v8; _tpd[8] = tpdec256v8; _tp4e[8] = tp4enc256v8; _tp4d[8] = tp4dec256v8; 
   } else 
-  #endif
-  #ifdef USE_SSE
+    #endif
+    #ifdef USE_SSE
   if(i >= 20) {  
     _tpe[2] = tpenc128v2; _tpd[2] = tpdec128v2; _tp4e[2] = tp4enc128v2; _tp4d[2] = tp4dec128v2;
     _tpe[4] = tpenc128v4; _tpd[4] = tpdec128v4; _tp4e[4] = tp4enc128v4; _tp4d[4] = tp4dec128v4;
     _tpe[8] = tpenc128v8; _tpd[8] = tpdec128v8; _tp4e[8] = tp4enc128v8; _tp4d[8] = tp4dec128v8;
+	if(i == 35) _tpd[8] = tpdec8;  // ARM NEON scalar is faster    
   }
-  if(i == 35) { 
-                          _tpd[8] = tpdec8;                                                
-  }
-  #endif
+    #endif
 }
 
 void tpenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) { 
@@ -352,7 +350,7 @@ void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
   e = in+stride*ESIZE;		
     #endif
 	
-  for(ip = in,op = out; ip < e; op++, ip+=ESIZE) { unsigned char *p = op; 
+  for(ip = in,op = out; ip < e; op++, ip+=ESIZE) { unsigned char *p = op;
 	p[0]      = ip[ 0]; 
 	*SI(p, 1) = ip[ 1];
 	  #if ESIZE > 2
@@ -385,14 +383,14 @@ void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
 
 void TEMPLATE2(TPDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) { 
   unsigned char *op,*ip,*e; 
-  unsigned stride = n/STRIDE; 
+  unsigned      stride = n/STRIDE; 
   
     #if powof2(ESIZE)
   e = out+(n&~(ESIZE-1));
 	#else      
   e = out+stride*ESIZE;		
     #endif
-  for(op = out,ip = in; op < e; ip++,op+=ESIZE) { unsigned char *p = ip;
+  for(op = out,ip = in; op < e; ip++,op+=ESIZE) { unsigned char *p = ip; 
 	op[ 0] = *p;
 	op[ 1] = *SI(p,1); 
 	  #if ESIZE > 2
@@ -429,8 +427,8 @@ void TEMPLATE2(TPDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
 
   #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(SSE2_ON)  
 void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {   
-  unsigned       v = n&~(ESIZE*16-1); 
-  unsigned stride = v/STRIDE; 
+  unsigned      v = n&~(ESIZE*16-1); 
+  unsigned      stride = v/STRIDE; 
   unsigned char *op,*ip;
 
     #if defined(__SSE3__) || defined(__ARM_NEON)
@@ -458,7 +456,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
   __m128i cl = _mm_set1_epi8(0x0f), ch=_mm_set1_epi8(0xf0), cb = _mm_set1_epi16(0xff);
       #endif
 
-  for(ip = in, op = out; ip != in+v; ip+=ESIZE*16,op += ESIZE*16/STRIDE) { unsigned char *p = op;  PREFETCH(ip+512,0);
+  for(ip = in, op = out; ip != in+v; ip+=ESIZE*16,op += ESIZE*16/STRIDE) { unsigned char *p = op;	PREFETCH(ip+(ESIZE*16)*ESIZE,0);
     __m128i iv[ESIZE],ov[ESIZE];
       #if defined(__SSSE3__) || defined(__ARM_NEON)
         #if   ESIZE == 2
@@ -727,7 +725,7 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
   __m128i cl = _mm_set1_epi8(0x0f), ch=_mm_set1_epi8(0xf0), cb = _mm_set1_epi16(0xff);
     #endif
 
-  for(op = out,ip = in; op != out+v; op+=ESIZE*16,ip += ESIZE*16/STRIDE) { unsigned char *p=ip;    PREFETCH(ip+(ESIZE*16/STRIDE),0);
+  for(op = out,ip = in; op != out+v; op+=ESIZE*16,ip += ESIZE*16/STRIDE) { unsigned char *p=ip;		PREFETCH(ip+(ESIZE*16/STRIDE)*ESIZE,0);
     __m128i iv[ESIZE], ov[ESIZE];
 
       #if STRIDE > ESIZE //------------ Nibble transpose -------------------
@@ -742,7 +740,6 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												  
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
     iv[1] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	
-
 	    #if ESIZE > 2
     ov[0] = _mm_loadl_epi64((__m128i *)SI(p,4));   
     ov[1] = _mm_loadl_epi64((__m128i *)SI(p,5));  
@@ -756,7 +753,6 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
     iv[3] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	    							
         #endif
-
         #if ESIZE > 4
     ov[0] = _mm_loadl_epi64((__m128i *)SI(p,8));   
     ov[1] = _mm_loadl_epi64((__m128i *)SI(p,9));   
@@ -838,7 +834,6 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[2] = _mm_unpacklo_epi32(iv[1], iv[5]); ov[3] = _mm_unpackhi_epi32(iv[1], iv[5]);  
     ov[4] = _mm_unpacklo_epi32(iv[2], iv[6]); ov[5] = _mm_unpackhi_epi32(iv[2], iv[6]); 
     ov[6] = _mm_unpacklo_epi32(iv[3], iv[7]); ov[7] = _mm_unpackhi_epi32(iv[3], iv[7]);
-
 
     ST128((__m128i *) op,     ov[0]); 
     ST128((__m128i *)(op+ 16),ov[1]); 
@@ -928,27 +923,27 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
   __m256i cl = _mm256_set1_epi8(0x0f), ch=_mm256_set1_epi8(0xf0), cb = _mm256_set1_epi16(0xff);
     #endif
 
-  for(ip = in,op = out; ip != in+v; op += ESIZE*32/STRIDE, ip += ESIZE*32) { unsigned char *p = op;     PREFETCH(ip+512,0);
+  for(ip = in,op = out; ip != in+v; op += ESIZE*32/STRIDE, ip += ESIZE*32) { unsigned char *p = op;     PREFETCH(ip+(ESIZE*32),0);
     __m256i iv[ESIZE],ov[ESIZE];														
 	  #if   ESIZE == 2
-	   #if 0
+	    #if 0
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv);  
-    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv); 	PREFETCH(ip+512,0);	
+    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv); 
 	iv[0] = _mm256_permute4x64_epi64(_mm256_unpacklo_epi64(ov[0], ov[1]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[1] = _mm256_permute4x64_epi64(_mm256_unpackhi_epi64(ov[0], ov[1]), _MM_SHUFFLE(3, 1, 2, 0));
-	   #else
-    ov[0] = _mm256_shuffle_epi8(LD256((__m256i *)ip), sv0);       
+	    #else
+    ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip), sv0);       
     ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)),sv1); 											
     iv[0] = _mm256_permute4x64_epi64(_mm256_blend_epi32(ov[0], ov[1],0b11001100),_MM_SHUFFLE(3, 1, 2, 0));
     iv[1] = _mm256_blend_epi32(ov[0], ov[1],0b00110011); 
 	iv[1] = _mm256_permute4x64_epi64(_mm256_shuffle_epi32(iv[1],_MM_SHUFFLE(1, 0, 3, 2)),_MM_SHUFFLE(3, 1, 2, 0));
-	   #endif
+	    #endif
 	  #elif ESIZE == 4
     iv[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv0);      
     iv[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv1);  
     iv[2] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+64)), sv0);       
     iv[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv1); 											
-      #if 0
+        #if 0
 	ov[0] = _mm256_unpacklo_epi32(iv[0], iv[1]);
     ov[1] = _mm256_unpackhi_epi32(iv[0], iv[1]);
     ov[2] = _mm256_unpacklo_epi32(iv[2], iv[3]);
@@ -958,7 +953,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[1] = _mm256_permutevar8x32_epi32(_mm256_unpackhi_epi64(ov[0], ov[2]), pv);
     iv[2] = _mm256_permutevar8x32_epi32(_mm256_unpacklo_epi64(ov[1], ov[3]), pv);
     iv[3] = _mm256_permutevar8x32_epi32(_mm256_unpackhi_epi64(ov[1], ov[3]), pv);
-	  #else
+	    #else
     ov[0] = _mm256_blend_epi32(iv[0], iv[1],0b10101010); ov[1] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[0], iv[1],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
     ov[2] = _mm256_blend_epi32(iv[2], iv[3],0b10101010); ov[3] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[2], iv[3],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
 
@@ -970,7 +965,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 	//iv[1] = _mm256_permutevar8x32_epi32(_mm256_blend_epi32(       _mm256_shuffle_epi32(ov[0],_MM_SHUFFLE(1, 0, 3, 2)), ov[2],0b11001100), pv);	
 	//iv[2] = _mm256_permutevar8x32_epi32(_mm256_blend_epi32(ov[1], _mm256_shuffle_epi32(ov[3],_MM_SHUFFLE(1, 0, 3, 2)),       0b11001100), pv);	
 	//iv[3] = _mm256_permutevar8x32_epi32(_mm256_blend_epi32(       _mm256_shuffle_epi32(ov[1],_MM_SHUFFLE(1, 0, 3, 2)), ov[3],0b11001100), pv);	
-	  #endif
+	    #endif
 	  #else
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv); 
     ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv); 
@@ -1020,7 +1015,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           #endif
         #endif
 
-      #else // Nibble Transpose
+      #else //---------------------- Nibble Transpose ------------------------
     #define mm256_packus_epi16(a, b) _mm256_permute4x64_epi64(_mm256_packus_epi16(a, b), _MM_SHUFFLE(3, 1, 2, 0))
 
     ov[0] = _mm256_and_si256(iv[0], cl);                      ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = mm256_packus_epi16(ov[0], _mm256_srli_si256( ov[0],2));    				      					
@@ -1086,7 +1081,7 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
   __m256i cl = _mm256_set1_epi8(0x0f), ch=_mm256_set1_epi8(0xf0), cb = _mm256_set1_epi16(0xff);
     #endif
 
-  for(op = out,ip = in; op != out+v; ip += ESIZE*32/STRIDE, op += ESIZE*32) { unsigned char *p = ip;
+  for(op = out,ip = in; op != out+v; ip += ESIZE*32/STRIDE, op += ESIZE*32) { unsigned char *p = ip;	PREFETCH(ip+(ESIZE*32/STRIDE)*ESIZE,0);
     __m256i iv[ESIZE], ov[ESIZE];
   
       #if STRIDE > ESIZE
@@ -1112,7 +1107,7 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           #endif
         #endif
       #endif
-																								PREFETCH(ip+ESIZE*32/STRIDE,0);
+																								
       #if ESIZE == 2 
 	ov[0] = _mm256_permute4x64_epi64(iv[0], _MM_SHUFFLE(3, 1, 2, 0));
 	ov[1] = _mm256_permute4x64_epi64(iv[1], _MM_SHUFFLE(3, 1, 2, 0));
