@@ -229,7 +229,7 @@ void tpini(int id) {
     _tpe[4] = tpenc128v4; _tpd[4] = tpdec128v4; _tp4e[4] = tp4enc128v4; _tp4d[4] = tp4dec128v4;
     _tpe[8] = tpenc128v8; _tpd[8] = tpdec128v8; _tp4e[8] = tp4enc128v8; _tp4d[8] = tp4dec128v8;
   }
-  if(i >= 35) { 
+  if(i == 35) { 
                           _tpd[8] = tpdec8;                                                
   }
   #endif
@@ -337,10 +337,7 @@ void tp4dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
 #else
 
 //#define SI(p,i)  (p+=stride)
-//#define SE(p,i)
-
 #define SI(_p_,_i_)  (_p_+ _i_*stride)
-#define SE(_p_,_i_)   _p_+=_i_*stride
 
 #if !defined(SSE2_ON) && !defined(AVX2_ON)
 
@@ -461,19 +458,19 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
   __m128i cl = _mm_set1_epi8(0x0f), ch=_mm_set1_epi8(0xf0), cb = _mm_set1_epi16(0xff);
       #endif
 
-  for(ip = in, op = out; ip != in+v; op += ESIZE*16/STRIDE) { unsigned char *p = op;
+  for(ip = in, op = out; ip != in+v; ip+=ESIZE*16,op += ESIZE*16/STRIDE) { unsigned char *p = op;  PREFETCH(ip+512,0);
     __m128i iv[ESIZE],ov[ESIZE];
       #if defined(__SSSE3__) || defined(__ARM_NEON)
         #if   ESIZE == 2
 		  #ifdef __ARM_NEON
     uint8x16x2_t w = vld2q_u8(ip); iv[0] = (__m128i)w.val[0]; iv[1] = (__m128i)w.val[1];
 		  #else
-    ov[0] = LD128((__m128i *)ip);      ov[0] = _mm_shuffle_epi8(ov[0], sv); 
+    ov[0] = LD128((__m128i *) ip);     ov[0] = _mm_shuffle_epi8(ov[0], sv); 
     ov[1] = LD128((__m128i *)(ip+16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); 
-	iv[0] = _mm_unpacklo_epi64(ov[0], ov[1]);
-    iv[1] = _mm_unpackhi_epi64(ov[0], ov[1]);
+
+	iv[0] = _mm_unpacklo_epi64(ov[0], ov[1]); iv[1] = _mm_unpackhi_epi64(ov[0], ov[1]);
 	      #endif
-		                                       ip+= 32; PREFETCH(ip+512,0);
+		                                       												
         #elif ESIZE == 4
 		  #ifdef __ARM_NEON
 	uint8x16x4_t w = vld4q_u8(ip); iv[0] = (__m128i)w.val[0]; iv[1] = (__m128i)w.val[1];
@@ -484,17 +481,13 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[2] = LD128((__m128i *)(ip+32)); iv[2] = _mm_shuffle_epi8(iv[2], sv); 
     iv[3] = LD128((__m128i *)(ip+48)); iv[3] = _mm_shuffle_epi8(iv[3], sv); 
 
-	ov[0] = _mm_unpacklo_epi32(iv[0], iv[1]);
-    ov[1] = _mm_unpackhi_epi32(iv[0], iv[1]);
-    ov[2] = _mm_unpacklo_epi32(iv[2], iv[3]);
-    ov[3] = _mm_unpackhi_epi32(iv[2], iv[3]);
+	ov[0] = _mm_unpacklo_epi32(iv[0], iv[1]); ov[1] = _mm_unpackhi_epi32(iv[0], iv[1]);
+    ov[2] = _mm_unpacklo_epi32(iv[2], iv[3]); ov[3] = _mm_unpackhi_epi32(iv[2], iv[3]);
 
-    iv[0] = _mm_unpacklo_epi64(ov[0], ov[2]); 
-    iv[1] = _mm_unpackhi_epi64(ov[0], ov[2]);
-    iv[2] = _mm_unpacklo_epi64(ov[1], ov[3]);
-    iv[3] = _mm_unpackhi_epi64(ov[1], ov[3]);
+    iv[0] = _mm_unpacklo_epi64(ov[0], ov[2]); iv[1] = _mm_unpackhi_epi64(ov[0], ov[2]);
+    iv[2] = _mm_unpacklo_epi64(ov[1], ov[3]); iv[3] = _mm_unpackhi_epi64(ov[1], ov[3]);
 	      #endif
-												ip += 64; PREFETCH(ip+512,0);
+																							
         #elif ESIZE == 8
 		  #ifdef __ARM_NEON
 #define vzipl_u16(_a_,_b_) vzip_u16(vget_low_u16((uint16x8_t)(_a_)), vget_low_u16((uint16x8_t)(_b_)))
@@ -509,17 +502,15 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     uint32x4x2_t v32[4];   //uint64x2x2_t v64[4]; 
       #endif
       #ifdef VQ  
-    ov[0] = LD128((__m128i *) ip    ); //ov[0] = _mm_shuffle_epi8(ov[0], sv); 
-    ov[1] = LD128((__m128i *)(ip+16)); //ov[1] = _mm_shuffle_epi8(ov[1], sv); 
-    ov[2] = LD128((__m128i *)(ip+32)); //ov[2] = _mm_shuffle_epi8(ov[2], sv); 
-    ov[3] = LD128((__m128i *)(ip+48)); //ov[3] = _mm_shuffle_epi8(ov[3], sv); 
-     ip += 64;	
-    ov[4] = LD128((__m128i *) ip    ); //ov[4] = _mm_shuffle_epi8(ov[4], sv); 
-    ov[5] = LD128((__m128i *)(ip+16)); //ov[5] = _mm_shuffle_epi8(ov[5], sv);  
-    ov[6] = LD128((__m128i *)(ip+32)); //ov[6] = _mm_shuffle_epi8(ov[6], sv); 
-    ov[7] = LD128((__m128i *)(ip+48)); //ov[7] = _mm_shuffle_epi8(ov[7], sv); 
-    ip += 64; PREFETCH(ip+512,0);
-
+    ov[0] = LD128((__m128i *) ip     ); //ov[0] = _mm_shuffle_epi8(ov[0], sv); 
+    ov[1] = LD128((__m128i *)(ip+ 16)); //ov[1] = _mm_shuffle_epi8(ov[1], sv); 
+    ov[2] = LD128((__m128i *)(ip+ 32)); //ov[2] = _mm_shuffle_epi8(ov[2], sv); 
+    ov[3] = LD128((__m128i *)(ip+ 48)); //ov[3] = _mm_shuffle_epi8(ov[3], sv);    
+    ov[4] = LD128((__m128i *) ip+ 64)); //ov[4] = _mm_shuffle_epi8(ov[4], sv); 
+    ov[5] = LD128((__m128i *)(ip+ 80)); //ov[5] = _mm_shuffle_epi8(ov[5], sv);  
+    ov[6] = LD128((__m128i *)(ip+ 96)); //ov[6] = _mm_shuffle_epi8(ov[6], sv); 
+    ov[7] = LD128((__m128i *)(ip+112)); //ov[7] = _mm_shuffle_epi8(ov[7], sv); 
+    																						
 	v8[0]  = vzipq_u8((uint8x16_t)ov[0], (uint8x16_t)ov[1]); 
     v8[1]  = vzipq_u8((uint8x16_t)ov[2], (uint8x16_t)ov[3]); 
     v8[2]  = vzipq_u8((uint8x16_t)ov[4], (uint8x16_t)ov[5]); 
@@ -529,7 +520,6 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     v16[1] = vzipq_u16((uint16x8_t)ov[2], (uint16x8_t)ov[3]);
     v16[2] = vzipq_u16((uint16x8_t)ov[4], (uint16x8_t)ov[5]);
     v16[3] = vzipq_u16((uint16x8_t)ov[6], (uint16x8_t)ov[7]);*/
-
     v16[0] = vzipq_u16(vreinterpretq_u16_u8( v8[0].val[0]),  vreinterpretq_u16_u8(v8[1].val[0]));
     v16[1] = vzipq_u16(vreinterpretq_u16_u8( v8[0].val[1]),  vreinterpretq_u16_u8(v8[1].val[1]));
     v16[2] = vzipq_u16(vreinterpretq_u16_u8( v8[2].val[0]),  vreinterpretq_u16_u8(v8[3].val[0]));
@@ -540,25 +530,20 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     v32[2] = vzipq_u32(vreinterpretq_u32_u16(v16[1].val[0]), vreinterpretq_u32_u16(v16[3].val[0]));
     v32[3] = vzipq_u32(vreinterpretq_u32_u16(v16[1].val[1]), vreinterpretq_u32_u16(v16[3].val[1]));
 
-	iv[0] = _mm_unpacklo_epi64(v32[0].val[0], v32[2].val[0]);
-    iv[1] = _mm_unpackhi_epi64(v32[0].val[0], v32[2].val[0]);
-    iv[2] = _mm_unpacklo_epi64(v32[0].val[1], v32[2].val[1]);
-    iv[3] = _mm_unpackhi_epi64(v32[0].val[1], v32[2].val[1]);
-	
-	iv[4] = _mm_unpacklo_epi64(v32[1].val[0], v32[3].val[0]);
-    iv[5] = _mm_unpackhi_epi64(v32[1].val[0], v32[3].val[0]);
-    iv[6] = _mm_unpacklo_epi64(v32[1].val[1], v32[3].val[1]);
-    iv[7] = _mm_unpackhi_epi64(v32[1].val[1], v32[3].val[1]);
+	iv[0] = _mm_unpacklo_epi64(v32[0].val[0], v32[2].val[0]); iv[1] = _mm_unpackhi_epi64(v32[0].val[0], v32[2].val[0]);
+    iv[2] = _mm_unpacklo_epi64(v32[0].val[1], v32[2].val[1]); iv[3] = _mm_unpackhi_epi64(v32[0].val[1], v32[2].val[1]);
+	iv[4] = _mm_unpacklo_epi64(v32[1].val[0], v32[3].val[0]); iv[5] = _mm_unpackhi_epi64(v32[1].val[0], v32[3].val[0]);
+    iv[6] = _mm_unpacklo_epi64(v32[1].val[1], v32[3].val[1]); iv[7] = _mm_unpackhi_epi64(v32[1].val[1], v32[3].val[1]);
 
 	  #else
-    ov[0] = LD128((__m128i *) ip    ); ov[0] = _mm_shuffle_epi8(ov[0], sv); 
-    ov[1] = LD128((__m128i *)(ip+16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); 
-    ov[2] = LD128((__m128i *)(ip+32)); ov[2] = _mm_shuffle_epi8(ov[2], sv); 
-    ov[3] = LD128((__m128i *)(ip+48)); ov[3] = _mm_shuffle_epi8(ov[3], sv); ip += 64;	
-    ov[4] = LD128((__m128i *) ip    ); ov[4] = _mm_shuffle_epi8(ov[4], sv); 
-    ov[5] = LD128((__m128i *)(ip+16)); ov[5] = _mm_shuffle_epi8(ov[5], sv);  
-    ov[6] = LD128((__m128i *)(ip+32)); ov[6] = _mm_shuffle_epi8(ov[6], sv); 
-    ov[7] = LD128((__m128i *)(ip+48)); ov[7] = _mm_shuffle_epi8(ov[7], sv); ip += 64; PREFETCH(ip+512,0);
+    ov[0] = LD128((__m128i *) ip     ); ov[0] = _mm_shuffle_epi8(ov[0], sv); 
+    ov[1] = LD128((__m128i *)(ip+ 16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); 
+    ov[2] = LD128((__m128i *)(ip+ 32)); ov[2] = _mm_shuffle_epi8(ov[2], sv); 
+    ov[3] = LD128((__m128i *)(ip+ 48)); ov[3] = _mm_shuffle_epi8(ov[3], sv); 		
+    ov[4] = LD128((__m128i *)(ip+ 64)); ov[4] = _mm_shuffle_epi8(ov[4], sv); 
+    ov[5] = LD128((__m128i *)(ip+ 80)); ov[5] = _mm_shuffle_epi8(ov[5], sv);  
+    ov[6] = LD128((__m128i *)(ip+ 96)); ov[6] = _mm_shuffle_epi8(ov[6], sv); 
+    ov[7] = LD128((__m128i *)(ip+112)); ov[7] = _mm_shuffle_epi8(ov[7], sv); 		 		
 	v16[0] = vzipl_u16(ov[0], ov[1]); 
     v16[1] = vziph_u16(ov[0], ov[1]); 
     v16[2] = vzipl_u16(ov[2], ov[3]); 
@@ -591,87 +576,59 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[0] = LD128((__m128i *) ip    ); ov[0] = _mm_shuffle_epi8(ov[0], sv); 
     ov[1] = LD128((__m128i *)(ip+16)); ov[1] = _mm_shuffle_epi8(ov[1], sv); 
     ov[2] = LD128((__m128i *)(ip+32)); ov[2] = _mm_shuffle_epi8(ov[2], sv); 
-    ov[3] = LD128((__m128i *)(ip+48)); ov[3] = _mm_shuffle_epi8(ov[3], sv); ip += 64;	
+    ov[3] = LD128((__m128i *)(ip+48)); ov[3] = _mm_shuffle_epi8(ov[3], sv);	
 	
-	iv[0] = _mm_unpacklo_epi16(ov[0], ov[1]); 
-    iv[1] = _mm_unpackhi_epi16(ov[0], ov[1]); 
-    iv[2] = _mm_unpacklo_epi16(ov[2], ov[3]); 
-    iv[3] = _mm_unpackhi_epi16(ov[2], ov[3]);  
+	iv[0] = _mm_unpacklo_epi16(ov[0], ov[1]); iv[1] = _mm_unpackhi_epi16(ov[0], ov[1]); 
+    iv[2] = _mm_unpacklo_epi16(ov[2], ov[3]); iv[3] = _mm_unpackhi_epi16(ov[2], ov[3]);  
 	
-    ov[0] = _mm_unpacklo_epi32(iv[0], iv[2]);
-    ov[1] = _mm_unpackhi_epi32(iv[0], iv[2]);
-    ov[2] = _mm_unpacklo_epi32(iv[1], iv[3]);
-    ov[3] = _mm_unpackhi_epi32(iv[1], iv[3]);
-
+    ov[0] = _mm_unpacklo_epi32(iv[0], iv[2]); ov[1] = _mm_unpackhi_epi32(iv[0], iv[2]);
+    ov[2] = _mm_unpacklo_epi32(iv[1], iv[3]); ov[3] = _mm_unpackhi_epi32(iv[1], iv[3]);
 	
-    ov[4] = LD128((__m128i *) ip    ); ov[4] = _mm_shuffle_epi8(ov[4], sv); 
-    ov[5] = LD128((__m128i *)(ip+16)); ov[5] = _mm_shuffle_epi8(ov[5], sv);  
-    ov[6] = LD128((__m128i *)(ip+32)); ov[6] = _mm_shuffle_epi8(ov[6], sv); 
-    ov[7] = LD128((__m128i *)(ip+48)); ov[7] = _mm_shuffle_epi8(ov[7], sv); ip += 64; PREFETCH(ip+512,0);
+    ov[4] = LD128((__m128i *)(ip+ 64)); ov[4] = _mm_shuffle_epi8(ov[4], sv); 
+    ov[5] = LD128((__m128i *)(ip+ 80)); ov[5] = _mm_shuffle_epi8(ov[5], sv);  
+    ov[6] = LD128((__m128i *)(ip+ 96)); ov[6] = _mm_shuffle_epi8(ov[6], sv); 
+    ov[7] = LD128((__m128i *)(ip+112)); ov[7] = _mm_shuffle_epi8(ov[7], sv); 				
 
-	iv[4] = _mm_unpacklo_epi16(ov[4], ov[5]);
-    iv[5] = _mm_unpackhi_epi16(ov[4], ov[5]);
-    iv[6] = _mm_unpacklo_epi16(ov[6], ov[7]);
-    iv[7] = _mm_unpackhi_epi16(ov[6], ov[7]);
+	iv[4] = _mm_unpacklo_epi16(ov[4], ov[5]); iv[5] = _mm_unpackhi_epi16(ov[4], ov[5]);
+    iv[6] = _mm_unpacklo_epi16(ov[6], ov[7]); iv[7] = _mm_unpackhi_epi16(ov[6], ov[7]);
 
-    ov[4] = _mm_unpacklo_epi32(iv[4], iv[6]);
-    ov[5] = _mm_unpackhi_epi32(iv[4], iv[6]);
-    ov[6] = _mm_unpacklo_epi32(iv[5], iv[7]);
-    ov[7] = _mm_unpackhi_epi32(iv[5], iv[7]);
+    ov[4] = _mm_unpacklo_epi32(iv[4], iv[6]); ov[5] = _mm_unpackhi_epi32(iv[4], iv[6]);
+    ov[6] = _mm_unpacklo_epi32(iv[5], iv[7]); ov[7] = _mm_unpackhi_epi32(iv[5], iv[7]);
 
-	iv[0] = _mm_unpacklo_epi64(ov[0], ov[4]);
-    iv[1] = _mm_unpackhi_epi64(ov[0], ov[4]);
-    iv[2] = _mm_unpacklo_epi64(ov[1], ov[5]);
-    iv[3] = _mm_unpackhi_epi64(ov[1], ov[5]);
+	iv[0] = _mm_unpacklo_epi64(ov[0], ov[4]); iv[1] = _mm_unpackhi_epi64(ov[0], ov[4]);
+    iv[2] = _mm_unpacklo_epi64(ov[1], ov[5]); iv[3] = _mm_unpackhi_epi64(ov[1], ov[5]);
 	
-	iv[4] = _mm_unpacklo_epi64(ov[2], ov[6]);
-    iv[5] = _mm_unpackhi_epi64(ov[2], ov[6]);
-    iv[6] = _mm_unpacklo_epi64(ov[3], ov[7]);
-    iv[7] = _mm_unpackhi_epi64(ov[3], ov[7]);
+	iv[4] = _mm_unpacklo_epi64(ov[2], ov[6]); iv[5] = _mm_unpackhi_epi64(ov[2], ov[6]);
+    iv[6] = _mm_unpacklo_epi64(ov[3], ov[7]); iv[7] = _mm_unpackhi_epi64(ov[3], ov[7]);
           #endif
         #endif        
 																			
       #elif defined(__SSE2__) || defined(__ARM_NEON)
         #if ESIZE == 2
-    iv[0] = LD128((__m128i *)ip); ip += 16;
-    iv[1] = LD128((__m128i *)ip); ip += 16;		PREFETCH(ip+512,0);
+    iv[0] = LD128((__m128i *) ip); 
+    iv[1] = LD128((__m128i *)(ip+16)); 														
 	
-    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
+    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);	
+    iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
 	
-    iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]);
-    iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
-	
-    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
-	
-    iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]);
-    iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
+    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
+    iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
         #elif ESIZE == 4
     iv[0] = LD128((__m128i *) ip   ); 
     iv[1] = LD128((__m128i *)(ip+16)); 
     iv[2] = LD128((__m128i *)(ip+32)); 
-    iv[3] = LD128((__m128i *)(ip+48)); ip += 64;	PREFETCH(ip+512,0);				
+    iv[3] = LD128((__m128i *)(ip+48)); 																		
 
-    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
-    iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]);
-    iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
+    ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]);
+    iv[0] = _mm_unpacklo_epi8( ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8( ov[0], ov[1]);
+    ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]);
 
-    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
-    ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]);
-    ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);
-    
-	iv[2] = _mm_unpacklo_epi8(ov[2], ov[3]);
-    iv[3] = _mm_unpackhi_epi8(ov[2], ov[3]);
-    ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]);
-    ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);
+    ov[2] = _mm_unpacklo_epi8( iv[2], iv[3]); ov[3] = _mm_unpackhi_epi8( iv[2], iv[3]);
+	iv[2] = _mm_unpacklo_epi8( ov[2], ov[3]); iv[3] = _mm_unpackhi_epi8( ov[2], ov[3]);
+    ov[2] = _mm_unpacklo_epi8( iv[2], iv[3]); ov[3] = _mm_unpackhi_epi8( iv[2], iv[3]);
 	
-    iv[0] = _mm_unpacklo_epi64(ov[0], ov[2]);
-    iv[1] = _mm_unpackhi_epi64(ov[0], ov[2]);
-    iv[2] = _mm_unpacklo_epi64(ov[1], ov[3]);
-    iv[3] = _mm_unpackhi_epi64(ov[1], ov[3]);
+    iv[0] = _mm_unpacklo_epi64(ov[0], ov[2]); iv[1] = _mm_unpackhi_epi64(ov[0], ov[2]);
+    iv[2] = _mm_unpacklo_epi64(ov[1], ov[3]); iv[3] = _mm_unpackhi_epi64(ov[1], ov[3]);
         #elif ESIZE == 8
     iv[0] = LD128((__m128i *) ip    );
     iv[1] = LD128((__m128i *)(ip+ 16));
@@ -680,48 +637,32 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[4] = LD128((__m128i *)(ip+ 64)); 
     iv[5] = LD128((__m128i *)(ip+ 80)); 					
     iv[6] = LD128((__m128i *)(ip+ 96)); 
-    iv[7] = LD128((__m128i *)(ip+112)); ip += 128; PREFETCH(ip+512,0);
+    iv[7] = LD128((__m128i *)(ip+112)); 													
 
-	ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]); 
-    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]); 
-    ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]); 
-    ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);  
-	ov[4] = _mm_unpacklo_epi8(iv[4], iv[5]);
-    ov[5] = _mm_unpackhi_epi8(iv[4], iv[5]);
-    ov[6] = _mm_unpacklo_epi8(iv[6], iv[7]);
-    ov[7] = _mm_unpackhi_epi8(iv[6], iv[7]);
+	ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]); 
+    ov[2] = _mm_unpacklo_epi8( iv[2], iv[3]); ov[3] = _mm_unpackhi_epi8( iv[2], iv[3]);  
+	ov[4] = _mm_unpacklo_epi8( iv[4], iv[5]); ov[5] = _mm_unpackhi_epi8( iv[4], iv[5]);
+    ov[6] = _mm_unpacklo_epi8( iv[6], iv[7]); ov[7] = _mm_unpackhi_epi8( iv[6], iv[7]);
 
-	iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]); 
-    iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]); 
-    iv[2] = _mm_unpacklo_epi8(ov[2], ov[3]); 
-    iv[3] = _mm_unpackhi_epi8(ov[2], ov[3]);  
-	iv[4] = _mm_unpacklo_epi8(ov[4], ov[5]);
-    iv[5] = _mm_unpackhi_epi8(ov[4], ov[5]);
-    iv[6] = _mm_unpacklo_epi8(ov[6], ov[7]);
-    iv[7] = _mm_unpackhi_epi8(ov[6], ov[7]);
+	iv[0] = _mm_unpacklo_epi8( ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8( ov[0], ov[1]); 
+    iv[2] = _mm_unpacklo_epi8( ov[2], ov[3]); iv[3] = _mm_unpackhi_epi8( ov[2], ov[3]);  
+	iv[4] = _mm_unpacklo_epi8( ov[4], ov[5]); iv[5] = _mm_unpackhi_epi8( ov[4], ov[5]);
+    iv[6] = _mm_unpacklo_epi8( ov[6], ov[7]); iv[7] = _mm_unpackhi_epi8( ov[6], ov[7]);
 	
-    ov[0] = _mm_unpacklo_epi32(iv[0], iv[2]);
-    ov[1] = _mm_unpackhi_epi32(iv[0], iv[2]);
-    ov[2] = _mm_unpacklo_epi32(iv[1], iv[3]);
-    ov[3] = _mm_unpackhi_epi32(iv[1], iv[3]);
-    ov[4] = _mm_unpacklo_epi32(iv[4], iv[6]);
-    ov[5] = _mm_unpackhi_epi32(iv[4], iv[6]);
-    ov[6] = _mm_unpacklo_epi32(iv[5], iv[7]);
-    ov[7] = _mm_unpackhi_epi32(iv[5], iv[7]);
+    ov[0] = _mm_unpacklo_epi32(iv[0], iv[2]); ov[1] = _mm_unpackhi_epi32(iv[0], iv[2]);
+    ov[2] = _mm_unpacklo_epi32(iv[1], iv[3]); ov[3] = _mm_unpackhi_epi32(iv[1], iv[3]);
+    ov[4] = _mm_unpacklo_epi32(iv[4], iv[6]); ov[5] = _mm_unpackhi_epi32(iv[4], iv[6]);
+    ov[6] = _mm_unpacklo_epi32(iv[5], iv[7]); ov[7] = _mm_unpackhi_epi32(iv[5], iv[7]);
 
-	iv[0] = _mm_unpacklo_epi64(ov[0], ov[4]);
-    iv[1] = _mm_unpackhi_epi64(ov[0], ov[4]);
-    iv[2] = _mm_unpacklo_epi64(ov[1], ov[5]);
-    iv[3] = _mm_unpackhi_epi64(ov[1], ov[5]);
-	iv[4] = _mm_unpacklo_epi64(ov[2], ov[6]);
-    iv[5] = _mm_unpackhi_epi64(ov[2], ov[6]);
-    iv[6] = _mm_unpacklo_epi64(ov[3], ov[7]);
-    iv[7] = _mm_unpackhi_epi64(ov[3], ov[7]);
+	iv[0] = _mm_unpacklo_epi64(ov[0], ov[4]); iv[1] = _mm_unpackhi_epi64(ov[0], ov[4]);
+    iv[2] = _mm_unpacklo_epi64(ov[1], ov[5]); iv[3] = _mm_unpackhi_epi64(ov[1], ov[5]);
+	iv[4] = _mm_unpacklo_epi64(ov[2], ov[6]); iv[5] = _mm_unpackhi_epi64(ov[2], ov[6]);
+    iv[6] = _mm_unpacklo_epi64(ov[3], ov[7]); iv[7] = _mm_unpackhi_epi64(ov[3], ov[7]);
 	    #endif
       #endif
 
       #if STRIDE <= ESIZE
-    _mm_storeu_si128((__m128i *) p,          iv[0]);
+    _mm_storeu_si128((__m128i *) p,      iv[0]);
     _mm_storeu_si128((__m128i *)SI(p,1), iv[1]);
         #if ESIZE > 2
     _mm_storeu_si128((__m128i *)SI(p,2), iv[2]);
@@ -730,101 +671,47 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     _mm_storeu_si128((__m128i *)SI(p,4), iv[4]);
     _mm_storeu_si128((__m128i *)SI(p,5), iv[5]); 
     _mm_storeu_si128((__m128i *)SI(p,6), iv[6]);
-    _mm_storeu_si128((__m128i *)SI(p,7), iv[7]);    SE(p,8);
-          #else
-                                                    SE(p,4);
+    _mm_storeu_si128((__m128i *)SI(p,7), iv[7]);   
           #endif						
-        #else   									
-                                                    SE(p,2);
         #endif
 
-      #else // Nibble
-    ov[0] = _mm_and_si128(iv[0], cl);                             					
-    ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128(  ov[0],2));    				      					
-
-    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[0], ch), 4);            					
-    ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
-
-    ov[2] = _mm_and_si128(iv[1], cl);                             					
-    ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128(  ov[2],2));    				      					
-
-    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[1], ch),4);            					
-    ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
-
-    _mm_storel_epi64((__m128i *) p,          ov[0]);
+      #else // ---------------------- Nibble -------------------------------------------
+    ov[0] = _mm_and_si128(iv[0], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128( ov[0],2));    				      					
+    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[0], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
+    ov[2] = _mm_and_si128(iv[1], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128( ov[2],2));    				      					
+    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[1], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128( ov[3],2));    				      					
+    _mm_storel_epi64((__m128i *)   p,    ov[0]);
     _mm_storel_epi64((__m128i *)SI(p,1), ov[1]);
     _mm_storel_epi64((__m128i *)SI(p,2), ov[2]);
     _mm_storel_epi64((__m128i *)SI(p,3), ov[3]); 
         #if ESIZE > 2
-    ov[0] = _mm_and_si128(iv[2], cl);                             					
-    ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128(  ov[0],2));    				      					
-
-    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[2], ch),4);            					
-    ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128(  ov[1],2));    				      					
-
-    ov[2] = _mm_and_si128(iv[3], cl);                             					
-    ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128(  ov[2],2));    				      					
-
-    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[3], ch),4);            					
-    ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
-
+    ov[0] = _mm_and_si128(iv[2], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128( ov[0],2));    				      					
+    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[2], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
+    ov[2] = _mm_and_si128(iv[3], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128( ov[2],2));    				      					
+    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[3], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128( ov[3],2));    				      					
     _mm_storel_epi64((__m128i *)SI(p,4), ov[0]);
     _mm_storel_epi64((__m128i *)SI(p,5), ov[1]);
     _mm_storel_epi64((__m128i *)SI(p,6), ov[2]);
     _mm_storel_epi64((__m128i *)SI(p,7), ov[3]);
           #if ESIZE > 4
-    ov[0] = _mm_and_si128(iv[4], cl);                             					
-    ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128(  ov[0],2));    				      					
-
-    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[4], ch), 4);            					
-    ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
-
-    ov[2] = _mm_and_si128(iv[5], cl);                             					
-    ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128(  ov[2],2));    				      					
-
-    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[5], ch),4);            					
-    ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
-
+    ov[0] = _mm_and_si128(iv[4], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128( ov[0],2));    				      					
+    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[4], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128( ov[1],2));    				      					
+    ov[2] = _mm_and_si128(iv[5], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128( ov[2],2));    				      					
+    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[5], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
     _mm_storel_epi64((__m128i *)SI(p, 8), ov[0]);
     _mm_storel_epi64((__m128i *)SI(p, 9), ov[1]);
     _mm_storel_epi64((__m128i *)SI(p,10), ov[2]);
     _mm_storel_epi64((__m128i *)SI(p,11), ov[3]); 
 	
-    ov[0] = _mm_and_si128(iv[6], cl);                             					
-    ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128(  ov[0],2));    				      					
-
-    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[6], ch),4);            					
-    ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128(  ov[1],2));    				      					
-
-    ov[2] = _mm_and_si128(iv[7], cl);                             					
-    ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128(  ov[2],2));    				      					
-
-    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[7], ch),4);            					
-    ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
-
+    ov[0] = _mm_and_si128(iv[6], cl);                   ov[0] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = _mm_packus_epi16(ov[0], _mm_srli_si128(  ov[0],2));    				      					
+    ov[1] = _mm_srli_epi16(_mm_and_si128(iv[6], ch),4); ov[1] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = _mm_packus_epi16(ov[1], _mm_srli_si128(  ov[1],2));    				      					
+    ov[2] = _mm_and_si128(iv[7], cl);                   ov[2] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = _mm_packus_epi16(ov[2], _mm_srli_si128(  ov[2],2));    				      					
+    ov[3] = _mm_srli_epi16(_mm_and_si128(iv[7], ch),4); ov[3] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = _mm_packus_epi16(ov[3], _mm_srli_si128(  ov[3],2));    				      					
     _mm_storel_epi64((__m128i *)SI(p,12), ov[0]);
     _mm_storel_epi64((__m128i *)SI(p,13), ov[1]);
     _mm_storel_epi64((__m128i *)SI(p,14), ov[2]);
-    _mm_storel_epi64((__m128i *)SI(p,15), ov[3]);	SE(p,16);	
+    _mm_storel_epi64((__m128i *)SI(p,15), ov[3]);	
 	      #endif
-        #else
-                                                    SE(p, 8);	 
         #endif												
       #endif															
   }
@@ -840,99 +727,64 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
   __m128i cl = _mm_set1_epi8(0x0f), ch=_mm_set1_epi8(0xf0), cb = _mm_set1_epi16(0xff);
     #endif
 
-  for(op = out,ip = in; op != out+v; ip += ESIZE*16/STRIDE) { unsigned char *p=ip;
+  for(op = out,ip = in; op != out+v; op+=ESIZE*16,ip += ESIZE*16/STRIDE) { unsigned char *p=ip;    PREFETCH(ip+(ESIZE*16/STRIDE),0);
     __m128i iv[ESIZE], ov[ESIZE];
 
-      #if STRIDE > ESIZE
-    ov[0] = _mm_loadl_epi64((__m128i *) p        );   
+      #if STRIDE > ESIZE //------------ Nibble transpose -------------------
+    ov[0] = _mm_loadl_epi64((__m128i *)   p   );
     ov[1] = _mm_loadl_epi64((__m128i *)SI(p,1));   
-
-    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); 						
-    ov[0] = _mm_and_si128(ov[0], cl);												
-    
-    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); 						
-    ov[1] = _mm_and_si128(ov[1], cl);												
+    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
+    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[0] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
-
  
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,2));   
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,3));  
- 
-    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); 						
-    ov[2] = _mm_and_si128(ov[2], cl);												
-    
-    ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); 						
-    ov[3] = _mm_and_si128(ov[3], cl);												
+    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,2));
+    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,3));
+    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												  
+    ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
     iv[1] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	
 
 	    #if ESIZE > 2
     ov[0] = _mm_loadl_epi64((__m128i *)SI(p,4));   
     ov[1] = _mm_loadl_epi64((__m128i *)SI(p,5));  
- 
-    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); 						
-    ov[0] = _mm_and_si128(ov[0], cl);												
-    
-    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); 						
-    ov[1] = _mm_and_si128(ov[1], cl);												
+    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
+    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[2] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
-
 
     ov[2] = _mm_loadl_epi64((__m128i *)SI(p,6));   
     ov[3] = _mm_loadl_epi64((__m128i *)SI(p,7));  
- 
-    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); 						
-    ov[2] = _mm_and_si128(ov[2], cl);												
-    
-    ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); 						
-    ov[3] = _mm_and_si128(ov[3], cl);												
-    iv[3] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	    SE(p,8);
+    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												
+    ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
+    iv[3] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	    							
         #endif
-        #if ESIZE > 4
-    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,0));   
-    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,1));   
 
-    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); 						
-    ov[0] = _mm_and_si128(ov[0], cl);												
-    
-    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); 						
-    ov[1] = _mm_and_si128(ov[1], cl);												
+        #if ESIZE > 4
+    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,8));   
+    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,9));   
+    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
+    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[4] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
 
- 
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,2));   
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,3));  
- 
-    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); 						
-    ov[2] = _mm_and_si128(ov[2], cl);												
-    
+    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,10));   
+    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,11));  
+    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												
     ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); 						
     ov[3] = _mm_and_si128(ov[3], cl);												
     iv[5] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	
 
-
-    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,4));   
-    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,5));  
- 
-    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); 						
-    ov[0] = _mm_and_si128(ov[0], cl);												
-    
-    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); 						
-    ov[1] = _mm_and_si128(ov[1], cl);												
+    ov[0] = _mm_loadl_epi64((__m128i *)SI(p,12));   
+    ov[1] = _mm_loadl_epi64((__m128i *)SI(p,13));  
+    ov[0] = _mm_unpacklo_epi8(ov[0], _mm_srli_epi16(ov[0],4)); ov[0] = _mm_and_si128(ov[0], cl);												
+    ov[1] = _mm_unpacklo_epi8(ov[1], _mm_srli_epi16(ov[1],4)); ov[1] = _mm_and_si128(ov[1], cl);												
     iv[6] = _mm_or_si128(_mm_slli_epi16(ov[1],4), ov[0]);					
 
-
-    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,6));   
-    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,7));  
- 
-    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); 						
-    ov[2] = _mm_and_si128(ov[2], cl);												
-    
-    ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); 						
-    ov[3] = _mm_and_si128(ov[3], cl);												
-    iv[7] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);	SE(p,8);
+    ov[2] = _mm_loadl_epi64((__m128i *)SI(p,14));   
+    ov[3] = _mm_loadl_epi64((__m128i *)SI(p,15));   
+    ov[2] = _mm_unpacklo_epi8(ov[2], _mm_srli_epi16(ov[2],4)); ov[2] = _mm_and_si128(ov[2], cl);												
+    ov[3] = _mm_unpacklo_epi8(ov[3], _mm_srli_epi16(ov[3],4)); ov[3] = _mm_and_si128(ov[3], cl);												
+    iv[7] = _mm_or_si128(_mm_slli_epi16(ov[3],4), ov[2]);											
         #endif	
-      #else
-    iv[0] = _mm_loadu_si128((__m128i *) p        );   
+      #else // --------------------------- Byte transpose -------------------
+    iv[0] = _mm_loadu_si128((__m128i *)   p   );   
     iv[1] = _mm_loadu_si128((__m128i *)SI(p,1));   
         #if ESIZE > 2
     iv[2] = _mm_loadu_si128((__m128i *)SI(p,2));   
@@ -945,7 +797,6 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           #endif
         #endif
       #endif
-																	PREFETCH(ip+(ESIZE*16/STRIDE),0);
         #if ESIZE == 2
 	      #ifdef __ARM_NEON
     uint8x16x2_t w; w.val[0] = (uint8x16_t)iv[0]; 
@@ -955,7 +806,6 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]);  ST128((__m128i *)op,      ov[0]); 
     ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]);  ST128((__m128i *)(op+16), ov[1]);
           #endif
-																			op += 32;
         #elif ESIZE == 4
 	      #ifdef __ARM_NEON
     uint8x16x4_t w; w.val[0] = (uint8x16_t)iv[0]; 
@@ -973,34 +823,31 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[2] = _mm_unpacklo_epi16(ov[1], ov[3]); ST128((__m128i *)(op+32),iv[2]); 
     iv[3] = _mm_unpackhi_epi16(ov[1], ov[3]); ST128((__m128i *)(op+48),iv[3]); 
 	       #endif 
-	op += 64;
         #else
-    ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
-    ov[2] = _mm_unpacklo_epi8(iv[2], iv[3]);
-    ov[3] = _mm_unpackhi_epi8(iv[2], iv[3]);
-    iv[0] = _mm_unpacklo_epi16(ov[0], ov[2]);
-    iv[1] = _mm_unpackhi_epi16(ov[0], ov[2]);
-    iv[2] = _mm_unpacklo_epi16(ov[1], ov[3]);
-    iv[3] = _mm_unpackhi_epi16(ov[1], ov[3]);
+    ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]);
+    ov[2] = _mm_unpacklo_epi8( iv[2], iv[3]); ov[3] = _mm_unpackhi_epi8( iv[2], iv[3]);
+    ov[4] = _mm_unpacklo_epi8( iv[4], iv[5]); ov[5] = _mm_unpackhi_epi8( iv[4], iv[5]);
+    ov[6] = _mm_unpacklo_epi8( iv[6], iv[7]); ov[7] = _mm_unpackhi_epi8( iv[6], iv[7]);	
 
-    ov[4] = _mm_unpacklo_epi8(iv[4], iv[5]);
-    ov[5] = _mm_unpackhi_epi8(iv[4], iv[5]);
-    ov[6] = _mm_unpacklo_epi8(iv[6], iv[7]);
-    ov[7] = _mm_unpackhi_epi8(iv[6], iv[7]);	
-    iv[4] = _mm_unpacklo_epi16(ov[4], ov[6]);
-    iv[5] = _mm_unpackhi_epi16(ov[4], ov[6]);
-    iv[6] = _mm_unpacklo_epi16(ov[5], ov[7]);
-    iv[7] = _mm_unpackhi_epi16(ov[5], ov[7]);	
+    iv[0] = _mm_unpacklo_epi16(ov[0], ov[2]); iv[1] = _mm_unpackhi_epi16(ov[0], ov[2]);
+    iv[2] = _mm_unpacklo_epi16(ov[1], ov[3]); iv[3] = _mm_unpackhi_epi16(ov[1], ov[3]);
+    iv[4] = _mm_unpacklo_epi16(ov[4], ov[6]); iv[5] = _mm_unpackhi_epi16(ov[4], ov[6]);
+    iv[6] = _mm_unpacklo_epi16(ov[5], ov[7]); iv[7] = _mm_unpackhi_epi16(ov[5], ov[7]);	
  			
-    ov[0] = _mm_unpacklo_epi32(iv[0], iv[4]); ST128((__m128i *) op,     ov[0]); 
-    ov[1] = _mm_unpackhi_epi32(iv[0], iv[4]); ST128((__m128i *)(op+ 16),ov[1]); 
-    ov[2] = _mm_unpacklo_epi32(iv[1], iv[5]); ST128((__m128i *)(op+ 32),ov[2]); 
-    ov[3] = _mm_unpackhi_epi32(iv[1], iv[5]); ST128((__m128i *)(op+ 48),ov[3]);   
-    ov[4] = _mm_unpacklo_epi32(iv[2], iv[6]); ST128((__m128i *)(op+ 64),ov[4]); 
-    ov[5] = _mm_unpackhi_epi32(iv[2], iv[6]); ST128((__m128i *)(op+ 80),ov[5]); 
-    ov[6] = _mm_unpacklo_epi32(iv[3], iv[7]); ST128((__m128i *)(op+ 96),ov[6]); 
-    ov[7] = _mm_unpackhi_epi32(iv[3], iv[7]); ST128((__m128i *)(op+112),ov[7]); op += 128;  
+    ov[0] = _mm_unpacklo_epi32(iv[0], iv[4]); ov[1] = _mm_unpackhi_epi32(iv[0], iv[4]); 
+    ov[2] = _mm_unpacklo_epi32(iv[1], iv[5]); ov[3] = _mm_unpackhi_epi32(iv[1], iv[5]);  
+    ov[4] = _mm_unpacklo_epi32(iv[2], iv[6]); ov[5] = _mm_unpackhi_epi32(iv[2], iv[6]); 
+    ov[6] = _mm_unpacklo_epi32(iv[3], iv[7]); ov[7] = _mm_unpackhi_epi32(iv[3], iv[7]);
+
+
+    ST128((__m128i *) op,     ov[0]); 
+    ST128((__m128i *)(op+ 16),ov[1]); 
+    ST128((__m128i *)(op+ 32),ov[2]); 
+    ST128((__m128i *)(op+ 48),ov[3]);   
+    ST128((__m128i *)(op+ 64),ov[4]); 
+    ST128((__m128i *)(op+ 80),ov[5]); 
+    ST128((__m128i *)(op+ 96),ov[6]); 
+    ST128((__m128i *)(op+112),ov[7]); 	
         #endif
   }
   TEMPLATE2(tpdec,ESIZE)(in+v, n-v, out+v);
@@ -1018,85 +865,71 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
                             	14, 12, 10, 8, 6, 4, 2, 0,
 								15, 13, 11, 9, 7, 5, 3, 1, 
                             	14, 12, 10, 8, 6, 4, 2, 0);
-   __m256i sv0 = _mm256_set_epi8(
-                             15, 13, 11, 9,  
-							 7, 5, 3, 1,
-                             14, 12, 10, 8, 
-							 6, 4, 2, 0,
-                             15, 13, 11, 9,  
-							 7, 5, 3, 1,
-                             14, 12, 10, 8, 
-							 6, 4, 2, 0
-							 );
-  __m256i sv1 = _mm256_set_epi8(
-                             14, 12, 10, 8, 
-							 6, 4, 2, 0,
-                             15, 13, 11, 9,
-							 7, 5, 3, 1,
-                             14, 12, 10, 8, 
-							 6, 4, 2, 0,
-                             15, 13, 11, 9,
-							 7, 5, 3, 1
-							 );
+  __m256i sv0 = _mm256_set_epi8(15, 13, 11, 9,  
+							 	 7,  5,  3, 1,
+                             	14, 12, 10, 8, 
+							 	 6,  4,  2, 0,
+                             	15, 13, 11, 9,  
+							 	 7,  5,  3, 1,
+                             	14, 12, 10, 8, 
+							 	 6,  4,  2, 0);
+  __m256i sv1 = _mm256_set_epi8(14, 12, 10, 8, 
+							 	 6,  4,  2, 0,
+                             	15, 13, 11, 9,
+							 	 7,  5,  3, 1,
+                             	14, 12, 10, 8, 
+							 	 6,  4,  2, 0,
+                             	15, 13, 11, 9,
+							 	 7,  5,  3, 1);
    #else
-  __m256i pv = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0),
+  __m256i pv = _mm256_set_epi32( 7, 3, 6, 2, 5, 1, 4, 0),
       #if ESIZE == 4
-          /*sv0 = _mm256_set_epi8(15, 11, 7, 3, 
-                               14, 10, 6, 2, 
-							   13,  9, 5, 1,
-							   12,  8, 4, 0,
-							   15, 11, 7, 3, 
-                               14, 10, 6, 2, 
-							   13,  9, 5, 1,
-							   12,  8, 4, 0);*/
-           sv0= _mm256_set_epi8(15, 11, 7, 3, 
-							   13,  9, 5, 1,
-                               14, 10, 6, 2, 
-							   12,  8, 4, 0,
-							   15, 11, 7, 3, 
-							   13,  9, 5, 1,
-                               14, 10, 6, 2, 
-							   12,  8, 4, 0),
-           sv1= _mm256_set_epi8(
-							   13,  9, 5, 1,
-							   15, 11, 7, 3, 
-							   12,  8, 4, 0,
-                               14, 10, 6, 2, 
-							   13,  9, 5, 1,
-							   15, 11, 7, 3, 
-							   12,  8, 4, 0,
-                               14, 10, 6, 2);
+          sv0 = _mm256_set_epi8(15, 11, 7, 3, 
+							    13,  9, 5, 1,
+                                14, 10, 6, 2, 
+							    12,  8, 4, 0,
+							    15, 11, 7, 3, 
+							    13,  9, 5, 1,
+                                14, 10, 6, 2, 
+							    12,  8, 4, 0),
+           sv1= _mm256_set_epi8(13,  9, 5, 1,
+							    15, 11, 7, 3, 
+							    12,  8, 4, 0,
+                                14, 10, 6, 2, 
+							    13,  9, 5, 1,
+							    15, 11, 7, 3, 
+							    12,  8, 4, 0,
+                                14, 10, 6, 2);
       #else
-          sv = _mm256_set_epi8(15,  7,  
-                               14,  6,  
-							   13,  5, 
-							   12,  4, 
-							   11,  3, 
-							   10,  2, 
-							    9,  1, 
-							    8,  0,
-                               15,  7,  
-                               14,  6,  
-							   13,  5, 
-							   12,  4, 
-							   11,  3, 
-							   10,  2, 
-							    9,  1, 
-							    8,  0 ),
-          tv = _mm256_set_epi8(15, 14, 11, 10, 13, 12,  9,  8, 
-						        7,  6,  3,  2,  5,  4,  1,  0,
-							   15, 14, 11, 10, 13, 12,  9,  8, 
-						        7,  6,  3,  2,  5,  4,  1,  0);
+           sv = _mm256_set_epi8(15,  7,  
+                                14,  6,  
+							    13,  5, 
+							    12,  4, 
+							    11,  3, 
+							    10,  2, 
+							     9,  1, 
+							     8,  0,
+                                15,  7,  
+                                14,  6,  
+							    13,  5, 
+							    12,  4, 
+							    11,  3, 
+							    10,  2, 
+							     9,  1, 
+							     8,  0 ),
+           tv = _mm256_set_epi8(15, 14, 11, 10, 13, 12,  9,  8, 
+						         7,  6,  3,  2,  5,  4,  1,  0,
+							    15, 14, 11, 10, 13, 12,  9,  8, 
+						         7,  6,  3,  2,  5,  4,  1,  0);
 	  #endif
 	#endif
   
-    #if STRIDE > ESIZE
+    #if STRIDE > ESIZE // ------------------ byte transpose ----------------------------------
   __m256i cl = _mm256_set1_epi8(0x0f), ch=_mm256_set1_epi8(0xf0), cb = _mm256_set1_epi16(0xff);
     #endif
 
-  for(ip = in,op = out; ip != in+v; op += ESIZE*32/STRIDE, ip += ESIZE*32) { unsigned char *p=op;
+  for(ip = in,op = out; ip != in+v; op += ESIZE*32/STRIDE, ip += ESIZE*32) { unsigned char *p = op;     PREFETCH(ip+512,0);
     __m256i iv[ESIZE],ov[ESIZE];														
-
 	  #if   ESIZE == 2
 	   #if 0
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv);  
@@ -1105,7 +938,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[1] = _mm256_permute4x64_epi64(_mm256_unpackhi_epi64(ov[0], ov[1]), _MM_SHUFFLE(3, 1, 2, 0));
 	   #else
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *)ip), sv0);       
-    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)),sv1); 											PREFETCH(ip+512,0);
+    ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)),sv1); 											
     iv[0] = _mm256_permute4x64_epi64(_mm256_blend_epi32(ov[0], ov[1],0b11001100),_MM_SHUFFLE(3, 1, 2, 0));
     iv[1] = _mm256_blend_epi32(ov[0], ov[1],0b00110011); 
 	iv[1] = _mm256_permute4x64_epi64(_mm256_shuffle_epi32(iv[1],_MM_SHUFFLE(1, 0, 3, 2)),_MM_SHUFFLE(3, 1, 2, 0));
@@ -1114,7 +947,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv0);      
     iv[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv1);  
     iv[2] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+64)), sv0);       
-    iv[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv1); 										PREFETCH(ip+512,0);
+    iv[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv1); 											
       #if 0
 	ov[0] = _mm256_unpacklo_epi32(iv[0], iv[1]);
     ov[1] = _mm256_unpackhi_epi32(iv[0], iv[1]);
@@ -1126,10 +959,8 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[2] = _mm256_permutevar8x32_epi32(_mm256_unpacklo_epi64(ov[1], ov[3]), pv);
     iv[3] = _mm256_permutevar8x32_epi32(_mm256_unpackhi_epi64(ov[1], ov[3]), pv);
 	  #else
-    ov[0] = _mm256_blend_epi32(iv[0], iv[1],0b10101010);  
-	ov[1] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[0], iv[1],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
-    ov[2] = _mm256_blend_epi32(iv[2], iv[3],0b10101010);
-	ov[3] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[2], iv[3],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
+    ov[0] = _mm256_blend_epi32(iv[0], iv[1],0b10101010); ov[1] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[0], iv[1],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
+    ov[2] = _mm256_blend_epi32(iv[2], iv[3],0b10101010); ov[3] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[2], iv[3],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
 
     iv[0] = _mm256_permutevar8x32_epi32(_mm256_unpacklo_epi64(ov[0], ov[2]), pv); 
     iv[1] = _mm256_permutevar8x32_epi32(_mm256_unpackhi_epi64(ov[0], ov[2]), pv);
@@ -1146,31 +977,23 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[2] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+64)), sv); 
     ov[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv); 
 	
-	iv[0] = _mm256_unpacklo_epi16(ov[0], ov[1]); 
-    iv[1] = _mm256_unpackhi_epi16(ov[0], ov[1]); 
-    iv[2] = _mm256_unpacklo_epi16(ov[2], ov[3]); 
-    iv[3] = _mm256_unpackhi_epi16(ov[2], ov[3]);  
+	iv[0] = _mm256_unpacklo_epi16(ov[0], ov[1]); iv[1] = _mm256_unpackhi_epi16(ov[0], ov[1]); 
+    iv[2] = _mm256_unpacklo_epi16(ov[2], ov[3]); iv[3] = _mm256_unpackhi_epi16(ov[2], ov[3]);  
 	
-    ov[0] = _mm256_unpacklo_epi32(iv[0], iv[2]);
-    ov[1] = _mm256_unpackhi_epi32(iv[0], iv[2]);
-    ov[2] = _mm256_unpacklo_epi32(iv[1], iv[3]);
-    ov[3] = _mm256_unpackhi_epi32(iv[1], iv[3]);
+    ov[0] = _mm256_unpacklo_epi32(iv[0], iv[2]); ov[1] = _mm256_unpackhi_epi32(iv[0], iv[2]);
+    ov[2] = _mm256_unpacklo_epi32(iv[1], iv[3]); ov[3] = _mm256_unpackhi_epi32(iv[1], iv[3]);
 	
 
     ov[4] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+128)), sv); 
     ov[5] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+160)), sv);  
     ov[6] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+192)), sv); 
-    ov[7] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+224)), sv); PREFETCH(ip+512,0);	
+    ov[7] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+224)), sv); 											
 
-	iv[4] = _mm256_unpacklo_epi16(ov[4], ov[5]);
-    iv[5] = _mm256_unpackhi_epi16(ov[4], ov[5]);
-    iv[6] = _mm256_unpacklo_epi16(ov[6], ov[7]);
-    iv[7] = _mm256_unpackhi_epi16(ov[6], ov[7]);
+	iv[4] = _mm256_unpacklo_epi16(ov[4], ov[5]); iv[5] = _mm256_unpackhi_epi16(ov[4], ov[5]);
+    iv[6] = _mm256_unpacklo_epi16(ov[6], ov[7]); iv[7] = _mm256_unpackhi_epi16(ov[6], ov[7]);
 
-    ov[4] = _mm256_unpacklo_epi32(iv[4], iv[6]);
-    ov[5] = _mm256_unpackhi_epi32(iv[4], iv[6]);
-    ov[6] = _mm256_unpacklo_epi32(iv[5], iv[7]);
-    ov[7] = _mm256_unpackhi_epi32(iv[5], iv[7]);
+    ov[4] = _mm256_unpacklo_epi32(iv[4], iv[6]); ov[5] = _mm256_unpackhi_epi32(iv[4], iv[6]);
+    ov[6] = _mm256_unpacklo_epi32(iv[5], iv[7]); ov[7] = _mm256_unpackhi_epi32(iv[5], iv[7]);
     
 	iv[0] = _mm256_shuffle_epi8(_mm256_permutevar8x32_epi32(_mm256_unpacklo_epi64(ov[0], ov[4]), pv), tv);
     iv[1] = _mm256_shuffle_epi8(_mm256_permutevar8x32_epi32(_mm256_unpackhi_epi64(ov[0], ov[4]), pv), tv);
@@ -1200,88 +1023,37 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
       #else // Nibble Transpose
     #define mm256_packus_epi16(a, b) _mm256_permute4x64_epi64(_mm256_packus_epi16(a, b), _MM_SHUFFLE(3, 1, 2, 0))
 
-    ov[0] = _mm256_and_si256(iv[0], cl);                             					
-    ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] =  mm256_packus_epi16(ov[0], _mm256_srli_si256(  ov[0],2));    				      					
-
-    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[0], ch),4);            					
-    ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] =  mm256_packus_epi16(ov[1], _mm256_srli_si256(  ov[1],2));    				      					
-
-    ov[2] = _mm256_and_si256(iv[1], cl);                             					
-    ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] =  mm256_packus_epi16(ov[2], _mm256_srli_si256(  ov[2],2));    				      					
-
-    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[1], ch),4);            					
-    ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] =  mm256_packus_epi16(ov[3], _mm256_srli_si256(  ov[3],2));    				      					
-
-    _mm_storeu_si128((__m256i *) p        , _mm256_castsi256_si128(ov[0]));
+    ov[0] = _mm256_and_si256(iv[0], cl);                      ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = mm256_packus_epi16(ov[0], _mm256_srli_si256( ov[0],2));    				      					
+    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[0], ch),4); ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = mm256_packus_epi16(ov[1], _mm256_srli_si256( ov[1],2));    				      					
+    ov[2] = _mm256_and_si256(iv[1], cl);                      ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = mm256_packus_epi16(ov[2], _mm256_srli_si256( ov[2],2));    				      					
+    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[1], ch),4); ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = mm256_packus_epi16(ov[3], _mm256_srli_si256( ov[3],2));
+	_mm_storeu_si128((__m256i *) p        ,  _mm256_castsi256_si128(ov[0]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[1]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[2]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[3])); 
-
         #if ESIZE > 2
-    ov[0] = _mm256_and_si256(iv[2], cl);                             					
-    ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] =  mm256_packus_epi16(ov[0], _mm256_srli_si256(  ov[0],2));    				      					
-
-    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[2], ch),4);            					
-    ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] =  mm256_packus_epi16(ov[1], _mm256_srli_si256(  ov[1],2));    				      					
-
-    ov[2] = _mm256_and_si256(iv[3], cl);                             					
-    ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] =  mm256_packus_epi16(ov[2], _mm256_srli_si256(  ov[2],2));    				      					
-
-    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[3], ch),4);            					
-    ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] =  mm256_packus_epi16(ov[3], _mm256_srli_si256(  ov[3],2));    				      					
-
+    ov[0] = _mm256_and_si256(iv[2], cl);                      ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = mm256_packus_epi16(ov[0], _mm256_srli_si256( ov[0],2));
+    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[2], ch),4); ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = mm256_packus_epi16(ov[1], _mm256_srli_si256( ov[1],2));
+    ov[2] = _mm256_and_si256(iv[3], cl);                      ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb); ov[2] = mm256_packus_epi16(ov[2], _mm256_srli_si256( ov[2],2));
+    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[3], ch),4); ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb); ov[3] = mm256_packus_epi16(ov[3], _mm256_srli_si256( ov[3],2));  
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[0]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[1]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[2]));
-    _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[3]));
-	
+    _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[3]));	
           #if ESIZE > 4
-    ov[0] = _mm256_and_si256(iv[4], cl);                             					
-    ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] =  mm256_packus_epi16(ov[0], _mm256_srli_si256(  ov[0],2));    				      					
-
-    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[4], ch),4);            					
-    ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] =  mm256_packus_epi16(ov[1], _mm256_srli_si256(  ov[1],2));    				      					
-
-    ov[2] = _mm256_and_si256(iv[5], cl);                             					
-    ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] =  mm256_packus_epi16(ov[2], _mm256_srli_si256(  ov[2],2));    				      					
-
-    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[5], ch),4);            					
-    ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] =  mm256_packus_epi16(ov[3], _mm256_srli_si256(  ov[3],2));    				      					
-
+    ov[0] = _mm256_and_si256(iv[4], cl);                      ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb); ov[0] =  mm256_packus_epi16(ov[0], _mm256_srli_si256(  ov[0],2));    				      					
+    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[4], ch),4); ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb); ov[1] =  mm256_packus_epi16(ov[1], _mm256_srli_si256(  ov[1],2));    				      					
+    ov[2] = _mm256_and_si256(iv[5], cl);                      ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb); ov[2] =  mm256_packus_epi16(ov[2], _mm256_srli_si256(  ov[2],2));    				      					
+    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[5], ch),4); ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb); ov[3] =  mm256_packus_epi16(ov[3], _mm256_srli_si256(  ov[3],2));    				      					
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[0]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[1]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[2]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[3])); 
 
-
-    ov[0] = _mm256_and_si256(iv[6], cl);                             					
-    ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb);         
-    ov[0] =  mm256_packus_epi16(ov[0], _mm256_srli_si256(  ov[0],2));    				      					
-
-    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[6], ch),4);            					
-    ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb);         
-    ov[1] =  mm256_packus_epi16(ov[1], _mm256_srli_si256(  ov[1],2));    				      					
-
-    ov[2] = _mm256_and_si256(iv[7], cl);                             					
-    ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb);         
-    ov[2] =  mm256_packus_epi16(ov[2], _mm256_srli_si256(  ov[2],2));    				      					
-
-    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[7], ch),4);            					
-    ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb);         
-    ov[3] =  mm256_packus_epi16(ov[3], _mm256_srli_si256(  ov[3],2));    				      					
-
+    ov[0] = _mm256_and_si256(iv[6], cl);                      ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb); ov[0] =  mm256_packus_epi16(ov[0], _mm256_srli_si256(  ov[0],2));    				      					
+    ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[6], ch),4); ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb); ov[1] =  mm256_packus_epi16(ov[1], _mm256_srli_si256(  ov[1],2));    				      					
+    ov[2] = _mm256_and_si256(iv[7], cl);                      ov[2] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[2],4), ov[2]),cb); ov[2] =  mm256_packus_epi16(ov[2], _mm256_srli_si256(  ov[2],2));    				      					
+    ov[3] = _mm256_srli_epi16(_mm256_and_si256(iv[7], ch),4); ov[3] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[3],4), ov[3]),cb); ov[3] =  mm256_packus_epi16(ov[3], _mm256_srli_si256(  ov[3],2));    				      					
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[0]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[1]));
     _mm_storeu_si128((__m256i *)(p+=stride), _mm256_castsi256_si128(ov[2]));
@@ -1340,22 +1112,18 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           #endif
         #endif
       #endif
-														PREFETCH(ip+ESIZE*32/STRIDE,0);
+																								PREFETCH(ip+ESIZE*32/STRIDE,0);
       #if ESIZE == 2 
 	ov[0] = _mm256_permute4x64_epi64(iv[0], _MM_SHUFFLE(3, 1, 2, 0));
 	ov[1] = _mm256_permute4x64_epi64(iv[1], _MM_SHUFFLE(3, 1, 2, 0));
 	_mm256_storeu_si256((__m256i *)op,      _mm256_unpacklo_epi8(ov[0], ov[1])); 
 	_mm256_storeu_si256((__m256i *)(op+32), _mm256_unpackhi_epi8(ov[0], ov[1])); 
       #elif ESIZE == 4	  
-    ov[0] = _mm256_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm256_unpackhi_epi8(iv[0], iv[1]);
-    ov[2] = _mm256_unpacklo_epi8(iv[2], iv[3]);
-    ov[3] = _mm256_unpackhi_epi8(iv[2], iv[3]);
+    ov[0] = _mm256_unpacklo_epi8( iv[0], iv[1]); ov[1] = _mm256_unpackhi_epi8( iv[0], iv[1]);
+    ov[2] = _mm256_unpacklo_epi8( iv[2], iv[3]); ov[3] = _mm256_unpackhi_epi8( iv[2], iv[3]);
 
-    iv[0] = _mm256_unpacklo_epi16(ov[0], ov[2]);
-    iv[1] = _mm256_unpackhi_epi16(ov[0], ov[2]);
-    iv[2] = _mm256_unpacklo_epi16(ov[1], ov[3]);
-    iv[3] = _mm256_unpackhi_epi16(ov[1], ov[3]);
+    iv[0] = _mm256_unpacklo_epi16(ov[0], ov[2]); iv[1] = _mm256_unpackhi_epi16(ov[0], ov[2]);
+    iv[2] = _mm256_unpacklo_epi16(ov[1], ov[3]); iv[3] = _mm256_unpackhi_epi16(ov[1], ov[3]);
 
 	ov[0] = _mm256_permute2x128_si256(iv[0], iv[1], (2 << 4) | 0); 
     ov[1] = _mm256_permute2x128_si256(iv[2], iv[3], (2 << 4) | 0); 
@@ -1366,19 +1134,15 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     _mm256_storeu_si256((__m256i *)(op+64), ov[2]); 
     _mm256_storeu_si256((__m256i *)(op+96), ov[3]); 
       #else
-    ov[0] = _mm256_unpacklo_epi8(iv[0], iv[1]);
-    ov[1] = _mm256_unpackhi_epi8(iv[0], iv[1]);
-    ov[2] = _mm256_unpacklo_epi8(iv[2], iv[3]);
-    ov[3] = _mm256_unpackhi_epi8(iv[2], iv[3]);
+    ov[0] = _mm256_unpacklo_epi8(iv[0], iv[1]); ov[1] = _mm256_unpackhi_epi8(iv[0], iv[1]);
+    ov[2] = _mm256_unpacklo_epi8(iv[2], iv[3]); ov[3] = _mm256_unpackhi_epi8(iv[2], iv[3]);
     iv[0] = _mm256_permute4x64_epi64(_mm256_unpacklo_epi16(ov[0], ov[2]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[1] = _mm256_permute4x64_epi64(_mm256_unpackhi_epi16(ov[0], ov[2]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[2] = _mm256_permute4x64_epi64(_mm256_unpacklo_epi16(ov[1], ov[3]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[3] = _mm256_permute4x64_epi64(_mm256_unpackhi_epi16(ov[1], ov[3]), _MM_SHUFFLE(3, 1, 2, 0));
 
-    ov[4] = _mm256_unpacklo_epi8(iv[4], iv[5]);
-    ov[5] = _mm256_unpackhi_epi8(iv[4], iv[5]);
-    ov[6] = _mm256_unpacklo_epi8(iv[6], iv[7]); 
-    ov[7] = _mm256_unpackhi_epi8(iv[6], iv[7]);
+    ov[4] = _mm256_unpacklo_epi8(iv[4], iv[5]); ov[5] = _mm256_unpackhi_epi8(iv[4], iv[5]);
+    ov[6] = _mm256_unpacklo_epi8(iv[6], iv[7]); ov[7] = _mm256_unpackhi_epi8(iv[6], iv[7]);
     iv[4] = _mm256_permute4x64_epi64(_mm256_unpacklo_epi16(ov[4], ov[6]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[5] = _mm256_permute4x64_epi64(_mm256_unpackhi_epi16(ov[4], ov[6]), _MM_SHUFFLE(3, 1, 2, 0));
     iv[6] = _mm256_permute4x64_epi64(_mm256_unpacklo_epi16(ov[5], ov[7]), _MM_SHUFFLE(3, 1, 2, 0));
