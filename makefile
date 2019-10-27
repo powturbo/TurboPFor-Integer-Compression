@@ -30,6 +30,8 @@ DDEBUG=-DNDEBUG -s
 ifneq (,$(filter Windows%,$(OS)))
   OS := Windows
 CFLAGS+=-D__int64_t=int64_t
+CC=gcc
+CXX=g++
 else
   OS := $(shell uname -s)
   ARCH := $(shell uname -m)
