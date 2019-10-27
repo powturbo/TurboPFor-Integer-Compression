@@ -1907,7 +1907,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 void usage(char *pgm) {
   fprintf(stderr, "\nIcApp Copyright (c) 2013-2019 Powturbo %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
-  fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
+  //fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
   fprintf(stderr, " -B#s     # = max. benchmark filesize (default 1GB) ex. -B4G\n");
   fprintf(stderr, "          s = modifier s:K,M,G=(1000, 1.000.000, 1.000.000.000) s:k,m,h=(1024,1Mb,1Gb). (default m) ex. 64k or 64K\n");
   fprintf(stderr, "Benchmark:\n");
