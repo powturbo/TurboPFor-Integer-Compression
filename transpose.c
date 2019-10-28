@@ -217,8 +217,8 @@ void tpini(int id) {
   i = id?id:cpuiset();
     #ifdef USE_AVX2
   if(i >= 52) {  
-    _tpe[2] = tpenc128v2; _tpd[2] = tpdec256v2; _tp4e[2] = tp4enc256v2; _tp4d[2] = tp4dec256v2; //SSE encoding _tpe[2] is faster
-    _tpe[4] = tpenc128v4; _tpd[4] = tpdec256v4; _tp4e[4] = tp4enc256v4; _tp4d[4] = tp4dec256v4; //SSE encoding _tpe[4] is faster
+    _tpe[2] = tpenc128v2; _tpd[2] = tpdec256v2; _tp4e[2] = tp4enc256v2; _tp4d[2] = tp4dec256v2; //SSE encoding _tpe[2] is faster (skylake)
+    _tpe[4] = tpenc128v4; _tpd[4] = tpdec256v4; _tp4e[4] = tp4enc256v4; _tp4d[4] = tp4dec256v4; //SSE encoding _tpe[4] is faster (skylake)
     _tpe[8] = tpenc256v8; _tpd[8] = tpdec256v8; _tp4e[8] = tp4enc256v8; _tp4d[8] = tp4dec256v8; 
   } else 
     #endif
@@ -432,7 +432,7 @@ void TEMPLATE2(TPDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) 
 #define ST0(_p_,_v_)  _mm_storeu_si128((__m128i *)(_p_), _v_)
 
 void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
-  unsigned      v = n&~(ESIZE*16-1); 
+  unsigned           v = n&~(ESIZE*32-1); 
   unsigned      stride = v/STRIDE; 
   unsigned char *op,*ip;
 
@@ -710,16 +710,16 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 }
 
 void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
-  unsigned      v = n&~(ESIZE*16-1); 
+  unsigned           v = n&~(ESIZE*32-1); // binary compatible with AVX2 shuffle
   unsigned      stride = v/STRIDE; 
-  unsigned char *op,*ip; 
+  unsigned char *op, *ip; 
   
     #if STRIDE > ESIZE
   __m128i cl = _mm_set1_epi8(0x0f), ch=_mm_set1_epi8(0xf0), cb = _mm_set1_epi16(0xff);
     #endif
 
   for(op = out,ip = in; op != out+v; op+=ESIZE*16,ip += ESIZE*16/STRIDE) { 
-    unsigned char *p=ip;                                                        PREFETCH(ip+(ESIZE*16/STRIDE)*ESIZE,0);
+    unsigned char *p = ip;                                                        PREFETCH(ip+(ESIZE*16/STRIDE)*ESIZE,0);
     __m128i iv[ESIZE], ov[ESIZE];
 
       #if STRIDE > ESIZE //------------ Nibble transpose -------------------
@@ -839,9 +839,9 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
   #if defined(__AVX2__) && defined(AVX2_ON)
 void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
-  unsigned v = n&~(ESIZE*32-1); 
-  unsigned stride = v/STRIDE; 
-  unsigned char *op,*ip;
+  unsigned      v      = n&~(ESIZE*32-1);
+  unsigned      stride = v/STRIDE; 
+  unsigned char *op, *ip;
   
     #if ESIZE == 2
   __m256i sv = _mm256_set_epi8( 15, 13, 11, 9, 7, 5, 3, 1, 
@@ -913,8 +913,8 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
           cb = _mm256_set1_epi16(0xff);
     #endif
 
-  for(ip = in,op = out; ip != in+v; ip += ESIZE*32, op += ESIZE*32/STRIDE) { 
-    unsigned char *p = op;                                                      PREFETCH(ip+ESIZE*192,0); 
+  for(ip = in,op = out; ip != in+v; ip += ESIZE*32, op += ESIZE*32/STRIDE) {  	
+    unsigned char *p = op;   													PREFETCH(ip+ESIZE*192,0);   	                                                   
     __m256i iv[ESIZE],ov[ESIZE];                                                        
       #if   ESIZE == 2
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv0);       
@@ -930,6 +930,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
     ov[0] = _mm256_blend_epi32(iv[0], iv[1],0b10101010); 
     ov[1] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[0], iv[1],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
+
     ov[2] = _mm256_blend_epi32(iv[2], iv[3],0b10101010); 
     ov[3] = _mm256_shuffle_epi32(_mm256_blend_epi32(iv[2], iv[3],0b01010101),_MM_SHUFFLE(2, 3, 0, 1));
 
@@ -941,7 +942,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv); 
     ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv); 
     ov[2] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+64)), sv); 
-    ov[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv); 
+    ov[3] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+96)), sv); 								 
     
     iv[0] = _mm256_unpacklo_epi16(ov[0], ov[1]); iv[1] = _mm256_unpackhi_epi16(ov[0], ov[1]); 
     iv[2] = _mm256_unpacklo_epi16(ov[2], ov[3]); iv[3] = _mm256_unpackhi_epi16(ov[2], ov[3]);  
@@ -949,7 +950,6 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ov[0] = _mm256_unpacklo_epi32(iv[0], iv[2]); ov[1] = _mm256_unpackhi_epi32(iv[0], iv[2]);
     ov[2] = _mm256_unpacklo_epi32(iv[1], iv[3]); ov[3] = _mm256_unpackhi_epi32(iv[1], iv[3]);
     
-
     ov[4] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+128)), sv); 
     ov[5] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+160)), sv);  
     ov[6] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+192)), sv); 
@@ -971,7 +971,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     iv[6] = _mm256_shuffle_epi8(_mm256_permutevar8x32_epi32(_mm256_unpacklo_epi64(ov[3], ov[7]), pv), tv);
     iv[7] = _mm256_shuffle_epi8(_mm256_permutevar8x32_epi32(_mm256_unpackhi_epi64(ov[3], ov[7]), pv), tv);
       #endif
-                                                                                                                
+                   																																				                                                                                               
       #if STRIDE <= ESIZE 
     _mm256_storeu_si256((__m256i *) p,          iv[0]);  
     _mm256_storeu_si256((__m256i *)(p+=stride), iv[1]);
@@ -1016,9 +1016,9 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ST128(p,ov[0],12); ST128(p,ov[1],13); ST128(p,ov[2],14); ST128(p,ov[3],15);
           #endif
         #endif      
-      #endif
+      #endif																							 
   }                                                           
-  TEMPLATE2(tpenc128v,ESIZE)(in+v, n-v, out+v);
+  TEMPLATE2(tpenc,ESIZE)(in+v, n-v, out+v);
 }
 
 #define NBL0(x,y) ov[x] = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_loadu_si128((__m128i *)(p       ))),_MM_SHUFFLE(3, 1, 2, 0));\
@@ -1034,15 +1034,16 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 } 
 
 void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
-  unsigned      v = n&~(ESIZE*32-1);
+  unsigned      v      = n&~(ESIZE*32-1);
   unsigned      stride = v/STRIDE; 
-  unsigned char *op,*ip; 
+  unsigned char *op, *ip; 
 
     #if STRIDE > ESIZE
   __m256i cl = _mm256_set1_epi8(0x0f), ch=_mm256_set1_epi8(0xf0), cb = _mm256_set1_epi16(0xff);
     #endif
 
-  for(op = out,ip = in; op != out+v; ip += ESIZE*32/STRIDE, op += ESIZE*32) { unsigned char *p = ip;    PREFETCH(ip+ESIZE*192,0);
+  for(op = out,ip = in; op != out+v; ip += ESIZE*32/STRIDE, op += ESIZE*32) {   
+    unsigned char *p = ip;    													PREFETCH(ip+ESIZE*192,0);
     __m256i iv[ESIZE], ov[ESIZE];
   
       #if STRIDE > ESIZE
@@ -1123,9 +1124,10 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     ST256((__m256i *)(op+224), ov[7] );
       #endif
   }
-  if(n-v) TEMPLATE2(tpdec128v,ESIZE)(in+v, n-v, out+v);
+  if(n-v) TEMPLATE2(tpdec,ESIZE)(in+v, n-v, out+v);
 }
   #endif
   
 #endif
 #endif
+
