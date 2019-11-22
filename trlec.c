@@ -239,7 +239,6 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
       continue;                                                                                             
       a: ip += ctz64(z)>>3;																																								  
         #else
-      uint32_t z;
       uint32_t z; SZ32; SZ32; SZ32; SZ32; 						__builtin_prefetch(ip +256, 0);      
       continue;                                                                                             
       a: ip += ctz32(z)>>3;										

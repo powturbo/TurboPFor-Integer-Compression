@@ -139,7 +139,11 @@ static ALWAYS_INLINE __m128i mm_xord_epi32(__m128i v, __m128i sv) { MM_HDEC_EPI3
 static ALWAYS_INLINE __m128i mm_scani_epi16(__m128i v, __m128i sv, __m128i vi) { return _mm_add_epi16(mm_scan_epi16(v, sv), vi); }
 static ALWAYS_INLINE __m128i mm_scani_epi32(__m128i v, __m128i sv, __m128i vi) { return _mm_add_epi32(mm_scan_epi32(v, sv), vi); }
   #endif
-  
+
+#if !defined(_M_X64) && !defined(__x86_64__) && defined(__AVX__)
+#define _mm256_extract_epi64(v, index) ((__int64)((uint64_t)(uint32_t)_mm256_extract_epi32((v), (index) * 2) | (((uint64_t)(uint32_t)_mm256_extract_epi32((v), (index) * 2 + 1)) << 32)))
+#endif
+
 //------------------ Horizontal OR -----------------------------------------------
   #ifdef __AVX2__
 static ALWAYS_INLINE unsigned mm256_hor_epi32(__m256i v) {
