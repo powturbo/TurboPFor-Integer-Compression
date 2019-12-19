@@ -16,6 +16,7 @@ branches:
 
 script:
   - make
+  - ./icapp ZIPF
   
 matrix:
   include:
@@ -37,6 +38,7 @@ matrix:
       os: windows
       script: 
         - mingw32-make
+        - ./icapp ZIPF
 
     - name: macOS, xcode
       os: osx
