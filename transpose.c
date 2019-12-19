@@ -292,10 +292,8 @@ typedef void (*TPFUNC)( unsigned char *in, unsigned n, unsigned char *out);
 static TPFUNC _tpe[]  = { 0, 0, tpenc2, tpenc3, tpenc4,     0, 0, 0, tpenc8, 0, 0, 0, 0, 0, 0, 0, tpenc16 };
 static TPFUNC _tpd[]  = { 0, 0, tpdec2, tpdec3, tpdec4,     0, 0, 0, tpdec8, 0, 0, 0, 0, 0, 0, 0, tpdec16 };
  
-  #ifdef __SSE2__
 static TPFUNC _tp4e[] = { 0, 0, tpenc2, tpenc3, tpenc4,     0, 0, 0, tpenc8, 0, 0, 0, 0, 0, 0, 0, tpenc16 }; // Nibble
 static TPFUNC _tp4d[] = { 0, 0, tpdec2, tpdec3, tpdec4,     0, 0, 0, tpdec8, 0, 0, 0, 0, 0, 0, 0, tpdec16 };
-  #endif
 
 static int tpset;
  
