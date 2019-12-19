@@ -87,19 +87,15 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/w24003 /w24005 /w24028 /w24047 /w24090 /w24133 /w24146 /w24333 /w24789 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\..</AdditionalIncludeDirectories>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <ExceptionHandling>false</ExceptionHandling>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,7 +106,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -129,7 +125,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -151,7 +147,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;USE_SSE;USE_AVX2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
