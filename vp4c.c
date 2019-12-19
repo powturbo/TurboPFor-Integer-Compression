@@ -22,7 +22,8 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //  "TurboPFor: Integer Compression" Turbo PFor/PforDelta 
-#ifndef USIZE
+
+#ifndef USIZE //--------------------------------- Functions ----------------------------------------------------------------------
 #pragma warning( disable : 4005) 
 #pragma warning( disable : 4090) 
 #pragma warning( disable : 4068) 
@@ -38,12 +39,11 @@
 #undef P4DELTA
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 
-#define _P4BITS _p4bits
-#define  P4BITS _p4bits
 #define HYBRID 1 // Hybrid TurboPFor : 0=fixed bit packing, 1=fixed BP+Variable byte 
 
-#if !defined(SSE2_ON) && !defined(AVX2_ON)
-
+  #ifdef PLAIN
+#define _P4BITS _p4bits
+#define  P4BITS _p4bits
 #define _P4ENC   _p4enc
 #define  P4ENC    p4enc
 #define  P4NENC   p4nenc
@@ -154,17 +154,50 @@ size_t p4nsenc64(uint64_t *in, size_t n, unsigned char *out) { uint64_t  *ip,sta
 size_t p4nsdec16(unsigned char *in, size_t n, uint16_t *out) { uint16_t  *op,start; P4NDDEC(in, n, out, 128, 16, p4sdec); }
 size_t p4nsdec32(unsigned char *in, size_t n, uint32_t *out) { uint32_t  *op,start; P4NDDEC(in, n, out, 128, 32, p4sdec); }
 size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,start; P4NDDEC(in, n, out, 128, 64, p4sdec); }
-
-#endif
-#undef _P4BITS
-
+#undef _P4BITS    
+  #elif defined(__AVX2__)
 #define  BITDELTA bitdienc
-
-//-- SIMD: Vertical bitpacking
 #define HYBRID 1
 #define P4BITS _p4bits
+#define VSIZE 256
 
-  #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(SSE2_ON)
+#define _P4ENC    _p4enc256v
+#define  P4ENC     p4enc256v
+#define  P4NENC    p4nenc256v
+#define  P4NENCS   p4enc
+#define  BITPACK   bitpack256v
+#define USIZE 32
+#include "vp4c.c"
+
+#define P4DELTA 0
+#define  P4DENC    p4denc256v
+#define  P4NENC    p4ndenc256v
+#define  P4NENCS   p4denc
+#include "vp4c.c"
+
+#define P4DELTA 1
+#define  P4DENC    p4d1enc256v
+#define  P4NENC    p4nd1enc256v
+#define  P4NENCS   p4d1enc
+#include "vp4c.c"
+#undef P4DELTA
+
+#define P4DELTA 0
+#define  BITDELTA  bitzenc
+#define  P4DENC    p4zenc256v
+#define  P4NENC    p4nzenc256v
+#define  P4NENCS   p4zenc
+#include "vp4c.c"
+
+#undef  _P4ENC    
+#undef   P4ENC    
+#undef   BITPACK
+  #elif defined(__SSE2__) || defined(__ARM_NEON) //--------------------------------------------------
+#define  BITDELTA bitdienc
+#define HYBRID 1
+#define P4BITS _p4bits
+#define USIZE 32
+
 #define VSIZE 128 
 #define _P4ENC    _p4enc128v
 #define  P4ENC     p4enc128v
@@ -206,58 +239,22 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
 #define USIZE 32
 #include "vp4c.c"
 
-#define  BITDELTA bitdienc
-#undef P4DELTA
-
-#undef  _P4ENC    
-#undef   P4ENC    
-#undef   BITPACK
-
+/*#define  BITDELTA bitdienc
 #define VSIZE 256
 #define _P4ENC    _p4enc256w
 #define  P4ENC     p4enc256w
 #define  P4NENCS   p4encw
 #define  P4NENC    p4nenc256w
 #define  BITPACK   bitpack256w
-#include "vp4c.c"
-#endif
-
-#if defined(__AVX2__) && defined(AVX2_ON)
-#define VSIZE 256
-#define _P4ENC    _p4enc256v
-#define  P4ENC     p4enc256v
-#define  P4NENC    p4nenc256v
-#define  P4NENCS   p4enc
-#define  BITPACK   bitpack256v
-#define USIZE 32
-#include "vp4c.c"
-
-#define P4DELTA 0
-#define  P4DENC    p4denc256v
-#define  P4NENC    p4ndenc256v
-#define  P4NENCS   p4denc
-#include "vp4c.c"
-
-#define P4DELTA 1
-#define  P4DENC    p4d1enc256v
-#define  P4NENC    p4nd1enc256v
-#define  P4NENCS   p4d1enc
-#include "vp4c.c"
+#include "vp4c.c"*/
+  #endif
+  
 #undef P4DELTA
-
-#define P4DELTA 0
-#define  BITDELTA  bitzenc
-#define  P4DENC    p4zenc256v
-#define  P4NENC    p4nzenc256v
-#define  P4NENCS   p4zenc
-#define USIZE 32
-#include "vp4c.c"
-
 #undef  _P4ENC    
 #undef   P4ENC    
 #undef   BITPACK
-  #endif
-#else
+
+#else //------------------------------------------ Templates ---------------------------------------------------------------
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wparentheses"
 
@@ -266,19 +263,19 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
 
 #define uint_t TEMPLATE3(uint, USIZE, _t)
  
-#ifdef VSIZE
-  #define CSIZE VSIZE
-#else
-  #define CSIZE 128
-#endif
+  #ifdef VSIZE
+#define CSIZE VSIZE
+  #else
+#define CSIZE 128
+  #endif
    
   #ifndef P4DELTA
 
     #ifdef _P4BITS
 unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
-    #if HYBRID > 0 && USIZE >= 16
+      #if HYBRID > 0 && USIZE >= 16
   unsigned _vb[USIZE*2+64] = {0}, *vb=&_vb[USIZE];
-	#endif
+	  #endif
   unsigned cnt[USIZE+8] = {0}, x, bx, bmp8=(n+7)/8;
   uint_t *ip, u=0, a = in[0]; 
   int b,i,ml,l,fx=0,vv,eq=0;
@@ -288,11 +285,11 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
   for(;ip != in+n;ip++) CNTE(0);
 	  
   b  = TEMPLATE2(bsr, USIZE)(u);  																	
-    #if HYBRID > 0
+      #if HYBRID > 0
   if(eq == n && a) { *pbx = USIZE+2; 
-      #if USIZE == 64
+        #if USIZE == 64
     if(b == USIZE-1) b = USIZE; 
-      #endif
+        #endif
 	return b; 
   }
 	#endif
@@ -332,7 +329,7 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
     #endif
   return b;
 } 
-   #endif
+  #endif
 
 
 unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
@@ -397,7 +394,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   }
   return TEMPLATE2(p4enc, USIZE)(ip, n&(CSIZE-1), op) - out; 
 }
-  #else
+    #else
 unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { 
   uint_t _in[P4D_MAX+8];
   if(!n) return out;
@@ -421,7 +418,6 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   }                   
   return TEMPLATE2(P4NENCS, USIZE)(ip, n&(CSIZE-1), op, start) - out; 
 }
-  #endif
-
+    #endif
 #pragma clang diagnostic pop
-#endif
+  #endif
