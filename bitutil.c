@@ -62,7 +62,7 @@ uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
 
 uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) { 
   uint32_t o,x,u0 = in[0], *ip;
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
   __m256i vb0 = _mm256_set1_epi32(*in), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
                                         vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256();
   for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
@@ -138,7 +138,7 @@ uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
 
 uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o, x, *ip, u0 = in[0] - start;
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
   __m256i vb0 = _mm256_set1_epi32(u0), 
           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
           vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(); 			__m256i vs = _mm256_set1_epi32(start);
@@ -191,7 +191,7 @@ void bitddec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDD(uint8_t,  p, n, 
 void bitddec16(uint16_t *p, unsigned n, uint16_t start) { BITDD(uint16_t, p, n, 0); }
 void bitddec64(uint64_t *p, unsigned n, uint64_t start) { BITDD(uint64_t, p, n, 0); }
 void bitddec32(uint32_t *p, unsigned n, unsigned start) { 
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
   __m256i vs = _mm256_set1_epi32(start);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
@@ -255,7 +255,7 @@ uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint6
 
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o, x, *ip, u0 = in[0]-start-1;
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
    __m256i vb0 = _mm256_set1_epi32(u0), 
            vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
            vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(); 			__m256i vs = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
@@ -331,7 +331,7 @@ void bitd1dec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDD(uint8_t,  p, n,
 void bitd1dec16(uint16_t *p, unsigned n, uint16_t start) { BITDD(uint16_t, p, n, 1); }
 void bitd1dec64(uint64_t *p, unsigned n, uint64_t start) { BITDD(uint64_t, p, n, 1); }
 void bitd1dec32(uint32_t *p, unsigned n, uint32_t start) {
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
   __m256i vs = _mm256_set1_epi32(start),zv = _mm256_setzero_si256(), cv = _mm256_set_epi32(8,7,6,5,4,3,2,1);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
@@ -460,7 +460,7 @@ uint16_t bitz16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
 
 uint32_t bitz32(unsigned *in, unsigned n, uint32_t *px, unsigned start) { 
   uint32_t o, x, *ip; uint32_t u0 = zigzagenc32((int)in[0] - (int)start);
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
    __m256i vb0 = _mm256_set1_epi32(u0), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
                                          vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(); __m256i vs = _mm256_set1_epi32(start);
   for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
@@ -562,7 +562,7 @@ void bitzdec16(uint16_t *p, unsigned n, uint16_t start) {
 }
 
 void bitzdec32(unsigned *p, unsigned n, unsigned start) { 
-    #if defined(__AVX2__) && defined(USE_AVX2)
+    #ifdef __AVX2__
   __m256i vs = _mm256_set1_epi32(start); //, zv = _mm256_setzero_si256()*/; //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   unsigned *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
@@ -630,6 +630,8 @@ uint32_t bitfm32(uint32_t *in, unsigned n, uint32_t  *px, uint32_t *pmin) { uint
 uint64_t bitfm64(uint64_t *in, unsigned n, uint64_t  *px, uint64_t *pmin) { uint64_t mi,mx; BITFM(uint64_t, in, n); *pmin = mi; if(px) *px = 0; return mx - mi; }
 
 //----------- Lossy floating point conversion: pad the trailing mantissa bits with zero bits according to the relative error e (ex. 0.00001)  ----------
+#include <math.h> //nan
+
   #ifdef USE_FLOAT16
 // https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point
 #define ctof16(_cp_) (*(_Float16 *)(_cp_))
@@ -652,7 +654,7 @@ void fppad16(_Float16 *in, size_t n, _Float16 *out, float e) { int lg2e = -log(e
   u |= sign;\
   return TEMPLATE2(ctof,s)(&u);
 
-static inline float _fppad32(float d, float e, int lg2e) {
+static inline float _fppad32(float d, float e, int lg2e) { 
   uint32_t u, du = ctou32(&d), sign; 
   int      b = (du>>23 & 0xff)-0x7e;
   if((b = 25 - b - lg2e) <= 0) 
@@ -668,8 +670,8 @@ static inline float _fppad32(float d, float e, int lg2e) {
 
 void fppad32(float *in, size_t n, float *out, float e) { int lg2e = -log(e)/log(2.0); float *ip; for(ip = in; ip < in+n; ip++,out++) *out = _fppad32(*ip, e, lg2e); }
 
-static inline double _fppad64(double d, double e, int lg2e) {
-  union    r { uint64_t u; double d; } u,du; du.d = d; 
+static inline double _fppad64(double d, double e, int lg2e) { if(isnan(d)) return d;
+  union    r { uint64_t u; double d; } u,du; du.d = d; //if((du.u>>52)==0xfff) 
   uint64_t sign;
   int      b = (du.u>>52 & 0x7ff)-0x3fe;
   if((b = 54 - b - lg2e) <= 0) 
@@ -684,3 +686,4 @@ static inline double _fppad64(double d, double e, int lg2e) {
 }
 
 void fppad64(double *in, size_t n, double *out, double e) { int lg2e = -log(e)/log(2.0); double *ip; for(ip = in; ip < in+n; ip++,out++) *out = _fppad64(*ip, e, lg2e); }
+
