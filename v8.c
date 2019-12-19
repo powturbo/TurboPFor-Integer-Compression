@@ -1090,12 +1090,13 @@ size_t v8nzdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restri
 //size_t v8nxdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8xdec, bitxunpack128v, bitxunpack, 0); }
 //size_t v8nxdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8xdec, bitxunpack128v, bitxunpack, 0); }
 //--------- 
+    #if defined(__i386__) || defined(__x86_64__) 
 size_t v8ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D( in, n, out, 256, 32,         bitunpack256v,  bitunpack); }
 size_t v8nddec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8ddec, bitdunpack256v, bitdunpack, 0); }
 size_t v8nd1dec256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8d1dec,bitd1unpack256v,bitd1unpack,1); }
 size_t v8nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8zdec, bitzunpack256v, bitzunpack, 0); }
 //size_t v8nxdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8xdec, bitxunpack256v, bitxunpack, 0); }
-
+    #endif
   #else //---------------------------------------------- Templates -------------------------------------------------------------
 #define BN32(x) (x?(__bsr32(x)/8):0)
 #define VLE1(_m_) { VE32(ip[0]); unsigned _b = BN32(v); ctou32(op) = v; op += _b+1; _m_ |= _b<<((ip-sp)*2); }
