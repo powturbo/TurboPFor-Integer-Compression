@@ -207,6 +207,13 @@ enum {
   #endif
   P_QMX,       			
 
+  #if defined(VTENC)
+#define C_VTENC			CODEC1	
+  #else
+#define C_VTENC			0
+  #endif
+  P_VTENC,       			
+
   #ifdef __ARM_NEON
 #define C_SIMDCOMP128	0
   #else
@@ -325,6 +332,7 @@ struct codecs codecs[] = {
   { C_STREAMVBYTE,	"Streamvbyte",			"https://github.com/lemire/streamvbyte" },
   { C_VARINTG8IU, 	"VarintG8IU",			"https://github.com/lemire/FastPFor" },
   { C_ZLIB, 		"zlib",					"http://zlib.net\thttps://github.com/madler/zlib" },
+  { C_VTENC,		"VTEnc",		        "VTENC" }, 
   { C_MEMCPY, 		"memcpy/copy",	    	"--------------------------------------" },
   { -1 }
 };
