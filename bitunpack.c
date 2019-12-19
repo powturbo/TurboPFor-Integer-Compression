@@ -40,6 +40,7 @@
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
+#ifdef PLAIN //----------------------------------- Plain -------------------------------------------------------------------------------------------
 typedef unsigned char *(*BITUNPACK_F8)( const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out);
 typedef unsigned char *(*BITUNPACK_D8)( const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t start);
 typedef unsigned char *(*BITUNPACK_F16)(const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out);
@@ -49,8 +50,6 @@ typedef unsigned char *(*BITUNPACK_D32)(const unsigned char *__restrict in, unsi
 typedef unsigned char *(*BITUNPACK_F64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out);
 typedef unsigned char *(*BITUNPACK_D64)(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start);
    
-#if !defined(SSE2_ON) && !defined(AVX2_ON)
-
   #if 0   //????
 #define OP(_op_, _x_) *_op_++
 #define OPX(_op_)  
@@ -130,7 +129,8 @@ size_t bitnfunpack8(  unsigned char *__restrict in, size_t n, uint8_t  *__restri
 size_t bitnfunpack16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; BITNDUNPACK(in, n, out, 128, 16, bitfunpacka); } 
 size_t bitnfunpack32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; BITNDUNPACK(in, n, out, 128, 32, bitfunpacka); } 
 size_t bitnfunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op,start; BITNDUNPACK(in, n, out, 128, 64, bitfunpacka); } 
-#endif
+
+#else //-------------------------------------------- SSE/AVX2 ---------------------------------------------------------------------------------------
 
 #define _BITNUNPACKV(in, n, out, _csize_, _usize_, _bitunpackv_) {\
   unsigned char *ip = in;\
@@ -149,625 +149,16 @@ size_t bitnfunpack64( unsigned char *__restrict in, size_t n, uint64_t *__restri
   } if(n&=(_csize_-1)) { unsigned b = *ip++; ip = TEMPLATE2(_bitunpack_,  _usize_)(ip, n,     op, start,b); }\
   return ip - in;\
 }
- 
-#if (defined(__SSE2__) || defined(__ARM_NEON))  && defined(SSE2_ON)  
-#define VO16( _op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, ov)
-#define VO32( _op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, ov)
-#include "bitunpack_.h"
-
-#define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_)
-#define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_)
-#define BITUNBLK128V16_0(ip, _i_, _op_, _parm_) {__m128i ov;\
-  VOZ16(_op_,  0, ov, _parm_);\
-  VOZ16(_op_,  1, ov, _parm_);\
-  VOZ16(_op_,  2, ov, _parm_);\
-  VOZ16(_op_,  3, ov, _parm_);\
-  VOZ16(_op_,  4, ov, _parm_);\
-  VOZ16(_op_,  5, ov, _parm_);\
-  VOZ16(_op_,  6, ov, _parm_);\
-  VOZ16(_op_,  7, ov, _parm_);\
-  VOZ16(_op_,  8, ov, _parm_);\
-  VOZ16(_op_,  9, ov, _parm_);\
-  VOZ16(_op_, 10, ov, _parm_);\
-  VOZ16(_op_, 11, ov, _parm_);\
-  VOZ16(_op_, 12, ov, _parm_);\
-  VOZ16(_op_, 13, ov, _parm_);\
-  VOZ16(_op_, 14, ov, _parm_);\
-  VOZ16(_op_, 15, ov, _parm_);\
-  /*VOZ16(_op_, 16, ov, _parm_);\
-  VOZ16(_op_, 17, ov, _parm_);\
-  VOZ16(_op_, 18, ov, _parm_);\
-  VOZ16(_op_, 19, ov, _parm_);\
-  VOZ16(_op_, 20, ov, _parm_);\
-  VOZ16(_op_, 21, ov, _parm_);\
-  VOZ16(_op_, 22, ov, _parm_);\
-  VOZ16(_op_, 23, ov, _parm_);\
-  VOZ16(_op_, 24, ov, _parm_);\
-  VOZ16(_op_, 25, ov, _parm_);\
-  VOZ16(_op_, 26, ov, _parm_);\
-  VOZ16(_op_, 27, ov, _parm_);\
-  VOZ16(_op_, 28, ov, _parm_);\
-  VOZ16(_op_, 29, ov, _parm_);\
-  VOZ16(_op_, 30, ov, _parm_);\
-  VOZ16(_op_, 31, ov, _parm_);*/\
-}
-
-#define BITUNBLK128V32_0(ip, _i_, _op_, _parm_) {__m128i ov;\
-  VOZ32(_op_,  0, ov, _parm_);\
-  VOZ32(_op_,  1, ov, _parm_);\
-  VOZ32(_op_,  2, ov, _parm_);\
-  VOZ32(_op_,  3, ov, _parm_);\
-  VOZ32(_op_,  4, ov, _parm_);\
-  VOZ32(_op_,  5, ov, _parm_);\
-  VOZ32(_op_,  6, ov, _parm_);\
-  VOZ32(_op_,  7, ov, _parm_);\
-  VOZ32(_op_,  8, ov, _parm_);\
-  VOZ32(_op_,  9, ov, _parm_);\
-  VOZ32(_op_, 10, ov, _parm_);\
-  VOZ32(_op_, 11, ov, _parm_);\
-  VOZ32(_op_, 12, ov, _parm_);\
-  VOZ32(_op_, 13, ov, _parm_);\
-  VOZ32(_op_, 14, ov, _parm_);\
-  VOZ32(_op_, 15, ov, _parm_);\
-  VOZ32(_op_, 16, ov, _parm_);\
-  VOZ32(_op_, 17, ov, _parm_);\
-  VOZ32(_op_, 18, ov, _parm_);\
-  VOZ32(_op_, 19, ov, _parm_);\
-  VOZ32(_op_, 20, ov, _parm_);\
-  VOZ32(_op_, 21, ov, _parm_);\
-  VOZ32(_op_, 22, ov, _parm_);\
-  VOZ32(_op_, 23, ov, _parm_);\
-  VOZ32(_op_, 24, ov, _parm_);\
-  VOZ32(_op_, 25, ov, _parm_);\
-  VOZ32(_op_, 26, ov, _parm_);\
-  VOZ32(_op_, 27, ov, _parm_);\
-  VOZ32(_op_, 28, ov, _parm_);\
-  VOZ32(_op_, 29, ov, _parm_);\
-  VOZ32(_op_, 30, ov, _parm_);\
-  VOZ32(_op_, 31, ov, _parm_);\
-}
-#define BITUNPACK0(_parm_) _parm_ = _mm_setzero_si128()
-
-unsigned char *bitunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b) { const unsigned char *ip = in+PAD8(128*b); __m128i sv; BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; }
-unsigned char *bitunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b) { const unsigned char *ip = in+PAD8(128*b); __m128i sv; BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; }
-unsigned char *bitunpack256w32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b) {
-  const unsigned char *_in=in; unsigned *_out=out; __m128i sv; 
-  BITUNPACK128V32(in, b, out, sv); out = _out+128; in=_in+PAD8(128*b);
-  BITUNPACK128V32(in, b, out, sv); 
-  return (unsigned char *)_in+PAD8(256*b);
-}
-
-#define STOZ64(_op_, _ov_) _mm_storeu_si128(_op_++, _ov_); _mm_storeu_si128(_op_++, _ov_)
-#define STO64( _op_, _ov_, _zv_) _mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_ov_,_zv_));_mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_mm_srli_si128(_ov_,8),_zv_))
-
-#define VOZ32(_op_, _i_, ov, _parm_) STOZ64(_op_, _parm_)
-#define VO32( _op_, _i_, ov, _parm_) STO64(_op_, ov, zv)
-#include "bitunpack_.h"
-unsigned char *bitunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t      *__restrict out, unsigned b) {     
-  if(b <= 32) { const unsigned char *ip = in+PAD8(128*b); 
-    __m128i sv,zv = _mm_setzero_si128(); 
-    BITUNPACK128V32(in, b, out, sv); 
-    return (unsigned char *)ip; 
-  } else return bitunpack64(in,n,out,b);
-}
-#undef VO32
-#undef VOZ32
-#undef VO16
-#undef VOZ16
-#undef BITUNPACK0
-
-//------------------------------SSE -----------------------------------------------
-  #if defined(__SSSE3__) || defined(__ARM_NEON)
-    #define _ 0x80
-ALIGNED(char, _shuffle_32[16][16],16) = {
-        { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
-        { 0,1,2,3, _,_,_,_, _,_, _, _,  _, _, _,_  },
-        { _,_,_,_, 0,1,2,3, _,_, _, _,  _, _, _,_  },
-        { 0,1,2,3, 4,5,6,7, _,_, _, _,  _, _, _,_  },
-        { _,_,_,_, _,_,_,_, 0,1, 2, 3,  _, _, _,_  },
-        { 0,1,2,3, _,_,_,_, 4,5, 6, 7,  _, _, _,_  },
-        { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  _, _, _,_  },
-        { 0,1,2,3, 4,5,6,7, 8,9,10,11,  _, _, _,_  },
-        { _,_,_,_, _,_,_,_, _,_,_,_,    0, 1, 2, 3 },
-        { 0,1,2,3, _,_,_,_, _,_,_,  _,  4, 5, 6, 7 },
-        { _,_,_,_, 0,1,2,3, _,_,_,  _,  4, 5, 6, 7 },
-        { 0,1,2,3, 4,5,6,7, _,_, _, _,  8, 9,10,11 },
-        { _,_,_,_, _,_,_,_, 0,1, 2, 3,  4, 5, 6, 7 },
-        { 0,1,2,3, _,_,_,_, 4,5, 6, 7,  8, 9,10,11 },
-        { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  8, 9,10,11 },
-        { 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15 },
-};
-ALIGNED(char, _shuffle_16[256][16],16) = {
-  { _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ },
-  { 0, 1, _, _, _, _, _, _, _, _, _, _, _, _, _, _ },
-  { _, _, 0, 1, _, _, _, _, _, _, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, _, _, _, _ },
-  { _, _, _, _, 0, 1, _, _, _, _, _, _, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, _, _, _, _ },
-  { _, _, _, _, _, _, 0, 1, _, _, _, _, _, _, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, _, _, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, _, _, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _, _, _ },
-  { _, _, _, _, _, _, _, _, 0, 1, _, _, _, _, _, _ },
-  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, _, _, _, _ },
-  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, _, _, _, _ },
-  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _, _, _ },
-  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, _, _, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, _, _, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _, _, _ },
-  { _, _, _, _, _, _, _, _, _, _, 0, 1, _, _, _, _ },
-  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, _, _, _, _ },
-  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, _, _, _, _ },
-  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _, _, _ },
-  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, _, _, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, _, _, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _, _, _ },
-  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, _, _, _, _ },
-  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, _, _, _, _ },
-  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _, _, _ },
-  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _, _, _ },
-  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _, _, _ },
-  { _, _, _, _, _, _, _, _, _, _, _, _, 0, 1, _, _ },
-  { 0, 1, _, _, _, _, _, _, _, _, _, _, 2, 3, _, _ },
-  { _, _, 0, 1, _, _, _, _, _, _, _, _, 2, 3, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, 4, 5, _, _ },
-  { _, _, _, _, 0, 1, _, _, _, _, _, _, 2, 3, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, 4, 5, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7, _, _ },
-  { _, _, _, _, _, _, 0, 1, _, _, _, _, 2, 3, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, 4, 5, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9, _, _ },
-  { _, _, _, _, _, _, _, _, 0, 1, _, _, 2, 3, _, _ },
-  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, 4, 5, _, _ },
-  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7, _, _ },
-  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9, _, _ },
-  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11, _, _ },
-  { _, _, _, _, _, _, _, _, _, _, 0, 1, 2, 3, _, _ },
-  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, 4, 5, _, _ },
-  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7, _, _ },
-  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9, _, _ },
-  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11, _, _ },
-  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, _, _ },
-  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _ },
-  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _ },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9, _, _ },
-  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _ },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _ },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _ },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11, _, _ },
-  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _ },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _ },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _ },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11, _, _ },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _ },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _ },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _ },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13, _, _ },
-  { _, _, _, _, _, _, _, _, _, _, _, _, _, _, 0, 1 },
-  { 0, 1, _, _, _, _, _, _, _, _, _, _, _, _, 2, 3 },
-  { _, _, 0, 1, _, _, _, _, _, _, _, _, _, _, 2, 3 },
-  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, _, _, 4, 5 },
-  { _, _, _, _, 0, 1, _, _, _, _, _, _, _, _, 2, 3 },
-  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, _, _, 4, 5 },
-  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, _, _, 4, 5 },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, _, _, 6, 7 },
-  { _, _, _, _, _, _, 0, 1, _, _, _, _, _, _, 2, 3 },
-  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, _, _, 4, 5 },
-  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, _, _, 4, 5 },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, _, _, 6, 7 },
-  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, _, _, 4, 5 },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7 },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _, 8, 9 },
-  { _, _, _, _, _, _, _, _, 0, 1, _, _, _, _, 2, 3 },
-  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, _, _, 4, 5 },
-  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, _, _, 4, 5 },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, _, _, 6, 7 },
-  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, _, _, 4, 5 },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7 },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7 },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _, 8, 9 },
-  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, _, _, 4, 5 },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7 },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7 },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _, 8, 9 },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7 },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9 },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _,10,11 },
-  { _, _, _, _, _, _, _, _, _, _, 0, 1, _, _, 2, 3 },
-  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, _, _, 4, 5 },
-  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, _, _, 4, 5 },
-  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, _, _, 6, 7 },
-  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, _, _, 4, 5 },
-  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7 },
-  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7 },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _, 8, 9 },
-  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, _, _, 4, 5 },
-  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7 },
-  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7 },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _, 8, 9 },
-  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7 },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9 },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _,10,11 },
-  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, _, _, 4, 5 },
-  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7 },
-  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7 },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _, 8, 9 },
-  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7 },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9 },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9 },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _,10,11 },
-  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7 },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9 },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9 },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _,10,11 },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9 },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11 },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _,12,13 },
-  { _, _, _, _, _, _, _, _, _, _, _, _, 0, 1, 2, 3 },
-  { 0, 1, _, _, _, _, _, _, _, _, _, _, 2, 3, 4, 5 },
-  { _, _, 0, 1, _, _, _, _, _, _, _, _, 2, 3, 4, 5 },
-  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, 4, 5, 6, 7 },
-  { _, _, _, _, 0, 1, _, _, _, _, _, _, 2, 3, 4, 5 },
-  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7 },
-  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7 },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7, 8, 9 },
-  { _, _, _, _, _, _, 0, 1, _, _, _, _, 2, 3, 4, 5 },
-  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7 },
-  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7 },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7, 8, 9 },
-  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7 },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9 },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9,10,11 },
-  { _, _, _, _, _, _, _, _, 0, 1, _, _, 2, 3, 4, 5 },
-  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7 },
-  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7 },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7, 8, 9 },
-  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7 },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9 },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9 },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9,10,11 },
-  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7 },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9 },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9 },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9,10,11 },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9 },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11 },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11,12,13 },
-  { _, _, _, _, _, _, _, _, _, _, 0, 1, 2, 3, 4, 5 },
-  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7 },
-  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7 },
-  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7, 8, 9 },
-  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7 },
-  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9 },
-  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9 },
-  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9,10,11 },
-  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7 },
-  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9 },
-  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9 },
-  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9,10,11 },
-  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9 },
-  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11 },
-  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11,12,13 },
-  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7 },
-  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9 },
-  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9 },
-  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9,10,11 },
-  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9 },
-  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11 },
-  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11 },
-  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11,12,13 },
-  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
-  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11 },
-  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11 },
-  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11,12,13 },
-  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11 },
-  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13 },
-  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13 },
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15 },
-};
-    #undef _
-  #endif
-  
-#define VO16( _op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m)
-#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m)
-#define VOZ16(_op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) );  pex += popcnt32(m)
-#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) );  pex += popcnt32(m)
-#define BITUNPACK0(_parm_) //_parm_ = _mm_setzero_si128()
-#include "bitunpack_.h"
-
-unsigned char *_bitunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv; BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *_bitunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv; BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *_bitunpack256w32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
-  const unsigned char *_in=in; unsigned *_out=out, m; __m128i sv; 
-  BITUNPACK128V32(in, b, out, sv); out = _out+128; in=_in+PAD8(128*b);
-  BITUNPACK128V32(in, b, out, sv); 
-  return (unsigned char *)_in+PAD8(256*b);
-}
-
-//#define STOZ64(_op_, _ov_) _mm_storeu_si128(_op_++, _ov_); _mm_storeu_si128(_op_++, _ov_)
-#define STO64( _op_, _ov_, _zv_) _mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_ov_,_zv_));_mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_mm_srli_si128(_ov_,8),_zv_))
-
-#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ); STO64(_op_, _wv, zv);} pex += popcnt32(m)
-#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ;  STO64(_op_, _wv, zv);} pex += popcnt32(m)
-#define BITUNPACK0(_parm_)
-
-#include "bitunpack_.h"
-unsigned char *_bitunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b, uint32_t *__restrict pex, unsigned char *bb) { 
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i zv = _mm_setzero_si128(); BITUNPACK128V32(in, b, out, 0); return (unsigned char *)ip; 
-}
-
-#undef VO32
-#undef VOZ32
-#undef VO16
-#undef VOZ16
-#undef BITUNPACK0
-
-//-------------------------------------------------------------------
-#define VOZ16(_op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _parm_)
-#define VOZ32(_op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _parm_)
-#define VO16( _op_, _i_, _ov_, _sv_) _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
-#define VO32( _op_, _i_, _ov_, _sv_) _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_)
-unsigned char *bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
-#define VO16(_op_, i, _ov_, _sv_) _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_)
-unsigned char *bitdunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) { 
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { 
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-#define VO32( _op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, sv))
-#define VO16( _op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, sv))
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_)
-unsigned char *bitfunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) { 
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { 
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-//---------------------------- SSE ----------------------------------------------
-  #if defined(__SSSE3__) || defined(__ARM_NEON)
-#define VX32(_i_, _ov_)         if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
-#define VXZ32(_i_, _ov_)        if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
-#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32(_i_, _ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-
-#define VX16(_i_, _ov_)         m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
-#define VXZ16(_i_, _ov_)        m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
-#define VO16( _op_, _i_, _ov_, _sv_)   VX16(  _i_, _ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_)   VXZ16( _i_, _ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_)
-unsigned char *_bitdunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) { 
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) { 
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-/*
-#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); mm_scan_epi32(_ov_,_sv_);   STO64( _op_, _sv_) //_mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32( _i_, _ov_); mm_scan_epi32(_ov_,_sv_); STOZ64( _op_, _sv_, zv) //_mm_storeu_si128(_op_++, _sv_);
-unsigned char *_bitdunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, uint64_t       *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start),zv = _mm_setzero_si128(); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}*/
-
-#define VX16(_i_, _ov_)              m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
-#define VXZ16(_i_, _ov_)             m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
-#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-
-#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ); pex += popcnt32(m)
-#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ); pex += popcnt32(m)
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
-
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_)
-unsigned char *_bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) { 
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-  #endif 
-  
-#define VO16(_op_, i, _ov_, _sv_) _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi16(_parm_, cv)
-#define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi32(_parm_, cv)
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi16(_parm_, cv); cv = _mm_set1_epi16(8)
-unsigned char *bitd1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start), cv = _mm_set_epi16(8,7,6,5,4,3,2,1); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi32(_parm_, cv); cv = _mm_set1_epi32(4)
-unsigned char *bitd1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-#define VO16(_op_, i, _ov_, _sv_) ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32(_op_, i, _ov_, _sv_) ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi16(_parm_, cv)
-#define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi32(_parm_, cv)
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi16(_parm_, cv); cv = _mm_set1_epi16(8)
-unsigned char *bits1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(8); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi32(_parm_, cv); cv = _mm_set1_epi32(4)
-unsigned char *bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(4); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-#define VO16( _op_, _i_, _ov_, _sv_) _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, _sv_)); _sv_ = _mm_add_epi16(_sv_, cv)
-#define VO32( _op_, _i_, _ov_, _sv_) _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _sv_)); _sv_ = _mm_add_epi32(_sv_, cv)
-#define VOZ32(_op_, _i_, _ov_, _sv_) _mm_storeu_si128(_op_++, _sv_);                      _sv_ = _mm_add_epi32(_sv_, cv); 
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_) 
-unsigned char *bitf1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set_epi16(start+8,start+7,start+6,start+5,start+4,start+3,start+2,start+1), cv = _mm_set1_epi16(8); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-unsigned char *bitf1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set_epi32(start+4,start+3,start+2,start+1),                                 cv = _mm_set1_epi32(4); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-  #if defined(__SSSE3__) || defined(__ARM_NEON)
-#define VX16(_i_, _ov_)                                                    m =  *bb++;       _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]))); pex += popcnt32(m)
-#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
-#define VXZ16(_i_, _ov_)                                                   m =  *bb++;       _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]));  pex += popcnt32(m)
-#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
-
-#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
-unsigned char *_bitd1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start), cv = _mm_set_epi16(8,7,6,5,4,3,2,1); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-#define BITUNPACK0(_parm_) mv = _mm_setzero_si128()
-unsigned char *_bitd1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(        4,3,2,1); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
-
-#include "bitunpack_.h"
-#define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
-unsigned char *_bits1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(8); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
-}
-#define BITUNPACK0(_parm_) mv = _mm_setzero_si128()
-unsigned char *_bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(4); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
-}
-
-  #endif
-
-size_t bitnunpack128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       _BITNUNPACKV( in, n, out, 128, 16, bitunpack128v); } 
-size_t bitnunpack128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _BITNUNPACKV( in, n, out, 128, 32, bitunpack128v); } 
-size_t bitnunpack128v64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op;       _BITNUNPACKV( in, n, out, 128, 64, bitunpack128v); } 
-size_t bitnunpack256w32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _BITNUNPACKV( in, n, out, 256, 32, bitunpack256w); } 
-
-size_t bitndunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitdunpack128v, bitdunpack); } 
-size_t bitndunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitdunpack128v, bitdunpack); } 
-
-size_t bitnd1unpack128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitd1unpack128v, bitd1unpack); } 
-size_t bitnd1unpack128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitd1unpack128v, bitd1unpack); } 
-
-size_t bitns1unpack128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bits1unpack128v, bitd1unpack); } 
-size_t bitns1unpack128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bits1unpack128v, bitd1unpack); } 
-
-size_t bitnzunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitzunpack128v, bitzunpack); } 
-size_t bitnzunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitzunpack128v, bitzunpack); } 
-
-size_t bitnfunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitfunpack128v, bitfunpack); } 
-size_t bitnfunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitfunpack128v, bitfunpack); } 
-#endif 
- 
-#if defined(__AVX2__) && defined(AVX2_ON)  
+  #ifdef __AVX2__ //-------------------------------- AVX2 ----------------------------------------------------------------------------
 #include <immintrin.h>
 
-  #ifdef __AVX512F__
+    #ifdef __AVX512F__
 #define mm256_maskz_expand_epi32(_m_,_v_) _mm256_maskz_expand_epi32(_m_,_v_)
 #define mm256_maskz_loadu_epi32( _m_,_v_) _mm256_maskz_loadu_epi32( _m_,_v_)
-  #else
+    #else
 #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
 static inline __m128i _mm_cvtsi64_si128(__int64 a) {  return _mm_loadl_epi64((__m128i*)&a); }
-#endif
+    #endif
 static ALIGNED(unsigned char, permv[256][8], 32) = {
 0,0,0,0,0,0,0,0,
 0,1,1,1,1,1,1,1,
@@ -1186,7 +577,611 @@ size_t bitnd1unpack256v32(unsigned char *__restrict in, size_t n, uint32_t *__re
 //size_t bitns1unpack256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bits1unpack256v, bitd1unpack); } 
 size_t bitnzunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bitzunpack256v,  bitzunpack); } 
 size_t bitnfunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 256, 32, bitfunpack256v,  bitfunpack); } 
+  #elif defined(__SSE2__) || defined(__ARM_NEON) //------------------------------ SSE2/SSSE3 ---------------------------------------------------------
+#define VO16( _op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, ov)
+#define VO32( _op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, ov)
+#include "bitunpack_.h"
 
+#define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_)
+#define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_)
+#define BITUNBLK128V16_0(ip, _i_, _op_, _parm_) {__m128i ov;\
+  VOZ16(_op_,  0, ov, _parm_);\
+  VOZ16(_op_,  1, ov, _parm_);\
+  VOZ16(_op_,  2, ov, _parm_);\
+  VOZ16(_op_,  3, ov, _parm_);\
+  VOZ16(_op_,  4, ov, _parm_);\
+  VOZ16(_op_,  5, ov, _parm_);\
+  VOZ16(_op_,  6, ov, _parm_);\
+  VOZ16(_op_,  7, ov, _parm_);\
+  VOZ16(_op_,  8, ov, _parm_);\
+  VOZ16(_op_,  9, ov, _parm_);\
+  VOZ16(_op_, 10, ov, _parm_);\
+  VOZ16(_op_, 11, ov, _parm_);\
+  VOZ16(_op_, 12, ov, _parm_);\
+  VOZ16(_op_, 13, ov, _parm_);\
+  VOZ16(_op_, 14, ov, _parm_);\
+  VOZ16(_op_, 15, ov, _parm_);\
+  /*VOZ16(_op_, 16, ov, _parm_);\
+  VOZ16(_op_, 17, ov, _parm_);\
+  VOZ16(_op_, 18, ov, _parm_);\
+  VOZ16(_op_, 19, ov, _parm_);\
+  VOZ16(_op_, 20, ov, _parm_);\
+  VOZ16(_op_, 21, ov, _parm_);\
+  VOZ16(_op_, 22, ov, _parm_);\
+  VOZ16(_op_, 23, ov, _parm_);\
+  VOZ16(_op_, 24, ov, _parm_);\
+  VOZ16(_op_, 25, ov, _parm_);\
+  VOZ16(_op_, 26, ov, _parm_);\
+  VOZ16(_op_, 27, ov, _parm_);\
+  VOZ16(_op_, 28, ov, _parm_);\
+  VOZ16(_op_, 29, ov, _parm_);\
+  VOZ16(_op_, 30, ov, _parm_);\
+  VOZ16(_op_, 31, ov, _parm_);*/\
+}
+
+#define BITUNBLK128V32_0(ip, _i_, _op_, _parm_) {__m128i ov;\
+  VOZ32(_op_,  0, ov, _parm_);\
+  VOZ32(_op_,  1, ov, _parm_);\
+  VOZ32(_op_,  2, ov, _parm_);\
+  VOZ32(_op_,  3, ov, _parm_);\
+  VOZ32(_op_,  4, ov, _parm_);\
+  VOZ32(_op_,  5, ov, _parm_);\
+  VOZ32(_op_,  6, ov, _parm_);\
+  VOZ32(_op_,  7, ov, _parm_);\
+  VOZ32(_op_,  8, ov, _parm_);\
+  VOZ32(_op_,  9, ov, _parm_);\
+  VOZ32(_op_, 10, ov, _parm_);\
+  VOZ32(_op_, 11, ov, _parm_);\
+  VOZ32(_op_, 12, ov, _parm_);\
+  VOZ32(_op_, 13, ov, _parm_);\
+  VOZ32(_op_, 14, ov, _parm_);\
+  VOZ32(_op_, 15, ov, _parm_);\
+  VOZ32(_op_, 16, ov, _parm_);\
+  VOZ32(_op_, 17, ov, _parm_);\
+  VOZ32(_op_, 18, ov, _parm_);\
+  VOZ32(_op_, 19, ov, _parm_);\
+  VOZ32(_op_, 20, ov, _parm_);\
+  VOZ32(_op_, 21, ov, _parm_);\
+  VOZ32(_op_, 22, ov, _parm_);\
+  VOZ32(_op_, 23, ov, _parm_);\
+  VOZ32(_op_, 24, ov, _parm_);\
+  VOZ32(_op_, 25, ov, _parm_);\
+  VOZ32(_op_, 26, ov, _parm_);\
+  VOZ32(_op_, 27, ov, _parm_);\
+  VOZ32(_op_, 28, ov, _parm_);\
+  VOZ32(_op_, 29, ov, _parm_);\
+  VOZ32(_op_, 30, ov, _parm_);\
+  VOZ32(_op_, 31, ov, _parm_);\
+}
+#define BITUNPACK0(_parm_) _parm_ = _mm_setzero_si128()
+
+unsigned char *bitunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b) { const unsigned char *ip = in+PAD8(128*b); __m128i sv; BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; }
+unsigned char *bitunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b) { const unsigned char *ip = in+PAD8(128*b); __m128i sv; BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; }
+unsigned char *bitunpack256w32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b) {
+  const unsigned char *_in=in; unsigned *_out=out; __m128i sv; 
+  BITUNPACK128V32(in, b, out, sv); out = _out+128; in=_in+PAD8(128*b);
+  BITUNPACK128V32(in, b, out, sv); 
+  return (unsigned char *)_in+PAD8(256*b);
+}
+
+#define STOZ64(_op_, _ov_) _mm_storeu_si128(_op_++, _ov_); _mm_storeu_si128(_op_++, _ov_)
+#define STO64( _op_, _ov_, _zv_) _mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_ov_,_zv_));_mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_mm_srli_si128(_ov_,8),_zv_))
+
+#define VOZ32(_op_, _i_, ov, _parm_) STOZ64(_op_, _parm_)
+#define VO32( _op_, _i_, ov, _parm_) STO64(_op_, ov, zv)
+#include "bitunpack_.h"
+unsigned char *bitunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t      *__restrict out, unsigned b) {     
+  if(b <= 32) { const unsigned char *ip = in+PAD8(128*b); 
+    __m128i sv,zv = _mm_setzero_si128(); 
+    BITUNPACK128V32(in, b, out, sv); 
+    return (unsigned char *)ip; 
+  } else return bitunpack64(in,n,out,b);
+}
+#undef VO32
+#undef VOZ32
+#undef VO16
+#undef VOZ16
+#undef BITUNPACK0
+
+    #if defined(__SSSE3__) || defined(__ARM_NEON)
+  #define _ 0x80
+ALIGNED(char, _shuffle_32[16][16],16) = {
+        { _,_,_,_, _,_,_,_, _,_, _, _,  _, _, _,_  },
+        { 0,1,2,3, _,_,_,_, _,_, _, _,  _, _, _,_  },
+        { _,_,_,_, 0,1,2,3, _,_, _, _,  _, _, _,_  },
+        { 0,1,2,3, 4,5,6,7, _,_, _, _,  _, _, _,_  },
+        { _,_,_,_, _,_,_,_, 0,1, 2, 3,  _, _, _,_  },
+        { 0,1,2,3, _,_,_,_, 4,5, 6, 7,  _, _, _,_  },
+        { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  _, _, _,_  },
+        { 0,1,2,3, 4,5,6,7, 8,9,10,11,  _, _, _,_  },
+        { _,_,_,_, _,_,_,_, _,_,_,_,    0, 1, 2, 3 },
+        { 0,1,2,3, _,_,_,_, _,_,_,  _,  4, 5, 6, 7 },
+        { _,_,_,_, 0,1,2,3, _,_,_,  _,  4, 5, 6, 7 },
+        { 0,1,2,3, 4,5,6,7, _,_, _, _,  8, 9,10,11 },
+        { _,_,_,_, _,_,_,_, 0,1, 2, 3,  4, 5, 6, 7 },
+        { 0,1,2,3, _,_,_,_, 4,5, 6, 7,  8, 9,10,11 },
+        { _,_,_,_, 0,1,2,3, 4,5, 6, 7,  8, 9,10,11 },
+        { 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15 },
+};
+ALIGNED(char, _shuffle_16[256][16],16) = {
+  { _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ },
+  { 0, 1, _, _, _, _, _, _, _, _, _, _, _, _, _, _ },
+  { _, _, 0, 1, _, _, _, _, _, _, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, _, _, _, _ },
+  { _, _, _, _, 0, 1, _, _, _, _, _, _, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, _, _, _, _ },
+  { _, _, _, _, _, _, 0, 1, _, _, _, _, _, _, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, _, _, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, _, _, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _, _, _ },
+  { _, _, _, _, _, _, _, _, 0, 1, _, _, _, _, _, _ },
+  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, _, _, _, _ },
+  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, _, _, _, _ },
+  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _, _, _ },
+  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, _, _, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, _, _, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _, _, _ },
+  { _, _, _, _, _, _, _, _, _, _, 0, 1, _, _, _, _ },
+  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, _, _, _, _ },
+  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, _, _, _, _ },
+  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _, _, _ },
+  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, _, _, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, _, _, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _, _, _ },
+  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, _, _, _, _ },
+  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, _, _, _, _ },
+  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _, _, _ },
+  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _, _, _ },
+  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _, _, _ },
+  { _, _, _, _, _, _, _, _, _, _, _, _, 0, 1, _, _ },
+  { 0, 1, _, _, _, _, _, _, _, _, _, _, 2, 3, _, _ },
+  { _, _, 0, 1, _, _, _, _, _, _, _, _, 2, 3, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, 4, 5, _, _ },
+  { _, _, _, _, 0, 1, _, _, _, _, _, _, 2, 3, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, 4, 5, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7, _, _ },
+  { _, _, _, _, _, _, 0, 1, _, _, _, _, 2, 3, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, 4, 5, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9, _, _ },
+  { _, _, _, _, _, _, _, _, 0, 1, _, _, 2, 3, _, _ },
+  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, 4, 5, _, _ },
+  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7, _, _ },
+  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9, _, _ },
+  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11, _, _ },
+  { _, _, _, _, _, _, _, _, _, _, 0, 1, 2, 3, _, _ },
+  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, 4, 5, _, _ },
+  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7, _, _ },
+  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9, _, _ },
+  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11, _, _ },
+  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, _, _ },
+  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _ },
+  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _ },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9, _, _ },
+  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _ },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _ },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _ },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11, _, _ },
+  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _ },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _ },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _ },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11, _, _ },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _ },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _ },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _ },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13, _, _ },
+  { _, _, _, _, _, _, _, _, _, _, _, _, _, _, 0, 1 },
+  { 0, 1, _, _, _, _, _, _, _, _, _, _, _, _, 2, 3 },
+  { _, _, 0, 1, _, _, _, _, _, _, _, _, _, _, 2, 3 },
+  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, _, _, 4, 5 },
+  { _, _, _, _, 0, 1, _, _, _, _, _, _, _, _, 2, 3 },
+  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, _, _, 4, 5 },
+  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, _, _, 4, 5 },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, _, _, 6, 7 },
+  { _, _, _, _, _, _, 0, 1, _, _, _, _, _, _, 2, 3 },
+  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, _, _, 4, 5 },
+  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, _, _, 4, 5 },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, _, _, 6, 7 },
+  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, _, _, 4, 5 },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7 },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, _, _, 8, 9 },
+  { _, _, _, _, _, _, _, _, 0, 1, _, _, _, _, 2, 3 },
+  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, _, _, 4, 5 },
+  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, _, _, 4, 5 },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, _, _, 6, 7 },
+  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, _, _, 4, 5 },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7 },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7 },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, _, _, 8, 9 },
+  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, _, _, 4, 5 },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7 },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7 },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, _, _, 8, 9 },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7 },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9 },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _, _, _,10,11 },
+  { _, _, _, _, _, _, _, _, _, _, 0, 1, _, _, 2, 3 },
+  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, _, _, 4, 5 },
+  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, _, _, 4, 5 },
+  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, _, _, 6, 7 },
+  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, _, _, 4, 5 },
+  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7 },
+  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7 },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, _, _, 8, 9 },
+  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, _, _, 4, 5 },
+  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7 },
+  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7 },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, _, _, 8, 9 },
+  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7 },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9 },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9, _, _,10,11 },
+  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, _, _, 4, 5 },
+  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7 },
+  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7 },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, _, _, 8, 9 },
+  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7 },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9 },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9 },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9, _, _,10,11 },
+  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7 },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9 },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9 },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9, _, _,10,11 },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9 },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11 },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, _, _,12,13 },
+  { _, _, _, _, _, _, _, _, _, _, _, _, 0, 1, 2, 3 },
+  { 0, 1, _, _, _, _, _, _, _, _, _, _, 2, 3, 4, 5 },
+  { _, _, 0, 1, _, _, _, _, _, _, _, _, 2, 3, 4, 5 },
+  { 0, 1, 2, 3, _, _, _, _, _, _, _, _, 4, 5, 6, 7 },
+  { _, _, _, _, 0, 1, _, _, _, _, _, _, 2, 3, 4, 5 },
+  { 0, 1, _, _, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7 },
+  { _, _, 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7 },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, _, _, 6, 7, 8, 9 },
+  { _, _, _, _, _, _, 0, 1, _, _, _, _, 2, 3, 4, 5 },
+  { 0, 1, _, _, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7 },
+  { _, _, 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7 },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, _, _, 6, 7, 8, 9 },
+  { _, _, _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7 },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9 },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, _, _, 8, 9,10,11 },
+  { _, _, _, _, _, _, _, _, 0, 1, _, _, 2, 3, 4, 5 },
+  { 0, 1, _, _, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7 },
+  { _, _, 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7 },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, _, _, 6, 7, 8, 9 },
+  { _, _, _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7 },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9 },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9 },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, _, _, 8, 9,10,11 },
+  { _, _, _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7 },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9 },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9 },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, _, _, 8, 9,10,11 },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9 },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11 },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, _, _,10,11,12,13 },
+  { _, _, _, _, _, _, _, _, _, _, 0, 1, 2, 3, 4, 5 },
+  { 0, 1, _, _, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7 },
+  { _, _, 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7 },
+  { 0, 1, 2, 3, _, _, _, _, _, _, 4, 5, 6, 7, 8, 9 },
+  { _, _, _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7 },
+  { 0, 1, _, _, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9 },
+  { _, _, 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9 },
+  { 0, 1, 2, 3, 4, 5, _, _, _, _, 6, 7, 8, 9,10,11 },
+  { _, _, _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7 },
+  { 0, 1, _, _, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9 },
+  { _, _, 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9 },
+  { 0, 1, 2, 3, _, _, 4, 5, _, _, 6, 7, 8, 9,10,11 },
+  { _, _, _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9 },
+  { 0, 1, _, _, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11 },
+  { _, _, 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, _, _, 8, 9,10,11,12,13 },
+  { _, _, _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7 },
+  { 0, 1, _, _, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9 },
+  { _, _, 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9 },
+  { 0, 1, 2, 3, _, _, _, _, 4, 5, 6, 7, 8, 9,10,11 },
+  { _, _, _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9 },
+  { 0, 1, _, _, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11 },
+  { _, _, 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11 },
+  { 0, 1, 2, 3, 4, 5, _, _, 6, 7, 8, 9,10,11,12,13 },
+  { _, _, _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+  { 0, 1, _, _, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11 },
+  { _, _, 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11 },
+  { 0, 1, 2, 3, _, _, 4, 5, 6, 7, 8, 9,10,11,12,13 },
+  { _, _, _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11 },
+  { 0, 1, _, _, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13 },
+  { _, _, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13 },
+  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15 },
+};
+  #undef _
+    #endif // SSSE3
+  
+#define VO16( _op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m)
+#define VOZ16(_op_, _i_, _ov_, _parm_) m = *bb++;                                            _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) );  pex += popcnt32(m)
+#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; _mm_storeu_si128(_op_++,                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) );  pex += popcnt32(m)
+#define BITUNPACK0(_parm_) //_parm_ = _mm_setzero_si128()
+#include "bitunpack_.h"
+
+unsigned char *_bitunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv; BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *_bitunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv; BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *_bitunpack256w32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
+  const unsigned char *_in=in; unsigned *_out=out, m; __m128i sv; 
+  BITUNPACK128V32(in, b, out, sv); out = _out+128; in=_in+PAD8(128*b);
+  BITUNPACK128V32(in, b, out, sv); 
+  return (unsigned char *)_in+PAD8(256*b);
+}
+
+//#define STOZ64(_op_, _ov_) _mm_storeu_si128(_op_++, _ov_); _mm_storeu_si128(_op_++, _ov_)
+#define STO64( _op_, _ov_, _zv_) _mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_ov_,_zv_));_mm_storeu_si128(_op_++, _mm_unpacklo_epi32(_mm_srli_si128(_ov_,8),_zv_))
+
+#define VO32( _op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ); STO64(_op_, _wv, zv);} pex += popcnt32(m)
+#define VOZ32(_op_, _i_, _ov_, _parm_) if((_i_) & 1) m = (*bb++) >> 4; else m = (*bb) & 0xf; { __m128i _wv =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ;  STO64(_op_, _wv, zv);} pex += popcnt32(m)
+#define BITUNPACK0(_parm_)
+
+#include "bitunpack_.h"
+unsigned char *_bitunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b, uint32_t *__restrict pex, unsigned char *bb) { 
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i zv = _mm_setzero_si128(); BITUNPACK128V32(in, b, out, 0); return (unsigned char *)ip; 
+}
+
+#undef VO32
+#undef VOZ32
+#undef VO16
+#undef VOZ16
+#undef BITUNPACK0
+
+//-------------------------------------------------------------------
+#define VOZ16(_op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _parm_)
+#define VOZ32(_op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _parm_)
+#define VO16( _op_, _i_, _ov_, _sv_) _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#define VO32( _op_, _i_, _ov_, _sv_) _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_)
+unsigned char *bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#define VO16(_op_, i, _ov_, _sv_) _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_)
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_)
+unsigned char *bitdunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) { 
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { 
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+#define VO32( _op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, sv))
+#define VO16( _op_, _i_, _ov_, _parm_) _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, sv))
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_)
+unsigned char *bitfunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) { 
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) { 
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+    #if defined(__SSSE3__) || defined(__ARM_NEON)
+#define VX32(_i_, _ov_)         if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
+#define VXZ32(_i_, _ov_)        if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32(_i_, _ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+
+#define VX16(_i_, _ov_)         m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
+#define VXZ16(_i_, _ov_)        m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
+#define VO16( _op_, _i_, _ov_, _sv_)   VX16(  _i_, _ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_)   VXZ16( _i_, _ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_)
+unsigned char *_bitdunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) { 
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) { 
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+/*
+#define VO32( _op_, _i_, _ov_, _sv_)   VX32( _i_, _ov_); mm_scan_epi32(_ov_,_sv_);   STO64( _op_, _sv_) //_mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_)   VXZ32( _i_, _ov_); mm_scan_epi32(_ov_,_sv_); STOZ64( _op_, _sv_, zv) //_mm_storeu_si128(_op_++, _sv_);
+unsigned char *_bitdunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start, unsigned b, uint64_t       *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start),zv = _mm_setzero_si128(); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}*/
+
+#define VX16(_i_, _ov_)              m = *bb++; _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]) ) ); pex += popcnt32(m)
+#define VXZ16(_i_, _ov_)             m = *bb++; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]) );   pex += popcnt32(m)
+#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _ov_ = mm_zzagd_epi16(_ov_); _sv_ = mm_scan_epi16(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+
+#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]) ) ); pex += popcnt32(m)
+#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]) ); pex += popcnt32(m)
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_); _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32(_i_, _ov_); _ov_ = mm_zzagd_epi32(_ov_); _sv_ = mm_scan_epi32(_ov_,_sv_); _mm_storeu_si128(_op_++, _sv_);
+
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_)
+unsigned char *_bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) { 
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) { 
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+    #endif 
+  
+#define VO16(_op_, i, _ov_, _sv_) _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32(_op_, i, _ov_, _sv_) _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi16(_parm_, cv)
+#define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi32(_parm_, cv)
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi16(_parm_, cv); cv = _mm_set1_epi16(8)
+unsigned char *bitd1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start), cv = _mm_set_epi16(8,7,6,5,4,3,2,1); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi32(_parm_, cv); cv = _mm_set1_epi32(4)
+unsigned char *bitd1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+#define VO16(_op_, i, _ov_, _sv_) ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32(_op_, i, _ov_, _sv_) ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi16(_parm_, cv)
+#define VOZ32(_op_, _i_, ov, _parm_) _mm_storeu_si128(_op_++, _parm_); _parm_ = _mm_add_epi32(_parm_, cv)
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi16(_parm_, cv); cv = _mm_set1_epi16(8)
+unsigned char *bits1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(8); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+#define BITUNPACK0(_parm_) _parm_ = _mm_add_epi32(_parm_, cv); cv = _mm_set1_epi32(4)
+unsigned char *bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(4); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+#define VO16( _op_, _i_, _ov_, _sv_) _mm_storeu_si128(_op_++, _mm_add_epi16(_ov_, _sv_)); _sv_ = _mm_add_epi16(_sv_, cv)
+#define VO32( _op_, _i_, _ov_, _sv_) _mm_storeu_si128(_op_++, _mm_add_epi32(_ov_, _sv_)); _sv_ = _mm_add_epi32(_sv_, cv)
+#define VOZ32(_op_, _i_, _ov_, _sv_) _mm_storeu_si128(_op_++, _sv_);                      _sv_ = _mm_add_epi32(_sv_, cv); 
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_) 
+unsigned char *bitf1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set_epi16(start+8,start+7,start+6,start+5,start+4,start+3,start+2,start+1), cv = _mm_set1_epi16(8); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+unsigned char *bitf1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
+  const unsigned char *ip = in+PAD8(128*b); __m128i sv = _mm_set_epi32(start+4,start+3,start+2,start+1),                                 cv = _mm_set1_epi32(4); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+    #if defined(__SSSE3__) || defined(__ARM_NEON)
+#define VX16(_i_, _ov_)                                                    m =  *bb++;       _ov_ = _mm_add_epi16(_ov_, _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_16[m]))); pex += popcnt32(m)
+#define VX32(_i_, _ov_)              if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ = _mm_add_epi32(_ov_, _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_loadu_si128((__m128i*)_shuffle_32[m]))); pex += popcnt32(m)
+#define VXZ16(_i_, _ov_)                                                   m =  *bb++;       _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_16[m]));  pex += popcnt32(m)
+#define VXZ32(_i_, _ov_)             if(!((_i_) & 1)) m = (*bb) & 0xf;else m = (*bb++) >> 4; _ov_ =                     _mm_shuffle_epi8(               _mm_loadu_si128((__m128i*)pex),     _mm_loadu_si128((__m128i*)_shuffle_32[m]));  pex += popcnt32(m)
+
+#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); _sv_ = mm_scani_epi16(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); _sv_ = mm_scani_epi32(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
+unsigned char *_bitd1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start), cv = _mm_set_epi16(8,7,6,5,4,3,2,1); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+#define BITUNPACK0(_parm_) mv = _mm_setzero_si128()
+unsigned char *_bitd1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start), cv = _mm_set_epi32(        4,3,2,1); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+
+#define VO16( _op_, _i_, _ov_, _sv_) VX16( _i_, _ov_);  ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ16(_op_, _i_, _ov_, _sv_) VXZ16( _i_, _ov_); ADDI16x8(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VO32( _op_, _i_, _ov_, _sv_) VX32( _i_, _ov_);  ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+#define VOZ32(_op_, _i_, _ov_, _sv_) VXZ32( _i_, _ov_); ADDI32x4(_ov_,_sv_,cv); _mm_storeu_si128(_op_++, _sv_);
+
+#include "bitunpack_.h"
+#define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
+unsigned char *_bits1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi16(start), cv = _mm_set1_epi16(8); BITUNPACK128V16(in, b, out, sv); return (unsigned char *)ip; 
+}
+#define BITUNPACK0(_parm_) mv = _mm_setzero_si128()
+unsigned char *_bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) {
+  const unsigned char *ip = in+PAD8(128*b); unsigned m; __m128i sv = _mm_set1_epi32(start), cv = _mm_set1_epi32(4); BITUNPACK128V32(in, b, out, sv); return (unsigned char *)ip; 
+}
+    #endif
+
+size_t bitnunpack128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       _BITNUNPACKV( in, n, out, 128, 16, bitunpack128v); } 
+size_t bitnunpack128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _BITNUNPACKV( in, n, out, 128, 32, bitunpack128v); } 
+size_t bitnunpack128v64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out) { uint64_t *op;       _BITNUNPACKV( in, n, out, 128, 64, bitunpack128v); } 
+size_t bitnunpack256w32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _BITNUNPACKV( in, n, out, 256, 32, bitunpack256w); } 
+
+size_t bitndunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitdunpack128v, bitdunpack); } 
+size_t bitndunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitdunpack128v, bitdunpack); } 
+
+size_t bitnd1unpack128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitd1unpack128v, bitd1unpack); } 
+size_t bitnd1unpack128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitd1unpack128v, bitd1unpack); } 
+
+size_t bitns1unpack128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bits1unpack128v, bitd1unpack); } 
+size_t bitns1unpack128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bits1unpack128v, bitd1unpack); } 
+
+size_t bitnzunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitzunpack128v, bitzunpack); } 
+size_t bitnzunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitzunpack128v, bitzunpack); } 
+
+size_t bitnfunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _BITNDUNPACKV(in, n, out, 128, 16, bitfunpack128v, bitfunpack); } 
+size_t bitnfunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _BITNDUNPACKV(in, n, out, 128, 32, bitfunpack128v, bitfunpack); } 
+
+#endif
 #endif
 
 #pragma clang diagnostic pop
