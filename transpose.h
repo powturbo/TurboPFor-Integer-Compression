@@ -107,6 +107,7 @@ int   cpuini(int cpuiset);
 // Ex.: printf("current cpu set=%s\n", cpustr(cpuini(0)) ); 
 char *cpustr(int cpuiset); 
 
+int cpuisa(void); 
 #ifdef __cplusplus
 }
 #endif
