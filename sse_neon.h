@@ -65,12 +65,17 @@ static ALWAYS_INLINE __m128i _mm_set_epi64x(    uint64_t u1, uint64_t u0) { uint
 #define _mm_add_epi8(  _a_,_b_)   				(__m128i)vaddq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_)) 
 #define _mm_add_epi16(  _a_,_b_)   				(__m128i)vaddq_u16((uint16x8_t)(_a_), (uint16x8_t)(_b_)) 
 #define _mm_add_epi32(  _a_,_b_)   				            vaddq_u32(             _a_,               _b_ ) 
+#define _mm_sub_epi8(   _a_,_b_)   				(__m128i)vsubq_s8( ( int8x16_t)(_a_), ( int8x16_t)(_b_)) 
 #define _mm_sub_epi16(  _a_,_b_)   				(__m128i)vsubq_u16((uint16x8_t)(_a_), (uint16x8_t)(_b_)) 
 #define _mm_sub_epi32(  _a_,_b_)   				(__m128i)vsubq_u32((uint32x4_t)(_a_), (uint32x4_t)(_b_)) 
 #define _mm_subs_epu8(   _a_,_b_)   			(__m128i)vqsubq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_)) 
 
+#define _mm_mullo_epi16(_a_,_b_)   				(__m128i)vmulq_s16(( int16x8_t)(_a_), ( int16x8_t)(_b_))
 #define _mm_mullo_epi32(_a_,_b_)   				(__m128i)vmulq_s32(( int32x4_t)(_a_), ( int32x4_t)(_b_))
 #define  mm_mullo_epu32(_a_,_b_)   				         vmulq_u32(_a_,_b_)
+
+#define _mm_mulhi_epi16(_a_,_b_)   				(__m128i)vqdmulhq_s16(( int16x8_t)(_a_), ( int16x8_t)(_b_)) //??
+
 #define _mm_mul_epu32(  _a_,_b_)     			(__m128i)vmull_u32(vget_low_u32(_a_),vget_low_u32(_b_))
 #define _mm_adds_epu16( _a_,_b_)                (__m128i)vqaddq_u16((uint16x8_t)(_a_),(uint16x8_t)(_b_))
 static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b) { 
@@ -112,6 +117,7 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b) {
 #define _mm_cmpeq_epi16(_a_,_b_)   				(__m128i)vceqq_s16(( int16x8_t)(_a_), ( int16x8_t)(_b_))
 #define _mm_cmpeq_epi32(_a_,_b_)   				(__m128i)vceqq_s32(( int32x4_t)(_a_), ( int32x4_t)(_b_))
 
+#define _mm_cmpgt_epi8( _a_,_b_)   				(__m128i)vcgtq_s8( ( int8x16_t)(_a_), ( int8x16_t)(_b_))
 #define _mm_cmpgt_epi16(_a_,_b_)   				(__m128i)vcgtq_s16(( int16x8_t)(_a_), ( int16x8_t)(_b_)) 
 #define _mm_cmpgt_epi32(_a_,_b_)   				(__m128i)vcgtq_s32(( int32x4_t)(_a_), ( int32x4_t)(_b_))
 
@@ -257,6 +263,7 @@ static ALWAYS_INLINE __m128i _mm_unpackhi_epi64(__m128i _a_, __m128i _b_) {     
 #define mm_shuffle_2031_epi32(_a_)              _mm_shuffle_epi32(_a_, _MM_SHUFFLE(2,0,3,1))
 #define mm_shuffle_3120_epi32(_a_)              _mm_shuffle_epi32(_a_, _MM_SHUFFLE(3,1,2,0))
 
+    #ifdef __SSSE3__
 static ALWAYS_INLINE __m128i mm_rbit_epi8(__m128i v) { // reverse bits in bytes
   __m128i fv     = _mm_set_epi8(15, 7,11, 3,13, 5, 9, 1,14, 6,10, 2,12, 4, 8, 0), cv0f_8 = _mm_set1_epi8(0xf);	  
   __m128i lv = _mm_shuffle_epi8(fv,_mm_and_si128(               v,     cv0f_8));
@@ -268,5 +275,6 @@ static ALWAYS_INLINE __m128i mm_rev_epi16(__m128i v) { return _mm_shuffle_epi8(v
 static ALWAYS_INLINE __m128i mm_rev_epi32(__m128i v) { return _mm_shuffle_epi8(v, _mm_set_epi8(12,13,14,15, 8, 9,10,11, 4, 5, 6, 7, 0, 1, 2, 3)); }
 static ALWAYS_INLINE __m128i mm_rev_epi64(__m128i v) { return _mm_shuffle_epi8(v, _mm_set_epi8( 8, 9,10,11,12,13,14,15, 0, 1, 2, 3, 4, 5, 6, 7)); }
 static ALWAYS_INLINE __m128i mm_rev_si128(__m128i v) { return _mm_shuffle_epi8(v, _mm_set_epi8( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15)); }
+    #endif
   #endif
 #endif
