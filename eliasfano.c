@@ -94,7 +94,7 @@
 #undef EFANODEC
 
 //----------------------
-  #if (defined(__SSE2__) || defined(__ARM_NEON)) && defined(USE_SSE)
+  #if defined(__SSE2__) || defined(__ARM_NEON)
 #define VSIZE 128
 
 #define BITPACK   bitpack128v
@@ -113,7 +113,7 @@
 #include "eliasfano.c"
   #endif
 	
-  #if defined(__AVX2__) && defined(USE_AVX2)
+  #ifdef __AVX2__
 #define VSIZE 256
 #define BITPACK bitpack256v
 #define BITUNPACK bitunpack256v
