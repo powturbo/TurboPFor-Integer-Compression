@@ -1011,11 +1011,13 @@ size_t v8nzenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
 //size_t v8nxenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8xenc,  bitx,  bitxpack128v, bitxpack,0); }
 //size_t v8nxenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8xenc,  bitx,  bitxpack128v, bitxpack,0); }
 //-------
+  #if defined(__i386__) || defined(__x86_64__) 
 size_t v8nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8E( in, n, out, 256, 32, bit,            bitpack256v,  bitpack); }
 size_t v8ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8denc,  bitd,  bitdpack256v, bitdpack,0); }
 size_t v8nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8d1enc, bitd1, bitd1pack256v,bitd1pack,1); }
 size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8zenc,  bitz,  bitzpack256v, bitzpack,0); }
 //size_t v8nxenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8xenc,  bitx,  bitxpack256v, bitxpack,0); }
+  #endif
 
 #define _V8D(in, n, out, _csize_, _usize_, _bitunpackv_, _bitunpack_) {\
   unsigned char *ip = in;														if(!n) return 0;\
