@@ -2,7 +2,7 @@ language: c
 
 arch:
   - amd64
-  - arm64
+# - arm64
 # - s390x
 # - ppc64le (gcc > 8.0)
 
@@ -19,6 +19,11 @@ script:
   
 matrix:
   include:
+    - name: linux-arm64-gcc
+      os: linux
+      arch: arm64
+      compiler: gcc
+
     - name: linux-ppc64le-gcc-9
       env: CC=gcc-9
       arch: ppc64le
