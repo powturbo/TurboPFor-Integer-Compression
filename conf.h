@@ -148,7 +148,7 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 /*# || defined(i386) || defined(_X86_) || defined(__THW_INTEL)*/
   #if defined(__i386__) || defined(__x86_64__) || \
     defined(_M_IX86) || defined(_M_AMD64) || _MSC_VER ||\
-    defined(__powerpc__) ||\
+    defined(__powerpc__) || defined(__s390__) ||\
     defined(__ARM_FEATURE_UNALIGNED) || defined(__aarch64__) || defined(__arm__) ||\
     defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || \
     defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) || defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__) || \
@@ -157,7 +157,7 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define ctou32(_cp_) (*(unsigned       *)(_cp_))
 #define ctof32(_cp_) (*(float          *)(_cp_))
 
-    #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(_MSC_VER)
+    #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(__s390__) || defined(_MSC_VER) 
 #define ctou64(_cp_)       (*(uint64_t *)(_cp_))
 #define ctof64(_cp_)       (*(double   *)(_cp_))
     #elif defined(__ARM_FEATURE_UNALIGNED)
