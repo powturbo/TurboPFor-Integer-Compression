@@ -239,6 +239,58 @@ unsigned TEMPLATE2(vbzgeteq, USIZE)(unsigned char **__restrict in, unsigned n, u
   *in = ip;
   return i;
 }
+
+unsigned char *TEMPLATE2(vbxenc, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) { 
+  uint_t *ip,v;
+  unsigned char *op = out;
+
+  #define VBXE { v = (*ip)^start; start=*ip++; TEMPLATE2(_vbput, USIZE)(op, v, ;); }
+  for(ip = in; ip != in+(n&~(UN-1)); ) { VBXE;VBXE;VBXE;VBXE; }
+  while(ip != in+n) VBXE;						  //OVERFLOWE(in,n,out,op);
+  return op;
+}  
+#undef VBZE
+
+unsigned char *TEMPLATE2(vbxdec, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) { 
+  uint_t x,*op;
+
+  #define VBXD { TEMPLATE2(_vbget, USIZE)(in, x, ;); *op++ = (start ^= x); }
+  for(op = out; op != out+(n&~(UN-1)); ) { VBXD; VBXD; VBXD; VBXD;
+	  #if UN > 4
+    VBXD; VBXD; VBXD; VBXD;
+      #endif
+											PREFETCH(in+16*USIZE, 0);	
+  }
+  while(op != out+n) VBXD; 
+
+  return in;
+}
+#undef VBZD
+
+uint_t TEMPLATE2(vbxgetx, USIZE)(unsigned char  *__restrict in, unsigned idx, uint_t start) {
+  unsigned char *ip;
+  unsigned i;
+  uint_t x;
+
+  for(ip = in,i = 0; i <= idx; i++) {
+	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
+    start ^= x;
+  }
+  return start;
+}
+
+unsigned TEMPLATE2(vbxgeteq, USIZE)(unsigned char **__restrict in, unsigned n, unsigned idx, uint_t key, uint_t start ) { 
+  unsigned i;
+  unsigned char *ip;
+  uint_t x;
+  for(ip = *in,i=idx; i < n; i++) {
+	TEMPLATE2(_vbget, USIZE)(ip, x, ;);
+	if((start ^= x) == key) 
+      break;
+  }
+  *in = ip;
+  return i;
+}
   #endif
 
 unsigned char *TEMPLATE2(VBDENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
