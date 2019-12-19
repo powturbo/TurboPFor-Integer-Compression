@@ -55,6 +55,8 @@
   { P_ZLIB, 		"zlib", 			C_ZLIB,			BLK_SIZE, 0, "4,8","TurboPFor's [delta]+byte transpose + zlib" },
   { P_BITSHUFFLE, 	"BitShuffle", 		C_TURBOPFOR,	BLK_SIZE,0,"2,4,8","Bit shuffle (simd)" }, 
   { P_BS_SHUFFLE, 	"Blosc_Shuffle",	C_C_BLOSC,		BLK_SIZE,0,"2,4,8","Blosc's shuffle (simd)" }, 
+  { P_VTENC, 		"vtenc",			C_VTENC,		BLK_SIZE,0,"2,4,8","VTEnc" }, 
+
     #ifdef LZTURBO
 //  #include "../beplugr.h"
     #endif  

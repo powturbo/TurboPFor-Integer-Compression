@@ -48,6 +48,11 @@
       #if C_VARINTG8IU
     case P_VARINTG8IU:     bitdienc32( in, n, pa, -mdelta, mdelta);                                  return vintg8enc(pa, n, out);
       #endif
+
+      #if C_VTENC
+    case P_VTENC:  { size_t l; vtenc_list_encode_u32(in, n, out+4, outsize, &l); ctou32(out) = l; return l+4; }
+      #endif 
+
       // --------- delta + transpose + lz77 ----------------------------------------------------------------------------------------
       #if C_LZTURBO
     case P_LZT10:{ bitdienc32(in, n, (unsigned *)out, -mdelta, mdelta); tpenc((unsigned char *)out, _n, sbuf,4); struct lzobj lz; lz.srclen = _n; lz.src = sbuf; lz.dst = out; lz.dstlen = _n; lz.level = 0; lz.hbits = 16; return out + lz8c01(&lz); }
@@ -74,8 +79,8 @@
       #endif
 	    
       #if C_ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { bitdienc32(in, n, (unsigned *)out, -mdelta, mdelta); tpenc((unsigned char *)out, _n, sbuf, 4); uLongf outlen = _n; int rc = compress2(out+4, &outlen, sbuf, _n, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+    case P_ZLIB:
+      { bitdienc32(in, n, (unsigned *)out, -mdelta, mdelta); tpenc((unsigned char *)out, _n, sbuf, 4); uLongf outlen = _n; int rc = compress2(out+4, &outlen, sbuf, _n, lev); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif
 
 

@@ -56,9 +56,15 @@ unsigned char *for_selectx( unsigned char *__restrict in, unsigned n, unsigned *
   #if C_QMX
 #include "JASSv2/source/compress_integer_qmx_improved.h" 
   #endif
+
+  #if  C_VTENC
+#include "VTEnc/vtenc.h"
+  #endif
   
-  #if C_ZLIB
-#include <zlib.h>
+  #if defined(ZLIB)
+#include "zlib/zlib.h" //#include <zlib.h>
+
+#define USE_LZ
   #endif
 
 #ifdef __cplusplus

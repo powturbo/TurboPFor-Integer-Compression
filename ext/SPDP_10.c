@@ -46,7 +46,7 @@ typedef unsigned char byte_t;
 typedef unsigned int word_t;
 
 
-static size_t compress(const byte_t level, const size_t length, byte_t* const buf1, byte_t* const buf2)
+static size_t spdp_compress(const byte_t level, const size_t length, byte_t* const buf1, byte_t* const buf2)
 {
   word_t* in = (word_t*)buf1;
   word_t* out = (word_t*)buf2;
@@ -119,7 +119,7 @@ static size_t compress(const byte_t level, const size_t length, byte_t* const bu
   return wpos;
 }
 
-static void decompress(const byte_t level, const size_t length, byte_t* const buf2, byte_t* const buf1)
+static void spdp_decompress(const byte_t level, const size_t length, byte_t* const buf2, byte_t* const buf1)
 {
   unsigned int predtabsize = 1 << (level + 9);
   if (predtabsize > MAX_TABLE_SIZE) predtabsize = MAX_TABLE_SIZE;

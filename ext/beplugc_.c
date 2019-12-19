@@ -97,6 +97,10 @@
       #if C_VARINTG8IU
     case P_VARINTG8IU:  return vintg8enc(in, n, out);
       #endif 
+
+      #if C_VTENC
+    case P_VTENC:  { size_t l; vtenc_list_encode_u32(in, n, out+4, outsize, &l); ctou32(out) = l; return l+4; }
+      #endif 
 	  
      #if C_BITSHUFFLE      
     case P_BITSHUFFLE:  BITSHUFFLE( (unsigned char *)in, _n, out,lev); 		return out + _n;    
@@ -139,8 +143,8 @@
       #endif
 	  
       #if C_ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
-      { n *= 4; tpenc( (unsigned char *)in, n, sbuf, 4); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, codec-P_ZLIB1+1); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
+    case P_ZLIB:  
+      { n *= 4; tpenc( (unsigned char *)in, n, sbuf, 4); uLongf outlen = n; int rc = compress2(out+4, &outlen, sbuf, n, lev); if(rc != Z_OK) die("zlib compress2 rc=%d\n", rc); *(unsigned *)out = outlen; return out + 4 + outlen; }
       #endif  
 
 

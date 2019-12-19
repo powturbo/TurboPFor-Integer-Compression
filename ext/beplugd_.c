@@ -102,6 +102,10 @@
     case P_VARINTG8IU:    return vintg8dec(in, n, out);
       #endif
 
+      #if C_VTENC
+    case P_VTENC:  vtenc_list_decode_u32(in+4, ctou32(in), out,n); return in + outlen;
+      #endif 
+
       #if C_BITSHUFFLE      
     case P_BITSHUFFLE:BITUNSHUFFLE(in, outlen, (unsigned char *)out,lev); 			   return in + outlen;
       #endif
@@ -146,7 +150,7 @@
       #endif
 	  
       #if C_ZLIB
-    case P_ZLIB1: case P_ZLIB2: case P_ZLIB3: case P_ZLIB4: case P_ZLIB5: case P_ZLIB6: case P_ZLIB7: case P_ZLIB8: case P_ZLIB9: 
+    case P_ZLIB:
       { uLongf outsize = outlen; int l = *(unsigned *)in, rc = uncompress(sbuf, &outsize, in+4, l); in += 4 + l; tpdec(sbuf, outlen, (unsigned char *)out,4); } break;
       #endif
 
