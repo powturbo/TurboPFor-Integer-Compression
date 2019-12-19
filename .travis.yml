@@ -1,5 +1,11 @@
 language: c
 
+arch:
+  - amd64
+  - arm64
+# - s390x
+# - ppc64le (gcc > 8.0)
+
 compiler: 
   - gcc
   - clang
@@ -10,28 +16,22 @@ branches:
 
 script:
   - make
-  - ./icapp ZIPF
-
+  
 matrix:
   include:
-    - name: Linux arm
-      os: linux
-      arch: arm64
-      compiler: gcc
+    - name: linux-ppc64le-gcc-9
+      env: CC=gcc-9
+      arch: ppc64le
+      before_install:
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get -y update
+        - sudo apt-get -y install gcc-9
 
-    - name: Windows-MinGW
+    - name: windows-mingw-w64
+      arch: amd64 
       os: windows
       script: 
         - mingw32-make
-        - ./icapp ZIPF
 
     - name: macOS, xcode
       os: osx
-
-#    - name: Linux amd64
-#      os: linux
-#      arch: amd64
-#    - name: Power ppc64le
-#      os: linux-ppc64le
-#      compiler: gcc     
-
