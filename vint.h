@@ -261,6 +261,17 @@ unsigned char *vbzdec16( unsigned char  *__restrict in, unsigned n, unsigned sho
 unsigned char *vbzdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 unsigned char *vbzdec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
 
+//---------------------- XOR encoding/decoding for unsorted integer lists.
+unsigned char *vbxenc8(  unsigned char  *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned char start);
+unsigned char *vbxenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+unsigned char *vbxenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+unsigned char *vbxenc64( uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
+
+unsigned char *vbxdec8(  unsigned char  *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned char  start);
+unsigned char *vbxdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+unsigned char *vbxdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
+unsigned char *vbxdec64( unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out, uint64_t       start);
+
 //---------------------- Delta of delta encoding/decoding for unsorted integer lists.
 unsigned char *vbddenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *vbddenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
@@ -285,25 +296,37 @@ unsigned vbzgeteq64( unsigned char **__restrict in, unsigned n, unsigned idx, ui
 //-------------------------- TurboByte (SIMD Group varint) --------------------------------------------------------------
 unsigned char *v8enc16(  unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out); //TurboByte
 unsigned char *v8enc32(  unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out);
+
 unsigned char *v8dec16(  unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out);
 unsigned char *v8dec32(  unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out);
 
+//------ delta ---------
 unsigned char *v8denc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *v8denc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+
 unsigned char *v8ddec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 unsigned char *v8ddec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 
+//------ delta 1 -------
 unsigned char *v8d1enc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *v8d1enc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+
 unsigned char *v8d1dec16(unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 unsigned char *v8d1dec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 
-unsigned char *v8zenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
+//------- zigzag -------
+unsigned char *v8zenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start); 
 unsigned char *v8zenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
 
 unsigned char *v8zdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 unsigned char *v8zdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 
+//------- xor ----------
+unsigned char *v8xenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start); 
+unsigned char *v8xenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
+
+unsigned char *v8xdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
+unsigned char *v8xdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 //-------------------------- TurboByte Hybrid (SIMD Group varint) + Bitpacking -------------------------------------------
 size_t v8nenc16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t v8nenc32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -328,6 +351,9 @@ size_t v8nd1dec32(unsigned char *__restrict in, size_t n, uint32_t *__restrict o
 
 size_t v8nzdec16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t v8nzdec32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+
+size_t v8nxdec16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
+size_t v8nxdec32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 //-------------
 size_t v8nenc128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t v8nenc128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -352,16 +378,21 @@ size_t v8nd1dec128v32(unsigned char *__restrict in, size_t n, uint32_t *__restri
 
 size_t v8nzdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t v8nzdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+
+size_t v8nxdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
+size_t v8nxdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 //-------------
 size_t v8nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t v8ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t v8nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t v8nxenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
 size_t v8ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t v8nddec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t v8nd1dec256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t v8nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t v8nxdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
 #ifdef __cplusplus
 }
