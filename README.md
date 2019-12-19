@@ -226,27 +226,19 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         Download or clone TurboPFor
 		git clone git://github.com/powturbo/TurboPFor.git
 		cd TurboPFor
+		make
         
-        To benchmark external libraries:
+
+        To benchmark external libraries + lz77 compression:
 		git clone --recursive git://github.com/powturbo/TurboPFor.git
 		cd TurboPFor
+        make CODEC1=1 CODEC2=1 LZ=1
 
-###### Linux, Windows (MingW), Clang,... (see also makefile)
-		make
-		or
-		make AVX2=1
-
-		Include external libs
-		make CODEC1=1 CODEC2=1 
-
-		Disable SIMD
-		make NSIMD=1
-      
 ###### Windows visual c++
 		nmake /f makefile.vs
 
 ###### Windows visual studio c++
-                project files under vs/vs2017
+        project files under vs/vs2017
   
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
@@ -476,7 +468,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  23 Oct 2019
+Last update:  20 Dec 2019
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
