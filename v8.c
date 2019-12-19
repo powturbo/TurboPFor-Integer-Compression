@@ -777,7 +777,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 };
 #undef _
 
-//#define LENBLOCK   // All lengths encoded at the beginning of the buffer. 
+#define LENBLOCK   // All length keys encoded at the beginning of the buffer. 
   #ifdef LENBLOCK
 #define OP    out
 #define IP    in
@@ -799,8 +799,8 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 //----------------------------------- Templates parameter macros -----------------------------------------------------------------
 #define V8DELTA32 
 #define V8DELTA16   
-#define V8ENC     		v8
-#define V8DEC     		v8
+#define V8ENC     		v8enc
+#define V8DEC     		v8dec
 #define VE16(_x_) 	v = _x_
 #define VD16(_x_) 	_x_
 #define VE32(_x_) 	v = _x_
@@ -823,8 +823,8 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 #define V8DELTA32 		,uint32_t start
 #define V8DELTA16 		,uint16_t start
 
-#define V8ENC       	v8z        // zigzag
-#define V8DEC       	v8z
+#define V8ENC       	v8zenc //------------ zigzag -----------------------------
+#define V8DEC       	v8zdec
 #define VDELTA      	0
 
 #define VEINI128v16    	__m128i sv =    _mm_set1_epi16(start); const __m128i zv = _mm_setzero_si128()
@@ -851,8 +851,37 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 
 #include "v8.c"
 
-#define V8ENC       	v8d        // delta
-#define V8DEC       	v8d
+#define V8ENC       	v8xenc //------------ xor -----------------------------
+#define V8DEC       	v8xdec
+#define VDELTA      	0
+
+#define VEINI128v16    	__m128i sv =    _mm_set1_epi16(start); 
+#define VEINI128v32   	__m128i sv =    _mm_set1_epi32(start); 
+#define VEINI256v32   	__m256i sv = _mm256_set1_epi32(start)
+
+#define VE16(_x_) 	v = (_x_)^start; start = _x_
+#define VE32(_x_) 	v = (_x_)^start; start = _x_
+
+#define VD16(_x_) 	(start ^= _x_)
+#define VD32(_x_) 	(start ^= _x_)
+
+#define VE128v16(_iv_,_sv_) { __m128i _tv = _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VE128v32(_iv_,_sv_) { __m128i _tv = _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VE256v32(_iv_,_sv_) { __m256i _tv = _mm256_xor_si256(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+
+#define VDINI128v16    		__m128i sv =    _mm_set1_epi16(start); 
+#define VDINI128v32  		__m128i sv =    _mm_set1_epi32(start); 
+#define VDINI256v32  		__m256i sv = _mm256_set1_epi32(start); 
+
+#define VD128v16(_v_,_sv_) _v_ = _sv_ = _mm_xor_si128(_v_,_sv_);
+#define VD128v32(_v_,_sv_) _v_ = _sv_ = _mm_xor_si128(_v_,_sv_);
+#define VD256v32(_v_,_sv_) _v_ = _sv_ = _mm256_xor_si256(_v_,_sv_); 
+
+#include "v8.c"
+
+
+#define V8ENC       	v8denc //---------- delta ----------------------------------
+#define V8DEC       	v8ddec
 #define VE16(_x_) 	v = (_x_)-start; start = _x_
 #define VE32(_x_) 	VE16(_x_) 
 #define VD16(_x_) 	(start += _x_)
@@ -875,8 +904,8 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 #define VD256v32(_v_,_sv_) _sv_ = mm256_scan_epi32(_v_,_sv_, zv); _v_ = _sv_
 #include "v8.c"
  
-#define V8ENC			v8d1       // delta 1
-#define V8DEC       	v8d1
+#define V8ENC			v8d1enc       // delta 1
+#define V8DEC       	v8d1dec
 #define VDELTA      	1
 
 #define VE16(_x_) 	    v = (_x_)-start-VDELTA; start = _x_
@@ -909,7 +938,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 #define PAD8(_x_) ( (((_x_)+8-1)/8) )
 // 0-0x1f: bitpacking, 0xff: EOS, 0xfe/0x00 = memcpy, 0xfd:varint, 0xf0|0000-0100: constant
 
-#define V8ENC(in, n, out, _csize_, _usize_, _bit_, _bitpackv_, _bitpack_) {\
+#define _V8E(in, n, out, _csize_, _usize_, _bit_, _bitpackv_, _bitpack_) {\
   unsigned char *op = out;															if(!n) return 0;\
   for(ip = in; ip < in+n;) {														PREFETCH(ip+512,0);\
     unsigned _b, iplen = (in+n) - ip; iplen = min(iplen,_csize_);\
@@ -930,7 +959,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
   return op - out;\
 }
 
-#define V8DENC(in, n, out, _csize_, _usize_, _v8enc_, _bitd_, _bitpackv_, _bitpack_,_delta_) { 	if(!n) return 0;\
+#define _V8DE(in, n, out, _csize_, _usize_, _v8enc_, _bitd_, _bitpackv_, _bitpack_,_delta_) { 	if(!n) return 0;\
   unsigned char *op = out;\
   start = *in++; uint64_t start64 = start; start64++; TEMPLATE2(vbxput, _usize_)(op, start64);\
   for(n--,ip = in; ip < in + n; ) { 															PREFETCH(ip+512,0);\
@@ -952,38 +981,43 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
   return op - out;\
 }
 
-size_t v8nenc16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8ENC( in, n, out, 128, 16, bit,            bitpack,      bitpack); }
-size_t v8nenc32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8ENC( in, n, out, 128, 32, bit,            bitpack,      bitpack); }
+size_t v8nenc16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8E( in, n, out, 128, 16, bit,            bitpack,      bitpack); }
+size_t v8nenc32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8E( in, n, out, 128, 32, bit,            bitpack,      bitpack); }
 
-size_t v8ndenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8DENC(in, n, out, 128, 16, v8denc,  bitd,  bitdpack,     bitdpack,0); }
-size_t v8ndenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 128, 32, v8denc,  bitd,  bitdpack,     bitdpack,0); }
+size_t v8ndenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8denc,  bitd,  bitdpack,     bitdpack,0); }
+size_t v8ndenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8denc,  bitd,  bitdpack,     bitdpack,0); }
 
-size_t v8nd1enc16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8DENC(in, n, out, 128, 16, v8d1enc, bitd1, bitd1pack,    bitd1pack,1); }
-size_t v8nd1enc32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 128, 32, v8d1enc, bitd1, bitd1pack,    bitd1pack,1); }
+size_t v8nd1enc16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8d1enc, bitd1, bitd1pack,    bitd1pack,1); }
+size_t v8nd1enc32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8d1enc, bitd1, bitd1pack,    bitd1pack,1); }
 
-size_t v8nzenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8DENC(in, n, out, 128, 16, v8zenc,  bitz,  bitzpack,     bitzpack,0); }
-size_t v8nzenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 128, 32, v8zenc,  bitz,  bitzpack,     bitzpack,0); }
+size_t v8nzenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8zenc,  bitz,  bitzpack,     bitzpack,0); }
+size_t v8nzenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8zenc,  bitz,  bitzpack,     bitzpack,0); }
+
+//size_t v8nxenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8xenc,  bitx,  bitxpack,     bitxpack,0); }
+//size_t v8nxenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8xenc,  bitx,  bitxpack,     bitxpack,0); }
 //----
-size_t v8nenc128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8ENC( in, n, out, 128, 16, bit,            bitpack128v,  bitpack); }
-size_t v8nenc128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8ENC( in, n, out, 128, 32, bit,            bitpack128v,  bitpack); }
+size_t v8nenc128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8E( in, n, out, 128, 16, bit,            bitpack128v,  bitpack); }
+size_t v8nenc128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8E( in, n, out, 128, 32, bit,            bitpack128v,  bitpack); }
 
-size_t v8ndenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8DENC(in, n, out, 128, 16, v8denc,  bitd,  bitdpack128v, bitdpack,0); }
-size_t v8ndenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 128, 32, v8denc,  bitd,  bitdpack128v, bitdpack,0); }
+size_t v8ndenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8denc,  bitd,  bitdpack128v, bitdpack,0); }
+size_t v8ndenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8denc,  bitd,  bitdpack128v, bitdpack,0); }
 
-size_t v8nd1enc128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8DENC(in, n, out, 128, 16, v8d1enc, bitd1, bitd1pack128v,bitd1pack,1); }
-size_t v8nd1enc128v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 128, 32, v8d1enc, bitd1, bitd1pack128v,bitd1pack,1); }
+size_t v8nd1enc128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8d1enc, bitd1, bitd1pack128v,bitd1pack,1); }
+size_t v8nd1enc128v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8d1enc, bitd1, bitd1pack128v,bitd1pack,1); }
 
-size_t v8nzenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; V8DENC(in, n, out, 128, 16, v8zenc,  bitz,  bitzpack128v, bitzpack,0); }
-size_t v8nzenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 128, 32, v8zenc,  bitz,  bitzpack128v, bitzpack,0); }
+size_t v8nzenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8zenc,  bitz,  bitzpack128v, bitzpack,0); }
+size_t v8nzenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8zenc,  bitz,  bitzpack128v, bitzpack,0); }
+
+//size_t v8nxenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8xenc,  bitx,  bitxpack128v, bitxpack,0); }
+//size_t v8nxenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8xenc,  bitx,  bitxpack128v, bitxpack,0); }
 //-------
-  #ifdef __AVX2__
-size_t v8nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8ENC( in, n, out, 256, 32, bit,            bitpack256v,  bitpack); }
-size_t v8ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 256, 32, v8denc,  bitd,  bitdpack256v, bitdpack,0); }
-size_t v8nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 256, 32, v8d1enc, bitd1, bitd1pack256v,bitd1pack,1); }
-size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; V8DENC(in, n, out, 256, 32, v8zenc,  bitz,  bitzpack256v, bitzpack,0); }
-  #endif
+size_t v8nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8E( in, n, out, 256, 32, bit,            bitpack256v,  bitpack); }
+size_t v8ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8denc,  bitd,  bitdpack256v, bitdpack,0); }
+size_t v8nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8d1enc, bitd1, bitd1pack256v,bitd1pack,1); }
+size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8zenc,  bitz,  bitzpack256v, bitzpack,0); }
+//size_t v8nxenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8xenc,  bitx,  bitxpack256v, bitxpack,0); }
 
-#define V8DEC(in, n, out, _csize_, _usize_, _bitunpackv_, _bitunpack_) {\
+#define _V8D(in, n, out, _csize_, _usize_, _bitunpackv_, _bitunpack_) {\
   unsigned char *ip = in;														if(!n) return 0;\
   if(*in == 0xfe) { ip = in+1; memcpy(out,ip, n*(_usize_/8)); ip+=n*(_usize_/8); }\
   else for(op = out, out += n; op < out;) { 										PREFETCH(ip+512,0);\
@@ -1004,7 +1038,7 @@ size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
 
 #define BITIZERO(op, n, start, _u_) { for(int i=0; i < n; i++) op[i] = (start += _u_); }
 
-#define V8DDEC(in, n, out, _csize_, _usize_, _v8dec_, _bitunpackv_, _bitunpack_, _delta_) { 		if(!n) return 0;\
+#define _V8DD(in, n, out, _csize_, _usize_, _v8dec_, _bitunpackv_, _bitunpack_, _delta_) { 		if(!n) return 0;\
   unsigned char *ip = in;\
   uint64_t start64; TEMPLATE2(vbxget, _usize_)(ip, start64);\
   if(!start64) { memcpy(out, ip, n*(_usize_/8)); ip += n*(_usize_/8); }\
@@ -1026,36 +1060,41 @@ size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
   return ip - in;\
 }
 
-size_t v8ndec16(      unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       V8DEC(in,  n, out, 128, 16,         bitunpack,      bitunpack); } 
-size_t v8ndec32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       V8DEC(in,  n, out, 128, 32,         bitunpack,      bitunpack); } 
+size_t v8ndec16(      unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       _V8D(in,  n, out, 128, 16,         bitunpack,      bitunpack); } 
+size_t v8ndec32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D(in,  n, out, 128, 32,         bitunpack,      bitunpack); } 
 
-size_t v8nddec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; V8DDEC(in, n, out, 128, 16, v8ddec, bitdunpack,     bitdunpack, 0); }
-size_t v8nddec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 128, 32, v8ddec, bitdunpack,     bitdunpack, 0); }
+size_t v8nddec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8ddec, bitdunpack,     bitdunpack, 0); }
+size_t v8nddec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8ddec, bitdunpack,     bitdunpack, 0); }
 
-size_t v8nd1dec16(    unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; V8DDEC(in, n, out, 128, 16, v8d1dec,bitd1unpack,    bitd1unpack,1); }
-size_t v8nd1dec32(    unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 128, 32, v8d1dec,bitd1unpack,    bitd1unpack,1); }
+size_t v8nd1dec16(    unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8d1dec,bitd1unpack,    bitd1unpack,1); }
+size_t v8nd1dec32(    unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8d1dec,bitd1unpack,    bitd1unpack,1); }
 
-size_t v8nzdec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; V8DDEC(in, n, out, 128, 16, v8zdec, bitzunpack,     bitzunpack, 0); }
-size_t v8nzdec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 128, 32, v8zdec, bitzunpack,     bitzunpack, 0); }
+size_t v8nzdec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8zdec, bitzunpack,     bitzunpack, 0); }
+size_t v8nzdec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8zdec, bitzunpack,     bitzunpack, 0); }
+
+//size_t v8nxdec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8xdec, bitxunpack,     bitxunpack, 0); }
+//size_t v8nxdec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8xdec, bitxunpack,     bitxunpack, 0); }
 //---------
-size_t v8ndec128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       V8DEC(in,  n, out, 128, 16,         bitunpack128v,  bitunpack); }
-size_t v8ndec128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       V8DEC(in,  n, out, 128, 32,         bitunpack128v,  bitunpack); }
+size_t v8ndec128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       _V8D(in,  n, out, 128, 16,         bitunpack128v,  bitunpack); }
+size_t v8ndec128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D(in,  n, out, 128, 32,         bitunpack128v,  bitunpack); }
 
-size_t v8nddec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; V8DDEC(in, n, out, 128, 16, v8ddec, bitdunpack128v, bitdunpack, 0); }
-size_t v8nddec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 128, 32, v8ddec, bitdunpack128v, bitdunpack, 0); }
+size_t v8nddec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8ddec, bitdunpack128v, bitdunpack, 0); }
+size_t v8nddec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8ddec, bitdunpack128v, bitdunpack, 0); }
 
-size_t v8nd1dec128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; V8DDEC(in, n, out, 128, 16, v8d1dec,bitd1unpack128v,bitd1unpack,1); }
-size_t v8nd1dec128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 128, 32, v8d1dec,bitd1unpack128v,bitd1unpack,1); }
+size_t v8nd1dec128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8d1dec,bitd1unpack128v,bitd1unpack,1); }
+size_t v8nd1dec128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8d1dec,bitd1unpack128v,bitd1unpack,1); }
 
-size_t v8nzdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; V8DDEC(in, n, out, 128, 16, v8zdec, bitzunpack128v, bitzunpack, 0); }
-size_t v8nzdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 128, 32, v8zdec, bitzunpack128v, bitzunpack, 0); }
+size_t v8nzdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8zdec, bitzunpack128v, bitzunpack, 0); }
+size_t v8nzdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8zdec, bitzunpack128v, bitzunpack, 0); }
+
+//size_t v8nxdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8xdec, bitxunpack128v, bitxunpack, 0); }
+//size_t v8nxdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8xdec, bitxunpack128v, bitxunpack, 0); }
 //--------- 
-  #ifdef __AVX2__
-size_t v8ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       V8DEC( in, n, out, 256, 32,         bitunpack256v,  bitunpack); }
-size_t v8nddec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 256, 32, v8ddec, bitdunpack256v, bitdunpack, 0); }
-size_t v8nd1dec256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 256, 32, v8d1dec,bitd1unpack256v,bitd1unpack,1); }
-size_t v8nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; V8DDEC(in, n, out, 256, 32, v8zdec, bitzunpack256v, bitzunpack, 0); }
-  #endif
+size_t v8ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D( in, n, out, 256, 32,         bitunpack256v,  bitunpack); }
+size_t v8nddec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8ddec, bitdunpack256v, bitdunpack, 0); }
+size_t v8nd1dec256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8d1dec,bitd1unpack256v,bitd1unpack,1); }
+size_t v8nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8zdec, bitzunpack256v, bitzunpack, 0); }
+//size_t v8nxdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8xdec, bitxunpack256v, bitxunpack, 0); }
 
   #else //---------------------------------------------- Templates -------------------------------------------------------------
 #define BN32(x) (x?(__bsr32(x)/8):0)
@@ -1070,7 +1109,7 @@ size_t v8nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restri
 
 #define mm256_packus_epi16(a, b) _mm256_permute4x64_epi64(_mm256_packus_epi16(a, b), _MM_SHUFFLE(3, 1, 2, 0))
 
-unsigned char *TEMPLATE2(V8ENC,enc32)(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA32) {
+unsigned char *TEMPLATE2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA32) {
   uint32_t      *ip,v;
   unsigned char *op = DATABEG(out,n,4),*sp=out;
 	 
@@ -1172,7 +1211,7 @@ unsigned char *TEMPLATE2(V8ENC,enc32)(uint32_t *__restrict in, unsigned n, unsig
   _b = ((m>>6)& 3)+1; v = ctou32(ip) & ((1ull<<(_b*8))-1); op[_i_+3] = VD32(v); ip+=_b;\
 }
 
-unsigned char *TEMPLATE2(V8DEC,dec32)(unsigned char  *__restrict in, unsigned n, uint32_t *__restrict out V8DELTA32) {
+unsigned char *TEMPLATE2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t *__restrict out V8DELTA32) {
   uint32_t      *op;
   unsigned char *ip = DATABEG(in,n,4);
   uint32_t v; 
@@ -1313,7 +1352,7 @@ unsigned char *TEMPLATE2(V8DEC,dec32)(unsigned char  *__restrict in, unsigned n,
   *out++ = _m;\
 }
 
-unsigned char *TEMPLATE2(V8ENC,enc16)(uint16_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA16) {
+unsigned char *TEMPLATE2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA16) {
   uint16_t      *ip,v;
   unsigned char *op = DATABEG(out,n,2);
   
@@ -1380,7 +1419,7 @@ unsigned char *TEMPLATE2(V8ENC,enc16)(uint16_t *__restrict in, unsigned n, unsig
     _b = ((m>>7)& 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); op[_i_+7] = VD16(v); ip+=_b;\
   }
 
-unsigned char *TEMPLATE2(V8DEC,dec16)(unsigned char  *__restrict in, unsigned n, uint16_t *__restrict out V8DELTA16) {
+unsigned char *TEMPLATE2(V8DEC,16)(unsigned char  *__restrict in, unsigned n, uint16_t *__restrict out V8DELTA16) {
   uint16_t      *op; 
   unsigned char *ip = DATABEG(in,n,2);
   uint16_t v;
