@@ -141,7 +141,7 @@ static ALWAYS_INLINE __m128i mm_xore_epi32( __m128i v, __m128i sv) { return _mm_
 #if !defined(_M_X64) && !defined(__x86_64__) && defined(__AVX__)
 #define _mm256_extract_epi64(v, index) ((__int64)((uint64_t)(uint32_t)_mm256_extract_epi32((v), (index) * 2) | (((uint64_t)(uint32_t)_mm256_extract_epi32((v), (index) * 2 + 1)) << 32)))
 #endif
-
+  
 //------------------ Horizontal OR -----------------------------------------------
   #ifdef __AVX2__
 static ALWAYS_INLINE unsigned mm256_hor_epi32(__m256i v) {
