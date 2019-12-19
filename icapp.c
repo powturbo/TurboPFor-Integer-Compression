@@ -1760,6 +1760,7 @@ int main(int argc, char* argv[]) {
     exit(0); 
   }	
   isa = cpuisa();
+  printf("detected simd=%s\n\n", cpustr(cpuini(0))); 
   unsigned char _scmd[33]; strcpy(_scmd, "lz4,1");
   if(!scmd) scmd = _scmd;
   while(isspace(*scmd)) scmd++;
