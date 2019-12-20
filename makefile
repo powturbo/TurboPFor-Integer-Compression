@@ -10,7 +10,9 @@
 
 CC ?= gcc
 CXX ?= g++
+
 #CC=powerpc64le-linux-gnu-gcc
+CL = $(CC)
 #DEBUG=-DDEBUG -g
 
 #------- OS/ARCH -------------------
@@ -31,8 +33,9 @@ endif
 endif
 
 ifeq ($(ARCH),ppc64le)
-  CFLAGS=-mcpu=power9 -mtune=power9
   SSE=-D__SSSE3__
+  CFLAGS=-mcpu=power9 -mtune=power9 $(SSE)
+  LDFLAGS+=-lm
 else ifeq ($(ARCH),aarch64)
   CFLAGS+=-march=armv8-a 
 ifneq (,$(findstring clang, $(CC)))
@@ -111,7 +114,7 @@ LIB+=bitpack_avx2.o bitunpack_avx2.o vp4c_avx2.o vp4d_avx2.o transpose_avx2.o
 endif
 
 icapp:   icapp.o $(LIB) $(OB)
-	$(CXX) $^ $(LDFLAGS) -o icapp
+	$(CL) $^ $(LDFLAGS) -o icapp
 
 myapp:   myapp.o $(LIB)
 	$(CC) $^ $(LDFLAGS) -o myapp
