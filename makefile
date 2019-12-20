@@ -35,7 +35,7 @@ endif
 ifeq ($(ARCH),ppc64le)
   SSE=-D__SSSE3__
   CFLAGS=-mcpu=power9 -mtune=power9 $(SSE)
-  LDFLAGS+=-lm
+#  LDFLAGS+=-lm
 else ifeq ($(ARCH),aarch64)
   CFLAGS+=-march=armv8-a 
 ifneq (,$(findstring clang, $(CC)))
@@ -59,7 +59,7 @@ DEFS+=-falign-loops
 endif
 
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
-LDFLAGS+=-lrt
+LDFLAGS+=-lrt -lm
 endif
 
 CFLAGS+=$(DEBUG) -DPLAIN -w -Wall -falign-loops -fstrict-aliasing
