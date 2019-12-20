@@ -101,13 +101,13 @@ void tp4dec256v8( unsigned char *in, unsigned n, unsigned char *out);
 //------- CPU instruction set 
 // cpuiset  = 0: return current simd set, 
 // cpuiset != 0: set simd set 0:scalar, 20:sse2, 52:avx2
-int   cpuini(int cpuiset); 
+unsigned cpuini(unsigned cpuiset); 
 
 // convert simd set to string "sse3", "sse3", "sse4.1" or "avx2" 
 // Ex.: printf("current cpu set=%s\n", cpustr(cpuini(0)) ); 
-char *cpustr(int cpuiset); 
+char *cpustr(unsigned cpuisa); 
 
-int cpuisa(void); 
+unsigned cpuisa(void); 
 #ifdef __cplusplus
 }
 #endif
