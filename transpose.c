@@ -138,7 +138,7 @@
 #include <x86intrin.h>
   #endif
 
-static int _cpuisa;
+static unsigned _cpuisa;
   #if defined(__ARM_NEON) || defined(__SSE__) || defined(__powerpc64__)
 //--------------------- CPU detection -------------------------------------------
     #if defined(__i386__) || defined(__x86_64__)
@@ -178,8 +178,8 @@ static inline uint64_t xgetbv (int ctr) {
 #define AVX512CD    0x010
 #define AVX512BW    0x020
 #define AVX512VL    0x040
-#define AVX512VBMI  0x080
-#define AVX512VNNI  0x100
+#define AVX512VNNI  0x080
+#define AVX512VBMI  0x100
 #define AVX512VBMI2 0x200
 
 #define IS_SSE       0x10
@@ -195,7 +195,7 @@ static inline uint64_t xgetbv (int ctr) {
 #define IS_AVX2      0x60
 #define IS_AVX512    0x800
 
-int cpuisa(void) {
+unsigned cpuisa(void) {
   int c[4] = {0};                               
   if(_cpuisa) return _cpuisa;                                   
   _cpuisa++;      
@@ -248,13 +248,13 @@ int cpuisa(void) {
 }
   #endif
   
-int cpuini(int cpuisa) { if(cpuisa) _cpuisa = cpuisa; return _cpuisa; }
+unsigned cpuini(unsigned cpuisa) { if(cpuisa) _cpuisa = cpuisa; return _cpuisa; }
 
-char *cpustr(int cpuisa) {
+char *cpustr(unsigned cpuisa) {
   if(!cpuisa) cpuisa = _cpuisa;
     #if defined(__i386__) || defined(__x86_64__)    
   if(cpuisa >= IS_AVX512)
-	switch(cpuisa&0xfff) {
+	switch(cpuisa & 0x7ff) {
       case AVX512VBMI2:return "avx512vbmi2";
       case AVX512VBMI: return "avx512vbmi";
       case AVX512VNNI: return "avx512vnni";
