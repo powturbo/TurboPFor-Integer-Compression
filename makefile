@@ -15,6 +15,11 @@ CXX ?= g++
 CL = $(CC)
 #DEBUG=-DDEBUG -g
 
+PREFIX ?= /usr/local
+DIRBIN ?= $(PREFIX)/bin
+DIRINC ?= $(PREFIX)/include
+DIRLIB ?= $(PREFIX)/lib
+
 #------- OS/ARCH -------------------
 ifneq (,$(filter Windows%,$(OS)))
   OS := Windows
@@ -113,10 +118,13 @@ ifeq ($(ARCH),x86_64)
 LIB+=bitpack_avx2.o bitunpack_avx2.o vp4c_avx2.o vp4d_avx2.o transpose_avx2.o
 endif
 
-icapp:   icapp.o $(LIB) $(OB)
+libic.a: $(LIB)
+	ar cr $@ $+
+
+icapp: icapp.o libic.a $(OB)
 	$(CL) $^ $(LDFLAGS) -o icapp
 
-myapp:   myapp.o $(LIB)
+myapp: myapp.o libic.a
 	$(CC) $^ $(LDFLAGS) -o myapp
 
 .c.o:
