@@ -26,12 +26,23 @@ matrix:
       arch: arm64
       compiler: gcc
 
-    - name: linux-arm64-clang
-      dist: bionic
+#    - name: linux-arm64-clang
+#      dist: bionic
+#      os: linux
+#      arch: arm64
+#      compiler: clang
+#      env: CC=clang-6
+
+    - name: linux-arm64-clang-7
+      dist: bionic 
       os: linux
       arch: arm64
-      compiler: clang
-#      env: CC=clang-6
+      addons:
+        apt:
+          update: true
+          sources: *apt_sources
+          packages: [*apt_packages, 'clang-7']
+      env: CC=clang-7
 
     - name: windows-mingw-w64
       os: windows
