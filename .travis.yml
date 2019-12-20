@@ -16,7 +16,7 @@ branches:
 
 script:
   - make
-# - cat /proc/cpuinfo
+  - cat /proc/cpuinfo
   - ./icapp ZIPF
   
 matrix:
@@ -35,6 +35,9 @@ matrix:
 
     - name: apple-macOS-xcode
       os: osx
+      script:
+        - make
+        - ./icapp ZIPF
 
     - name: linux-ppc64le-gcc-9
       os: linux
