@@ -3,8 +3,8 @@ language: c
 arch:
   - amd64
 # - arm64
-# - s390x
-# - ppc64le (gcc > 8.0)
+# - s390x big endian
+# - ppc64le (gcc > 8.0 sse->altivec)
 
 compiler: 
   - gcc
@@ -25,6 +25,13 @@ matrix:
       os: linux
       arch: arm64
       compiler: gcc
+
+    - name: linux-arm64-gcc
+#      dist: bionic
+      os: linux
+      arch: arm64
+      compiler: clang
+      env: CC=clang-6
 
     - name: windows-mingw-w64
       os: windows
