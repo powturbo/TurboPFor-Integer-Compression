@@ -2,7 +2,7 @@ language: c
 
 arch:
   - amd64
-# - arm64
+# - arm64 only gcc
 # - s390x big endian
 # - ppc64le (gcc > 8.0 sse->altivec)
 
@@ -33,16 +33,16 @@ matrix:
 #      compiler: clang
 #      env: CC=clang-6
 
-    - name: linux-arm64-clang-7
-      dist: bionic 
-      os: linux
-      arch: arm64
-      addons:
-        apt:
-          update: true
-          sources: *apt_sources
-          packages: [*apt_packages, 'clang-7']
-      env: CC=clang-7
+#    - name: linux-arm64-clang-7
+#      dist: bionic 
+#      os: linux
+#      arch: arm64
+#      addons:
+#        apt:
+#          update: true
+#          sources: *apt_sources
+#          packages: [*apt_packages, 'clang-7']
+#      env: CC=clang-7
 
     - name: windows-mingw-w64
       os: windows
