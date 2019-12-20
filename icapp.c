@@ -1027,7 +1027,7 @@ unsigned dim1,dim2,dim3,dim4;
 
 #define USIZE 1
 unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) { 
-  unsigned l,m = n/(USIZE), rc = 0, ns = CBUF(n);  uint8_t dmin = mindelta8(in,m);
+  unsigned l=0,m = n/(USIZE), rc = 0, ns = CBUF(n);  uint8_t dmin = mindelta8(in,m);
   uint8_t  *p;
   char     *tmp = NULL; 
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
@@ -1131,10 +1131,12 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 	                 TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
 	default: goto end; 
   }
-  { char s[65]; printf("%-30s ", bestr(id, 8,s)); } 
-  rc = memcheck(in,m*(USIZE),cpy);
-  if(!rc)
-    printf("\t%s\n", inname?inname:"");
+  if(l) { 
+    char s[65]; printf("%-30s ", bestr(id, 8,s)); 
+    if(cpy) rc = memcheck(in,m*(USIZE),cpy);
+    if(!rc)
+      printf("\t%s\n", inname?inname:"");
+  }
   end:if(tmp) free(tmp);
   return l;
 }
@@ -1142,7 +1144,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 #undef USIZE
 #define USIZE 2
 unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) { 
-  unsigned l,m = n/(USIZE),rc = 0, d,ns=CBUF(n);  uint16_t dmin = mindelta16(in,m);
+  unsigned l=0,m = n/(USIZE),rc = 0, d,ns=CBUF(n);  uint16_t dmin = mindelta16(in,m);
   uint16_t *p;
   char     *tmp = NULL; 
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
@@ -1283,10 +1285,12 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 
 	default: goto end;  
   }
-  { char s[65]; printf("%-30s ", bestr(id, 16,s)); } 
-  if(cpy) rc = memcheck(in,m*(USIZE),cpy);
-  if(!rc)
-    printf("\t%s\n", inname?inname:"");
+  if(l) { 
+    char s[65]; printf("%-30s ", bestr(id, 16,s)); 
+    if(cpy) rc = memcheck(in,m*(USIZE),cpy);
+    if(!rc)
+      printf("\t%s\n", inname?inname:"");
+  }
   end:if(tmp) free(tmp);
   return l;
 }
@@ -1294,7 +1298,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 #undef USIZE
 #define USIZE 4
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) { 
-  unsigned l,m = n/(USIZE),rc = 0, d,ns=CBUF(n);  uint32_t dmin = mindelta32(in,m);
+  unsigned l=0,m = n/(USIZE),rc = 0, d,ns=CBUF(n);  uint32_t dmin = mindelta32(in,m);
   uint32_t *p;
   char     *tmp = NULL; 
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
@@ -1487,10 +1491,12 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     //case 112: TMBENCH("",fppad32(in, m, out,errlim),n);              pr(n,n); TMBENCH2("fppad32      ", fppad32(in, m, out,errlim),n); break;
 	default: goto end;  
   }
-  { char s[65]; printf("%-30s ", bestr(id,32,s)); } 
-  rc = memcheck32(in,m,cpy);
-  if(!rc)
-    printf("\t%s\n", inname?inname:"");
+  if(l) {
+    char s[65]; printf("%-30s ", bestr(id,32,s)); 
+    if(cpy) rc = memcheck32(in,m,cpy);
+    if(!rc)
+      printf("\t%s\n", inname?inname:"");
+  }
   end:if(tmp) free(tmp);
   return l;
 }
@@ -1623,10 +1629,12 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	                 TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
 	default: goto end;  
   }
-  { char s[65]; printf("%-30s ", bestr(id, 64,s)); } 
-  rc = memcheck(in,m*(USIZE),cpy);
-  if(!rc)
-    printf("\t%s\n", inname?inname:"");
+  if(l) {
+    char s[65]; printf("%-30s ", bestr(id, 64,s));
+    if(cpy) rc = memcheck(in,m*(USIZE),cpy);
+    if(!rc)
+      printf("\t%s\n", inname?inname:"");
+  }
   end:if(tmp) free(tmp);
   return l;
 }
