@@ -16,7 +16,7 @@ branches:
 
 script:
   - make
-  - cat /proc/cpuinfo
+# - cat /proc/cpuinfo
   - ./icapp ZIPF
   
 matrix:
