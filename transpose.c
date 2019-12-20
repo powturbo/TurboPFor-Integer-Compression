@@ -254,7 +254,7 @@ char *cpustr(int cpuisa) {
   if(!cpuisa) cpuisa = _cpuisa;
     #if defined(__i386__) || defined(__x86_64__)    
   if(cpuisa >= IS_AVX512)
-	switch(cpuisa&0xf) {
+	switch(cpuisa&0xfff) {
       case AVX512VBMI2:return "avx512vbmi2";
       case AVX512VBMI: return "avx512vbmi";
       case AVX512VNNI: return "avx512vnni";
