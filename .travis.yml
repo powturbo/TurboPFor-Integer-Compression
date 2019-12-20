@@ -26,6 +26,24 @@ matrix:
       arch: arm64
       compiler: gcc
 
+    - name: windows-mingw-w64
+      os: windows
+      arch: amd64 
+      script: 
+        - mingw32-make
+#        - ./icapp ZIPF
+
+    - name: apple-macOS-xcode
+      os: osx
+
+    - name: linux-ppc64le-gcc-9
+      arch: ppc64le
+      env: CC=gcc-9
+      before_install:
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get -y update
+        - sudo apt-get -y install gcc-9
+
 #    - name: linux-arm64-clang
 #      dist: bionic
 #      os: linux
@@ -43,26 +61,5 @@ matrix:
 #          sources: *apt_sources
 #          packages: [*apt_packages, 'clang-7']
 #      env: CC=clang-7
-
-    - name: windows-mingw-w64
-      os: windows
-      arch: amd64 
-      script: 
-        - mingw32-make
-#        - ./icapp ZIPF
-
-    - name: apple-macOS-xcode
-      os: osx
-      script:
-        - make
-        - ./icapp ZIPF
-
-    - name: linux-ppc64le-gcc-9
-      arch: ppc64le
-      env: CC=gcc-9
-      before_install:
-        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-        - sudo apt-get -y update
-        - sudo apt-get -y install gcc-9
 
 
