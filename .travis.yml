@@ -16,19 +16,11 @@ branches:
 
 script:
   - make
-  - cat /proc/cpuinfo
-#  - ./icapp ZIPF
+#  - cat /proc/cpuinfo
+  - ./icapp ZIPF
   
 matrix:
   include:
-    - name: linux-ppc64le-gcc-9
-      arch: ppc64le
-      env: CC=gcc-9
-      before_install:
-        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-        - sudo apt-get -y update
-        - sudo apt-get -y install gcc-9
-
     - name: linux-arm64-gcc
       os: linux
       arch: arm64
@@ -63,5 +55,14 @@ matrix:
       os: osx
       script:
         - make
-#        - ./icapp ZIPF
+        - ./icapp ZIPF
+
+    - name: linux-ppc64le-gcc-9
+      arch: ppc64le
+      env: CC=gcc-9
+      before_install:
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get -y update
+        - sudo apt-get -y install gcc-9
+
 
