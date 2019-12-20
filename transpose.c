@@ -170,17 +170,17 @@ static inline uint64_t xgetbv (int ctr) {
 }
     #endif
 
-#define AVX512F     0x0
-#define AVX512DQ    0x1
-#define AVX512IFMA  0x2
-#define AVX512PF    0x3
-#define AVX512ER    0x4
-#define AVX512CD    0x5
-#define AVX512BW    0x6
-#define AVX512VL    0x7
-#define AVX512VBMI  0x8
-#define AVX512VNNI  0x9
-#define AVX512VBMI2 0xa
+#define AVX512F     0x000
+#define AVX512DQ    0x001
+#define AVX512IFMA  0x002
+#define AVX512PF    0x004
+#define AVX512ER    0x008
+#define AVX512CD    0x010
+#define AVX512BW    0x020
+#define AVX512VL    0x040
+#define AVX512VBMI  0x080
+#define AVX512VNNI  0x100
+#define AVX512VBMI2 0x200
 
 #define IS_SSE       0x10
 #define IS_SSE2      0x20
@@ -193,7 +193,7 @@ static inline uint64_t xgetbv (int ctr) {
 #define IS_SSE42     0x42 
 #define IS_AVX       0x50
 #define IS_AVX2      0x60
-#define IS_AVX512    0x70
+#define IS_AVX512    0x800
 
 int cpuisa(void) {
   int c[4] = {0};                               
@@ -255,17 +255,17 @@ char *cpustr(int cpuisa) {
     #if defined(__i386__) || defined(__x86_64__)    
   if(cpuisa >= IS_AVX512)
 	switch(cpuisa&0xf) {
-      case AVX512F:    return "avx512f";
-      case AVX512DQ:   return "avx512dq";
-      case AVX512IFMA: return "avx512ifma";
-      case AVX512PF:   return "avx512pf";
-      case AVX512ER:   return "avx512er";
-      case AVX512CD:   return "avx512cd";
-      case AVX512BW:   return "avx512bw";
-      case AVX512VL:   return "avx512vl";
+      case AVX512VBMI2:return "avx512vbmi2";
       case AVX512VBMI: return "avx512vbmi";
       case AVX512VNNI: return "avx512vnni";
-      case AVX512VBMI2:return "avx512vbmi2";
+      case AVX512VL:   return "avx512vl";
+      case AVX512BW:   return "avx512bw";
+      case AVX512CD:   return "avx512cd";
+      case AVX512ER:   return "avx512er";
+      case AVX512PF:   return "avx512pf";
+      case AVX512IFMA: return "avx512ifma";
+      case AVX512DQ:   return "avx512dq";
+      case AVX512F:    return "avx512f";
 	  default:         return "avx512";
 	} 
   else if(cpuisa >= IS_AVX2)    return "avx2";
