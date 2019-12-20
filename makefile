@@ -11,7 +11,7 @@
 CC ?= gcc
 CXX ?= g++
 
-CC=powerpc64le-linux-gnu-gcc
+#CC=powerpc64le-linux-gnu-gcc
 CL = $(CC)
 #DEBUG=-DDEBUG -g
 
