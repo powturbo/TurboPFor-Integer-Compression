@@ -26,7 +26,7 @@ matrix:
       arch: arm64
       compiler: gcc
 
-    - name: linux-arm64-gcc
+    - name: linux-arm64-clang-6
 #      dist: bionic
       os: linux
       arch: arm64
