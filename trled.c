@@ -32,13 +32,19 @@
   #elif defined(__SSE4_1__)
 #include <smmintrin.h>
   #elif defined(__SSSE3__)
+    #ifdef __powerpc64__
+#define __SSE__   1
+#define __SSE2__  1
+#define __SSE3__  1
+#define NO_WARN_X86_INTRINSICS 1
+    #endif
 #include <tmmintrin.h>
   #elif defined(__SSE2__)
 #include <emmintrin.h>
   #elif defined(__ARM_NEON)
 #include <arm_neon.h>
-  #endif
 #include "sse_neon.h"
+  #endif
 
   #ifdef __ARM_NEON
 #define PREFETCH(_ip_,_rw_)
