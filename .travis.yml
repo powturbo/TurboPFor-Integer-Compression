@@ -23,7 +23,6 @@ matrix:
   include:
     - name: linux-ppc64le-gcc-9
       arch: ppc64le
-      compiler: gcc
       env: CC=gcc-9
       before_install:
         - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
