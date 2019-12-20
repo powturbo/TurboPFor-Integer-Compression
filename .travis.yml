@@ -31,7 +31,7 @@ matrix:
       arch: amd64 
       script: 
         - mingw32-make
-#        - ./icapp ZIPF
+        - ./icapp ZIPF
 
     - name: apple-macOS-xcode
       os: osx
