@@ -95,7 +95,7 @@ extern char _shuffle_16[256][16];
 #include "vp4d.c"
 
 #undef  BITUNDD
-  #elif defined(PLAIN)
+  #elif !defined(SSE2_ON) && !defined(AVX2_ON) 
 
 #define _P4DEC      _p4dec
 #define  P4DEC       p4dec
