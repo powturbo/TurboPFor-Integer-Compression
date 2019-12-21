@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -45,7 +45,7 @@
   #endif
   #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
-  #else 
+  #else
 #include <stdint.h>
   #endif
 #include "sse_neon.h"
@@ -63,7 +63,7 @@ static inline unsigned short zigzagenc16(short          x) { return x << 1 ^   x
 static inline          short zigzagdec16(unsigned short x) { return x >> 1 ^ -(x &   1); }
 
 static inline unsigned       zigzagenc32(int      x)       { return x << 1 ^   x >> 31;  }
-static inline int      	     zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
+static inline int            zigzagdec32(unsigned x)       { return x >> 1 ^ -(x &   1); }
 
 static inline uint64_t       zigzagenc64(int64_t  x)       { return x << 1 ^ x >> 63;  }
 static inline  int64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
@@ -71,18 +71,18 @@ static inline  int64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x
   #if defined(__SSE2__) || defined(__ARM_NEON)
 static ALWAYS_INLINE __m128i mm_zzage_epi16(__m128i v) { return _mm_xor_si128(_mm_slli_epi16(v,1), _mm_srai_epi16(v,15)); }
 static ALWAYS_INLINE __m128i mm_zzage_epi32(__m128i v) { return _mm_xor_si128(_mm_slli_epi32(v,1), _mm_srai_epi32(v,31)); }
-//static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128(_mm_slli_epi64(v,1), _mm_srai_epi64(v,63)); } 
+//static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128(_mm_slli_epi64(v,1), _mm_srai_epi64(v,63)); }
 
 static ALWAYS_INLINE __m128i mm_zzagd_epi16(__m128i v) { return _mm_xor_si128(_mm_srli_epi16(v,1), _mm_srai_epi16(_mm_slli_epi16(v,15),15) ); }
 static ALWAYS_INLINE __m128i mm_zzagd_epi32(__m128i v) { return _mm_xor_si128(_mm_srli_epi32(v,1), _mm_srai_epi32(_mm_slli_epi32(v,31),31) ); }
-//static ALWAYS_INLINE __m128i mm_zzagd_epi64(__m128i v) { return _mm_xor_si128(_mm_srli_epi64(v,1), _mm_srai_epi64(_mm_slli_epi64(v,63),63) ); } 
+//static ALWAYS_INLINE __m128i mm_zzagd_epi64(__m128i v) { return _mm_xor_si128(_mm_srli_epi64(v,1), _mm_srai_epi64(_mm_slli_epi64(v,63),63) ); }
 
   #endif
   #ifdef __AVX2__
 static ALWAYS_INLINE __m256i mm256_zzage_epi32(__m256i v) { return _mm256_xor_si256(_mm256_slli_epi32(v,1), _mm256_srai_epi32(v,31)); }
 static ALWAYS_INLINE __m256i mm256_zzagd_epi32(__m256i v) { return _mm256_xor_si256(_mm256_srli_epi32(v,1), _mm256_srai_epi32(_mm256_slli_epi32(v,31),31) ); }
   #endif
-  
+
 //-------------- AVX2 delta + prefix sum (scan) / xor encode/decode ---------------------------------------------------------------------------------------
   #ifdef __AVX2__
 static ALWAYS_INLINE __m256i mm256_delta_epi32(__m256i v, __m256i sv) { return _mm256_sub_epi32(v, _mm256_alignr_epi8(v, _mm256_permute2f128_si256(sv, v, _MM_SHUFFLE(0, 2, 0, 1)), 12)); }
@@ -93,28 +93,28 @@ static ALWAYS_INLINE __m256i mm256_xore_epi64( __m256i v, __m256i sv) { return _
 static ALWAYS_INLINE __m256i mm256_scan_epi32(__m256i v, __m256i sv) {
   v  = _mm256_add_epi32(v, _mm256_slli_si256(v, 4));
   v  = _mm256_add_epi32(v, _mm256_slli_si256(v, 8));
-  return _mm256_add_epi32(     _mm256_permute2x128_si256(                       _mm256_shuffle_epi32(sv,_MM_SHUFFLE(3, 3, 3, 3)), sv, 0x11), 
+  return _mm256_add_epi32(     _mm256_permute2x128_si256(                       _mm256_shuffle_epi32(sv,_MM_SHUFFLE(3, 3, 3, 3)), sv, 0x11),
            _mm256_add_epi32(v, _mm256_permute2x128_si256(_mm256_setzero_si256(),_mm256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 3, 3)),     0x20)));
 }
 static ALWAYS_INLINE __m256i mm256_xord_epi32(__m256i v, __m256i sv) {
   v  = _mm256_xor_si256(v, _mm256_slli_si256(v, 4));
   v  = _mm256_xor_si256(v, _mm256_slli_si256(v, 8));
-  return _mm256_xor_si256(     _mm256_permute2x128_si256(                       _mm256_shuffle_epi32(sv,_MM_SHUFFLE(3, 3, 3, 3)), sv, 0x11), 
+  return _mm256_xor_si256(     _mm256_permute2x128_si256(                       _mm256_shuffle_epi32(sv,_MM_SHUFFLE(3, 3, 3, 3)), sv, 0x11),
            _mm256_xor_si256(v, _mm256_permute2x128_si256(_mm256_setzero_si256(),_mm256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 3, 3)),     0x20)));
 }
 
 static ALWAYS_INLINE __m256i mm256_scan_epi64(__m256i v, __m256i sv) {
-  v = _mm256_add_epi64(v, _mm256_alignr_epi8(v, _mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), 8)); 
+  v = _mm256_add_epi64(v, _mm256_alignr_epi8(v, _mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), 8));
   return _mm256_add_epi64(_mm256_permute4x64_epi64(sv, _MM_SHUFFLE(3, 3, 3, 3)), _mm256_add_epi64(_mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), v) );
 }
-static ALWAYS_INLINE __m256i mm256_xord_epi64(__m256i v, __m256i sv) { 
-  v = _mm256_xor_si256(v, _mm256_alignr_epi8(v, _mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), 8)); 
-  return _mm256_xor_si256(_mm256_permute4x64_epi64(sv, _MM_SHUFFLE(3, 3, 3, 3)), _mm256_xor_si256(_mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), v) ); 
+static ALWAYS_INLINE __m256i mm256_xord_epi64(__m256i v, __m256i sv) {
+  v = _mm256_xor_si256(v, _mm256_alignr_epi8(v, _mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), 8));
+  return _mm256_xor_si256(_mm256_permute4x64_epi64(sv, _MM_SHUFFLE(3, 3, 3, 3)), _mm256_xor_si256(_mm256_permute2x128_si256(v, v, _MM_SHUFFLE(0, 0, 2, 0)), v) );
 }
 
 static ALWAYS_INLINE __m256i mm256_scani_epi32(__m256i v, __m256i sv, __m256i vi) { return _mm256_add_epi32(mm256_scan_epi32(v, sv), vi); }
   #endif
-  
+
   #if defined(__SSSE3__) || defined(__ARM_NEON)
 static ALWAYS_INLINE __m128i mm_delta_epi16(__m128i v, __m128i sv) { return _mm_sub_epi16(v, _mm_alignr_epi8(v, sv, 14)); }
 static ALWAYS_INLINE __m128i mm_delta_epi32(__m128i v, __m128i sv) { return _mm_sub_epi32(v, _mm_alignr_epi8(v, sv, 12)); }
@@ -147,7 +147,7 @@ static ALWAYS_INLINE __m128i mm_xore_epi32( __m128i v, __m128i sv) { return _mm_
 #if !defined(_M_X64) && !defined(__x86_64__) && defined(__AVX__)
 #define _mm256_extract_epi64(v, index) ((__int64)((uint64_t)(uint32_t)_mm256_extract_epi32((v), (index) * 2) | (((uint64_t)(uint32_t)_mm256_extract_epi32((v), (index) * 2 + 1)) << 32)))
 #endif
-  
+
 //------------------ Horizontal OR -----------------------------------------------
   #ifdef __AVX2__
 static ALWAYS_INLINE unsigned mm256_hor_epi32(__m256i v) {
@@ -160,7 +160,7 @@ static ALWAYS_INLINE uint64_t mm256_hor_epi64(__m256i v) {
   v = _mm256_or_si256(v, _mm256_permute2x128_si256(v, v, _MM_SHUFFLE(2, 0, 0, 1)));
   return _mm256_extract_epi64(v, 1) | _mm256_extract_epi64(v,0);
 }
-  #endif 
+  #endif
 
   #if defined(__SSE2__) || defined(__ARM_NEON)
 #define MM_HOZ_EPI16(v,_hop_) {\
@@ -178,7 +178,7 @@ static ALWAYS_INLINE uint64_t mm256_hor_epi64(__m256i v) {
 static ALWAYS_INLINE uint16_t mm_hor_epi16( __m128i v) { MM_HOZ_EPI16(v,_mm_or_si128);               return (unsigned short)_mm_cvtsi128_si32(v); }
 static ALWAYS_INLINE uint32_t mm_hor_epi32( __m128i v) { MM_HOZ_EPI32(v,_mm_or_si128);               return (unsigned      )_mm_cvtsi128_si32(v); }
 static ALWAYS_INLINE uint64_t mm_hor_epi64( __m128i v) { v = _mm_or_si128( v, _mm_srli_si128(v, 8)); return (uint64_t      )_mm_cvtsi128_si64(v); }
-  #endif 
+  #endif
 
 //----------------- sub / add ----------------------------------------------------------
   #if defined(__SSE2__) || defined(__ARM_NEON)
@@ -190,7 +190,7 @@ static ALWAYS_INLINE uint64_t mm_hor_epi64( __m128i v) { v = _mm_or_si128( v, _m
 //---------------- Convert _mm_cvtsi128_siXX -------------------------------------------
 static ALWAYS_INLINE uint8_t  _mm_cvtsi128_si8 (__m128i v) { return (uint8_t )_mm_cvtsi128_si32(v); }
 static ALWAYS_INLINE uint16_t _mm_cvtsi128_si16(__m128i v) { return (uint16_t)_mm_cvtsi128_si32(v); }
-  #endif 
+  #endif
 
 //--------- memset -----------------------------------------
 #define BITFORSET_(_out_, _n_, _start_, _mindelta_) do { unsigned _i;\
@@ -221,8 +221,8 @@ static ALWAYS_INLINE uint16_t _mm_cvtsi128_si16(__m128i v) { return (uint16_t)_m
 #define BITDIZERO32(_out_, _n_, _start_, _mindelta_) do { __m256i _sv = _mm256_set1_epi32(_start_), _cv = _mm256_set_epi32(7+_mindelta_,6+_mindelta_,5+_mindelta_,4+_mindelta_,3+_mindelta_,2+_mindelta_,1+_mindelta_,_mindelta_), *_ov=(__m256i *)(_out_), *_ove = (__m256i *)(_out_ + _n_);\
   _sv = _mm256_add_epi32(_sv, _cv); _cv = _mm256_set1_epi32(4*_mindelta_); do { _mm256_storeu_si256(_ov++, _sv), _sv = _mm256_add_epi32(_sv, _cv); } while(_ov < _ove);\
 } while(0)
-	
-  #elif defined(__SSE2__) || defined(__ARM_NEON) // ------------- 
+
+  #elif defined(__SSE2__) || defined(__ARM_NEON) // -------------
 // SIMD set value (memset)
 #define BITZERO32(_out_, _n_, _v_) do {\
   __m128i _sv_ = _mm_set1_epi32(_v_), *_ov = (__m128i *)(_out_), *_ove = (__m128i *)(_out_ + _n_);\
@@ -239,7 +239,7 @@ static ALWAYS_INLINE uint16_t _mm_cvtsi128_si16(__m128i v) { return (uint16_t)_m
 #define BITDIZERO32(_out_, _n_, _start_, _mindelta_) do { __m128i _sv = _mm_set1_epi32(_start_), _cv = _mm_set_epi32(3+_mindelta_,2+_mindelta_,1+_mindelta_,_mindelta_), *_ov=(__m128i *)(_out_), *_ove = (__m128i *)(_out_ + _n_);\
   _sv = _mm_add_epi32(_sv, _cv); _cv = _mm_set1_epi32(4*_mindelta_); do { _mm_storeu_si128(_ov++, _sv), _sv = _mm_add_epi32(_sv, _cv); } while(_ov < _ove);\
 } while(0)
-  #else																					
+  #else
 #define BITFORZERO32(_out_, _n_, _start_, _mindelta_) BITFORSET_(_out_, _n_, _start_, _mindelta_)
 #define BITZERO32(   _out_, _n_, _start_)             BITFORSET_(_out_, _n_, _start_, 0)
   #endif
@@ -254,7 +254,7 @@ static ALWAYS_INLINE uint16_t _mm_cvtsi128_si16(__m128i v) { return (uint16_t)_m
 #define rbit32(x) __builtin_bitreverse32(x)
 #define rbit64(x) __builtin_bitreverse64(x)
   #else
-	  
+
     #if (__CORTEX_M >= 0x03u) || (__CORTEX_SC >= 300u)
 static ALWAYS_INLINE uint32_t _rbit_(uint32_t x) { uint32_t rc; __asm volatile ("rbit %0, %1" : "=r" (rc) : "r" (x) ); }
     #endif
@@ -266,7 +266,7 @@ static ALWAYS_INLINE uint8_t rbit8(uint8_t x) {
   x = (x & 0xcc) >> 2 | (x & 0x33) << 2;
   return x << 4 | x >> 4;
     #else
-  return (x * 0x0202020202ull & 0x010884422010ull) % 1023;		
+  return (x * 0x0202020202ull & 0x010884422010ull) % 1023;
     #endif
 }
 
@@ -295,7 +295,7 @@ static ALWAYS_INLINE uint32_t rbit32(uint32_t x) {
 static ALWAYS_INLINE uint64_t rbit64(uint64_t x) {
     #if (__CORTEX_M >= 0x03u) || (__CORTEX_SC >= 300u)
   return (uint64_t)_rbit_(x) << 32 | _rbit_(x >> 32);
-	#else
+    #else
   x = (x & 0xaaaaaaaaaaaaaaaa) >>  1 | (x & 0x5555555555555555) <<  1;
   x = (x & 0xcccccccccccccccc) >>  2 | (x & 0x3333333333333333) <<  2;
   x = (x & 0xf0f0f0f0f0f0f0f0) >>  4 | (x & 0x0f0f0f0f0f0f0f0f) <<  4;
@@ -305,7 +305,7 @@ static ALWAYS_INLINE uint64_t rbit64(uint64_t x) {
     #endif
 }
   #endif
-  
+
   #if defined(__SSSE3__) || defined(__ARM_NEON)
 static ALWAYS_INLINE __m128i mm_rbit_epi16(__m128i v) { return mm_rbit_epi8(mm_rev_epi16(v)); }
 static ALWAYS_INLINE __m128i mm_rbit_epi32(__m128i v) { return mm_rbit_epi8(mm_rev_epi32(v)); }
@@ -314,8 +314,8 @@ static ALWAYS_INLINE __m128i mm_rbit_epi64(__m128i v) { return mm_rbit_epi8(mm_r
   #endif
 
   #ifdef __AVX2__
-static ALWAYS_INLINE __m256i mm256_rbit_epi8(__m256i v) {  
-  __m256i fv = _mm256_setr_epi8(0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15, 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15), cv0f_8 = _mm256_set1_epi8(0xf);	  
+static ALWAYS_INLINE __m256i mm256_rbit_epi8(__m256i v) {
+  __m256i fv = _mm256_setr_epi8(0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15, 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15), cv0f_8 = _mm256_set1_epi8(0xf);
   __m256i lv = _mm256_shuffle_epi8(fv,_mm256_and_si256(                  v,     cv0f_8));
   __m256i hv = _mm256_shuffle_epi8(fv,_mm256_and_si256(_mm256_srli_epi64(v, 4), cv0f_8));
   return _mm256_or_si256(_mm256_slli_epi64(lv,4), hv);
@@ -333,7 +333,7 @@ static ALWAYS_INLINE __m256i mm256_rbit_si128(__m256i v) { return mm256_rbit_epi
   #endif
 #endif
 
-//---------- max. bit length + transform for sorted/unsorted arrays, delta,delta 1, delta > 1, zigzag, zigzag of delta, xor, FOR,---------------- 
+//---------- max. bit length + transform for sorted/unsorted arrays, delta,delta 1, delta > 1, zigzag, zigzag of delta, xor, FOR,----------------
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -384,30 +384,30 @@ uint8_t  bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uin
 uint16_t bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta);
 uint32_t bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta);
 uint64_t bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta);
-//-- in-place reverse delta 
+//-- in-place reverse delta
 void     bitdidec8( uint8_t  *in, unsigned n,                uint8_t  start, uint8_t  mindelta);
 void     bitdidec16(uint16_t *in, unsigned n,                uint16_t start, uint16_t mindelta);
 void     bitdidec32(uint32_t *in, unsigned n,                uint32_t start, uint32_t mindelta);
 void     bitdidec64(uint64_t *in, unsigned n,                uint64_t start, uint64_t mindelta);
 
 //------------- FOR : array bit length: ---------------------------------------------------------------------
-//------ ORed array, for max. bit length of the non decreasing integer array.  out[i] = in[i] - start 
+//------ ORed array, for max. bit length of the non decreasing integer array.  out[i] = in[i] - start
 uint8_t  bitf8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
 uint16_t bitf16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
 uint32_t bitf32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 uint64_t bitf64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
 
-//------ ORed array, for max. bit length of the non strictly decreasing integer array out[i] = in[i] - 1 - start 
+//------ ORed array, for max. bit length of the non strictly decreasing integer array out[i] = in[i] - 1 - start
 uint8_t  bitf18( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
 uint16_t bitf116(uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
 uint32_t bitf132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 uint64_t bitf164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
 
-//------ ORed array, for max. bit length for usorted array 
+//------ ORed array, for max. bit length for usorted array
 uint8_t  bitfm8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  *pmin);  // unsorted
-uint16_t bitfm16(uint16_t *in, unsigned n, uint16_t *px, uint16_t *pmin);  
-uint32_t bitfm32(uint32_t *in, unsigned n, uint32_t *px, uint32_t *pmin);  
-uint64_t bitfm64(uint64_t *in, unsigned n, uint64_t *px, uint64_t *pmin);  
+uint16_t bitfm16(uint16_t *in, unsigned n, uint16_t *px, uint16_t *pmin);
+uint32_t bitfm32(uint32_t *in, unsigned n, uint32_t *px, uint32_t *pmin);
+uint64_t bitfm64(uint64_t *in, unsigned n, uint64_t *px, uint64_t *pmin);
 
 //------------- Zigzag encoding for unsorted integer lists: out[i] = in[i] - in[i-1] ------------------------
 //-- ORed array, to get maximum zigzag bit length integer array
@@ -438,7 +438,7 @@ uint16_t bitzzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uin
 uint32_t bitzzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta);
 uint64_t bitzzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta);
 
-//-- in-place reverse zigzag of delta (encoded w/ bitdiencNN and parameter mindelta = 1)  
+//-- in-place reverse zigzag of delta (encoded w/ bitdiencNN and parameter mindelta = 1)
 void bitzzdec8(     uint8_t  *in,  unsigned n, uint8_t  start); // non strictly decreasing (out[i] = in[i] - in[i-1] - 1)
 void bitzzdec16(    uint16_t *in,  unsigned n, uint16_t start);
 void bitzzdec32(    uint32_t *in,  unsigned n, uint32_t start);
@@ -463,7 +463,7 @@ void bitxdec16(     uint16_t *p,  unsigned n, uint16_t start);
 void bitxdec32(     uint32_t *p,  unsigned n, uint32_t start);
 void bitxdec64(     uint64_t *p,  unsigned n, uint64_t start);
 
-//------- Lossy floating point transform: pad the trailing mantissa bits with zeros according to the error e (ex. e=0.00001) 
+//------- Lossy floating point transform: pad the trailing mantissa bits with zeros according to the error e (ex. e=0.00001)
   #ifdef USE_FLOAT16
 void fppad16(_Float16 *in, size_t n, _Float16  *out, float  e);
   #endif
@@ -481,5 +481,5 @@ void fppad64(double *in, size_t n, double *out, double e);
 #define MANTF64    52
 
 #define BITFENC(_u_, _sgn_, _expo_, _mant_,      _mantbits_, _one_) _sgn_ = _u_ >> (sizeof(_u_)*8-1); _expo_ = ((_u_ >> (_mantbits_)) & ( (_one_<<(sizeof(_u_)*8 - 1 - _mantbits_)) -1)); _mant_ = _u_ & ((_one_<<_mantbits_)-1);
-#define BITFDEC(     _sgn_, _expo_, _mant_, _u_, _mantbits_)        _u_ = (_sgn_) << (sizeof(_u_)*8-1) | (_expo_) << _mantbits_ | (_mant_) 
+#define BITFDEC(     _sgn_, _expo_, _mant_, _u_, _mantbits_)        _u_ = (_sgn_) << (sizeof(_u_)*8-1) | (_expo_) << _mantbits_ | (_mant_)
   #endif
