@@ -41,7 +41,7 @@
 
 #define HYBRID 1 // Hybrid TurboPFor : 0=fixed bit packing, 1=fixed BP+Variable byte 
 
-  #ifdef PLAIN
+  #if !defined(SSE2_ON) && !defined(AVX2_ON) 
 #define _P4BITS _p4bits
 #define  P4BITS _p4bits
 #define _P4ENC   _p4enc
