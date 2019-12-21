@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -22,7 +22,8 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //    "Integer Compression" utility - delta, for, zigzag / Floating point compression
-#include "conf.h"  
+#include <math.h> //nan
+#include "conf.h"
 #define BITUTIL_IN
 #include "bitutil.h"
 
@@ -40,51 +41,51 @@ uint64_t bit64(uint64_t *in, unsigned n, uint64_t *px) { uint64_t o,x,u0,*ip; BI
 uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
   uint16_t o, x, u0 = in[0], *ip;
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi16(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
+  __m128i vb0 = _mm_set1_epi16(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
                                      vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();
-  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
+  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
-    __m128i v1 = _mm_loadu_si128((__m128i *)(ip+8));   
+    __m128i v1 = _mm_loadu_si128((__m128i *)(ip+8));
     vo0 = _mm_or_si128( vo0, v0);
     vo1 = _mm_or_si128( vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
   }
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi16(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);
     #else
-  ip = in; o = x = 0; //BIT( in, n, 16); 
+  ip = in; o = x = 0; //BIT( in, n, 16);
     #endif
   for(; ip != in+n; ip++) BT(0);
   if(px) *px = x;
-  return o; 
+  return o;
 }
 
-uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) { 
+uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
   uint32_t o,x,u0 = in[0], *ip;
     #ifdef __AVX2__
-  __m256i vb0 = _mm256_set1_epi32(*in), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
+  __m256i vb0 = _mm256_set1_epi32(*in), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
                                         vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256();
-  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
+  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
     __m256i v0 = _mm256_loadu_si256((__m256i *) ip);
-    __m256i v1 = _mm256_loadu_si256((__m256i *)(ip+8));   
+    __m256i v1 = _mm256_loadu_si256((__m256i *)(ip+8));
     vo0 = _mm256_or_si256(vo0, v0);
     vo1 = _mm256_or_si256(vo1, v1);
-	vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
-	vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
+    vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
+    vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
   }
   vo0 = _mm256_or_si256(vo0, vo1); o = mm256_hor_epi32(vo0);
   vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);
     #elif defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi32(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
+  __m128i vb0 = _mm_set1_epi32(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
                                      vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();
-  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {            						PREFETCH(ip+512,0);
+  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {                                  PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
-    __m128i v1 = _mm_loadu_si128((__m128i *)(ip+4));   
+    __m128i v1 = _mm_loadu_si128((__m128i *)(ip+4));
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
   }
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi32(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);
@@ -93,11 +94,11 @@ uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
     #endif
   for(; ip != in+n; ip++) BT(0);
   if(px) *px = x;
-  return o; 
+  return o;
 }
 
 //----------------------------------------------------------- Delta ----------------------------------------------------------------
-#define DE(_ip_,_i_) u = (_ip_[_i_]-start)-_md; start = _ip_[_i_]; 
+#define DE(_ip_,_i_) u = (_ip_[_i_]-start)-_md; start = _ip_[_i_];
 #define BITDE(_t_, _in_, _n_, _md_, _act_) { _t_ _md = _md_, *_ip; o = x = 0;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { DE(_ip,0);_act_; DE(_ip,1);_act_; DE(_ip,2);_act_; DE(_ip,3);_act_; }\
   for(;_ip != _in_+_n_;_ip++) { DE(_ip,0); _act_; }\
@@ -109,75 +110,75 @@ uint64_t  bitd64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint6
 
 uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
   uint16_t o, x, *ip, u0 = in[0]-start;
-    #if defined(__SSE2__) || defined(__ARM_NEON)  
-  __m128i vb0 = _mm_set1_epi16(u0), 
-          vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
-          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(); 				__m128i vs = _mm_set1_epi16(start);
-  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
-    __m128i vi0 = _mm_loadu_si128((__m128i *) ip);                                         
+    #if defined(__SSE2__) || defined(__ARM_NEON)
+  __m128i vb0 = _mm_set1_epi16(u0),
+          vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
+          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();                 __m128i vs = _mm_set1_epi16(start);
+  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
+    __m128i vi0 = _mm_loadu_si128((__m128i *) ip);
     __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+8));                           __m128i v0 = mm_delta_epi16(vi0,vs); vs = vi0;
-																				__m128i v1 = mm_delta_epi16(vi1,vs); vs = vi1;	
+                                                                                __m128i v1 = mm_delta_epi16(vi1,vs); vs = vi1;
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  } 																			start = _mm_cvtsi128_si16(_mm_srli_si128(vs,14));
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+  }                                                                             start = _mm_cvtsi128_si16(_mm_srli_si128(vs,14));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi16(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);
     #else
   ip = in; o = x = 0;
     #endif
   for(;ip != in+n; ip++) {
-	uint16_t u = *ip - start; start = *ip;
-    o |= u;                                     		
-    x |= u ^ u0;                                	
-  }		
-  if(px) *px = x; 
-  return o; 
+    uint16_t u = *ip - start; start = *ip;
+    o |= u;
+    x |= u ^ u0;
+  }
+  if(px) *px = x;
+  return o;
 }
 
 uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o, x, *ip, u0 = in[0] - start;
     #ifdef __AVX2__
-  __m256i vb0 = _mm256_set1_epi32(u0), 
-          vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
-          vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(); 			__m256i vs = _mm256_set1_epi32(start);
-  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
+  __m256i vb0 = _mm256_set1_epi32(u0),
+          vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
+          vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256();           __m256i vs = _mm256_set1_epi32(start);
+  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
     __m256i vi0 = _mm256_loadu_si256((__m256i *) ip);
-    __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));   						__m256i v0 = mm256_delta_epi32(vi0,vs); vs = vi0;
-																				__m256i v1 = mm256_delta_epi32(vi1,vs); vs = vi1;
+    __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = mm256_delta_epi32(vi0,vs); vs = vi0;
+                                                                                __m256i v1 = mm256_delta_epi32(vi1,vs); vs = vi1;
     vo0 = _mm256_or_si256(vo0, v0);
     vo1 = _mm256_or_si256(vo1, v1);
-	vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
-	vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
-  }																				start = (unsigned)_mm256_extract_epi32(vs, 7);	
+    vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
+    vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
+  }                                                                             start = (unsigned)_mm256_extract_epi32(vs, 7);
   vo0 = _mm256_or_si256(vo0, vo1); o = mm256_hor_epi32(vo0);
-  vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);																								
-    #elif defined(__SSE2__) || defined(__ARM_NEON)  
-  __m128i vb0 = _mm_set1_epi32(u0), 
-          vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
-          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(); 				__m128i vs = _mm_set1_epi32(start);
-  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {            						PREFETCH(ip+512,0);
-    __m128i vi0 = _mm_loadu_si128((__m128i *)ip);      
+  vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);
+    #elif defined(__SSE2__) || defined(__ARM_NEON)
+  __m128i vb0 = _mm_set1_epi32(u0),
+          vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
+          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();                 __m128i vs = _mm_set1_epi32(start);
+  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {                                  PREFETCH(ip+512,0);
+    __m128i vi0 = _mm_loadu_si128((__m128i *)ip);
     __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+4));                           __m128i v0 = mm_delta_epi32(vi0,vs); vs = vi0;
-	                                                                            __m128i v1 = mm_delta_epi32(vi1,vs); vs = vi1;
+                                                                                __m128i v1 = mm_delta_epi32(vi1,vs); vs = vi1;
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }																				start = _mm_cvtsi128_si32(_mm_srli_si128(vs,12));		
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+  }                                                                             start = _mm_cvtsi128_si32(_mm_srli_si128(vs,12));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi32(vo0);
-  vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);																						  
+  vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);
     #else
   ip = in; o = x = 0;
     #endif
   for(;ip != in+n; ip++) {
-	uint32_t u = *ip - start; start = *ip;
-    o |= u;                                     		
+    uint32_t u = *ip - start; start = *ip;
+    o |= u;
     x |= u ^ u0;
-  }		  
-  if(px) *px = x; 
-  return o; 
+  }
+  if(px) *px = x;
+  return o;
 }
 
 //----- Undelta: In-place prefix sum (min. Delta = 0) -------------------
@@ -190,35 +191,35 @@ uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
 void bitddec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDD(uint8_t,  p, n, 0); }
 void bitddec16(uint16_t *p, unsigned n, uint16_t start) { BITDD(uint16_t, p, n, 0); }
 void bitddec64(uint64_t *p, unsigned n, uint64_t start) { BITDD(uint64_t, p, n, 0); }
-void bitddec32(uint32_t *p, unsigned n, unsigned start) { 
+void bitddec32(uint32_t *p, unsigned n, unsigned start) {
     #ifdef __AVX2__
   __m256i vs = _mm256_set1_epi32(start);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
-    __m256i v =  _mm256_loadu_si256((__m256i *)ip); 
-	vs = mm256_scan_epi32(v,vs); 
-	_mm256_storeu_si256((__m256i *)ip, vs); 
+    __m256i v =  _mm256_loadu_si256((__m256i *)ip);
+    vs = mm256_scan_epi32(v,vs);
+    _mm256_storeu_si256((__m256i *)ip, vs);
   }
-  start = (unsigned)_mm256_extract_epi32(vs, 7); 
-  while(ip != p+n) { 
-    *ip = (start += (*ip)); 
-	ip++; 
-  }	
+  start = (unsigned)_mm256_extract_epi32(vs, 7);
+  while(ip != p+n) {
+    *ip = (start += (*ip));
+    ip++;
+  }
     #elif defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vs = _mm_set1_epi32(start);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
-    __m128i v =  _mm_loadu_si128((__m128i *)ip); 
-	vs = mm_scan_epi32(v, vs); 
-	_mm_storeu_si128((__m128i *)ip, vs); 
+    __m128i v =  _mm_loadu_si128((__m128i *)ip);
+    vs = mm_scan_epi32(v, vs);
+    _mm_storeu_si128((__m128i *)ip, vs);
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
-  while(ip != p+n) { 
-    *ip = (start += (*ip)); 
-	ip++; 
+  while(ip != p+n) {
+    *ip = (start += (*ip));
+    ip++;
   }
     #else
-  BITDD(uint32_t, p, n, 0); 
+  BITDD(uint32_t, p, n, 0);
     #endif
 }
 
@@ -243,7 +244,7 @@ uint64_t bitzzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uin
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { ZDD(0); ZDD(1); ZDD(2); ZDD(3); }\
   for(;_ip != _in_+_n_; _ip++) ZDD(0);\
 }
-void bitzzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDD(uint8_t,  p, n, 1); } 
+void bitzzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDD(uint8_t,  p, n, 1); }
 void bitzzdec16(uint16_t *p, unsigned n, uint16_t start) { BITZDD(uint16_t, p, n, 1); }
 void bitzzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDD(uint64_t, p, n, 1); }
 void bitzzdec32(uint32_t *p, unsigned n, uint32_t start) { BITZDD(uint32_t, p, n, 1); }
@@ -256,78 +257,78 @@ uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint6
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o, x, *ip, u0 = in[0]-start-1;
     #ifdef __AVX2__
-   __m256i vb0 = _mm256_set1_epi32(u0), 
-           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
-           vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(); 			__m256i vs = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
-  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
-    __m256i vi0 = _mm256_loadu_si256((__m256i *)ip);      
+   __m256i vb0 = _mm256_set1_epi32(u0),
+           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
+           vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256();          __m256i vs = _mm256_set1_epi32(start), cv = _mm256_set1_epi32(1);
+  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
+    __m256i vi0 = _mm256_loadu_si256((__m256i *)ip);
     __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = _mm256_sub_epi32(mm256_delta_epi32(vi0,vs),cv); vs = vi0;
-	                                                                            __m256i v1 = _mm256_sub_epi32(mm256_delta_epi32(vi1,vs),cv); vs = vi1;
+                                                                                __m256i v1 = _mm256_sub_epi32(mm256_delta_epi32(vi1,vs),cv); vs = vi1;
     vo0 = _mm256_or_si256(vo0, v0);
     vo1 = _mm256_or_si256(vo1, v1);
-	vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
-	vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
-  }																				start = (unsigned)_mm256_extract_epi32(vs, 7);
+    vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
+    vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
+  }                                                                             start = (unsigned)_mm256_extract_epi32(vs, 7);
   vo0 = _mm256_or_si256(vo0, vo1); o = mm256_hor_epi32(vo0);
-  vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);																			  	
+  vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);
    #elif defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi32(u0), 
-          vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
-          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(); 				__m128i vs = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
-  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {            						PREFETCH(ip+512,0);
-    __m128i vi0 = _mm_loadu_si128((__m128i *)ip);      
+  __m128i vb0 = _mm_set1_epi32(u0),
+          vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
+          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();                 __m128i vs = _mm_set1_epi32(start), cv = _mm_set1_epi32(1);
+  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {                                  PREFETCH(ip+512,0);
+    __m128i vi0 = _mm_loadu_si128((__m128i *)ip);
     __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+4));                           __m128i v0 = _mm_sub_epi32(mm_delta_epi32(vi0,vs),cv); vs = vi0;
-	                                                                            __m128i v1 = _mm_sub_epi32(mm_delta_epi32(vi1,vs),cv); vs = vi1;
+                                                                                __m128i v1 = _mm_sub_epi32(mm_delta_epi32(vi1,vs),cv); vs = vi1;
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }																				start = _mm_cvtsi128_si32(_mm_srli_si128(vs,12));
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+  }                                                                             start = _mm_cvtsi128_si32(_mm_srli_si128(vs,12));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi32(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);
     #else
   ip = in; o = x = 0;
-	#endif
+    #endif
   for(;ip != in+n; ip++) {
-	uint32_t u = ip[0] - start-1; start = *ip;
-    o |= u;                          		
-    x |= u ^ u0;                                	
-  }		
-  if(px) *px = x; 
-  return o; 
+    uint32_t u = ip[0] - start-1; start = *ip;
+    o |= u;
+    x |= u ^ u0;
+  }
+  if(px) *px = x;
+  return o;
 }
 
-uint16_t bits128v16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) { 
+uint16_t bits128v16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), vs = _mm_set1_epi16(start), cv = _mm_set1_epi16(8);
-  for(ip = in; ip != in+(n&~(4-1)); ip += 4) { 
-    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv,_mm_sub_epi16(SUBI16x8(iv,vs),cv)); 
-	vs = iv; 
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4) {
+    __m128i iv = _mm_loadu_si128((__m128i *)ip);
+    bv = _mm_or_si128(bv,_mm_sub_epi16(SUBI16x8(iv,vs),cv));
+    vs = iv;
   }
   start = (unsigned short)_mm_cvtsi128_si32(_mm_srli_si128(vs,14));
   b = mm_hor_epi16(bv);
-  if(px) *px = 0; 
-  return b; 
-	#endif
+  if(px) *px = 0;
+  return b;
+    #endif
 }
 
 unsigned bits128v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
   unsigned *ip,b; __m128i bv = _mm_setzero_si128(), vs = _mm_set1_epi32(start), cv = _mm_set1_epi32(4);
   for(ip = in; ip != in+(n&~(4-1)); ip += 4) {
-    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv,_mm_sub_epi32(SUBI32x4(iv,vs),cv)); 
-	vs = iv;
+    __m128i iv = _mm_loadu_si128((__m128i *)ip);
+    bv = _mm_or_si128(bv,_mm_sub_epi32(SUBI32x4(iv,vs),cv));
+    vs = iv;
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
   b = mm_hor_epi32(bv);
-  if(px) *px = 0; 
-  return b; 
-	#endif
+  if(px) *px = 0;
+  return b;
+    #endif
 }
 
-void bitd1dec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDD(uint8_t,  p, n, 1); } 
+void bitd1dec8( uint8_t  *p, unsigned n, uint8_t  start) { BITDD(uint8_t,  p, n, 1); }
 void bitd1dec16(uint16_t *p, unsigned n, uint16_t start) { BITDD(uint16_t, p, n, 1); }
 void bitd1dec64(uint64_t *p, unsigned n, uint64_t start) { BITDD(uint64_t, p, n, 1); }
 void bitd1dec32(uint32_t *p, unsigned n, uint32_t start) {
@@ -335,29 +336,29 @@ void bitd1dec32(uint32_t *p, unsigned n, uint32_t start) {
   __m256i vs = _mm256_set1_epi32(start),zv = _mm256_setzero_si256(), cv = _mm256_set_epi32(8,7,6,5,4,3,2,1);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
-    __m256i v =  _mm256_loadu_si256((__m256i *)ip); 							vs = mm256_scani_epi32(v, vs, cv); 
-	_mm256_storeu_si256((__m256i *)ip, vs); 
+    __m256i v =  _mm256_loadu_si256((__m256i *)ip);                             vs = mm256_scani_epi32(v, vs, cv);
+    _mm256_storeu_si256((__m256i *)ip, vs);
   }
-																				start = (unsigned)_mm256_extract_epi32(vs, 7); 
-  while(ip != p+n) { 
-    *ip = (start += (*ip) + 1); 
-	ip++; 
-  }	
+                                                                                start = (unsigned)_mm256_extract_epi32(vs, 7);
+  while(ip != p+n) {
+    *ip = (start += (*ip) + 1);
+    ip++;
+  }
     #elif defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vs = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
-    __m128i v =  _mm_loadu_si128((__m128i *)ip); 
-	vs = mm_scani_epi32(v, vs, cv); 
-	_mm_storeu_si128((__m128i *)ip, vs); 
+    __m128i v =  _mm_loadu_si128((__m128i *)ip);
+    vs = mm_scani_epi32(v, vs, cv);
+    _mm_storeu_si128((__m128i *)ip, vs);
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
-  while(ip != p+n) { 
-    *ip = (start += (*ip) + 1); 
-	ip++; 
+  while(ip != p+n) {
+    *ip = (start += (*ip) + 1);
+    ip++;
   }
     #else
-  BITDD(uint32_t, p, n, 1); 
+  BITDD(uint32_t, p, n, 1);
     #endif
 }
 
@@ -379,21 +380,21 @@ uint16_t bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uin
 uint64_t bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o=0,x=0,*op = out,u,*ip; BITDE(uint64_t, in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
 uint32_t bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  unsigned *ip,b,*op = out; 
+  unsigned *ip,b,*op = out;
   __m128i bv = _mm_setzero_si128(), vs = _mm_set1_epi32(start), cv = _mm_set1_epi32(mindelta), dv;
-  for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) { 
-    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	bv = _mm_or_si128(bv, dv = _mm_sub_epi32(mm_delta_epi32(iv,vs),cv)); 
-	vs = iv; 
-	_mm_storeu_si128((__m128i *)op, dv); 
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) {
+    __m128i iv = _mm_loadu_si128((__m128i *)ip);
+    bv = _mm_or_si128(bv, dv = _mm_sub_epi32(mm_delta_epi32(iv,vs),cv));
+    vs = iv;
+    _mm_storeu_si128((__m128i *)op, dv);
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
   b = mm_hor_epi32(bv);
-  while(ip != in+n) { 
-    unsigned x = *ip-start-mindelta; 
-	start = *ip++;
-	b    |= x; 
-	*op++ = x;
+  while(ip != in+n) {
+    unsigned x = *ip-start-mindelta;
+    start = *ip++;
+    b    |= x;
+    *op++ = x;
   }
     #else
   uint32_t b = 0,*op = out, x, *_ip;
@@ -401,7 +402,7 @@ uint32_t bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uin
     #endif
   return b;
 }
- 
+
 void bitdidec8(  uint8_t  *p, unsigned n, uint8_t  start, uint8_t  mindelta) { BITDD(uint8_t,  p, n, mindelta); }
 void bitdidec16( uint16_t *p, unsigned n, uint16_t start, uint16_t mindelta) { BITDD(uint16_t, p, n, mindelta); }
 void bitdidec32( uint32_t *p, unsigned n, uint32_t start, uint32_t mindelta) { BITDD(uint32_t, p, n, mindelta); }
@@ -430,76 +431,76 @@ uint64_t bitz64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64
 
 uint16_t bitz16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
   uint16_t o, x, *ip; uint32_t u0 = zigzagenc16((int)in[0] - (int)start);
-  
+
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi16(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
+  __m128i vb0 = _mm_set1_epi16(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
                                     vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(); __m128i vs = _mm_set1_epi16(start);
   for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            PREFETCH(ip+512,0);
-    __m128i vi0 = _mm_loadu_si128((__m128i *) ip);                                         
-    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+8));                                      __m128i v0 = mm_delta_epi16(vi0,vs); vs = vi0; v0 = mm_zzage_epi16(v0); 
-																						   __m128i v1 = mm_delta_epi16(vi1,vs); vs = vi1; v1 = mm_zzage_epi16(v1);
+    __m128i vi0 = _mm_loadu_si128((__m128i *) ip);
+    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+8));                                      __m128i v0 = mm_delta_epi16(vi0,vs); vs = vi0; v0 = mm_zzage_epi16(v0);
+                                                                                           __m128i v1 = mm_delta_epi16(vi1,vs); vs = vi1; v1 = mm_zzage_epi16(v1);
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }  																						start = _mm_cvtsi128_si16(_mm_srli_si128(vs,14));
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+  }                                                                                         start = _mm_cvtsi128_si16(_mm_srli_si128(vs,14));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi16(vo0);
-  vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);                                                                                          
+  vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);
     #else
   ip = in; //uint16_t u; o=x=0; BITDE(uint16_t, in, n, 0, o |= u; x |= u^u0); //BITZENC(uint16_t, int16_t, 16, in, n, o |= u,x &= u^u0);
     #endif
   for(;ip != in+n; ip++) {
-    uint16_t u = zigzagenc16((int)ip[0] - (int)start); //int i = ((int)(*ip) - (int)start); i = (i << 1) ^ (i >> 15); 
-	start = *ip;
-	o |= u; 
-    x |= u ^ u0;           	
-  }		
-  if(px) *px = x; 
-  return o; 
+    uint16_t u = zigzagenc16((int)ip[0] - (int)start); //int i = ((int)(*ip) - (int)start); i = (i << 1) ^ (i >> 15);
+    start = *ip;
+    o |= u;
+    x |= u ^ u0;
+  }
+  if(px) *px = x;
+  return o;
 }
 
-uint32_t bitz32(unsigned *in, unsigned n, uint32_t *px, unsigned start) { 
+uint32_t bitz32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   uint32_t o, x, *ip; uint32_t u0 = zigzagenc32((int)in[0] - (int)start);
     #ifdef __AVX2__
-   __m256i vb0 = _mm256_set1_epi32(u0), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(), 
+   __m256i vb0 = _mm256_set1_epi32(u0), vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
                                          vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(); __m256i vs = _mm256_set1_epi32(start);
-  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {            					PREFETCH(ip+512,0);
-    __m256i vi0 = _mm256_loadu_si256((__m256i *) ip);                                         
-    __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = mm256_delta_epi32(vi0,vs); vs = vi0; v0 = mm256_zzage_epi32(v0); 
-																				__m256i v1 = mm256_delta_epi32(vi1,vs); vs = vi1; v1 = mm256_zzage_epi32(v1);
+  for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
+    __m256i vi0 = _mm256_loadu_si256((__m256i *) ip);
+    __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = mm256_delta_epi32(vi0,vs); vs = vi0; v0 = mm256_zzage_epi32(v0);
+                                                                                __m256i v1 = mm256_delta_epi32(vi1,vs); vs = vi1; v1 = mm256_zzage_epi32(v1);
     vo0 = _mm256_or_si256(vo0, v0);
     vo1 = _mm256_or_si256(vo1, v1);
-	vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
-	vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
-  }  																			start = (unsigned)_mm256_extract_epi32(vs, 7);
+    vx0 = _mm256_or_si256(vx0, _mm256_xor_si256(v0, vb0));
+    vx1 = _mm256_or_si256(vx1, _mm256_xor_si256(v1, vb0));
+  }                                                                             start = (unsigned)_mm256_extract_epi32(vs, 7);
   vo0 = _mm256_or_si256(vo0, vo1); o = mm256_hor_epi32(vo0);
-  vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);																			  	
-                                                                                            
+  vx0 = _mm256_or_si256(vx0, vx1); x = mm256_hor_epi32(vx0);
+
     #elif defined(__SSE2__) || defined(__ARM_NEON)
-   __m128i vb0 = _mm_set1_epi32(u0), 
-           vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(), 
-           vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(); 				__m128i vs = _mm_set1_epi32(start);
-  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {            						PREFETCH(ip+512,0);
-    __m128i vi0 = _mm_loadu_si128((__m128i *) ip);                                         
-    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+4));                           __m128i v0 = mm_delta_epi32(vi0,vs); vs = vi0; v0 = mm_zzage_epi32(v0); 
-																				__m128i v1 = mm_delta_epi32(vi1,vs); vs = vi1; v1 = mm_zzage_epi32(v1);
+   __m128i vb0 = _mm_set1_epi32(u0),
+           vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
+           vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();                __m128i vs = _mm_set1_epi32(start);
+  for(ip = in; ip != in+(n&~(8-1)); ip += 8) {                                  PREFETCH(ip+512,0);
+    __m128i vi0 = _mm_loadu_si128((__m128i *) ip);
+    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+4));                           __m128i v0 = mm_delta_epi32(vi0,vs); vs = vi0; v0 = mm_zzage_epi32(v0);
+                                                                                __m128i v1 = mm_delta_epi32(vi1,vs); vs = vi1; v1 = mm_zzage_epi32(v1);
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
-	vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
-	vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }  																			start = _mm_cvtsi128_si16(_mm_srli_si128(vs,12));
+    vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
+    vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
+  }                                                                             start = _mm_cvtsi128_si16(_mm_srli_si128(vs,12));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi32(vo0);
-  vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);																			  	
+  vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);
     #else
   ip = in; o = x = 0; //uint32_t u; BITDE(uint32_t, in, n, 0, o |= u; x |= u^u0);
     #endif
   for(;ip != in+n; ip++) {
-    uint32_t u = zigzagenc32((int)ip[0] - (int)start); start = *ip; //((int)(*ip) - (int)start); 	//i = (i << 1) ^ (i >> 31); 	
-	o |= u; 
-    x |= u ^ u0;           	
-  }		
-  if(px) *px = x; 
-  return o; 
+    uint32_t u = zigzagenc32((int)ip[0] - (int)start); start = *ip; //((int)(*ip) - (int)start);    //i = (i << 1) ^ (i >> 31);
+    o |= u;
+    x |= u ^ u0;
+  }
+  if(px) *px = x;
+  return o;
 }
 
 uint8_t  bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o,x,u,*op = out; BITZENC(uint8_t,  int8_t,  8,in, n, o |= u; *op++ = u); return o; }
@@ -507,26 +508,26 @@ uint16_t bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint
 uint64_t bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o,x,u,*op = out; BITZENC(uint64_t, int64_t,64,in, n, o |= u; *op++ = u); return o; }
 uint32_t bitzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  unsigned *ip,b,*op = out; 
+  unsigned *ip,b,*op = out;
   __m128i bv = _mm_setzero_si128(), vs = _mm_set1_epi32(start), dv;
-  for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) { 
-    __m128i iv = _mm_loadu_si128((__m128i *)ip); 
-	dv = mm_delta_epi32(iv,vs); vs = iv; 
-    dv = mm_zzage_epi32(dv); 
+  for(ip = in; ip != in+(n&~(4-1)); ip += 4,op += 4) {
+    __m128i iv = _mm_loadu_si128((__m128i *)ip);
+    dv = mm_delta_epi32(iv,vs); vs = iv;
+    dv = mm_zzage_epi32(dv);
     bv = _mm_or_si128(bv, dv);
-	_mm_storeu_si128((__m128i *)op, dv); 
+    _mm_storeu_si128((__m128i *)op, dv);
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
   b = mm_hor_epi32(bv);
-  while(ip != in+n) { 
-    int x = ((int)(*ip)-(int)start); 
-	x = (x << 1) ^ (x >> 31); 
-	start = *ip++; 
-	b |= x; 
-	*op++ = x; 
+  while(ip != in+n) {
+    int x = ((int)(*ip)-(int)start);
+    x = (x << 1) ^ (x >> 31);
+    start = *ip++;
+    b |= x;
+    *op++ = x;
   }
     #else
-  uint32_t b = 0, *op = out,x; 
+  uint32_t b = 0, *op = out,x;
   BITZENC(uint32_t, int32_t, 32,in, n, b |= x; *op++ = x);
     #endif
   return bsr32(b);
@@ -541,54 +542,54 @@ uint32_t bitzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint
 void bitzdec8( uint8_t  *p, unsigned n, uint8_t  start) { BITZDEC(uint8_t,  8, p, n); }
 void bitzdec64(uint64_t *p, unsigned n, uint64_t start) { BITZDEC(uint64_t, 64,p, n); }
 
-void bitzdec16(uint16_t *p, unsigned n, uint16_t start) { 
+void bitzdec16(uint16_t *p, unsigned n, uint16_t start) {
     #if defined(__SSSE3__) || defined(__ARM_NEON)
   __m128i vs = _mm_set1_epi16(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   uint16_t *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
-    __m128i iv =  _mm_loadu_si128((__m128i *)ip); 
-    iv = mm_zzagd_epi16(iv); 
-	vs = mm_scan_epi16(iv, vs);
-	_mm_storeu_si128((__m128i *)ip, vs); 
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip);
+    iv = mm_zzagd_epi16(iv);
+    vs = mm_scan_epi16(iv, vs);
+    _mm_storeu_si128((__m128i *)ip, vs);
   }
   start = (uint16_t)_mm_cvtsi128_si32(_mm_srli_si128(vs,14));
   while(ip != p+n) {
-    uint16_t z = *ip; 
-	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
+    uint16_t z = *ip;
+    *ip++ = (start += (z >> 1 ^ -(z & 1)));
   }
     #else
   BITZDEC(uint16_t, 16, p, n);
     #endif
 }
 
-void bitzdec32(unsigned *p, unsigned n, unsigned start) { 
+void bitzdec32(unsigned *p, unsigned n, unsigned start) {
     #ifdef __AVX2__
   __m256i vs = _mm256_set1_epi32(start); //, zv = _mm256_setzero_si256()*/; //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   unsigned *ip;
   for(ip = p; ip != p+(n&~(8-1)); ip += 8) {
-    __m256i iv =  _mm256_loadu_si256((__m256i *)ip); 
-    iv = mm256_zzagd_epi32(iv); 
-	vs = mm256_scan_epi32(iv,vs);
-	_mm256_storeu_si256((__m256i *)ip, vs); 
+    __m256i iv =  _mm256_loadu_si256((__m256i *)ip);
+    iv = mm256_zzagd_epi32(iv);
+    vs = mm256_scan_epi32(iv,vs);
+    _mm256_storeu_si256((__m256i *)ip, vs);
   }
   start = (unsigned)_mm256_extract_epi32(_mm256_srli_si256(vs,12), 4);
-  while(ip != p+n) { 
-    unsigned z = *ip; 
-	*ip++ = (start += (z >> 1 ^ -(z & 1))); 
+  while(ip != p+n) {
+    unsigned z = *ip;
+    *ip++ = (start += (z >> 1 ^ -(z & 1)));
   }
     #elif defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vs = _mm_set1_epi32(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   unsigned *ip;
   for(ip = p; ip != p+(n&~(4-1)); ip += 4) {
-    __m128i iv =  _mm_loadu_si128((__m128i *)ip); 
-    iv = mm_zzagd_epi32(iv); 
-	vs = mm_scan_epi32(iv, vs);
-	_mm_storeu_si128((__m128i *)ip, vs); 
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip);
+    iv = mm_zzagd_epi32(iv);
+    vs = mm_scan_epi32(iv, vs);
+    _mm_storeu_si128((__m128i *)ip, vs);
   }
   start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
   while(ip != p+n) {
-    unsigned z = *ip; 
-	*ip++ = (start += zigzagdec32(z)); 
+    unsigned z = *ip;
+    *ip++ = (start += zigzagdec32(z));
   }
     #else
   BITZDEC(uint32_t, 32, p, n);
@@ -630,18 +631,17 @@ uint32_t bitfm32(uint32_t *in, unsigned n, uint32_t  *px, uint32_t *pmin) { uint
 uint64_t bitfm64(uint64_t *in, unsigned n, uint64_t  *px, uint64_t *pmin) { uint64_t mi,mx; BITFM(uint64_t, in, n); *pmin = mi; if(px) *px = 0; return mx - mi; }
 
 //----------- Lossy floating point conversion: pad the trailing mantissa bits with zero bits according to the relative error e (ex. 0.00001)  ----------
-#include <math.h> //nan
 
   #ifdef USE_FLOAT16
 // https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point
 #define ctof16(_cp_) (*(_Float16 *)(_cp_))
- 
+
 static inline _Float16 _fppad16(_Float16 d, float e, int lg2e) {
   uint16_t u, du = ctou16(&d);
   int b = (du>>10 & 0x1f)-15; // mantissa=10 bits, exponent=5bits, bias=15
   if ((b = 12 - b - lg2e) <= 0) return d;
   b = (b > 10) ? 10 : b;
-  do { u = du & (~((1u<<(--b))-1)); } while (fabs((ctof16(&u) - d)/d) > e);  
+  do { u = du & (~((1u<<(--b))-1)); } while (fabs((ctof16(&u) - d)/d) > e);
   return ctof16(&u);
 }
 
@@ -654,34 +654,34 @@ void fppad16(_Float16 *in, size_t n, _Float16 *out, float e) { int lg2e = -log(e
   u |= sign;\
   return TEMPLATE2(ctof,s)(&u);
 
-static inline float _fppad32(float d, float e, int lg2e) { 
-  uint32_t u, du = ctou32(&d), sign; 
+static inline float _fppad32(float d, float e, int lg2e) {
+  uint32_t u, du = ctou32(&d), sign;
   int      b = (du>>23 & 0xff)-0x7e;
-  if((b = 25 - b - lg2e) <= 0) 
-	return d;
-  b    = b > 23?23:b; 
-  sign = du & (1<<31); 
-  du  &= 0x7fffffffu;  
-  d    = ctof32(&du); 
-  do u = du & (~((1u<<(--b))-1)); while(d - ctof32(&u) > e*d); 
-  u |= sign; 
+  if((b = 25 - b - lg2e) <= 0)
+    return d;
+  b    = b > 23?23:b;
+  sign = du & (1<<31);
+  du  &= 0x7fffffffu;
+  d    = ctof32(&du);
+  do u = du & (~((1u<<(--b))-1)); while(d - ctof32(&u) > e*d);
+  u |= sign;
   return ctof32(&u);
 }
 
 void fppad32(float *in, size_t n, float *out, float e) { int lg2e = -log(e)/log(2.0); float *ip; for(ip = in; ip < in+n; ip++,out++) *out = _fppad32(*ip, e, lg2e); }
 
 static inline double _fppad64(double d, double e, int lg2e) { if(isnan(d)) return d;
-  union    r { uint64_t u; double d; } u,du; du.d = d; //if((du.u>>52)==0xfff) 
+  union    r { uint64_t u; double d; } u,du; du.d = d; //if((du.u>>52)==0xfff)
   uint64_t sign;
   int      b = (du.u>>52 & 0x7ff)-0x3fe;
-  if((b = 54 - b - lg2e) <= 0) 
-	return d;
+  if((b = 54 - b - lg2e) <= 0)
+    return d;
   b = b > 52?52:b;
   sign = du.u & (1ull<<63); du.u &= 0x7fffffffffffffffull;
   int _b = b;
   for(;;) { if((_b -= 8) <= 0) break; u.u = du.u & (~((1ull<<_b)-1)); if(d - u.d <= e*d) break; b = _b; }
-  do u.u = du.u & (~((1ull<<(--b))-1)); while(d - u.d > e*d); 
-  u.u |= sign; 
+  do u.u = du.u & (~((1ull<<(--b))-1)); while(d - u.d > e*d);
+  u.u |= sign;
   return ctof64(&u);
 }
 
