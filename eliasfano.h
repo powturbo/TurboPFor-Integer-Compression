@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -24,10 +24,10 @@
 //    eliasfano.h - "Integer Compression" Elias Fano c/c++ header
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
-#else 
+#else
 #include <stdint.h>
 #endif
 
