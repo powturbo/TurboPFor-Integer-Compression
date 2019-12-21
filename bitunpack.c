@@ -40,7 +40,7 @@
 #pragma clang diagnostic push 
 #pragma clang diagnostic ignored "-Wunsequenced"
 
-#ifdef PLAIN //----------------------------------- Plain -------------------------------------------------------------------------------------------
+#if !defined(SSE2_ON) && !defined(AVX2_ON) //----------------------------------- Plain -------------------------------------------------------------------------------------------
 typedef unsigned char *(*BITUNPACK_F8)( const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out);
 typedef unsigned char *(*BITUNPACK_D8)( const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t start);
 typedef unsigned char *(*BITUNPACK_F16)(const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out);
