@@ -130,7 +130,7 @@
 #define TPDEC256V   tp4dec256v
 #include "transpose.c"
 
-#ifdef PLAIN
+#if !defined(SSE2_ON) && !defined(AVX2_ON)
 //--------------------- CPU detection -------------------------------------------
   #if _MSC_VER >=1300
 #include <intrin.h>
@@ -431,7 +431,7 @@ void tp4dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
 #define SID(p,i)  (p+=stride)
 //#define SID(_p_,_i_)  (_p_+ _i_*stride)
 
-#ifdef PLAIN //--------------------------------------- plain -------------------------------------------------------------------
+#if !defined(SSE2_ON) && !defined(AVX2_ON) //--------------------------------------- plain -------------------------------------------------------------------
 
   #if STRIDE == ESIZE
 void TEMPLATE2(TPENC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) { 
