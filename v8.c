@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -21,12 +21,12 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-// v8.c - "Integer Compression" TurboByte 16/32 bits (SIMD Group Varint, Streamvbyte family) 
-  #ifndef V8ENC  
-#pragma warning( disable : 4005) 
-#pragma warning( disable : 4090) 
+// v8.c - "Integer Compression" TurboByte 16/32 bits (SIMD Group Varint, Streamvbyte family)
+  #ifndef V8ENC
+#pragma warning( disable : 4005)
+#pragma warning( disable : 4090)
 #pragma warning( disable : 4068)
- 
+
 #define BITUTIL_IN
 #define VINT_IN
 #include "conf.h"
@@ -777,7 +777,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 };
 #undef _
 
-#define LENBLOCK   // All length keys encoded at the beginning of the buffer. 
+#define LENBLOCK   // All length keys encoded at the beginning of the buffer.
   #ifdef LENBLOCK
 #define OP    out
 #define IP    in
@@ -786,7 +786,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 #define PNEXT(_p0_,_p_,_i_)   _p0_ += _i_
 #define PNEXTA(_p0_,_p_,_i_)  0
 #define PNEXTB(_p0_,_i_)      _p0_ += _i_
-  #else	  
+  #else
 #define OP    op
 #define IP    ip
 #define IPINC 8
@@ -797,53 +797,53 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
   #endif
 
 //----------------------------------- Templates parameter macros -----------------------------------------------------------------
-#define V8DELTA32 
-#define V8DELTA16   
-#define V8ENC     		v8enc
-#define V8DEC     		v8dec
-#define VE16(_x_) 	v = _x_
-#define VD16(_x_) 	_x_
-#define VE32(_x_) 	v = _x_
-#define VD32(_x_) 	_x_
+#define V8DELTA32
+#define V8DELTA16
+#define V8ENC           v8enc
+#define V8DEC           v8dec
+#define VE16(_x_)   v = _x_
+#define VD16(_x_)   _x_
+#define VE32(_x_)   v = _x_
+#define VD32(_x_)   _x_
 #define VEINI128v32
 #define VEINI256v32
 #define VE128v32(_v_,_sv_)
-#define VE256v32(_v_,_sv_)  
+#define VE256v32(_v_,_sv_)
 #define VDINI128v32
 #define VDINI256v32
 #define VD128v32(_ov_,_sv_)
-#define VD256v32(_ov_,_sv_)  
+#define VD256v32(_ov_,_sv_)
 
 #define VEINI128v16
 #define VDINI128v16
 #define VE128v16(_ov_,_sv_)
 #define VD128v16(_ov_,_sv_)
 #include "v8.c"
- 
-#define V8DELTA32 		,uint32_t start
-#define V8DELTA16 		,uint16_t start
 
-#define V8ENC       	v8zenc //------------ zigzag -----------------------------
-#define V8DEC       	v8zdec
-#define VDELTA      	0
+#define V8DELTA32       ,uint32_t start
+#define V8DELTA16       ,uint16_t start
 
-#define VEINI128v16    	__m128i sv =    _mm_set1_epi16(start); const __m128i zv = _mm_setzero_si128()
-#define VEINI128v32   	__m128i sv =    _mm_set1_epi32(start); const __m128i zv = _mm_setzero_si128()
-#define VEINI256v32   	__m256i sv = _mm256_set1_epi32(start)
+#define V8ENC           v8zenc //------------ zigzag -----------------------------
+#define V8DEC           v8zdec
+#define VDELTA          0
 
-#define VE16(_x_) 	v = zigzagenc16((_x_)-start); start = _x_
-#define VE32(_x_) 	v = zigzagenc32((_x_)-start); start = _x_
+#define VEINI128v16     __m128i sv =    _mm_set1_epi16(start); const __m128i zv = _mm_setzero_si128()
+#define VEINI128v32     __m128i sv =    _mm_set1_epi32(start); const __m128i zv = _mm_setzero_si128()
+#define VEINI256v32     __m256i sv = _mm256_set1_epi32(start)
 
-#define VD16(_x_) 	(start += zigzagdec16(_x_))
-#define VD32(_x_) 	(start += zigzagdec32(_x_))
+#define VE16(_x_)   v = zigzagenc16((_x_)-start); start = _x_
+#define VE32(_x_)   v = zigzagenc32((_x_)-start); start = _x_
+
+#define VD16(_x_)   (start += zigzagdec16(_x_))
+#define VD32(_x_)   (start += zigzagdec32(_x_))
 
 #define VE128v16(_iv_,_sv_) { __m128i _tv = mm_delta_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi16(_tv); }
 #define VE128v32(_iv_,_sv_) { __m128i _tv = mm_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi32(_tv); }
 #define VE256v32(_iv_,_sv_) { __m256i _tv = mm256_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi32(_tv); }
 
-#define VDINI128v16    		__m128i sv =    _mm_set1_epi16(start); const __m128i zv =    _mm_setzero_si128()
-#define VDINI128v32  		__m128i sv =    _mm_set1_epi32(start); const __m128i zv =    _mm_setzero_si128()
-#define VDINI256v32  		__m256i sv = _mm256_set1_epi32(start); const __m128i zv = _mm256_setzero_si256()
+#define VDINI128v16         __m128i sv =    _mm_set1_epi16(start); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128v32         __m128i sv =    _mm_set1_epi32(start); const __m128i zv =    _mm_setzero_si128()
+#define VDINI256v32         __m256i sv = _mm256_set1_epi32(start); const __m128i zv = _mm256_setzero_si256()
 
 #define VD128v16(_v_,_sv_) _v_ = mm_zzagd_epi16( _v_); _sv_ = mm_scan_epi16(_v_,_sv_); _v_ = _sv_
 #define VD128v32(_v_,_sv_) _v_ = mm_zzagd_epi32( _v_); _sv_ = mm_scan_epi32(_v_,_sv_); _v_ = _sv_
@@ -851,79 +851,79 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 
 #include "v8.c"
 
-#define V8ENC       	v8xenc //------------ xor -----------------------------
-#define V8DEC       	v8xdec
-#define VDELTA      	0
+#define V8ENC           v8xenc //------------ xor -----------------------------
+#define V8DEC           v8xdec
+#define VDELTA          0
 
-#define VEINI128v16    	__m128i sv =    _mm_set1_epi16(start); 
-#define VEINI128v32   	__m128i sv =    _mm_set1_epi32(start); 
-#define VEINI256v32   	__m256i sv = _mm256_set1_epi32(start)
+#define VEINI128v16     __m128i sv =    _mm_set1_epi16(start);
+#define VEINI128v32     __m128i sv =    _mm_set1_epi32(start);
+#define VEINI256v32     __m256i sv = _mm256_set1_epi32(start)
 
-#define VE16(_x_) 	v = (_x_)^start; start = _x_
-#define VE32(_x_) 	v = (_x_)^start; start = _x_
+#define VE16(_x_)   v = (_x_)^start; start = _x_
+#define VE32(_x_)   v = (_x_)^start; start = _x_
 
-#define VD16(_x_) 	(start ^= _x_)
-#define VD32(_x_) 	(start ^= _x_)
+#define VD16(_x_)   (start ^= _x_)
+#define VD32(_x_)   (start ^= _x_)
 
 #define VE128v16(_iv_,_sv_) { __m128i _tv = _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VE128v32(_iv_,_sv_) { __m128i _tv = _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VE256v32(_iv_,_sv_) { __m256i _tv = _mm256_xor_si256(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 
-#define VDINI128v16    		__m128i sv =    _mm_set1_epi16(start); 
-#define VDINI128v32  		__m128i sv =    _mm_set1_epi32(start); 
-#define VDINI256v32  		__m256i sv = _mm256_set1_epi32(start); 
+#define VDINI128v16         __m128i sv =    _mm_set1_epi16(start);
+#define VDINI128v32         __m128i sv =    _mm_set1_epi32(start);
+#define VDINI256v32         __m256i sv = _mm256_set1_epi32(start);
 
 #define VD128v16(_v_,_sv_) _v_ = _sv_ = _mm_xor_si128(_v_,_sv_);
 #define VD128v32(_v_,_sv_) _v_ = _sv_ = _mm_xor_si128(_v_,_sv_);
-#define VD256v32(_v_,_sv_) _v_ = _sv_ = _mm256_xor_si256(_v_,_sv_); 
+#define VD256v32(_v_,_sv_) _v_ = _sv_ = _mm256_xor_si256(_v_,_sv_);
 
 #include "v8.c"
 
 
-#define V8ENC       	v8denc //---------- delta ----------------------------------
-#define V8DEC       	v8ddec
-#define VE16(_x_) 	v = (_x_)-start; start = _x_
-#define VE32(_x_) 	VE16(_x_) 
-#define VD16(_x_) 	(start += _x_)
-#define VD32(_x_) 	VD16(_x_)
+#define V8ENC           v8denc //---------- delta ----------------------------------
+#define V8DEC           v8ddec
+#define VE16(_x_)   v = (_x_)-start; start = _x_
+#define VE32(_x_)   VE16(_x_)
+#define VD16(_x_)   (start += _x_)
+#define VD32(_x_)   VD16(_x_)
 
-#define VEINI128v16   	__m128i sv =    _mm_set1_epi16(start)
-#define VEINI128v32   	__m128i sv =    _mm_set1_epi32(start)
-#define VEINI256v32   	__m256i sv = _mm256_set1_epi32(start)
+#define VEINI128v16     __m128i sv =    _mm_set1_epi16(start)
+#define VEINI128v32     __m128i sv =    _mm_set1_epi32(start)
+#define VEINI256v32     __m256i sv = _mm256_set1_epi32(start)
 
 #define VE128v16(_v_,_sv_) { __m128i _tv = mm_delta_epi16(_v_,_sv_); _sv_ = _v_; _v_ = _tv; }
 #define VE128v32(_v_,_sv_) { __m128i _tv = mm_delta_epi32(_v_,_sv_); _sv_ = _v_; _v_ = _tv; }
 #define VE256v32(_v_,_sv_) { __m256i _tv = mm256_delta_epi32(_v_,_sv_); _sv_ = _v_; _v_ = _tv; }
 
-#define VDINI128v16   	__m128i sv =    _mm_set1_epi16(start); const __m128i zv =    _mm_setzero_si128()
-#define VDINI128v32   	__m128i sv =    _mm_set1_epi32(start); const __m128i zv =    _mm_setzero_si128()
-#define VDINI256v32   	__m256i sv = _mm256_set1_epi32(start); const __m128i zv = _mm256_setzero_si256()
+#define VDINI128v16     __m128i sv =    _mm_set1_epi16(start); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128v32     __m128i sv =    _mm_set1_epi32(start); const __m128i zv =    _mm_setzero_si128()
+#define VDINI256v32     __m256i sv = _mm256_set1_epi32(start); const __m128i zv = _mm256_setzero_si256()
 
 #define VD128v16(_v_,_sv_) _sv_ = mm_scan_epi16(_v_,_sv_); _v_ = _sv_
 #define VD128v32(_v_,_sv_) _sv_ = mm_scan_epi32(_v_,_sv_); _v_ = _sv_
 #define VD256v32(_v_,_sv_) _sv_ = mm256_scan_epi32(_v_,_sv_, zv); _v_ = _sv_
 #include "v8.c"
- 
-#define V8ENC			v8d1enc       // delta 1
-#define V8DEC       	v8d1dec
-#define VDELTA      	1
 
-#define VE16(_x_) 	    v = (_x_)-start-VDELTA; start = _x_
-#define VE32(_x_) 	    VE16(_x_) 
-#define VD16(_x_) 	    (start += _x_+VDELTA)
-#define VD32(_x_) 	    VD16(_x_)
+#define V8ENC           v8d1enc       // delta 1
+#define V8DEC           v8d1dec
+#define VDELTA          1
 
-#define VEINI128v16   	__m128i sv =    _mm_set1_epi16(start); const __m128i cv1_16 =    _mm_set1_epi16(1)
-#define VEINI128v32   	__m128i sv =    _mm_set1_epi32(start); const __m128i cv1_32 =    _mm_set1_epi32(1)
-#define VEINI256v32   	__m256i sv = _mm256_set1_epi32(start); const __m128i cv1_32 = _mm256_set1_epi32(1)
+#define VE16(_x_)       v = (_x_)-start-VDELTA; start = _x_
+#define VE32(_x_)       VE16(_x_)
+#define VD16(_x_)       (start += _x_+VDELTA)
+#define VD32(_x_)       VD16(_x_)
+
+#define VEINI128v16     __m128i sv =    _mm_set1_epi16(start); const __m128i cv1_16 =    _mm_set1_epi16(1)
+#define VEINI128v32     __m128i sv =    _mm_set1_epi32(start); const __m128i cv1_32 =    _mm_set1_epi32(1)
+#define VEINI256v32     __m256i sv = _mm256_set1_epi32(start); const __m128i cv1_32 = _mm256_set1_epi32(1)
 
 #define VE128v16(_v_,_sv_) { __m128i _tv =    _mm_sub_epi16(mm_delta_epi16(_v_,_sv_),cv1_16); _sv_ = _v_; _v_ = _tv; }
 #define VE128v32(_v_,_sv_) { __m128i _tv =    _mm_sub_epi32(mm_delta_epi32(_v_,_sv_),cv1_32); _sv_ = _v_; _v_ = _tv; }
 #define VE256v32(_v_,_sv_) { __m256i _tv = _mm256_sub_epi32(mm256_delta_epi32(_v_,_sv_),cv1_32); _sv_ = _v_; _v_ = _tv; }
 
-#define VDINI128v16   	__m128i sv = _mm_set1_epi16(start);    const __m128i zv =   _mm_setzero_si128(), cvi =     _mm_set_epi16(8,7,6,5,4,3,2,1)
-#define VDINI128v32   	__m128i sv =    _mm_set1_epi32(start); const __m128i zv =   _mm_setzero_si128(), cvi =     _mm_set_epi32(        4,3,2,1)
-#define VDINI256v32   	__m256i sv = _mm256_set1_epi32(start); const __m128i zv = _mm256_setzero_si256(), cvi = _mm256_set_epi32(8,7,6,5,4,3,2,1)
+#define VDINI128v16     __m128i sv = _mm_set1_epi16(start);    const __m128i zv =   _mm_setzero_si128(), cvi =     _mm_set_epi16(8,7,6,5,4,3,2,1)
+#define VDINI128v32     __m128i sv =    _mm_set1_epi32(start); const __m128i zv =   _mm_setzero_si128(), cvi =     _mm_set_epi32(        4,3,2,1)
+#define VDINI256v32     __m256i sv = _mm256_set1_epi32(start); const __m128i zv = _mm256_setzero_si256(), cvi = _mm256_set_epi32(8,7,6,5,4,3,2,1)
 
 #define VD128v16(_v_,_sv_) _sv_ = mm_scani_epi16(_v_,_sv_, cvi); _v_ = _sv_
 #define VD128v32(_v_,_sv_) _sv_ = mm_scani_epi32(_v_,_sv_, cvi); _v_ = _sv_
@@ -939,43 +939,43 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 // 0-0x1f: bitpacking, 0xff: EOS, 0xfe/0x00 = memcpy, 0xfd:varint, 0xf0|0000-0100: constant
 
 #define _V8E(in, n, out, _csize_, _usize_, _bit_, _bitpackv_, _bitpack_) {\
-  unsigned char *op = out;															if(!n) return 0;\
-  for(ip = in; ip < in+n;) {														PREFETCH(ip+512,0);\
+  unsigned char *op = out;                                                          if(!n) return 0;\
+  for(ip = in; ip < in+n;) {                                                        PREFETCH(ip+512,0);\
     unsigned _b, iplen = (in+n) - ip; iplen = min(iplen,_csize_);\
-	o = TEMPLATE2(_bit_,_usize_)(ip, iplen, &x); _b = TEMPLATE2(bsr,_usize_)(o);\
-	if(!x) { /*st++;*/ \
+    o = TEMPLATE2(_bit_,_usize_)(ip, iplen, &x); _b = TEMPLATE2(bsr,_usize_)(o);\
+    if(!x) { /*st++;*/ \
       _b = (_b+7)/8; *op++ = 0xf0 | _b; \
       TEMPLATE2(ctou, _usize_)(op) = ip[0];\
       op += _b; \
     } else {\
-	  if(_b <= (_usize_==16?9:10) ) goto a;\
-	  unsigned char *sp = op; *op++ = 0xfd; op = TEMPLATE2(v8enc, _usize_)(ip, iplen, op);\
-	  if(op-sp >= PAD8(_b*iplen)+1) { op = sp; a:*op++ = _b; op = iplen == _csize_?TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_,   op, _b):\
-																				   TEMPLATE2(_bitpack_,  _usize_)(ip, iplen, op, _b); }\
-	}\
-	ip += iplen;\
+      if(_b <= (_usize_==16?9:10) ) goto a;\
+      unsigned char *sp = op; *op++ = 0xfd; op = TEMPLATE2(v8enc, _usize_)(ip, iplen, op);\
+      if(op-sp >= PAD8(_b*iplen)+1) { op = sp; a:*op++ = _b; op = iplen == _csize_?TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_,   op, _b):\
+                                                                                   TEMPLATE2(_bitpack_,  _usize_)(ip, iplen, op, _b); }\
+    }\
+    ip += iplen;\
     if(op >= out + n*(_usize_/8)) { op = out; *op++ = 0xfe; memcpy(op, in, n*(_usize_/8)); op += n*(_usize_/8); break; }\
-  } 																				\
+  }                                                                                 \
   return op - out;\
 }
 
-#define _V8DE(in, n, out, _csize_, _usize_, _v8enc_, _bitd_, _bitpackv_, _bitpack_,_delta_) { 	if(!n) return 0;\
+#define _V8DE(in, n, out, _csize_, _usize_, _v8enc_, _bitd_, _bitpackv_, _bitpack_,_delta_) {   if(!n) return 0;\
   unsigned char *op = out;\
   start = *in++; uint64_t start64 = start; start64++; TEMPLATE2(vbxput, _usize_)(op, start64);\
-  for(n--,ip = in; ip < in + n; ) { 															PREFETCH(ip+512,0);\
+  for(n--,ip = in; ip < in + n; ) {                                                             PREFETCH(ip+512,0);\
     unsigned _b, iplen = (in+n) - ip; iplen = min(iplen,_csize_);\
     o = TEMPLATE2(_bitd_, _usize_)(ip, iplen, &x, start); _b = TEMPLATE2(bsr,_usize_)(o);\
-	if(!x) { _b = (_b+7)/8; /*constant*/\
+    if(!x) { _b = (_b+7)/8; /*constant*/\
       *op++ = 0xf0 | _b;\
       TEMPLATE2(ctou, _usize_)(op) = (ip[0]-start)-_delta_; op += _b; \
     } else { \
-	  if(_b <= (_usize_==16?9:10) ) goto a;\
-	  unsigned char *sp = op; *op++ = 0xfd; op = TEMPLATE2(_v8enc_, _usize_)(ip, iplen, op, start); /*TurboByte*/\
-	  if(op-sp >= PAD8(_b*iplen)+1) { op = sp; a:*op++ = _b; op = iplen == _csize_?TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, start, _b):/*TurboPackV*/\
-	                                                                               TEMPLATE2(_bitpack_,  _usize_)(ip, iplen,   op, start, _b);/*TurboPack*/\
-	  }\
-	}\
-	ip += iplen; start = ip[-1];\
+      if(_b <= (_usize_==16?9:10) ) goto a;\
+      unsigned char *sp = op; *op++ = 0xfd; op = TEMPLATE2(_v8enc_, _usize_)(ip, iplen, op, start); /*TurboByte*/\
+      if(op-sp >= PAD8(_b*iplen)+1) { op = sp; a:*op++ = _b; op = iplen == _csize_?TEMPLATE2(_bitpackv_, _usize_)(ip, _csize_, op, start, _b):/*TurboPackV*/\
+                                                                                   TEMPLATE2(_bitpack_,  _usize_)(ip, iplen,   op, start, _b);/*TurboPack*/\
+      }\
+    }\
+    ip += iplen; start = ip[-1];\
     if(op >= out + (n+1)*(_usize_/8)+1) { op = out; *op++ = 0; n++; in--; memcpy(op, in, n*(_usize_/8)); op += n*(_usize_/8); break; } /*overflow->memcpy*/\
   }\
   return op - out;\
@@ -1011,7 +1011,7 @@ size_t v8nzenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
 //size_t v8nxenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out) { uint16_t *ip,start,o,x; _V8DE(in, n, out, 128, 16, v8xenc,  bitx,  bitxpack128v, bitxpack,0); }
 //size_t v8nxenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 128, 32, v8xenc,  bitx,  bitxpack128v, bitxpack,0); }
 //-------
-  #if defined(__i386__) || defined(__x86_64__) 
+  #if defined(__i386__) || defined(__x86_64__)
 size_t v8nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8E( in, n, out, 256, 32, bit,            bitpack256v,  bitpack); }
 size_t v8ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8denc,  bitd,  bitdpack256v, bitdpack,0); }
 size_t v8nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out) { uint32_t *ip,start,o,x; _V8DE(in, n, out, 256, 32, v8d1enc, bitd1, bitd1pack256v,bitd1pack,1); }
@@ -1020,9 +1020,9 @@ size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
   #endif
 
 #define _V8D(in, n, out, _csize_, _usize_, _bitunpackv_, _bitunpack_) {\
-  unsigned char *ip = in;														if(!n) return 0;\
+  unsigned char *ip = in;                                                       if(!n) return 0;\
   if(*in == 0xfe) { ip = in+1; memcpy(out,ip, n*(_usize_/8)); ip+=n*(_usize_/8); }\
-  else for(op = out, out += n; op < out;) { 										PREFETCH(ip+512,0);\
+  else for(op = out, out += n; op < out;) {                                         PREFETCH(ip+512,0);\
     unsigned oplen = min(out-op,_csize_), _b = *ip++;\
     if((_b & 0xf8)==0xf0) { _b &= 0x7; \
       unsigned _u = TEMPLATE2(ctou,_usize_)(ip) & ((1ull<<(_b*8))-1);\
@@ -1030,40 +1030,40 @@ size_t v8nzenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
       BITZERO32(op, oplen, _u); \
     } else {\
       if(_b == 0xfd) ip =                  TEMPLATE2(v8dec,        _usize_)(ip, oplen,   op);\
-	  else           ip = oplen == _csize_?TEMPLATE2(_bitunpackv_, _usize_)(ip, _csize_, op, _b):\
-		                                   TEMPLATE2(_bitunpack_,  _usize_)(ip, oplen,   op, _b);\
-	}\
-	op += oplen;\
-  }\
-  return ip - in;\
-} 
-
-#define BITIZERO(op, n, start, _u_) { for(int i=0; i < n; i++) op[i] = (start += _u_); }
-
-#define _V8DD(in, n, out, _csize_, _usize_, _v8dec_, _bitunpackv_, _bitunpack_, _delta_) { 		if(!n) return 0;\
-  unsigned char *ip = in;\
-  uint64_t start64; TEMPLATE2(vbxget, _usize_)(ip, start64);\
-  if(!start64) { memcpy(out, ip, n*(_usize_/8)); ip += n*(_usize_/8); }\
-  else { start = start64 - 1;\
-    for(*out++ = start,--n, op = out, out+=n; op < out; ) { 								PREFETCH(ip+512,0);\
-	  unsigned oplen = min(out-op,_csize_),_b=*ip++;\
-      if((_b & 0xf8)==0xf0) { \
-        _b &= 0x7;\
-        unsigned _u = (TEMPLATE2(ctou,_usize_)(ip) & ((1ull<<(_b*8))-1))+_delta_;\
-	    ip += _b;\
-        BITIZERO(op, oplen, start, _u);\
-	  } else {\
-        if(_b==0xfd) ip = TEMPLATE2(_v8dec_, _usize_)(ip, oplen, op, start);\
-		else         ip = oplen == _csize_?TEMPLATE2(_bitunpackv_, _usize_)(ip, _csize_, op, start, _b):\
-		                                   TEMPLATE2(_bitunpack_,  _usize_)(ip, oplen,   op, start, _b);\
-      } op += oplen; start = op[-1];\
-	}\
+      else           ip = oplen == _csize_?TEMPLATE2(_bitunpackv_, _usize_)(ip, _csize_, op, _b):\
+                                           TEMPLATE2(_bitunpack_,  _usize_)(ip, oplen,   op, _b);\
+    }\
+    op += oplen;\
   }\
   return ip - in;\
 }
 
-size_t v8ndec16(      unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       _V8D(in,  n, out, 128, 16,         bitunpack,      bitunpack); } 
-size_t v8ndec32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D(in,  n, out, 128, 32,         bitunpack,      bitunpack); } 
+#define BITIZERO(op, n, start, _u_) { for(int i=0; i < n; i++) op[i] = (start += _u_); }
+
+#define _V8DD(in, n, out, _csize_, _usize_, _v8dec_, _bitunpackv_, _bitunpack_, _delta_) {      if(!n) return 0;\
+  unsigned char *ip = in;\
+  uint64_t start64; TEMPLATE2(vbxget, _usize_)(ip, start64);\
+  if(!start64) { memcpy(out, ip, n*(_usize_/8)); ip += n*(_usize_/8); }\
+  else { start = start64 - 1;\
+    for(*out++ = start,--n, op = out, out+=n; op < out; ) {                                 PREFETCH(ip+512,0);\
+      unsigned oplen = min(out-op,_csize_),_b=*ip++;\
+      if((_b & 0xf8)==0xf0) { \
+        _b &= 0x7;\
+        unsigned _u = (TEMPLATE2(ctou,_usize_)(ip) & ((1ull<<(_b*8))-1))+_delta_;\
+        ip += _b;\
+        BITIZERO(op, oplen, start, _u);\
+      } else {\
+        if(_b==0xfd) ip = TEMPLATE2(_v8dec_, _usize_)(ip, oplen, op, start);\
+        else         ip = oplen == _csize_?TEMPLATE2(_bitunpackv_, _usize_)(ip, _csize_, op, start, _b):\
+                                           TEMPLATE2(_bitunpack_,  _usize_)(ip, oplen,   op, start, _b);\
+      } op += oplen; start = op[-1];\
+    }\
+  }\
+  return ip - in;\
+}
+
+size_t v8ndec16(      unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op;       _V8D(in,  n, out, 128, 16,         bitunpack,      bitunpack); }
+size_t v8ndec32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D(in,  n, out, 128, 32,         bitunpack,      bitunpack); }
 
 size_t v8nddec16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8ddec, bitdunpack,     bitdunpack, 0); }
 size_t v8nddec32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8ddec, bitdunpack,     bitdunpack, 0); }
@@ -1091,8 +1091,8 @@ size_t v8nzdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restri
 
 //size_t v8nxdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out) { uint16_t *op,start; _V8DD(in, n, out, 128, 16, v8xdec, bitxunpack128v, bitxunpack, 0); }
 //size_t v8nxdec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 128, 32, v8xdec, bitxunpack128v, bitxunpack, 0); }
-//--------- 
-    #if defined(__i386__) || defined(__x86_64__) 
+//---------
+    #if defined(__i386__) || defined(__x86_64__)
 size_t v8ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op;       _V8D( in, n, out, 256, 32,         bitunpack256v,  bitunpack); }
 size_t v8nddec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8ddec, bitdunpack256v, bitdunpack, 0); }
 size_t v8nd1dec256v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out) { uint32_t *op,start; _V8DD(in, n, out, 256, 32, v8d1dec,bitd1unpack256v,bitd1unpack,1); }
@@ -1115,16 +1115,16 @@ size_t v8nzdec256v32( unsigned char *__restrict in, size_t n, uint32_t *__restri
 unsigned char *TEMPLATE2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA32) {
   uint32_t      *ip,v;
   unsigned char *op = DATABEG(out,n,4),*sp=out;
-	 
+
     #if 0 //def __AVX2__ // ----------------------------------------------------------------------------------------------
   VEINI256v32; const __m256i cv1_8 = _mm256_set1_epi8(1), cv7f00 = _mm256_set1_epi16(0x7F00), zv = _mm256_setzero_si256();
-  for(ip = in; ip != in+(n&~(32-1)); ip += 32) {								PREFETCH(ip+512,0);
+  for(ip = in; ip != in+(n&~(32-1)); ip += 32) {                                PREFETCH(ip+512,0);
     __m256i iv0 = _mm256_loadu_si256(ip   ),
-            iv1 = _mm256_loadu_si256(ip+ 8);                        			VE256v32(iv0); VE256v32(iv1); 
+            iv1 = _mm256_loadu_si256(ip+ 8);                                    VE256v32(iv0); VE256v32(iv1);
     __m256i iv2 = _mm256_loadu_si256(ip+16),
-            iv3 = _mm256_loadu_si256(ip+24);  									VE256v32(iv2); VE256v32(iv3);
+            iv3 = _mm256_loadu_si256(ip+24);                                    VE256v32(iv2); VE256v32(iv3);
     __m256i mv0 =  mm256_packus_epi16(_mm256_min_epu8(iv0,cv1_8), _mm256_min_epu8(iv1,cv1_8)); //mv0 = _mm256_permute4x64_epi64(mv0, _MM_SHUFFLE(3, 1, 2, 0));
-	        mv0 = _mm256_min_epi16(mv0, cv1_8); mv0 = _mm256_adds_epu16(mv0, cv7f00);  
+            mv0 = _mm256_min_epi16(mv0, cv1_8); mv0 = _mm256_adds_epu16(mv0, cv7f00);
     uint32_t m0 = _mm256_movemask_epi8(mv0);
 
     __m256i ov0 = _mm256_castsi128_si256(      SVE32(m0 << 4));
@@ -1132,14 +1132,14 @@ unsigned char *TEMPLATE2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned
     __m256i ov1 = _mm256_castsi128_si256(      SVE32(m0 >>12));
             ov1 = _mm256_inserti128_si256(ov1, SVE32(m0 >>20),1);
 
-    __m256i mv1 = _mm256_packus_epi16(_mm256_min_epu8(iv2,cv1_8), _mm256_min_epu8(iv3,cv1_8)); mv1 = _mm256_permute4x64_epi64(mv1, _MM_SHUFFLE(3, 1, 2, 0)); 
-	        mv1 = _mm256_min_epi16(mv1, cv1_8); mv1 = _mm256_adds_epu16(mv1, cv7f00); 
-    uint32_t m1 = _mm256_movemask_epi8(mv1);			
-	__m256i ov2 = _mm256_castsi128_si256(      SVE32(m1 << 4));
+    __m256i mv1 = _mm256_packus_epi16(_mm256_min_epu8(iv2,cv1_8), _mm256_min_epu8(iv3,cv1_8)); mv1 = _mm256_permute4x64_epi64(mv1, _MM_SHUFFLE(3, 1, 2, 0));
+            mv1 = _mm256_min_epi16(mv1, cv1_8); mv1 = _mm256_adds_epu16(mv1, cv7f00);
+    uint32_t m1 = _mm256_movemask_epi8(mv1);
+    __m256i ov2 = _mm256_castsi128_si256(      SVE32(m1 << 4));
             ov2 = _mm256_inserti128_si256(ov2, SVE32(m1 >> 4),1);
     __m256i ov3 = _mm256_castsi128_si256(      SVE32(m1 >>12));
             ov3 = _mm256_inserti128_si256(ov3, SVE32(m1 >>20),1);
-			
+
             ov0 = _mm256_shuffle_epi8(iv0,ov0);
             ov1 = _mm256_shuffle_epi8(iv1,ov1);
 
@@ -1158,37 +1158,37 @@ unsigned char *TEMPLATE2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned
   }
     #elif defined(__SSSE3__) || defined(__ARM_NEON) // https://gist.github.com/aqrit/746d2f5e4ad1909230e2283272333dc1
   VEINI128v32; const __m128i cv1_8 = _mm_set1_epi8(1), cv7f00 = _mm_set1_epi16(0x7f00);
-  for(ip = in; ip != in+(n&~(32-1)); ip += 32, PNEXT(out,op,8) ) { 
-	__m128i iv0 = _mm_loadu_si128(ip   ),
-            iv1 = _mm_loadu_si128(ip+ 4); 
+  for(ip = in; ip != in+(n&~(32-1)); ip += 32, PNEXT(out,op,8) ) {
+    __m128i iv0 = _mm_loadu_si128(ip   ),
+            iv1 = _mm_loadu_si128(ip+ 4);
     __m128i iv2 = _mm_loadu_si128(ip+ 8),
-            iv3 = _mm_loadu_si128(ip+12); 					VE128v32(iv0,sv); VE128v32(iv1,sv); VE128v32(iv2,sv); VE128v32(iv3,sv); //delta,zigzag,...
+            iv3 = _mm_loadu_si128(ip+12);                   VE128v32(iv0,sv); VE128v32(iv1,sv); VE128v32(iv2,sv); VE128v32(iv3,sv); //delta,zigzag,...
     __m128i mv0 = _mm_packus_epi16(_mm_min_epu8(iv0,cv1_8), _mm_min_epu8(iv1,cv1_8)); mv0 = _mm_min_epi16( mv0, cv1_8); mv0 = _mm_adds_epu16(mv0, cv7f00);
     __m128i mv1 = _mm_packus_epi16(_mm_min_epu8(iv2,cv1_8), _mm_min_epu8(iv3,cv1_8)); mv1 = _mm_min_epi16( mv1, cv1_8); mv1 = _mm_adds_epu16(mv1, cv7f00);
-    uint16_t m0 = _mm_movemask_epi8(mv0);   
+    uint16_t m0 = _mm_movemask_epi8(mv0);
     uint16_t m1 = _mm_movemask_epi8(mv1);
     __m128i iv4 = _mm_loadu_si128(ip+16),
-            iv5 = _mm_loadu_si128(ip+20); 
+            iv5 = _mm_loadu_si128(ip+20);
     __m128i iv6 = _mm_loadu_si128(ip+24),
-            iv7 = _mm_loadu_si128(ip+28); 					VE128v32(iv4,sv); VE128v32(iv5,sv); VE128v32(iv6,sv); VE128v32(iv7,sv);
+            iv7 = _mm_loadu_si128(ip+28);                   VE128v32(iv4,sv); VE128v32(iv5,sv); VE128v32(iv6,sv); VE128v32(iv7,sv);
     __m128i mv2 = _mm_packus_epi16(_mm_min_epu8(iv4,cv1_8), _mm_min_epu8(iv5,cv1_8)); mv2 = _mm_min_epi16( mv2, cv1_8); mv2 = _mm_adds_epu16(mv2, cv7f00);
     __m128i mv3 = _mm_packus_epi16(_mm_min_epu8(iv6,cv1_8), _mm_min_epu8(iv7,cv1_8)); mv3 = _mm_min_epi16( mv3, cv1_8); mv3 = _mm_adds_epu16(mv3, cv7f00);
     uint16_t m2 = _mm_movemask_epi8(mv2);
     uint16_t m3 = _mm_movemask_epi8(mv3);
-	
+
     { __m128i ov0 = _mm_shuffle_epi8(iv0, SVE32(m0 << 4)),
               ov1 = _mm_shuffle_epi8(iv1, SVE32(m0 >> 4));
       __m128i ov2 = _mm_shuffle_epi8(iv2, SVE32(m1 << 4)),
               ov3 = _mm_shuffle_epi8(iv3, SVE32(m1 >> 4));
-	
-	  ctou32(out)   = (unsigned)m1<<16|m0;
+
+      ctou32(out)   = (unsigned)m1<<16|m0;
       _mm_storeu_si128((__m128i *)(op+IPINC), ov0); op += LEN32(m0,0)+IPINC;
       _mm_storeu_si128((__m128i *)op, ov1); op += LEN32(m0,1);
       _mm_storeu_si128((__m128i *)op, ov2); op += LEN32(m1,0);
       _mm_storeu_si128((__m128i *)op, ov3); op += LEN32(m1,1);
-	}
+    }
       ctou32(out+4) = (unsigned)m3<<16|m2;
-	{ __m128i ov0 = _mm_shuffle_epi8(iv4, SVE32(m2 << 4)),
+    { __m128i ov0 = _mm_shuffle_epi8(iv4, SVE32(m2 << 4)),
               ov1 = _mm_shuffle_epi8(iv5, SVE32(m2 >> 4));
       __m128i ov2 = _mm_shuffle_epi8(iv6, SVE32(m3 << 4)),
               ov3 = _mm_shuffle_epi8(iv7, SVE32(m3 >> 4));
@@ -1196,13 +1196,13 @@ unsigned char *TEMPLATE2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned
       _mm_storeu_si128((__m128i *)op, ov1); op += LEN32(m2,1);
       _mm_storeu_si128((__m128i *)op, ov2); op += LEN32(m3,0);
       _mm_storeu_si128((__m128i *)op, ov3); op += LEN32(m3,1);
-    }                                              PREFETCH(ip+512,0); 
-  } 
+    }                                              PREFETCH(ip+512,0);
+  }
     #else  //------------------------------ scalar ----------------------------------------------
-  for(ip = in; ip != in+(n&~(32-1)); ip += 32) { PNEXTA(out,op,8); VLE4( 0); VLE4( 4); VLE4( 8); VLE4(12); VLE4(16); VLE4(20); VLE4(24); VLE4(28); PREFETCH(ip+512,0); } 
-    #endif		
+  for(ip = in; ip != in+(n&~(32-1)); ip += 32) { PNEXTA(out,op,8); VLE4( 0); VLE4( 4); VLE4( 8); VLE4(12); VLE4(16); VLE4(20); VLE4(24); VLE4(28); PREFETCH(ip+512,0); }
+    #endif
                                       for(                       ; ip != in+(n&~(4-1)); ip += 4) { PNEXTA(out,op,1); VLE4(0); }
-  if(ip != in+n) { uint32_t *sp = ip; for(*OP=0,PNEXTA(out,op,1); ip != in+n;          ip++   ) VLE1(out[0]); }  
+  if(ip != in+n) { uint32_t *sp = ip; for(*OP=0,PNEXTA(out,op,1); ip != in+n;          ip++   ) VLE1(out[0]); }
   return op;
 }
 
@@ -1217,126 +1217,126 @@ unsigned char *TEMPLATE2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned
 unsigned char *TEMPLATE2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t *__restrict out V8DELTA32) {
   uint32_t      *op;
   unsigned char *ip = DATABEG(in,n,4);
-  uint32_t v; 
+  uint32_t v;
     #if 0 //def __AVX2__ //-----------------------------------------------------------------------------------------------
   VDINI256v32;
-  for(op = out; op != out+(n&~(32-1)); op += 32) {								PREFETCH(ip+512,0);
+  for(op = out; op != out+(n&~(32-1)); op += 32) {                              PREFETCH(ip+512,0);
     uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4);  IP+=8;
-    __m256i ov0 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m0,0);  
-	        ov0 = _mm256_inserti128_si256(ov0, _mm_loadu_si128(ip),1); ip += LEN32(m0,1);
+    __m256i ov0 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m0,0);
+            ov0 = _mm256_inserti128_si256(ov0, _mm_loadu_si128(ip),1); ip += LEN32(m0,1);
     __m256i fv0 = _mm256_castsi128_si256(      SVD32(m0,0));
             fv0 = _mm256_inserti128_si256(fv0, SVD32(m0,1),1);
-    __m256i ov1 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m0,2); 
-	        ov1 = _mm256_inserti128_si256(ov1, _mm_loadu_si128(ip),1); ip += LEN32(m0,3);    
+    __m256i ov1 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m0,2);
+            ov1 = _mm256_inserti128_si256(ov1, _mm_loadu_si128(ip),1); ip += LEN32(m0,3);
     __m256i fv1 = _mm256_castsi128_si256(      SVD32(m0,2));
-            fv1 = _mm256_inserti128_si256(fv1, SVD32(m0,3),1);    
+            fv1 = _mm256_inserti128_si256(fv1, SVD32(m0,3),1);
 
-	__m256i ov2 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m1,0);
-			ov2 = _mm256_inserti128_si256(ov2, _mm_loadu_si128(ip),1); ip += LEN32(m1,1);
-    __m256i fv2 = _mm256_castsi128_si256(      SVD32(m1,0));  
+    __m256i ov2 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m1,0);
+            ov2 = _mm256_inserti128_si256(ov2, _mm_loadu_si128(ip),1); ip += LEN32(m1,1);
+    __m256i fv2 = _mm256_castsi128_si256(      SVD32(m1,0));
             fv2 = _mm256_inserti128_si256(fv2, SVD32(m1,1),1);
-	__m256i ov3 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m1,2);
-			ov3 = _mm256_inserti128_si256(ov3, _mm_loadu_si128(ip),1); ip += LEN32(m1,3);		
+    __m256i ov3 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m1,2);
+            ov3 = _mm256_inserti128_si256(ov3, _mm_loadu_si128(ip),1); ip += LEN32(m1,3);
 
     __m256i fv3 = _mm256_castsi128_si256(      SVD32(m1,2));
-            fv3 = _mm256_inserti128_si256(fv3, SVD32(m1,3),1);           	
-		    ov0 = _mm256_shuffle_epi8(ov0, fv0);  
-		    ov1 = _mm256_shuffle_epi8(ov1, fv1); 								VD256v32(ov0,sv); VD256v32(ov1,sv);  
-		    ov2 = _mm256_shuffle_epi8(ov2, fv2); 
-		    ov3 = _mm256_shuffle_epi8(ov3, fv3); 								VD256v32(ov2,sv); VD256v32(ov3,sv);
+            fv3 = _mm256_inserti128_si256(fv3, SVD32(m1,3),1);
+            ov0 = _mm256_shuffle_epi8(ov0, fv0);
+            ov1 = _mm256_shuffle_epi8(ov1, fv1);                                VD256v32(ov0,sv); VD256v32(ov1,sv);
+            ov2 = _mm256_shuffle_epi8(ov2, fv2);
+            ov3 = _mm256_shuffle_epi8(ov3, fv3);                                VD256v32(ov2,sv); VD256v32(ov3,sv);
             _mm256_storeu_si256(op,    ov0);
-			_mm256_storeu_si256(op+8,  ov1);
-			_mm256_storeu_si256(op+16, ov2);  
-			_mm256_storeu_si256(op+24, ov3);             	
+            _mm256_storeu_si256(op+8,  ov1);
+            _mm256_storeu_si256(op+16, ov2);
+            _mm256_storeu_si256(op+24, ov3);
   }
    #elif defined(__SSSE3__) // optimzed for x86
-  VDINI128v32; 
-  for(op = out; op != out+(n&~(32-1)); op += 32) { 							    PREFETCH(ip+512,0); 
+  VDINI128v32;
+  for(op = out; op != out+(n&~(32-1)); op += 32) {                              PREFETCH(ip+512,0);
     uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4); IP+=8;
-    { __m128i ov0 = _mm_loadu_si128(ip); 	ip += LEN32(m0,0);
-      __m128i ov1 = _mm_loadu_si128(ip); 	ip += LEN32(m0,1);
-	  __m128i ov2 = _mm_loadu_si128(ip); 	ip += LEN32(m0,2);
-	  __m128i ov3 = _mm_loadu_si128(ip); 	ip += LEN32(m0,3);
+    { __m128i ov0 = _mm_loadu_si128(ip);    ip += LEN32(m0,0);
+      __m128i ov1 = _mm_loadu_si128(ip);    ip += LEN32(m0,1);
+      __m128i ov2 = _mm_loadu_si128(ip);    ip += LEN32(m0,2);
+      __m128i ov3 = _mm_loadu_si128(ip);    ip += LEN32(m0,3);
 
-      ov0 = _mm_shuffle_epi8(ov0, SVD32(m0,0));  
-	  ov1 = _mm_shuffle_epi8(ov1, SVD32(m0,1));  
-	  ov2 = _mm_shuffle_epi8(ov2, SVD32(m0,2)); 
-	  ov3 = _mm_shuffle_epi8(ov3, SVD32(m0,3));
-			
-	  VD128v32(ov0,sv); _mm_storeu_si128(op,    ov0);
-	  VD128v32(ov1,sv); _mm_storeu_si128(op+ 4, ov1);
-      VD128v32(ov2,sv); _mm_storeu_si128(op+ 8, ov2); 
-	  VD128v32(ov3,sv); _mm_storeu_si128(op+12, ov3);	
-    }																
-    { __m128i ov0 = _mm_loadu_si128(ip); 	ip += LEN32(m1,0);
-      __m128i ov1 = _mm_loadu_si128(ip); 	ip += LEN32(m1,1); 
-	  __m128i ov2 = _mm_loadu_si128(ip); 	ip += LEN32(m1,2);
-	  __m128i ov3 = _mm_loadu_si128(ip); 	ip += LEN32(m1,3);         
+      ov0 = _mm_shuffle_epi8(ov0, SVD32(m0,0));
+      ov1 = _mm_shuffle_epi8(ov1, SVD32(m0,1));
+      ov2 = _mm_shuffle_epi8(ov2, SVD32(m0,2));
+      ov3 = _mm_shuffle_epi8(ov3, SVD32(m0,3));
 
-      ov0 = _mm_shuffle_epi8(ov0, SVD32(m1,0));  
-	  ov1 = _mm_shuffle_epi8(ov1, SVD32(m1,1));  
-	  ov2 = _mm_shuffle_epi8(ov2, SVD32(m1,2)); 
-	  ov3 = _mm_shuffle_epi8(ov3, SVD32(m1,3));
-			
-	  VD128v32(ov0,sv); _mm_storeu_si128(op+16, ov0);
-	  VD128v32(ov1,sv); _mm_storeu_si128(op+20, ov1);
-      VD128v32(ov2,sv); _mm_storeu_si128(op+24, ov2); 
-	  VD128v32(ov3,sv); _mm_storeu_si128(op+28, ov3);  	
+      VD128v32(ov0,sv); _mm_storeu_si128(op,    ov0);
+      VD128v32(ov1,sv); _mm_storeu_si128(op+ 4, ov1);
+      VD128v32(ov2,sv); _mm_storeu_si128(op+ 8, ov2);
+      VD128v32(ov3,sv); _mm_storeu_si128(op+12, ov3);
     }
-  }    
-   #elif defined(__ARM_NEON) || defined(__SSSE3__) // optimzed for ARM ----------------------------------------------------------
-  VDINI128v32;   
-  for(op = out; op != out+(n&~(32-1)); op += 32) {  							PREFETCH(ip+512,0);
-    uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4);  
-    __m128i ov0 = _mm_loadu_si128(ip+IPINC); ip += LEN32(m0,0)+IPINC;
-    __m128i fv0 = SVD32(m0,0);  
-    __m128i ov1 = _mm_loadu_si128(ip);   ip += LEN32(m0,1);
-	__m128i fv1 = SVD32(m0,1);  
-	__m128i ov2 = _mm_loadu_si128(ip);   ip += LEN32(m0,2);
-	__m128i fv2 = SVD32(m0,2); 
-	__m128i ov3 = _mm_loadu_si128(ip);   ip += LEN32(m0,3);
-	__m128i fv3 = SVD32(m0,3);
-            ov0 = _mm_shuffle_epi8( ov0, fv0);  
-	        ov1 = _mm_shuffle_epi8( ov1, fv1);  
-	        ov2 = _mm_shuffle_epi8( ov2, fv2); 
-	        ov3 = _mm_shuffle_epi8( ov3, fv3);
-                                                                   
-    __m128i fv4 = SVD32(m1,0);  
-    __m128i ov4 = _mm_loadu_si128(ip);   ip += LEN32(m1,0);
-	__m128i fv5 = SVD32(m1,1);  
-    __m128i ov5 = _mm_loadu_si128(ip);   ip += LEN32(m1,1); 
-	__m128i fv6 = SVD32(m1,2); 
-	__m128i ov6 = _mm_loadu_si128(ip);   ip += LEN32(m1,2);
-	__m128i fv7 = SVD32(m1,3);			          
-	__m128i ov7 = _mm_loadu_si128(ip);   ip += LEN32(m1,3);                  
+    { __m128i ov0 = _mm_loadu_si128(ip);    ip += LEN32(m1,0);
+      __m128i ov1 = _mm_loadu_si128(ip);    ip += LEN32(m1,1);
+      __m128i ov2 = _mm_loadu_si128(ip);    ip += LEN32(m1,2);
+      __m128i ov3 = _mm_loadu_si128(ip);    ip += LEN32(m1,3);
 
-            ov4 = _mm_shuffle_epi8( ov4, fv4); 
-	        ov5 = _mm_shuffle_epi8( ov5, fv5); 
-            ov6 = _mm_shuffle_epi8( ov6, fv6); 
-	        ov7 = _mm_shuffle_epi8( ov7, fv7);  
-																VD128v32(ov0,sv); VD128v32(ov1,sv); VD128v32(ov2,sv); VD128v32(ov3,sv); 
-																VD128v32(ov4,sv); VD128v32(ov5,sv); VD128v32(ov6,sv); VD128v32(ov7,sv); //delta,zigzag,....
-	_mm_storeu_si128(op,    ov0);
-	_mm_storeu_si128(op+4,  ov1);
-    _mm_storeu_si128(op+8,  ov2); 
-	_mm_storeu_si128(op+12, ov3); 
-	_mm_storeu_si128(op+16, ov4);
-	_mm_storeu_si128(op+20, ov5);
-    _mm_storeu_si128(op+24, ov6); 
-	_mm_storeu_si128(op+28, ov7);
-	PNEXTB(in,8);
+      ov0 = _mm_shuffle_epi8(ov0, SVD32(m1,0));
+      ov1 = _mm_shuffle_epi8(ov1, SVD32(m1,1));
+      ov2 = _mm_shuffle_epi8(ov2, SVD32(m1,2));
+      ov3 = _mm_shuffle_epi8(ov3, SVD32(m1,3));
+
+      VD128v32(ov0,sv); _mm_storeu_si128(op+16, ov0);
+      VD128v32(ov1,sv); _mm_storeu_si128(op+20, ov1);
+      VD128v32(ov2,sv); _mm_storeu_si128(op+24, ov2);
+      VD128v32(ov3,sv); _mm_storeu_si128(op+28, ov3);
+    }
   }
-	#else //----------------------------- scalar -----------------------------------------------
+   #elif defined(__ARM_NEON) || defined(__SSSE3__) // optimzed for ARM ----------------------------------------------------------
+  VDINI128v32;
+  for(op = out; op != out+(n&~(32-1)); op += 32) {                              PREFETCH(ip+512,0);
+    uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4);
+    __m128i ov0 = _mm_loadu_si128(ip+IPINC); ip += LEN32(m0,0)+IPINC;
+    __m128i fv0 = SVD32(m0,0);
+    __m128i ov1 = _mm_loadu_si128(ip);   ip += LEN32(m0,1);
+    __m128i fv1 = SVD32(m0,1);
+    __m128i ov2 = _mm_loadu_si128(ip);   ip += LEN32(m0,2);
+    __m128i fv2 = SVD32(m0,2);
+    __m128i ov3 = _mm_loadu_si128(ip);   ip += LEN32(m0,3);
+    __m128i fv3 = SVD32(m0,3);
+            ov0 = _mm_shuffle_epi8( ov0, fv0);
+            ov1 = _mm_shuffle_epi8( ov1, fv1);
+            ov2 = _mm_shuffle_epi8( ov2, fv2);
+            ov3 = _mm_shuffle_epi8( ov3, fv3);
+
+    __m128i fv4 = SVD32(m1,0);
+    __m128i ov4 = _mm_loadu_si128(ip);   ip += LEN32(m1,0);
+    __m128i fv5 = SVD32(m1,1);
+    __m128i ov5 = _mm_loadu_si128(ip);   ip += LEN32(m1,1);
+    __m128i fv6 = SVD32(m1,2);
+    __m128i ov6 = _mm_loadu_si128(ip);   ip += LEN32(m1,2);
+    __m128i fv7 = SVD32(m1,3);
+    __m128i ov7 = _mm_loadu_si128(ip);   ip += LEN32(m1,3);
+
+            ov4 = _mm_shuffle_epi8( ov4, fv4);
+            ov5 = _mm_shuffle_epi8( ov5, fv5);
+            ov6 = _mm_shuffle_epi8( ov6, fv6);
+            ov7 = _mm_shuffle_epi8( ov7, fv7);
+                                                                VD128v32(ov0,sv); VD128v32(ov1,sv); VD128v32(ov2,sv); VD128v32(ov3,sv);
+                                                                VD128v32(ov4,sv); VD128v32(ov5,sv); VD128v32(ov6,sv); VD128v32(ov7,sv); //delta,zigzag,....
+    _mm_storeu_si128(op,    ov0);
+    _mm_storeu_si128(op+4,  ov1);
+    _mm_storeu_si128(op+8,  ov2);
+    _mm_storeu_si128(op+12, ov3);
+    _mm_storeu_si128(op+16, ov4);
+    _mm_storeu_si128(op+20, ov5);
+    _mm_storeu_si128(op+24, ov6);
+    _mm_storeu_si128(op+28, ov7);
+    PNEXTB(in,8);
+  }
+    #else //----------------------------- scalar -----------------------------------------------
   for(op = out; op != out+(n&~(32-1)); op += 32) { in = ip; ip+=8;
     VLD4( 0); VLD4( 4); VLD4( 8); VLD4(12); VLD4(16); VLD4(20); VLD4(24); VLD4(28);
-	PREFETCH(ip+512,0); 
+    PREFETCH(ip+512,0);
   }
     #endif
   uint32_t m;                          for(;          op != out+(n&~(4-1)); op += 4) { PNEXTA(in,ip,1); VLD4( 0); }
   if(op != out+n) { uint32_t *sp = op; for(m = *IP++; op != out+n;          op++   ) VLD1( 0);}
   return ip;
-} 
- 
+}
+
 //------------------------------------ 16 bits ---------------------------------------------------------------------
 #define LEN16(_m_,_i_) (8+popcnt32((uint8_t)(_m_>>(_i_<<3))))
 
@@ -1344,36 +1344,36 @@ unsigned char *TEMPLATE2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, ui
 #define VLE1(_m_) { VE16(ip[0]); unsigned _b = BN16(v); ctou16(op) = v; op += _b+1; _m_ |= _b<<(ip-sp); }
 
 #define VLE8(_i_) { unsigned _b,_m; PNEXTA(out,op,1);\
-  VE16(ip[_i_+0]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  =  _b;	\
-  VE16(ip[_i_+1]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<1;	\
-  VE16(ip[_i_+2]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<2;	\
-  VE16(ip[_i_+3]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<3;	\
-  VE16(ip[_i_+4]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<4;	\
-  VE16(ip[_i_+5]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<5;	\
-  VE16(ip[_i_+6]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<6;	\
-  VE16(ip[_i_+7]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<7;	\
+  VE16(ip[_i_+0]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  =  _b; \
+  VE16(ip[_i_+1]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<1; \
+  VE16(ip[_i_+2]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<2; \
+  VE16(ip[_i_+3]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<3; \
+  VE16(ip[_i_+4]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<4; \
+  VE16(ip[_i_+5]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<5; \
+  VE16(ip[_i_+6]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<6; \
+  VE16(ip[_i_+7]); _b = BN16(v); ctou16(op) = v; op += _b+1; _m  |=  _b<<7; \
   *out++ = _m;\
 }
 
 unsigned char *TEMPLATE2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA16) {
   uint16_t      *ip,v;
   unsigned char *op = DATABEG(out,n,2);
-  
+
     #if defined(__SSSE3__) || defined(__ARM_NEON) //--------------------------------
   VEINI128v16; const __m128i cv1_8 = _mm_set1_epi8(1);
-  for(ip = in; ip != in+(n&~(64-1)); ip += 64, PNEXT(out,op,8)) {                        PREFETCH(ip+512,0);  
+  for(ip = in; ip != in+(n&~(64-1)); ip += 64, PNEXT(out,op,8)) {                        PREFETCH(ip+512,0);
     __m128i iv0 = _mm_loadu_si128(ip   ),
-            iv1 = _mm_loadu_si128(ip+ 8);         
+            iv1 = _mm_loadu_si128(ip+ 8);
     __m128i iv2 = _mm_loadu_si128(ip+16),
-            iv3 = _mm_loadu_si128(ip+24);  	                            VE128v16(iv0,sv); VE128v16(iv1,sv); VE128v16(iv2,sv); VE128v16(iv3,sv);
-    __m128i mv0 = _mm_packus_epi16(_mm_min_epu8(iv0,cv1_8), _mm_min_epu8(iv1,cv1_8)); 
+            iv3 = _mm_loadu_si128(ip+24);                               VE128v16(iv0,sv); VE128v16(iv1,sv); VE128v16(iv2,sv); VE128v16(iv3,sv);
+    __m128i mv0 = _mm_packus_epi16(_mm_min_epu8(iv0,cv1_8), _mm_min_epu8(iv1,cv1_8));
     __m128i mv1 = _mm_packus_epi16(_mm_min_epu8(iv2,cv1_8), _mm_min_epu8(iv3,cv1_8));
     uint16_t m0 = _mm_movemask_epi8(mv0), m1 = _mm_movemask_epi8(mv1);
-    ctou16(out) = m0; ctou16(out+2) = m1;  
+    ctou16(out) = m0; ctou16(out+2) = m1;
     __m128i iv4 = _mm_loadu_si128(ip+32),
-            iv5 = _mm_loadu_si128(ip+40);                                
+            iv5 = _mm_loadu_si128(ip+40);
     __m128i iv6 = _mm_loadu_si128(ip+48),
-            iv7 = _mm_loadu_si128(ip+56);  	                            VE128v16(iv4,sv); VE128v16(iv5,sv);VE128v16(iv6,sv); VE128v16(iv7,sv);
+            iv7 = _mm_loadu_si128(ip+56);                               VE128v16(iv4,sv); VE128v16(iv5,sv);VE128v16(iv6,sv); VE128v16(iv7,sv);
     __m128i mv4 = _mm_packus_epi16(_mm_min_epu8(iv4,cv1_8), _mm_min_epu8(iv5,cv1_8));
     __m128i mv5 = _mm_packus_epi16(_mm_min_epu8(iv6,cv1_8), _mm_min_epu8(iv7,cv1_8));
     uint16_t m2 = _mm_movemask_epi8(mv4), m3 = _mm_movemask_epi8(mv5);
@@ -1386,7 +1386,7 @@ unsigned char *TEMPLATE2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned
     _mm_storeu_si128((__m128i *)op,     ov1); op += LEN16(m0,1);
     _mm_storeu_si128((__m128i *)op,     ov2); op += LEN16(m1,0);
     _mm_storeu_si128((__m128i *)op,     ov3); op += LEN16(m1,1);
-   
+
     __m128i ov4 = _mm_shuffle_epi8(iv4, SVE16(m2 << 4)),
             ov5 = _mm_shuffle_epi8(iv5, SVE16(m2 >> 4)),
             ov6 = _mm_shuffle_epi8(iv6, SVE16(m3 << 4)),
@@ -1397,13 +1397,13 @@ unsigned char *TEMPLATE2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned
     _mm_storeu_si128((__m128i *)op, ov7); op += LEN16(m3,1);
     ctou16(out+4) = m2; ctou16(out+6) = m3;
   }
-	#else //---------------------- scalar ---------------------------------------
-  for(ip = in; ip != in+(n&~(64-1)); ip += 64) { 						PREFETCH(ip+512,0); 
-    op += 8; 
-    VLE8( 0); VLE8( 8); VLE8(16); VLE8(24); VLE8(32); VLE8(40); VLE8(48); VLE8(56); 
-	out = op;
-  }		
-    #endif		
+    #else //---------------------- scalar ---------------------------------------
+  for(ip = in; ip != in+(n&~(64-1)); ip += 64) {                        PREFETCH(ip+512,0);
+    op += 8;
+    VLE8( 0); VLE8( 8); VLE8(16); VLE8(24); VLE8(32); VLE8(40); VLE8(48); VLE8(56);
+    out = op;
+  }
+    #endif
                                       for(                       ; ip != in+(n&~(8-1)); ip += 8) VLE8(0);
   if(ip != in+n) { uint16_t *sp = ip; for(PNEXTA(out,op,1),*out=0; ip != in+n;          ip++   ) VLE1(out[0]); }
   return op;
@@ -1412,7 +1412,7 @@ unsigned char *TEMPLATE2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned
 #define VLD1(_i_) { unsigned _b = ((m>>(op-sp))& 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); *op = VD16(v); ip+=_b; }
 
 #define VLD8(_i_) { unsigned _b,m = *IP++;\
-	_b =  (m    & 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); op[_i_+0] = VD16(v); ip+=_b;\
+    _b =  (m    & 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); op[_i_+0] = VD16(v); ip+=_b;\
     _b = ((m>>1)& 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); op[_i_+1] = VD16(v); ip+=_b;\
     _b = ((m>>2)& 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); op[_i_+2] = VD16(v); ip+=_b;\
     _b = ((m>>3)& 1)+1; v = ctou16(ip) & ((1<<(_b*8))-1); op[_i_+3] = VD16(v); ip+=_b;\
@@ -1423,43 +1423,43 @@ unsigned char *TEMPLATE2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned
   }
 
 unsigned char *TEMPLATE2(V8DEC,16)(unsigned char  *__restrict in, unsigned n, uint16_t *__restrict out V8DELTA16) {
-  uint16_t      *op; 
+  uint16_t      *op;
   unsigned char *ip = DATABEG(in,n,2);
   uint16_t v;
- 
-    #if defined(__SSSE3__) || defined(__ARM_NEON)//-----------------------
-  VDINI128v16; 
-  for(op = out; op != out+(n&~(64-1)); op += 64) {					PREFETCH(ip+512,0);
-    uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4); 
-	__m128i ov0 = _mm_shuffle_epi8(_mm_loadu_si128(ip+IPINC), SVD16(m0,0)); ip += LEN16(m0,0)+IPINC; 
-    __m128i ov1 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,1)); ip += LEN16(m0,1);   
-	__m128i ov2 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,2)); ip += LEN16(m0,2);   
-	__m128i ov3 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,3)); ip += LEN16(m0,3);         
-																VD128v16(ov0,sv); VD128v16(ov1,sv); VD128v16(ov2,sv); VD128v16(ov3,sv);
-    _mm_storeu_si128(op,    ov0);
-	_mm_storeu_si128(op+8,  ov1);
-	_mm_storeu_si128(op+16, ov2); 
-	_mm_storeu_si128(op+24, ov3);
 
-	__m128i ov4 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,0)); ip += LEN16(m1,0); 
-    __m128i ov5 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,1)); ip += LEN16(m1,1);   
-	__m128i ov6 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,2)); ip += LEN16(m1,2);   
-	__m128i ov7 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,3)); ip += LEN16(m1,3);         
-																VD128v16(ov4,sv); VD128v16(ov5,sv); VD128v16(ov6,sv); VD128v16(ov7,sv);
+    #if defined(__SSSE3__) || defined(__ARM_NEON)//-----------------------
+  VDINI128v16;
+  for(op = out; op != out+(n&~(64-1)); op += 64) {                  PREFETCH(ip+512,0);
+    uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4);
+    __m128i ov0 = _mm_shuffle_epi8(_mm_loadu_si128(ip+IPINC), SVD16(m0,0)); ip += LEN16(m0,0)+IPINC;
+    __m128i ov1 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,1)); ip += LEN16(m0,1);
+    __m128i ov2 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,2)); ip += LEN16(m0,2);
+    __m128i ov3 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,3)); ip += LEN16(m0,3);
+                                                                VD128v16(ov0,sv); VD128v16(ov1,sv); VD128v16(ov2,sv); VD128v16(ov3,sv);
+    _mm_storeu_si128(op,    ov0);
+    _mm_storeu_si128(op+8,  ov1);
+    _mm_storeu_si128(op+16, ov2);
+    _mm_storeu_si128(op+24, ov3);
+
+    __m128i ov4 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,0)); ip += LEN16(m1,0);
+    __m128i ov5 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,1)); ip += LEN16(m1,1);
+    __m128i ov6 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,2)); ip += LEN16(m1,2);
+    __m128i ov7 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m1,3)); ip += LEN16(m1,3);
+                                                                VD128v16(ov4,sv); VD128v16(ov5,sv); VD128v16(ov6,sv); VD128v16(ov7,sv);
     _mm_storeu_si128(op+32, ov4);
-	_mm_storeu_si128(op+40, ov5);
-	_mm_storeu_si128(op+48, ov6); 
-	_mm_storeu_si128(op+56, ov7);
-	PNEXTB(in,8);
+    _mm_storeu_si128(op+40, ov5);
+    _mm_storeu_si128(op+48, ov6);
+    _mm_storeu_si128(op+56, ov7);
+    PNEXTB(in,8);
   }
-	#else //-------------- scalar --------------------------------------------------------
+    #else //-------------- scalar --------------------------------------------------------
   for(op = out; op != out+(n&~(64-1)); op += 64) { ip += 8;
-    VLD8( 0); VLD8( 8); VLD8(16); VLD8(24);	 VLD8(32); VLD8(40); VLD8(48); VLD8(56);	PREFETCH(ip+512,0); 
-	in = ip;
+    VLD8( 0); VLD8( 8); VLD8(16); VLD8(24);  VLD8(32); VLD8(40); VLD8(48); VLD8(56);    PREFETCH(ip+512,0);
+    in = ip;
   }
     #endif
   uint32_t m;                          for(;          op != out+(n&~(8-1)); op += 8) VLD8( 0);
-  if(op != out+n) { uint16_t *sp = op; for(m = *IP++; op != out+n;          op++   ) VLD1( 0);} 
+  if(op != out+n) { uint16_t *sp = op; for(m = *IP++; op != out+n;          op++   ) VLD1( 0);}
   return ip;
 }
 #endif
