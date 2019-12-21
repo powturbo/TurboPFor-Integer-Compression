@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -26,7 +26,7 @@
 #define BITPACK_H_
 #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
-#else 
+#else
 #include <stdint.h>
 #endif
 #include <stddef.h>
@@ -36,55 +36,55 @@ extern "C" {
 #endif
 
 //******************** Bit Packing High Level API - n unlimited ***************************************************
-size_t bitnpack8(         uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnpack16(        uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnpack32(        uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnpack8(         uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnpack16(        uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnpack32(        uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnpack64(        uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
-size_t bitnpack128v16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnpack128v16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnpack128v32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnpack128v64(    uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnpack256v32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t bitndpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitndpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitndpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitndpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitndpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitndpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitndpack64(       uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
-size_t bitndpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitndpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitndpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitndpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitndpack256v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t bitnd1pack8(       uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnd1pack16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnd1pack32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnd1pack8(       uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnd1pack16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnd1pack32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnd1pack64(      uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
-size_t bitnd1pack128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnd1pack128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnd1pack256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnd1pack128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnd1pack128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnd1pack256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t bitnzpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnzpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnzpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnzpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnzpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnzpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnzpack64(       uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
-size_t bitnzpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnzpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnzpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnzpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnzpack256v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t bitnfpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnfpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnfpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnfpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnfpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnfpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnfpack64(       uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
-size_t bitnfpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out); 
-size_t bitnfpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out); 
+size_t bitnfpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnfpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnfpack256v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
 size_t bitnunpack8(       unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t bitnunpack16(      unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
-size_t bitnunpack32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
+size_t bitnunpack32(      unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t bitnunpack64(      unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
 size_t bitnunpack128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
-size_t bitnunpack128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
-size_t bitnunpack128v64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out); 
-size_t bitnunpack256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
+size_t bitnunpack128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t bitnunpack128v64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
+size_t bitnunpack256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
 size_t bitndunpack8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t bitndunpack16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
@@ -92,7 +92,7 @@ size_t bitndunpack32(     unsigned char *__restrict in, size_t n, uint32_t *__re
 size_t bitndunpack64(     unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
 size_t bitndunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t bitndunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
-size_t bitndunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out); 
+size_t bitndunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
 size_t bitnd1unpack8(     unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t bitnd1unpack16(    unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
@@ -154,24 +154,24 @@ unsigned char *bitzpack64(  uint64_t *__restrict in, unsigned n, const unsigned 
 
 //-------------------------------------- SIMD ------------------------------------------------------------------------------------------
 // Pack array with 128 unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
-unsigned char *bitpack128v16(  unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out				        , unsigned b);
+unsigned char *bitpack128v16(  unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out                      , unsigned b);
 unsigned char *bitdpack128v16( unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitd1pack128v16(unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitfpack128v16( unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitf1pack128v16(unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitzpack128v16( unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 
-unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out                , unsigned b);
 unsigned char *bitdpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 unsigned char *bitfpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 unsigned char *bitf1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 
-//unsigned char *bitpack256w32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
-unsigned char *bitpack128v64(  uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
+//unsigned char *bitpack256w32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out                  , unsigned b);
+unsigned char *bitpack128v64(  uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out                , unsigned b);
 
-unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out				  , unsigned b);
+unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out                , unsigned b);
 unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1pack256v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
 unsigned char *bitfpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
@@ -181,7 +181,7 @@ unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned n, uns
 //********************************** Bit Packing : Unpack ****************************************************************
 
 // ---------------- Unpack a b-bits packed integer array -------------------------------------------------------------------------------
-// unpack a bitpacked integer array. Return value = end of packed buffer in 
+// unpack a bitpacked integer array. Return value = end of packed buffer in
 unsigned char *bitunpack8(  const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, unsigned b);
 unsigned char *bitunpack16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, unsigned b);
 unsigned char *bitunpack32( const unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, unsigned b);
@@ -212,7 +212,7 @@ static ALWAYS_INLINE unsigned _bitgetx8( const unsigned char *__restrict in, uns
 static ALWAYS_INLINE unsigned  bitgetx16(const unsigned char *__restrict in, unsigned  idx, unsigned b) { unsigned bidx = b*idx; return bzhi32( ctou32((uint32_t *)in+(bidx>>4)) >> (bidx& 0xf), b ); }
 static ALWAYS_INLINE unsigned _bitgetx16(const unsigned char *__restrict in, unsigned bidx, unsigned b) {                        return bzhi32( ctou32((uint32_t *)in+(bidx>>4)) >> (bidx& 0xf), b ); }
 
-// Set a single value with index "idx" 
+// Set a single value with index "idx"
 static ALWAYS_INLINE void      bitsetx16(const unsigned char *__restrict in, unsigned  idx, unsigned v, unsigned b) { unsigned bidx = b*idx;  unsigned           *p = (unsigned           *)             in+(bidx>>4) ; *p = ( *p & ~(((1u  <<b)-1) << (bidx& 0xf)) ) |                     v<<(bidx& 0xf);}
 static ALWAYS_INLINE void      bitsetx32(const unsigned char *__restrict in, unsigned  idx, unsigned v, unsigned b) { unsigned bidx = b*idx;  unsigned long long *p = (unsigned long long *)((unsigned *)in+(bidx>>5)); *p = ( *p & ~(((1ull<<b)-1) << (bidx&0x1f)) ) | (unsigned long long)v<<(bidx&0x1f);}
    #endif
@@ -231,14 +231,14 @@ unsigned char *bitd1unpack16(const unsigned char *__restrict in, unsigned n, uin
 unsigned char *bitd1unpack32(const unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b);
 unsigned char *bitd1unpack64(const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b);
 
-// ---------------- ZigZag : integrated bitpacking, for zigzag packed unsorted 
+// ---------------- ZigZag : integrated bitpacking, for zigzag packed unsorted
 unsigned char *bitzunpack8(  const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b);
 unsigned char *bitzunpack16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b);
 unsigned char *bitzunpack32( const unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b);
 unsigned char *bitzunpack64( const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, uint64_t start, unsigned b);
 
 // ---------------- For : Direct Access for packed SORTED array  --------------------------------------------
-// out[i] = start + in[i] + i 
+// out[i] = start + in[i] + i
 unsigned char *bitfunpack8(  const unsigned char *__restrict in, unsigned n, uint8_t  *__restrict out, uint8_t  start, unsigned b);
 unsigned char *bitfunpack16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b);
 unsigned char *bitfunpack32( const unsigned char *__restrict in, unsigned n, uint32_t *__restrict out, uint32_t start, unsigned b);
@@ -254,16 +254,16 @@ unsigned char *bitf1unpack64(const unsigned char *__restrict in, unsigned n, uin
 // SIMD unpack a 128/256 bitpacked integer array. Return value = end of packed buffer in
 unsigned char *bitunpack128v16(  const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out,                       unsigned b);
 unsigned char *bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b);
-unsigned char *bitdunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b); 
+unsigned char *bitdunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitd1unpack128v16(const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b);
-unsigned char *bitfunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b); 
+unsigned char *bitfunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitf1unpack128v16(const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b);
 
 unsigned char *bitunpack128v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out,                 unsigned b);
 unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1unpack128v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 unsigned char *bitf1unpack128v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
 unsigned char *bitunpack256w32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out,                 unsigned b);
@@ -271,14 +271,14 @@ unsigned char *bitunpack128v64(  const unsigned char *__restrict in, unsigned n,
 
 unsigned char *bitunpack256v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out,                 unsigned b);
 unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitdunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1unpack256v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitfunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitfunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 unsigned char *bitf1unpack256v32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
 unsigned char *bitunpack128h32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out,                 unsigned b);
 unsigned char *bitzunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
-unsigned char *bitdunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b); 
+unsigned char *bitdunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 unsigned char *bitd1unpack128h32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 
 // internal TurboPFor functions: masked unpack
