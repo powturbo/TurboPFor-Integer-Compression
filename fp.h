@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -27,11 +27,11 @@ extern "C" {
 #endif
 #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
-#else 
+#else
 #include <stdint.h>
 #endif
 
-// ---------- TurboPFor Zigzag of delta (=delta of delta + zigzag encoding) (TurboPFor) 
+// ---------- TurboPFor Zigzag of delta (=delta of delta + zigzag encoding) (TurboPFor)
 size_t p4nzzenc128v8(    uint8_t       *in, size_t n, unsigned char *out, uint8_t  start);
 size_t p4nzzdec128v8(    unsigned char *in, size_t n, uint8_t       *out, uint8_t  start);
 size_t p4nzzenc128v16(   uint16_t      *in, size_t n, unsigned char *out, uint16_t start);
@@ -90,7 +90,7 @@ size_t fpfcmdec32(  unsigned char *in, size_t n, uint32_t      *out, uint32_t st
 size_t fpfcmenc64(  uint64_t      *in, size_t n, unsigned char *out, uint64_t start);
 size_t fpfcmdec64(  unsigned char *in, size_t n, uint64_t      *out, uint64_t start);
 
-//----------- TurboFloat DFCM: Differential Finite Context Method Predictor (TurboPFor) 
+//----------- TurboFloat DFCM: Differential Finite Context Method Predictor (TurboPFor)
 size_t fpdfcmenc8(  uint8_t       *in, size_t n, unsigned char *out, uint8_t  start);
 size_t fpdfcmdec8(  unsigned char *in, size_t n, uint8_t       *out, uint8_t  start);
 size_t fpdfcmenc16( uint16_t      *in, size_t n, unsigned char *out, uint16_t start);
