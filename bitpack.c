@@ -59,7 +59,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define V  x
 #else
 #define VX v
-#define V  v 
+#define V  v
 #endif
 
 #if 0
@@ -94,9 +94,9 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 #define IP9(_ip_,_x_, _parm_)   V = IP0(_ip_,_x_) - start; start = IP(_ip_,_x_)
 #define IPV(_ip_,_x_)           VX
 #define IPX(_ip_,_x_)          (V = IP(_ip_,_x_) - start)
-#define IP16(_ip_,_x_, _parm_)   start = IP(_ip_,_x_) 
-#define IP32(_ip_,_x_, _parm_)   start = IP(_ip_,_x_) 
-#define IP64(_ip_,_x_, _parm_)   start = IP(_ip_,_x_) 
+#define IP16(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
+#define IP32(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
+#define IP64(_ip_,_x_, _parm_)   start = IP(_ip_,_x_)
 #define _BITPACK_ bitdpack
 #include "bitpack_.h"
 #undef IP9
