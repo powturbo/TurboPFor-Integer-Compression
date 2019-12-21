@@ -25,7 +25,7 @@
 **/
 #if defined(_MSC_VER) && _MSC_VER < 1600
 #include "vs/stdint.h"
-#else 
+#else
 #include <stdint.h>
 #endif
 
