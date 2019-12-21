@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -84,7 +84,7 @@ void tp1dec128v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp1enc128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp1dec128v8( unsigned char *in, unsigned n, unsigned char *out);
 
-void tpenc256v2(  unsigned char *in, unsigned n, unsigned char *out);   // avx2   
+void tpenc256v2(  unsigned char *in, unsigned n, unsigned char *out);   // avx2
 void tpdec256v2(  unsigned char *in, unsigned n, unsigned char *out);
 void tpenc256v4(  unsigned char *in, unsigned n, unsigned char *out);
 void tpdec256v4(  unsigned char *in, unsigned n, unsigned char *out);
@@ -98,16 +98,16 @@ void tp4dec256v4( unsigned char *in, unsigned n, unsigned char *out);
 void tp4enc256v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4dec256v8( unsigned char *in, unsigned n, unsigned char *out);
 
-//------- CPU instruction set 
-// cpuiset  = 0: return current simd set, 
+//------- CPU instruction set
+// cpuiset  = 0: return current simd set,
 // cpuiset != 0: set simd set 0:scalar, 20:sse2, 52:avx2
-unsigned cpuini(unsigned cpuiset); 
+unsigned cpuini(unsigned cpuiset);
 
-// convert simd set to string "sse3", "sse3", "sse4.1" or "avx2" 
-// Ex.: printf("current cpu set=%s\n", cpustr(cpuini(0)) ); 
-char *cpustr(unsigned cpuisa); 
+// convert simd set to string "sse3", "sse3", "sse4.1" or "avx2"
+// Ex.: printf("current cpu set=%s\n", cpustr(cpuini(0)) );
+char *cpustr(unsigned cpuisa);
 
-unsigned cpuisa(void); 
+unsigned cpuisa(void);
 #ifdef __cplusplus
 }
 #endif
