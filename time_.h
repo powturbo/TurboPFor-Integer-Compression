@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -103,7 +103,7 @@ static double TMBS(unsigned l, double t) { return (l/t)/1000000.0; }
 
     #ifdef _WIN32
 static LARGE_INTEGER tps;
-static tm_t tmtime(void) { 
+static tm_t tmtime(void) {
   LARGE_INTEGER tm;
   tm_t t;
   QueryPerformanceCounter(&tm);
@@ -142,14 +142,14 @@ static int tmiszero(tm_t t) { return !(t.tv_sec|t.tv_nsec); }
 #endif
 
 //---------------------------------------- bench ----------------------------------------------------------------------
-// for each a function call is repeated until exceding tm_tx seconds. 
+// for each a function call is repeated until exceding tm_tx seconds.
 // A run duration is always tm_tx seconds
 // The number of runs can be set with the program options  -I and -J (specify -I15 -J15 for more precision)
 
 // sleep after each 8 runs to avoid cpu trottling.
 #define TMSLEEP do { tm_T = tmtime(); if(tmiszero(tm_0)) tm_0 = tm_T; else if(tmdiff(tm_0, tm_T) > tm_TX) { if(tm_verbose) { printf("S \b\b");fflush(stdout); } sleep(tm_slp); tm_0=tmtime();} } while(0)
 
-// benchmark loop   
+// benchmark loop
 #define TMBEG(_tm_Reps_) { unsigned _tm_r,_tm_c = 0,_tm_R,_tm_Rx = _tm_Reps_,_tm_Rn = _tm_Reps_; double _tm_t;\
   for(tm_rm = tm_rep, tm_tm = DBL_MAX, _tm_R = 0; _tm_R < _tm_Rn; _tm_R++) { tm_t _tm_t0 = tminit(); /*for each run*/\
     for(_tm_r = 0;_tm_r < tm_rm;) { /*repeat tm_rm times */
@@ -179,7 +179,7 @@ static void tm_init(int _tm_Rep, int _tm_verbose) { tm_verbose = _tm_verbose; if
   double dm = tm_tm, dr = tm_rm; if(tm_verbose) printf("%8.2f      \b\b\b\b\b", TMBS(_len_, dm*TM_C/dr) );\
 } while(0)
 
-// second TMBENCH. Example: use TMBENCH for encoding and TMBENCH2 for decoding 
+// second TMBENCH. Example: use TMBENCH for encoding and TMBENCH2 for decoding
 #define TMBENCH2(_name_, _func_, _len_)  do { \
   TMBEG(tm_Rep2) _func_; TMEND(_len_);\
   double dm = tm_tm, dr = tm_rm; if(tm_verbose) printf("%8.2f      \b\b\b\b\b", TMBS(_len_, dm*TM_C/dr) );\
@@ -203,7 +203,7 @@ static void tm_init(int _tm_Rep, int _tm_verbose) { tm_verbose = _tm_verbose; if
 #define GB 1000000000
 
 static unsigned argtoi(char *s, unsigned def) {
-  char *p; 
+  char *p;
   unsigned n = strtol(s, &p, 10),f = 1;
   switch(*p) {
     case 'K': f = KB; break;
@@ -214,7 +214,7 @@ static unsigned argtoi(char *s, unsigned def) {
     case 'g': f = Gb; break;
     case 'B': return n; break;
     case 'b': def = 0;
-    default: if(!def) return n>=32?0xffffffffu:(1u << n); f = def; 
+    default: if(!def) return n>=32?0xffffffffu:(1u << n); f = def;
   }
   return n*f;
 }
@@ -230,20 +230,20 @@ static uint64_t argtol(char *s) {
     case 'g': f = Gb; break;
     case 'B': return n; break;
     case 'b': return 1u << n;
-    default:  f = MB;   
+    default:  f = MB;
   }
   return n*f;
 }
 
 static uint64_t argtot(char *s) {
   char *p;
-  uint64_t n = strtol(s, &p, 10),f=1; 
+  uint64_t n = strtol(s, &p, 10),f=1;
   switch(*p) {
     case 'h': f = 3600000; break;
     case 'm': f = 60000;   break;
     case 's': f = 1000;    break;
     case 'M': f = 1;       break;
-    default:  f = 1000; 
+    default:  f = 1000;
   }
   return n*f;
 }
