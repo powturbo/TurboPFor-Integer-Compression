@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -38,7 +38,7 @@ extern unsigned char _vtab32_[];
 #define _vbxlen32(_x_) ((bsr32(_x_|1)+6)/7)
 
 #define _vbxput32(_op_, _x_, _act_) {\
-       if(likely((_x_) < (1<< 7))) {		*_op_++ = _x_; 	                                             _act_;}\
+       if(likely((_x_) < (1<< 7))) {        *_op_++ = _x_;                                               _act_;}\
   else if(likely((_x_) < (1<<14))) { ctou16(_op_)   = bswap16((_x_) | 0x8000u);               _op_ += 2; _act_;}\
   else if(likely((_x_) < (1<<21))) {        *_op_++ = _x_ >> 16  | 0xc0u; ctou16(_op_) = _x_; _op_ += 2; _act_;}\
   else if(likely((_x_) < (1<<28))) { ctou32(_op_)   = bswap32((_x_) | 0xe0000000u);              _op_ += 4; _act_;}\
@@ -46,11 +46,11 @@ extern unsigned char _vtab32_[];
 }
 
 #define _vbxget32(_ip_, _x_, _act_) do { _x_ = (unsigned)(*_ip_++);\
-       if(!(_x_ & 0x80u)) {   								        							 _act_;}\
-  else if(!(_x_ & 0x40u)) { _x_ = bswap16(ctou16(_ip_ - 1) & 0xff3fu); _ip_++;				         _act_;}\
-  else if(!(_x_ & 0x20u)) { _x_ = (_x_ & 0x1f)<<16 | ctou16(_ip_); 	    		      _ip_ += 2; _act_;}\
-  else if(!(_x_ & 0x10u)) { _x_ = bswap32(ctou32(_ip_-1) & 0xffffff0fu);				  _ip_ += 3; _act_;}\
-  else 			   	      { _x_ = (unsigned long long)((_x_) & 0x07)<<32 | ctou32(_ip_); _ip_ += 4; _act_;}\
+       if(!(_x_ & 0x80u)) {                                                                      _act_;}\
+  else if(!(_x_ & 0x40u)) { _x_ = bswap16(ctou16(_ip_ - 1) & 0xff3fu); _ip_++;                       _act_;}\
+  else if(!(_x_ & 0x20u)) { _x_ = (_x_ & 0x1f)<<16 | ctou16(_ip_);                    _ip_ += 2; _act_;}\
+  else if(!(_x_ & 0x10u)) { _x_ = bswap32(ctou32(_ip_-1) & 0xffffff0fu);                  _ip_ += 3; _act_;}\
+  else                    { _x_ = (unsigned long long)((_x_) & 0x07)<<32 | ctou32(_ip_); _ip_ += 4; _act_;}\
 } while(0)
 
 //------------- 64 bits -----------
@@ -58,22 +58,22 @@ extern unsigned char _vtab32_[];
 #define _vbxvlen64(_x_) ((_x_)==0xff?9:clz32((_x_) ^ 0xff) - 23)
 
 #define _vbxput64(_op_, _x_, _act_) {\
-       if(likely(_x_ < (1<< 7))) {		  *_op_++ = _x_; 			 		                                                                      _act_;}\
+       if(likely(_x_ < (1<< 7))) {        *_op_++ = _x_;                                                                                          _act_;}\
   else if(likely(_x_ < (1<<14))) { ctou16(_op_)   =        bswap16(_x_| 0x8000);                                                       _op_ += 2; _act_;}\
   else if(likely(_x_ < (1<<21))) {        *_op_++ =        _x_ >> 16  | 0xc0;      ctou16(_op_) = _x_;                                 _op_ += 2; _act_;}\
   else if(likely(_x_ < (1<<28))) { ctou32(_op_)   =        bswap32(_x_| 0xe0000000);                                                   _op_ += 4; _act_;}\
   else if(       _x_ < 1ull<<35) {        *_op_++ =         _x_ >> 32 | 0xf0;                                      ctou32(_op_) = _x_; _op_ += 4; _act_;}\
   else if(       _x_ < 1ull<<42) { ctou16(_op_)   = bswap16(_x_ >> 32 | 0xf800);                        _op_ += 2; ctou32(_op_) = _x_; _op_ += 4; _act_;}\
   else if(       _x_ < 1ull<<49) {        *_op_++ =         _x_ >> 48 | 0xfc; ctou16(_op_) = _x_ >> 32; _op_ += 2; ctou32(_op_) = _x_; _op_ += 4; _act_;}\
-  else if(       _x_ < 1ull<<56) { ctou64(_op_)   = bswap64(_x_       | 0xfe00000000000000ull); 								       _op_ += 8; _act_;}\
+  else if(       _x_ < 1ull<<56) { ctou64(_op_)   = bswap64(_x_       | 0xfe00000000000000ull);                                        _op_ += 8; _act_;}\
   else {                                  *_op_++ =                     0xff;                                      ctou64(_op_) = _x_; _op_ += 8; _act_;}\
 }
 
 #define _vbxget64(_ip_, _x_, _act_) do { _x_ = *_ip_++;\
-       if(!(_x_ & 0x80)) {   								        							                          _act_;}\
-  else if(!(_x_ & 0x40)) { _x_ = bswap16(ctou16(_ip_++-1) & 0xff3f);						                              _act_;}\
-  else if(!(_x_ & 0x20)) { _x_ = (_x_ & 0x1f)<<16 | ctou16(_ip_); 	    		                               _ip_ += 2; _act_;}\
-  else if(!(_x_ & 0x10)) { _x_ = bswap32(ctou32(_ip_-1) & 0xffffff0f);				                           _ip_ += 3; _act_;}\
+       if(!(_x_ & 0x80)) {                                                                                                _act_;}\
+  else if(!(_x_ & 0x40)) { _x_ = bswap16(ctou16(_ip_++-1) & 0xff3f);                                                      _act_;}\
+  else if(!(_x_ & 0x20)) { _x_ = (_x_ & 0x1f)<<16 | ctou16(_ip_);                                              _ip_ += 2; _act_;}\
+  else if(!(_x_ & 0x10)) { _x_ = bswap32(ctou32(_ip_-1) & 0xffffff0f);                                         _ip_ += 3; _act_;}\
   else if(!(_x_ & 0x08)) { _x_ = (_x_ & 0x07)<<32 | ctou32(_ip_);                                              _ip_ += 4; _act_;}\
   else if(!(_x_ & 0x04)) { _x_ = (unsigned long long)(bswap16(ctou16(_ip_-1)) & 0x7ff) << 32 | ctou32(_ip_+1); _ip_ += 5; _act_;}\
   else if(!(_x_ & 0x02)) { _x_ = (_x_ & 0x03)<<48 |   (unsigned long long)ctou16(_ip_) << 32 | ctou32(_ip_+2); _ip_ += 6; _act_;}\
@@ -96,7 +96,7 @@ extern unsigned char _vtab32_[];
 #define VB_B2 6
 #define VB_B3 3
 #define VB_BA3 (VB_MAX - (VB_SIZE/8 - 3))
-#define VB_BA2 (VB_BA3 - (1<<VB_B3))  
+#define VB_BA2 (VB_BA3 - (1<<VB_B3))
 
 #define VB_OFS1 (VB_BA2 - (1<<VB_B2))
 #define VB_OFS2 (VB_OFS1 + (1 << (8+VB_B2)))
@@ -106,7 +106,7 @@ extern unsigned char _vtab32_[];
 #define _vbvlen32(_x_) ((_x_) < VB_OFS1?1:((_x_) < VB_BA2?2:((_x_) < VB_BA3)?3:(_x_-VB_BA3)))
 
 #define _vbput32(_op_, _x_, _act_) {\
-  if(likely((_x_) < VB_OFS1)){ *_op_++ = (_x_);																	_act_;}\
+  if(likely((_x_) < VB_OFS1)){ *_op_++ = (_x_);                                                                 _act_;}\
   else if  ((_x_) < VB_OFS2) { ctou16(_op_) = bswap16((VB_OFS1<<8)+((_x_)-VB_OFS1));             _op_  += 2; /*(_x_) -= VB_OFS1; *_op_++ = VB_OFS1 + ((_x_) >> 8); *_op_++ = (_x_);*/ _act_; }\
   else if  ((_x_) < VB_OFS3) { *_op_++ = VB_BA2 + (((_x_) -= VB_OFS2) >> 16); ctou16(_op_) = (_x_); _op_  += 2;  _act_;}\
   else { unsigned _b = (bsr32((_x_))+7)/8; *_op_++ = VB_BA3 + (_b - 3);    ctou32(_op_) = (_x_); _op_  += _b; _act_;}\
@@ -122,7 +122,7 @@ extern unsigned char _vtab32_[];
 #define _vblen64(_x_)  _vblen32(_x_)
 #define _vbvlen64(_x_) _vbvlen32(_x_)
 #define _vbput64(_op_, _x_, _act_) {\
-  if(likely((_x_) < VB_OFS1)){ *_op_++ = (_x_);																	_act_;}\
+  if(likely((_x_) < VB_OFS1)){ *_op_++ = (_x_);                                                                 _act_;}\
   else if  ((_x_) < VB_OFS2) { ctou16(_op_) = bswap16((VB_OFS1<<8)+((_x_)-VB_OFS1));             _op_  += 2; /*(_x_) -= VB_OFS1; *_op_++ = VB_OFS1 + ((_x_) >> 8); *_op_++ = (_x_);*/ _act_; }\
   else if  ((_x_) < VB_OFS3) { *_op_++ = VB_BA2 + (((_x_) -= VB_OFS2) >> 16); ctou16(_op_) = (_x_); _op_  += 2;  _act_;}\
   else { unsigned _b = (bsr64((_x_))+7)/8; *_op_++ = VB_BA3 + (_b - 3);    ctou64(_op_) = (_x_); _op_  += _b; _act_;}\
@@ -136,12 +136,12 @@ extern unsigned char _vtab32_[];
 } while(0)
 
 #ifdef _WIN32
-//#define fgetc_unlocked(_f_) 	 _fgetc_nolock(_f_)
+//#define fgetc_unlocked(_f_)    _fgetc_nolock(_f_)
 #define fputc_unlocked(_c_, _f_) fputc(_c_,_f_)
-#define fgetc_unlocked(_f_) 	 fgetc(_f_)
+#define fgetc_unlocked(_f_)      fgetc(_f_)
 #else
 #define fputc_unlocked(_c_, _f_) fputc(_c_,_f_) //_IO_putc_unlocked(_c_,_f_)
-#define fgetc_unlocked(_f_) 	 fgetc(_f_) //_IO_getc_unlocked(_f_)
+#define fgetc_unlocked(_f_)      fgetc(_f_) //_IO_getc_unlocked(_f_)
 #endif
 
 #define leb128put(_op_, _x_)  { uint64_t _x = _x_; while(_x > 0x7f) { *_op_++ =      _x & 0x7f;       _x >>= 7; }  *_op_++ =     _x | 0x80; }
@@ -152,13 +152,13 @@ extern unsigned char _vtab32_[];
 #define vbfget32(_f_ )  ({ unsigned _sft=0,_x=0; for(;;_sft += 7) { unsigned _c = fgetc_unlocked(_f_); if(_c != EOF) { _x += (_c & 0x7f) << _sft; if(_c & 0x80) break; } else { _x = EOF; break; } } _x; })
 
 //------------- 16 bits -----------
-#define _vblen16(_x_) _vblen32(_x_) 
+#define _vblen16(_x_) _vblen32(_x_)
 #define _vbvlen16(_x_) _vbvlen32(_x_)
 
 #define _vbput16(_op_, _x_, _act_) _vbput32(_op_, _x_, _act_)
 #define _vbget16(_ip_, _x_, _act_) _vbget32(_ip_, _x_, _act_)
 
-#define _vblen8(_x_) 1 
+#define _vblen8(_x_) 1
 #define _vbvlen8(_x_) 1
 #define _vbput8(_op_, _x_, _act_) { *_op_++ = _x_; _act_; }
 #define _vbget8(_ip_, _x_, _act_) { _x_ = *_ip_++; _act_; }
@@ -173,7 +173,7 @@ static inline unsigned vbvlen16(unsigned x) { return _vbvlen32(x); }
 static inline unsigned vbvlen32(unsigned x) { return _vbvlen32(x); }
 static inline unsigned vbvlen64(unsigned x) { return _vbvlen64(x); }
 
-//----- encode/decode 16/32/64 single value and advance output/input pointer 
+//----- encode/decode 16/32/64 single value and advance output/input pointer
 #define vbput64(_op_, _x_) { unsigned long long _x = _x_; _vbput64(_op_, _x, ;); }
 #define vbput32(_op_, _x_) { register unsigned  _x = _x_; _vbput32(_op_, _x, ;); }
 #define vbput16(_op_, _x_)   vbput32(_op_, _x_)
@@ -186,13 +186,13 @@ static inline unsigned vbvlen64(unsigned x) { return _vbvlen64(x); }
   #endif
 //----------------------------- TurboVByte 'vb':Variable byte + SIMD TurboByte 'v8': array functions ----------------------------------------
 // Encoding/DEcoding: Return value = end of compressed output/input buffer out/in
- 
-//----------------------- Encoding/Decoding unsorted array with n integer values -------------------------- 	    
+
+//----------------------- Encoding/Decoding unsorted array with n integer values --------------------------
 unsigned char *vbenc16(  unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out); //TurboVByte
 unsigned char *vbenc32(  unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out);
 unsigned char *vbenc64(  uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out);
 
-//-- Decode       											                
+//-- Decode
 unsigned char *vbdec16(  unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out);
 unsigned char *vbdec32(  unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out);
 unsigned char *vbdec64(  unsigned char  *__restrict in, unsigned n, uint64_t       *__restrict out);
@@ -209,7 +209,7 @@ unsigned vbgeteq32( unsigned char **__restrict in, unsigned n, unsigned idx, uns
 unsigned vbgeteq64( unsigned char **__restrict in, unsigned n, unsigned idx, uint64_t       key);
 
 //---------------------- Delta encoding/decoding sorted array ---------------------------------------------
-//-- Increasing integer array. out[i] = out[i-1] + in[i]  
+//-- Increasing integer array. out[i] = out[i-1] + in[i]
 unsigned char *vbdenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *vbdenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
 unsigned char *vbdenc64( uint64_t       *__restrict in, unsigned n, unsigned char  *__restrict out, uint64_t       start);
@@ -228,7 +228,7 @@ uint64_t       vbdgetx64(  unsigned char *__restrict in, unsigned idx, uint64_t 
 unsigned vbdgetgeq16( unsigned char **__restrict in, unsigned n, unsigned idx, unsigned short *key, unsigned short start);
 unsigned vbdgetgeq32( unsigned char **__restrict in, unsigned n, unsigned idx, unsigned       *key, unsigned       start);
 unsigned vbdgetgeq64( unsigned char **__restrict in, unsigned n, unsigned idx, uint64_t       *key, uint64_t       start);
- 
+
 //-- Strictly increasing (never remaining constant or decreasing) integer array. out[i] = out[i-1] + in[i] + 1
 unsigned char *vbd1enc16(unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *vbd1enc32(unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
@@ -315,14 +315,14 @@ unsigned char *v8d1dec16(unsigned char  *__restrict in, unsigned n, unsigned sho
 unsigned char *v8d1dec32(unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 
 //------- zigzag -------
-unsigned char *v8zenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start); 
+unsigned char *v8zenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *v8zenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
 
 unsigned char *v8zdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
 unsigned char *v8zdec32( unsigned char  *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start);
 
 //------- xor ----------
-unsigned char *v8xenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start); 
+unsigned char *v8xenc16( unsigned short *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned short start);
 unsigned char *v8xenc32( unsigned       *__restrict in, unsigned n, unsigned char  *__restrict out, unsigned       start);
 
 unsigned char *v8xdec16( unsigned char  *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start);
@@ -346,7 +346,7 @@ size_t v8ndec32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict o
 size_t v8nddec16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t v8nddec32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
-size_t v8nd1dec16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out); 
+size_t v8nd1dec16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t v8nd1dec32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
 size_t v8nzdec16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
@@ -373,7 +373,7 @@ size_t v8ndec128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restri
 size_t v8nddec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t v8nddec128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
-size_t v8nd1dec128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out); 
+size_t v8nd1dec128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t v8nd1dec128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
 size_t v8nzdec128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
