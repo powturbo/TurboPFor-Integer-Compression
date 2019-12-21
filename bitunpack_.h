@@ -5965,9 +5965,9 @@ unsigned char *TEMPLATE2(_BITUNPACK_,64)( const unsigned char *__restrict in, un
     case 14: mv = _mm_set1_epi16((1u<<14)-1);  BITUNPACK128V16_14(_iv, _ov, _parm_); break;\
     case 15: mv = _mm_set1_epi16((1u<<15)-1);  BITUNPACK128V16_15(_iv, _ov, _parm_); break;\
     case 16: mv = _mm_set1_epi16((1u<<16)-1);  BITUNPACK128V16_16(_iv, _ov, _parm_); break;\
-	/*defaultcase 17 ... 63: break;*/\
+    /*defaultcase 17 ... 63: break;*/\
   }\
-}    
+}
 
 #define BITUNPACK128V32(__ip, __nbits, __op, _parm_) { __m128i mv,*_ov=(__m128i *)__op,*_iv=(__m128i *)__ip; \
   switch(__nbits&0x3f) {\
@@ -6004,9 +6004,9 @@ unsigned char *TEMPLATE2(_BITUNPACK_,64)( const unsigned char *__restrict in, un
     case 30: mv = _mm_set1_epi32((1u<<30)-1);  BITUNPACK128V32_30(_iv, _ov, _parm_); break;\
     case 31: mv = _mm_set1_epi32((1u<<31)-1);  BITUNPACK128V32_31(_iv, _ov, _parm_); break;\
     case 32: mv = _mm_set1_epi32((1ull<<32)-1);BITUNPACK128V32_32(_iv, _ov, _parm_); break;\
-	/*defaultcase 33 ... 63: break;*/\
+    /*defaultcase 33 ... 63: break;*/\
   }\
-}    
+}
 
 #define BITUNPACK256V32(__ip, __nbits, __op, _parm_) { __m256i mv,*_ov=(__m256i *)__op,*_iv=(__m256i *)__ip; \
   switch(__nbits&0x3f) {\
@@ -6043,7 +6043,7 @@ unsigned char *TEMPLATE2(_BITUNPACK_,64)( const unsigned char *__restrict in, un
     case 30: mv = _mm256_set1_epi32((1u<<30)-1);  BITUNPACK256V32_30(_iv, _ov, _parm_); break;\
     case 31: mv = _mm256_set1_epi32((1u<<31)-1);  BITUNPACK256V32_31(_iv, _ov, _parm_); break;\
     case 32: mv = _mm256_set1_epi32((1ull<<32)-1);BITUNPACK256V32_32(_iv, _ov, _parm_); break;\
-	/*case 33 ... 63: break;*/\
+    /*case 33 ... 63: break;*/\
   }\
-}    
+}
 
