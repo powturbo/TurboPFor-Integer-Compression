@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -21,27 +21,27 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//	   TurboPFor: plugins.h - settings 
-#define G_N  0x1 
-#define G_D0 0x2 
-#define G_D1 0x4 
-#define G_Z  0x8 
+//     TurboPFor: plugins.h - settings
+#define G_N  0x1
+#define G_D0 0x2
+#define G_D1 0x4
+#define G_Z  0x8
 #define G_D  (G_D1|G_D0)
- 
-struct codecs { 
-  int  coid; 
-  char *name,*url,*ver; 
+
+struct codecs {
+  int  coid;
+  char *name,*url,*ver;
 };
 
-struct plugs { 
-  int  id; 
+struct plugs {
+  int  id;
   char *name;
-  unsigned codec,blksize,flag; 
-  char *lev,*desc; 
+  unsigned codec,blksize,flag;
+  char *lev,*desc;
 };
 
-struct plugg { 
-  char id[17],*desc,*name; 
+struct plugg {
+  char id[17],*desc,*name;
 };
 
   #ifdef __cplusplus
