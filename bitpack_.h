@@ -5092,7 +5092,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 //#include "bitpack_0.h"
 #define BITPACK128V16(_ip_, _nbits_, _op_, __parm) { __m128i *_ip=(__m128i *)_ip_,*_op=(__m128i *)_op_;\
   switch(_nbits_) {\
-    case  0:  										   break;\
+    case  0:                                           break;\
     case  1:{  BITPACK128V16_1( _ip, _op, __parm); } break;\
     case  2:{  BITPACK128V16_2( _ip, _op, __parm); } break;\
     case  3:{  BITPACK128V16_3( _ip, _op, __parm); } break;\
@@ -5114,7 +5114,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 
 #define BITPACK128V32(_ip_, _nbits_, _op_, __parm) { __m128i *_ip=(__m128i *)_ip_,*_op=(__m128i *)_op_;\
   switch(_nbits_) {\
-    case  0:  										   break;\
+    case  0:                                           break;\
     case  1:{  BITPACK128V32_1( _ip, _op, __parm); } break;\
     case  2:{  BITPACK128V32_2( _ip, _op, __parm); } break;\
     case  3:{  BITPACK128V32_3( _ip, _op, __parm); } break;\
@@ -5152,7 +5152,7 @@ unsigned char *TEMPLATE2(_BITPACK_,64)( uint64_t *__restrict in, unsigned n, con
 
 #define BITPACK256V32(_ip_, _nbits_, _op_, __parm) { __m256i *_ip=(__m256i *)_ip_,*_op=(__m256i *)_op_;\
   switch(_nbits_) {\
-    case  0:  										   break;\
+    case  0:                                           break;\
     case  1:{  BITPACK256V32_1( _ip, _op, __parm); } break;\
     case  2:{  BITPACK256V32_2( _ip, _op, __parm); } break;\
     case  3:{  BITPACK256V32_3( _ip, _op, __parm); } break;\
