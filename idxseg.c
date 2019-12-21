@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -20,9 +20,9 @@
     - github   : https://github.com/powturbo
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
-**/ 
+**/
 //    idxseg.c - Inverted Index - Create partitions from DocId file for prallel query evaluation
-#define _LARGEFILE64_SOURCE 1 
+#define _LARGEFILE64_SOURCE 1
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +32,7 @@
 #else
 #include <malloc.h>
 #endif
- 
+
 #include <getopt.h>
 #include "conf.h"
 
@@ -47,9 +47,9 @@ unsigned argtoi(char *s) {
      case 'k': f = 1000;       break;
      case 'm': f = 1000000;    break;
      case 'g': f = 1000000000; break;
-     case 'K': f = 1<<10; 	   break;
-     case 'M': f = 1<<20; 	   break;
-     case 'G': f = 1<<30; 	   break;
+     case 'K': f = 1<<10;      break;
+     case 'M': f = 1<<20;      break;
+     case 'G': f = 1<<30;      break;
   }
   return n*f;
 }
@@ -70,13 +70,13 @@ void usage() {
 #define SEGMAX 64
 int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; char *path="";
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
-  static struct option long_options[] = { {"r", 	0, 0, 'r'}, {0,0, 0, 0}  };
+  static struct option long_options[] = { {"r",     0, 0, 'r'}, {0,0, 0, 0}  };
   for(;;) {
     if((c = getopt_long(argc, argv, "s:n:", long_options, &option_index)) == -1) break;
     switch(c) {
-      case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;								
+      case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;
       case 's': sb = atoi(optarg); break;
-      case 'n': n  = argtoi(optarg); break; 
+      case 'n': n  = argtoi(optarg); break;
       default:  usage();
     }
   }
@@ -85,11 +85,11 @@ int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; char *path=""
     #ifndef SPOW2
   sb = (n+sb-1) / sb;
     #endif
-  for(fno = optind; fno < argc; fno++) { 
-    unsigned           snum = 0; 
+  for(fno = optind; fno < argc; fno++) {
+    unsigned           snum = 0;
     unsigned long long inum=0;
-    char               outname[257], *inname = argv[fno]; 
-    strcpy(outname, path); 
+    char               outname[257], *inname = argv[fno];
+    strcpy(outname, path);
     char *p = strrchr(inname,'/'); if(!p) p = strrchr(inname,'\\'); if(!p) p=inname; strcat(outname, p); strcat(outname,".s");
 
     FILE *fi = fopen(inname, "rb"); if(!fi) { fprintf(stderr, "open error '%s'", inname); perror(inname); exit(-1); }
@@ -97,26 +97,26 @@ int main(int argc, char *argv[]) { unsigned sb = 8,fno,n=25300000; char *path=""
     unsigned as[SEGMAX] = {0}, an[SEGMAX] = {0},s;
 
     unsigned *in = NULL,*ip, num, numx = 0, tid = 0,didmax=0;
-    while(fread(&num, 1, 4, fi) == 4) {										inum+=num;
-	  if(num > numx) { 
-	    numx = num;  						
-	    if(!(in = realloc(in,  num*4+64))) die("malloc err=%u", num); 
-	  }
-
-      if(fread(in, 4, num, fi) != num) break;								// read docid list
-      for(ip = in; ip < in+num; ip++) { 									if(*ip > didmax) didmax=*ip;
-          #ifdef SPOW2
-        s = (*ip) >> sb; 
-          #else
-        s = (*ip) / sb;        
-          #endif
-        snum = max(snum,s+1); as[s] = as[s]?as[s]:(ip - in); an[s]++; 
+    while(fread(&num, 1, 4, fi) == 4) {                                     inum+=num;
+      if(num > numx) {
+        numx = num;
+        if(!(in = realloc(in,  num*4+64))) die("malloc err=%u", num);
       }
-      
-      for(s = 0; s < snum; s++) {  
+
+      if(fread(in, 4, num, fi) != num) break;                               // read docid list
+      for(ip = in; ip < in+num; ip++) {                                     if(*ip > didmax) didmax=*ip;
+          #ifdef SPOW2
+        s = (*ip) >> sb;
+          #else
+        s = (*ip) / sb;
+          #endif
+        snum = max(snum,s+1); as[s] = as[s]?as[s]:(ip - in); an[s]++;
+      }
+
+      for(s = 0; s < snum; s++) {
         FILE *f = fo[s];
         if(!f) {
-          char oname[257]; sprintf(oname, "%s%.2d", outname, s); 
+          char oname[257]; sprintf(oname, "%s%.2d", outname, s);
           f = fopen(oname,"wb"); if(!f) { fprintf(stderr, "creat error '%s'", oname); perror(oname); exit(-1); }
           fo[s] = f;
           int i; for(i = 0; i < tid; i++) { unsigned z = 0; if(fwrite(&z, 1, 4, f) != 4) die("write error"); printf("#");fflush(stdout); }
