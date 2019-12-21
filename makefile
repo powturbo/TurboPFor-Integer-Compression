@@ -20,6 +20,11 @@ DIRBIN ?= $(PREFIX)/bin
 DIRINC ?= $(PREFIX)/include
 DIRLIB ?= $(PREFIX)/lib
 
+OPT=-fstrict-aliasing
+ifeq (,$(findstring clang, $(CC)))
+OPT+=-falign-loops
+endif
+
 #------- OS/ARCH -------------------
 ifneq (,$(filter Windows%,$(OS)))
   OS := Windows
@@ -40,34 +45,27 @@ endif
 ifeq ($(ARCH),ppc64le)
   SSE=-D__SSSE3__
   CFLAGS=-mcpu=power9 -mtune=power9 $(SSE)
-#  LDFLAGS+=-lm
 else ifeq ($(ARCH),aarch64)
   CFLAGS+=-march=armv8-a 
 ifneq (,$(findstring clang, $(CC)))
-  CFLAGS+=-march=armv8-a -falign-loops -fomit-frame-pointer
+  CFLAGS+=-march=armv8-a 
+  OPT+=-fomit-frame-pointer
 else
   CFLAGS+=-march=armv8-a 
 endif
   SSE=-march=armv8-a
-else ifeq ($(ARCH),$(filter $(ARCH),ppc64le))
-  CFLAGS=-march=native
-  SSE=-mssse3
 else ifeq ($(ARCH),$(filter $(ARCH),x86_64))
-# set minimum arch sandy bridge w/o avx
+# set minimum arch sandy bridge sse4.1 w/o avx
   SSE=-march=corei7-avx -mtune=corei7-avx -mno-avx -mno-aes
   CFLAGS=$(SSE)
-  AVX2=-march=haswell 
+  AVX2=-march=haswell
 endif
 
-ifeq (,$(findstring clang, $(CC)))
-DEFS+=-falign-loops
-endif
+CFLAGS+=-w -Wall $(DEBUG) $(OPT) 
 
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
 LDFLAGS+=-lrt -lm
 endif
-
-CFLAGS+=$(DEBUG) -DPLAIN -w -Wall -falign-loops -fstrict-aliasing
 
 # compiler supports float16
 ifeq ($(FLOAT16),1)
@@ -80,34 +78,34 @@ endif
 all: icapp 
 
 vp4c_sse.o: vp4c.c
-	$(CC) -O3 -w $(SSE) -c vp4c.c -o vp4c_sse.o
+	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c vp4c.c -o vp4c_sse.o
 
 vp4c_avx2.o: vp4c.c
-	$(CC) -O3 -w $(AVX2) -c vp4c.c -o vp4c_avx2.o
+	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c vp4c.c -o vp4c_avx2.o
 
 vp4d_sse.o: vp4d.c
-	$(CC) -O3 -w $(SSE) -c vp4d.c -o vp4d_sse.o
+	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c vp4d.c -o vp4d_sse.o
 
 vp4d_avx2.o: vp4d.c
-	$(CC) -O3 -w $(AVX2) -c vp4d.c -o vp4d_avx2.o
+	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c vp4d.c -o vp4d_avx2.o
 
 bitpack_sse.o: bitpack.c
-	$(CC) -O3 -w $(SSE) -c bitpack.c -o bitpack_sse.o
+	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c bitpack.c -o bitpack_sse.o
 
 bitpack_avx2.o: bitpack.c
-	$(CC) -O3 -w $(AVX2) -c bitpack.c -o bitpack_avx2.o
+	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c bitpack.c -o bitpack_avx2.o
 
 bitunpack_sse.o: bitunpack.c
-	$(CC) -O3 -w $(SSE) -c bitunpack.c -o bitunpack_sse.o
+	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c bitunpack.c -o bitunpack_sse.o
 
 bitunpack_avx2.o: bitunpack.c
-	$(CC) -O3 -w $(AVX2) -c bitunpack.c -o bitunpack_avx2.o
+	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c bitunpack.c -o bitunpack_avx2.o
 
 transpose_sse.o: transpose.c
-	$(CC) -O3 -w $(SSE) -c transpose.c -o transpose_sse.o
+	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c transpose.c -o transpose_sse.o
 
 transpose_avx2.o: transpose.c
-	$(CC) -O3 -w $(AVX2) -c transpose.c -o transpose_avx2.o
+	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c transpose.c -o transpose_avx2.o
 
 -include ext/libext.mak
 
