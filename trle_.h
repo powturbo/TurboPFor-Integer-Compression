@@ -32,14 +32,14 @@
 #define VL_B2 4
 #define VL_B3 3
 #define VL_BA3 (VL_MAX - (VL_SIZE/8 - 3))
-#define VL_BA2 (VL_BA3 - (1<<VL_B3))  
+#define VL_BA2 (VL_BA3 - (1<<VL_B3))
 
 #define VL_OFS1 (VL_BA2 - (1<<VL_B2))
 #define VL_OFS2 (VL_OFS1 + (1 << ( 8+VL_B2)))
 #define VL_OFS3 (VL_OFS2 + (1 << (16+VL_B3)))
 
 #define _vlput32(_op_, _x_, _act_) {\
-  if(likely((_x_) < VL_OFS1)){ *_op_++ = (_x_);																	 _act_;}\
+  if(likely((_x_) < VL_OFS1)){ *_op_++ = (_x_);                                                                  _act_;}\
   else if  ((_x_) < VL_OFS2) { ctou16(_op_) = bswap16((VL_OFS1<<8)+((_x_)-VL_OFS1));             _op_  += 2;     _act_;}\
   else if  ((_x_) < VL_OFS3) { *_op_++ = VL_BA2 + (((_x_) -= VL_OFS2) >> 16); ctou16(_op_) = (_x_); _op_  += 2;  _act_;}\
   else { unsigned _b = (bsr32((_x_))+7)/8; *_op_++ = VL_BA3 + (_b - 3); ctou32(_op_) = (_x_); _op_  += _b; _act_;}\
