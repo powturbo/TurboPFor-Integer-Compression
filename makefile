@@ -55,8 +55,9 @@ else
 endif
   SSE=-march=armv8-a
 else ifeq ($(ARCH),$(filter $(ARCH),x86_64))
-# set minimum arch sandy bridge sse4.1 w/o avx
-  SSE=-march=corei7-avx -mtune=corei7-avx -mno-avx -mno-aes
+# set minimum arch sandy bridge SSE4.1 + AVX
+  SSE=-march=corei7-avx -mtune=corei7-avx 
+# SSE+=-mno-avx -mno-aes
   CFLAGS=$(SSE)
   AVX2=-march=haswell
 endif
