@@ -16,7 +16,7 @@ branches:
 
 script:
   - make
-  - ./icapp ZIPF
+#  - ./icapp ZIPF
 #  - cat /proc/cpuinfo
   
 matrix:
@@ -37,6 +37,7 @@ matrix:
       os: osx
 
     - name: linux-ppc64le-gcc-9
+      os: linux      
       arch: ppc64le
       env: CC=gcc-9
       before_install:
