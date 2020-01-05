@@ -76,22 +76,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)msvc.build\$(Platform)-$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)-$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)msvc.build\$(Platform)-$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)-$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)msvc.build\$(Platform)-$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)-$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)msvc.build\$(Platform)-$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)-$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)msvc.build\.obj\$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -99,7 +99,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>CODEC2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'!='ClangCL'">/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'=='ClangCL'">-Wno-parentheses -Wno-unused-variable -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -Wno-tautological-constant-out-of-range-compare -Wno-pointer-sign -Wno-unused-label -Wno-unused-function -Wno-logical-op-parentheses -Wno-pointer-type-mismatch -Wno-sometimes-uninitialized</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>..\..\ext</AdditionalIncludeDirectories>
@@ -115,7 +116,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>CODEC2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'!='ClangCL'">/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'=='ClangCL'">-Wno-parentheses -Wno-unused-variable -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -Wno-tautological-constant-out-of-range-compare -Wno-pointer-sign -Wno-unused-label -Wno-unused-function -Wno-logical-op-parentheses -Wno-pointer-type-mismatch -Wno-sometimes-uninitialized</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>..\..\ext</AdditionalIncludeDirectories>
@@ -133,7 +135,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>CODEC2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'!='ClangCL'">/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'=='ClangCL'">-Wno-parentheses -Wno-unused-variable -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -Wno-tautological-constant-out-of-range-compare -Wno-pointer-sign -Wno-unused-label -Wno-unused-function -Wno-logical-op-parentheses -Wno-pointer-type-mismatch -Wno-sometimes-uninitialized</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>..\..\ext</AdditionalIncludeDirectories>
@@ -153,7 +156,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>CODEC2;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'!='ClangCL'">/w24146 /w24133 /w24996</AdditionalOptions>
+      <AdditionalOptions Condition="'$(PlatformToolset)'=='ClangCL'">-Wno-parentheses -Wno-unused-variable -Wno-incompatible-pointer-types -Wno-implicit-function-declaration -Wno-tautological-constant-out-of-range-compare -Wno-pointer-sign -Wno-unused-label -Wno-unused-function -Wno-logical-op-parentheses -Wno-pointer-type-mismatch -Wno-sometimes-uninitialized</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>..\..\ext</AdditionalIncludeDirectories>
