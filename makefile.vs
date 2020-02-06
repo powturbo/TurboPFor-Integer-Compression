@@ -24,10 +24,10 @@ OBJS_AVX2 = vs\bitpack_avx2.obj vs\bitunpack_avx2.obj vs\vp4c_avx2.obj vs\vp4d_a
 CFLAGS = $(CFLAGS) /DNSIMD
 !else
 OBJS = $(OBJS) $(OBJS_SSE)
-CFLAGS = $(CFLAGS) /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSSE3__ /D__SSE4_1__ /D__SSE4_2__ /DUSE_SSE
+CFLAGS = $(CFLAGS) /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSSE3__ /D__SSE4_1__ /D__SSE4_2__
 !if "$(AVX2)" == "1"
 OBJS = $(OBJS) $(OBJS_AVX2)
-CFLAGS = $(CFLAGS) /D__AVX2__ /DUSE_AVX2
+CFLAGS = $(CFLAGS) /D__AVX2__
 ARCH = /arch:AVX2
 !endif
 !endif
