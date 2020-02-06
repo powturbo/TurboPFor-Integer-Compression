@@ -1,7 +1,7 @@
 # powturbo  (c) Copyright 2013-2019
-# nmake /f makefile.vs
+#  nmake /f makefile.vs
 # or
-# nmake "AVX2=1" /f makefile.vs
+#  nmake "AVX2=1" /f makefile.vs
 
 .SUFFIXES: .c .obj .dllobj
 
