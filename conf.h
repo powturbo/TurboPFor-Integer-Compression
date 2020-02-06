@@ -22,7 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 
-//	   conf.h - config & common 
+//     conf.h - config & common 
 #ifndef CONF_H
 #define CONF_H
 //------------------------- Compiler ------------------------------------------
@@ -31,12 +31,12 @@
 #define ALIGNED(t,v,n)  t v __attribute__ ((aligned (n))) 
 #define ALWAYS_INLINE   inline __attribute__((always_inline))
 #define NOINLINE        __attribute__((noinline))
-#define _PACKED 		__attribute__ ((packed))
-#define likely(x)     	__builtin_expect((x),1)
-#define unlikely(x)   	__builtin_expect((x),0)
+#define _PACKED         __attribute__ ((packed))
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
 
-#define popcnt32(_x_) 	__builtin_popcount(_x_)
-#define popcnt64(_x_) 	__builtin_popcountll(_x_)
+#define popcnt32(_x_)   __builtin_popcount(_x_)
+#define popcnt64(_x_)   __builtin_popcountll(_x_)
 
     #if defined(__i386__) || defined(__x86_64__)
 //__bsr32:     1:0,2:1,3:1,4:2,5:2,6:2,7:2,8:3,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:5
@@ -85,13 +85,13 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
 #include <stdint.h>
 #define __builtin_prefetch(x,a) _mm_prefetch(x, _MM_HINT_NTA)
     #endif
-	
+    
 #define ALIGNED(t,v,n)  __declspec(align(n)) t v
-#define ALWAYS_INLINE	__forceinline
-#define NOINLINE		__declspec(noinline)
-#define THREADLOCAL		__declspec(thread)
-#define likely(x)     	(x)
-#define unlikely(x)   	(x)
+#define ALWAYS_INLINE   __forceinline
+#define NOINLINE        __declspec(noinline)
+#define THREADLOCAL     __declspec(thread)
+#define likely(x)       (x)
+#define unlikely(x)     (x)
 
 static inline int __bsr32(unsigned x) { unsigned long z=0; _BitScanReverse(&z, x); return z; }
 static inline int bsr32(  unsigned x) { unsigned long z;   _BitScanReverse(&z, x); return x?z+1:0; }
@@ -194,7 +194,7 @@ struct _PACKED doubleu   { double             d; };
 #define ctof32(_cp_) ((struct floatu    *)(_cp_))->f
 #define ctof64(_cp_) ((struct doubleu   *)(_cp_))->d
   #else
-#error "unknown cpu"	  
+#error "unknown cpu"      
   #endif
 
 #define ctou24(_cp_) (ctou32(_cp_) & 0xffffff)
