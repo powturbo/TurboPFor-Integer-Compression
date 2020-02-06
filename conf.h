@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2019
     GPL v2 License
-
+  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -22,21 +22,21 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 
-//     conf.h - config & common
+//	   conf.h - config & common 
 #ifndef CONF_H
 #define CONF_H
 //------------------------- Compiler ------------------------------------------
   #if defined(__GNUC__)
 #include <stdint.h>
-#define ALIGNED(t,v,n)  t v __attribute__ ((aligned (n)))
+#define ALIGNED(t,v,n)  t v __attribute__ ((aligned (n))) 
 #define ALWAYS_INLINE   inline __attribute__((always_inline))
 #define NOINLINE        __attribute__((noinline))
-#define _PACKED         __attribute__ ((packed))
-#define likely(x)       __builtin_expect((x),1)
-#define unlikely(x)     __builtin_expect((x),0)
+#define _PACKED 		__attribute__ ((packed))
+#define likely(x)     	__builtin_expect((x),1)
+#define unlikely(x)   	__builtin_expect((x),0)
 
-#define popcnt32(_x_)   __builtin_popcount(_x_)
-#define popcnt64(_x_)   __builtin_popcountll(_x_)
+#define popcnt32(_x_) 	__builtin_popcount(_x_)
+#define popcnt64(_x_) 	__builtin_popcountll(_x_)
 
     #if defined(__i386__) || defined(__x86_64__)
 //__bsr32:     1:0,2:1,3:1,4:2,5:2,6:2,7:2,8:3,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:5
@@ -65,7 +65,7 @@ static inline unsigned ror64(unsigned x, int s) { return x >> s | x << (64 - s);
 #define clz64(_x_) __builtin_clzll(_x_)
 #define clz32(_x_) __builtin_clz(_x_)
 
-//#define bswap8(x)    (x)
+//#define bswap8(x)    (x) 
     #if __GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 8
 #define bswap16(x) __builtin_bswap16(x)
     #else
@@ -81,17 +81,17 @@ static inline unsigned short bswap16(unsigned short x) { return __builtin_bswap3
 #include "vs/stdint.h"
 #define __builtin_prefetch(x,a)
 #define inline          __inline
-    #else
+    #else 
 #include <stdint.h>
 #define __builtin_prefetch(x,a) _mm_prefetch(x, _MM_HINT_NTA)
     #endif
-
+	
 #define ALIGNED(t,v,n)  __declspec(align(n)) t v
-#define ALWAYS_INLINE   __forceinline
-#define NOINLINE        __declspec(noinline)
-#define THREADLOCAL     __declspec(thread)
-#define likely(x)       (x)
-#define unlikely(x)     (x)
+#define ALWAYS_INLINE	__forceinline
+#define NOINLINE		__declspec(noinline)
+#define THREADLOCAL		__declspec(thread)
+#define likely(x)     	(x)
+#define unlikely(x)   	(x)
 
 static inline int __bsr32(unsigned x) { unsigned long z=0; _BitScanReverse(&z, x); return z; }
 static inline int bsr32(  unsigned x) { unsigned long z;   _BitScanReverse(&z, x); return x?z+1:0; }
@@ -99,12 +99,12 @@ static inline int ctz32(  unsigned x) { unsigned long z;   _BitScanForward(&z, x
 static inline int clz32(  unsigned x) { unsigned long z;   _BitScanReverse(&z, x); return x?31-z:32; }
   #if !defined(_M_ARM64) && !defined(_M_X64)
 static inline unsigned char _BitScanForward64(unsigned long* ret, uint64_t x) {
-  unsigned long x0 = (unsigned long)x, top, bottom;         _BitScanForward(&top, (unsigned long)(x >> 32)); _BitScanForward(&bottom, x0);
-  *ret = x0 ? bottom : 32 + top;  return x != 0;
+  unsigned long x0 = (unsigned long)x, top, bottom;         _BitScanForward(&top, (unsigned long)(x >> 32)); _BitScanForward(&bottom, x0);               
+  *ret = x0 ? bottom : 32 + top;  return x != 0; 
 }
 static unsigned char _BitScanReverse64(unsigned long* ret, uint64_t x) {
-  unsigned long x1 = (unsigned long)(x >> 32), top, bottom; _BitScanReverse(&top, x1);                       _BitScanReverse(&bottom, (unsigned long)x);
-  *ret = x1 ? top + 32 : bottom;  return x != 0;
+  unsigned long x1 = (unsigned long)(x >> 32), top, bottom; _BitScanReverse(&top, x1);                       _BitScanReverse(&bottom, (unsigned long)x); 
+  *ret = x1 ? top + 32 : bottom;  return x != 0; 
 }
   #endif
 static inline int bsr64(uint64_t x) { unsigned long z=0; _BitScanReverse64(&z, x); return x?z+1:0; }
@@ -132,7 +132,7 @@ static inline int clz64(uint64_t x) { unsigned long z;   _BitScanReverse64(&z, x
 #define strncasecmp _strnicmp
 #define strtoull    _strtoui64
 static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5); }
-  #endif
+  #endif 
 
 #define bsr8(_x_)  bsr32(_x_)
 #define bsr16(_x_) bsr32(_x_)
@@ -141,12 +141,26 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define clz8(_x_)  (clz32(_x_)-24)
 #define clz16(_x_) (clz32(_x_)-16)
 
-#define popcnt8(x)  popcnt32(x)
-#define popcnt16(x) popcnt32(x)
+#define popcnt8(x)  popcnt32(x) 
+#define popcnt16(x) popcnt32(x) 
 
 //--------------- Unaligned memory access -------------------------------------
-/*# || defined(i386) || defined(_X86_) || defined(__THW_INTEL)*/
-  #if defined(__i386__) || defined(__x86_64__) || \
+  #ifdef UA_MEMCPY
+#include <string.h>
+static inline unsigned short     ctou16(const void *cp) { unsigned short     x; memcpy(&x, cp, sizeof(x)); return x; }
+static inline unsigned           ctou32(const void *cp) { unsigned           x; memcpy(&x, cp, sizeof(x)); return x; }
+static inline unsigned long long ctou64(const void *cp) { unsigned long long x; memcpy(&x, cp, sizeof(x)); return x; }
+static inline size_t             ctousz(const void *cp) { size_t             x; memcpy(&x, cp, sizeof(x)); return x; }
+static inline float              ctof32(const void *cp) { float              x; memcpy(&x, cp, sizeof(x)); return x; }
+static inline double             ctof64(const void *cp) { double             x; memcpy(&x, cp, sizeof(x)); return x; }
+
+static inline void               stou16(      void *cp, unsigned short     x) { memcpy(cp, &x, sizeof(x)); }
+static inline void               stou32(      void *cp, unsigned           x) { memcpy(cp, &x, sizeof(x)); }
+static inline void               stou64(      void *cp, unsigned long long x) { memcpy(cp, &x, sizeof(x)); }
+static inline void               stousz(      void *cp, size_t             x) { memcpy(cp, &x, sizeof(x)); }
+static inline void               stof32(      void *cp, float              x) { memcpy(cp, &x, sizeof(x)); }
+static inline void               stof64(      void *cp, double             x) { memcpy(cp, &x, sizeof(x)); }
+  #elif defined(__i386__) || defined(__x86_64__) || \
     defined(_M_IX86) || defined(_M_AMD64) || _MSC_VER ||\
     defined(__powerpc__) || defined(__s390__) ||\
     defined(__ARM_FEATURE_UNALIGNED) || defined(__aarch64__) || defined(__arm__) ||\
@@ -157,7 +171,7 @@ static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) :
 #define ctou32(_cp_) (*(unsigned       *)(_cp_))
 #define ctof32(_cp_) (*(float          *)(_cp_))
 
-    #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(__s390__) || defined(_MSC_VER)
+    #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(__s390__) || defined(_MSC_VER) 
 #define ctou64(_cp_)       (*(uint64_t *)(_cp_))
 #define ctof64(_cp_)       (*(double   *)(_cp_))
     #elif defined(__ARM_FEATURE_UNALIGNED)
@@ -180,28 +194,7 @@ struct _PACKED doubleu   { double             d; };
 #define ctof32(_cp_) ((struct floatu    *)(_cp_))->f
 #define ctof64(_cp_) ((struct doubleu   *)(_cp_))->d
   #else
-#error "unknown cpu"
-  #endif
-
-  #ifdef ctou16
-//#define utoc16(_x_,_cp_) ctou16(_cp_) = _x_
-  #else
-static inline unsigned short     ctou16(void *cp) { unsigned short     x; memcpy((void *)&x, cp, (unsigned int)sizeof(x)); return x; }
-//static inline               void utoc16(unsigned short     x, void *cp ) { memcpy(cp, &x, sizeof(x)); }
-  #endif
-
-  #ifdef ctou32
-//#define utoc32(_x_,_cp_) ctou32(_cp_) = _x_
-  #else
-static inline unsigned           ctou32(void *cp) { unsigned           x; memcpy(void *)&x, cp, (unsigned int)sizeof(x)); return x; }
-//static inline               void utoc32(unsigned           x, void *cp ) { memcpy(cp, &x, sizeof(x)); }
-  #endif
-
-  #ifdef ctou64
-//#define utoc64(_x_,_cp_) ctou64(_cp_) = _x_
-  #else
-static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (unsigned int)sizeof(x)); return x; }
-//static inline               void utoc64(uint64_t x, void *cp ) { memcpy(cp, &x, sizeof(x)); }
+#error "unknown cpu"	  
   #endif
 
 #define ctou24(_cp_) (ctou32(_cp_) & 0xffffff)
@@ -217,7 +210,7 @@ static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (un
     defined(__s390x__)
 #define __WORDSIZE 64
   #else
-#define __WORDSIZE 32
+#define __WORDSIZE 32 
   #endif
 #endif
 
@@ -229,7 +222,7 @@ static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (un
 
 #define SIZE_ROUNDUP(_n_, _a_) (((size_t)(_n_) + (size_t)((_a_) - 1)) & ~(size_t)((_a_) - 1))
 #define ALIGN_DOWN(__ptr, __a) ((void *)((uintptr_t)(__ptr) & ~(uintptr_t)((__a) - 1)))
-
+  
 #define TEMPLATE2_(_x_, _y_) _x_##_y_
 #define TEMPLATE2(_x_, _y_) TEMPLATE2_(_x_,_y_)
 
@@ -250,7 +243,7 @@ static inline uint64_t ctou64(void *cp) { uint64_t x; memcpy((void *)&x, cp, (un
 #define AC(expr, fmt, ...) do { if(!(expr)) { fflush(stdout);fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ##__VA_ARGS__ ); fflush(stderr); abort(); } } while(0)
 #define die(fmt, ...) do { fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ##__VA_ARGS__ ); fflush(stderr); exit(-1); } while(0)
     #endif
-  #else
+  #else 
     #ifdef NDEBUG
 #define AS(expr, fmt,args...)
 #define AC(expr, fmt,args...) do { if(!(expr)) { fprintf(stderr, fmt, ## args ); fflush(stderr); abort(); } } while(0)
