@@ -333,9 +333,9 @@ unsigned TEMPLATE2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *
 
 
 unsigned char *TEMPLATE2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, unsigned b, unsigned bx) {
-  uint_t             msk =  (1ull << b)-1, _in[P4D_MAX+32], inx[P4D_MAX+32]={0},a,ax;
+  uint_t             msk =  (1ull << b)-1, _in[P4D_MAX+32]={0}, inx[P4D_MAX+32]={0},a,ax;
   unsigned long long xmap[P4D_MAX/64] = {0};
-  unsigned           miss[P4D_MAX],i, xn, c;                                    //, eq=0,eqx=0;
+  unsigned           miss[P4D_MAX]={0},i, xn, c;                                    //, eq=0,eqx=0;
   unsigned char *_out = out;
 
   if(!bx)
