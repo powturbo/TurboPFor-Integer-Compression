@@ -161,7 +161,7 @@ static int tmiszero(tm_t t) { return !(t.tv_sec|t.tv_nsec); }
     /*other runs: break the loop only after 'tm_rm' repeats */ \
     _tm_t = tmdiff(_tm_t0, tmtime());\
     /*set min time, recalculte repeats tm_rm based on tm_tx, recalculte number of runs based on tm_TX*/\
-    if(_tm_t < tm_tm) { if(tm_tm == DBL_MAX) { tm_rm = _tm_r; _tm_Rn = tm_TX/_tm_t; _tm_Rn = min(_tm_Rn,_tm_Rx); /*printf("[%d,%d] ", tm_rm, _tm_Rn);*/ } tm_tm = _tm_t; _tm_c++; }\
+    if(_tm_t < tm_tm) { if(tm_tm == DBL_MAX) { tm_rm = _tm_r; _tm_Rn = tm_TX/_tm_t; _tm_Rn = _tm_Rn<_tm_Rx?_tm_Rn:_tm_Rx; /*printf("[%d,%d] ", tm_rm, _tm_Rn);*/ } tm_tm = _tm_t; _tm_c++; }\
     else if(_tm_t > tm_tm*1.15) TMSLEEP;/*force sleep at 15% divergence*/\
     if(tm_verbose) { printf("%8.2f %2d_%.2d\b\b\b\b\b\b\b\b\b\b\b\b\b\b",TMBS(_len_, tm_tm/tm_rm),_tm_R+1,_tm_c),fflush(stdout); }\
     if((_tm_R & 7)==7) sleep(tm_slp); /*pause 20 secs after each 8 runs to avoid cpu trottling*/\
