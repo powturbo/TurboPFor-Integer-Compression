@@ -406,7 +406,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
   unsigned char *op = out;
   uint_t *ip, start = *in++;
   if(!n)
-    return out;
+    return 0;
 
   TEMPLATE2(vbxput, USIZE)(op, start);
   for(ip = in, --n; ip != in+(n&~(CSIZE-1)); ip += CSIZE) { uint_t _in[P4D_MAX+8];unsigned bx, b;           PREFETCH(ip+512,0);
