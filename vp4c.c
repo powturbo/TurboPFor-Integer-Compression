@@ -396,7 +396,7 @@ size_t TEMPLATE2(P4NENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *
 }
     #else
 unsigned char *TEMPLATE2(P4DENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
-  uint_t _in[P4D_MAX+8];
+  uint_t _in[P4D_MAX+8]={0};
   if(!n) return out;
   TEMPLATE2(BITDELTA, USIZE)(in, n, _in, start, P4DELTA);
   return TEMPLATE2(P4ENC, USIZE)(_in, n, out);
