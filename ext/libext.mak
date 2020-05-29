@@ -149,7 +149,7 @@ endif
 
 ifeq ($(LZ4),1)
 XDEFS+=-DLZ4 -Ilz4/lib 
-OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o ext/lz4/lib/lz4frame.o
+OB+=ext/lz4/lib/lz4hc.o ext/lz4/lib/lz4.o ext/lz4/lib/lz4frame.o ext/lz4/lib/xxhash.o
 endif
 
 ifeq ($(LZTURBO),1)
