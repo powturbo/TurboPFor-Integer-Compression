@@ -445,7 +445,11 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
           a: IPUSH(in,n,isize,nmax,u);                          c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%llu  ", p, u); *q = c;
         } else if(isize > 0) {
           while(!isdigit(*p) && *p != '-' && *p != '+') p++;
-          uint64_t u = strtoll(p, &q, 10)*pre - mdelta;
+          uint64_t u = strtoull(p, &q, 10);
+          if(decs){
+              u *= pre;
+          }
+          u -= mdelta;
           if(*q == '.')
             u = pre>1.0?round(strtod(p, &q)*pre):strtod(p, &q) - mdelta;
           switch(isize) {
@@ -453,7 +457,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
             case 2: if(u >     0xffffu) ovf++; break;
             case 4: if(u > 0xffffffffu) ovf++; break;
           }
-          IPUSH(in,n,isize,nmax,u);                             c=*q;   *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%lld ", p, u); *q = c;
+          IPUSH(in,n,isize,nmax,u);                             c=*q;   *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%llu ", p, u); *q = c;
         } else {
           while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') {  if(keysep && strchr(keysep,*p)) keyid++; p++; }
           double d = strtod(p, &q) - mdelta;
