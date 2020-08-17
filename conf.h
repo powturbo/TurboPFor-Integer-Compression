@@ -131,7 +131,6 @@ static inline int clz64(uint64_t x) { unsigned long z;   _BitScanReverse64(&z, x
 #define strcasecmp  _stricmp
 #define strncasecmp _strnicmp
 #define strtoull    _strtoui64
-static inline double round(double num) { return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5); }
   #endif
 
 #define bsr8(_x_)  bsr32(_x_)
