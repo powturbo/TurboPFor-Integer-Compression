@@ -5,3 +5,4 @@ msvc.build/
 *.exe
 *.lib
 *.o
+*.a

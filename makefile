@@ -20,7 +20,7 @@ DIRBIN ?= $(PREFIX)/bin
 DIRINC ?= $(PREFIX)/include
 DIRLIB ?= $(PREFIX)/lib
 
-OPT=-fstrict-aliasing
+OPT=-fstrict-aliasing -fPIC
 ifeq (,$(findstring clang, $(CC)))
 OPT+=-falign-loops
 endif
@@ -129,7 +129,7 @@ myapp: myapp.o libic.a
 mycpp: mycpp.o libic.a
 	$(CXX) $^ $(LDFLAGS) -lpthread -o mycpp
 
-.c.o:
+%.o: %.c
 	$(CC) -O3 $(CFLAGS) $< -c -o $@  
 
 .cc.o:
