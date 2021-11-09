@@ -2,7 +2,8 @@ language: c
 
 arch:
   - amd64
-# - arm64 only gcc
+  - arm64
+# only gcc
 # - s390x big endian
 # - ppc64le (gcc > 8.0 sse->altivec)
 
