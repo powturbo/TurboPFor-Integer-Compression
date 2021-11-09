@@ -1,4 +1,7 @@
-TurboPFor: Fastest Integer Compression [![Build Status](https://travis-ci.org/powturbo/TurboPFor-Integer-Compression.svg?branch=master)](https://travis-ci.org/powturbo/TurboPFor-Integer-Compression)
+TurboPFor: Fastest Integer Compression [![Build Status][travisBadge]][travisLink]
+
+[travisBadge]: https://api.travis-ci.com/powturbo/TurboPFor-Integer-Compression.svg?branch=master
+[travisLink]: https://app.travis-ci.com/powturbo/TurboPFor-Integer-Compression
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
   * :new: (2019.11) **ALL** functions now available for **64 bits ARMv8 NEON** & **Power9 Altivec**
