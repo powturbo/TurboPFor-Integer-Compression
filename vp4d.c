@@ -266,20 +266,20 @@ extern char _shuffle_16[256][16];
 ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
   if(!(b & 0x80)) {
       #if USIZE == 64
-    b = (b == 63)?64:b;
+    b = (b == 63)?64:b;  // 64 is encoded for bitsize 63 (permits using only 6 bits for b)
       #endif
-    return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);
+    return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);  // bitunpack only
   }
   b &= 0x7f;
-    #if VSIZE >= 128
+    #if VSIZE >= 128      // vertical SIMD bitpacking
       #if USIZE == 64
-  if(b+bx <= 32)
+  if(b+bx <= 32)          // use SIMD when bitsize <= 32 (scalar horizontal bitunpack64 is used when 32 < bitsize <=64 )
       #endif
   { unsigned char *pb = in;
       #if VSIZE == 128
         #if USIZE == 64
     uint32_t ex[P4D_MAX+64];
-    in = TEMPLATE2(bitunpack, 32)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx);
+    in = TEMPLATE2(bitunpack, 32)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx);     // unpack the fixex size part
         #else
     uint_t ex[P4D_MAX+64];
     in = TEMPLATE2(bitunpack, USIZE)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx);
@@ -288,18 +288,18 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     uint_t ex[P4D_MAX+64];
     in = TEMPLATE2(bitunpack, USIZE)(in+32, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)) + popcnt64(ctou64(in+16)) + popcnt64(ctou64(in+24)), ex, bx);
       #endif
-    return TEMPLATE2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);
+    return TEMPLATE2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);  // unpack the exceptions
   }
     #endif
-    #if VSIZE < 128 || USIZE == 64
-  {   uint_t ex[P4D_MAX+64];
+    #if VSIZE < 128 || USIZE == 64     // bitunpack the rest number of elements < 128/256  or when 32 < bitsize <=64 is used
+  { uint_t ex[P4D_MAX+64];
     unsigned long long bb[P4D_MAX/64];
     unsigned num=0,i,p4dn = (n+63)/64;
     for(i = 0; i < n/64; i++) { bb[i] = ctou64(in+i*8); num += popcnt64(bb[i]); }
     if(n & 0x3f) { bb[i] = ctou64(in+i*8) & ((1ull<<(n&0x3f))-1); num += popcnt64(bb[i]); }
     in = TEMPLATE2(bitunpack, USIZE)(in+PAD8(n), num, ex, bx);
     in = TEMPLATE2(BITUNPACK, USIZE)(in, n, out, b);
-      #if 0 //defined(AVX_2__)
+      #if 0 //defined(__AVX2__)
     { uint_t *op,*pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op = out;    bb[i]; bb[i] >>= 8,op += 8) { unsigned m = (unsigned char)bb[i], mc=popcnt32(m), s = pex[mc]; pex[mc]=0;
@@ -308,10 +308,10 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
       }
     }
       #elif (defined(__SSSE3__) || defined(__ARM_NEON)) && USIZE == 32
-    { uint_t *_op=out,*op,*pex = ex;
+    { uint_t *_op = out,*op,*pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf;
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
+          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
         } _op+=64;
       }
     }
@@ -319,7 +319,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     { uint_t *_op = out, *op, *pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op = _op;  bb[i]; bb[i] >>= 8,op += 8) { const unsigned char m = bb[i];
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
+          _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
         } _op += 64;
       }
     }
@@ -374,7 +374,7 @@ unsigned char *TEMPLATE2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n,
   if((b & 0xc0) == 0xc0) {  // all items are equal
     b &= 0x3f;
       #if USIZE == 64
-    b = b == 63?64:b;
+    b = b == 63?64:b; // use 64 instead of 63 (permis using only 6 bits to store b)
       #endif
     uint_t u = TEMPLATE2(ctou, USIZE)(in); if(b < USIZE) u = TEMPLATE2(BZHI, USIZE)(u,b);
     for(i=0; i < n; i++) out[i] = u;
