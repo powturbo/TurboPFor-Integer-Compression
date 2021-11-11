@@ -64,6 +64,7 @@
 #endif
 
 int verbose = 1,isa;
+
 //------------------------------ bits statistics --------------------------------------------------
 static unsigned xbits[65],tbits[65],zbits[65];
 unsigned histl8( uint8_t  *in, unsigned n) { unsigned i,l; uint64_t s=0; for(i = 0; i < 65; i++) xbits[i]=0; for(i = 0; i < n; i++) xbits[l=bsr8( in[i])]++,s+=l; return (s+7)/8; }
@@ -135,9 +136,13 @@ void stprint(char *s, unsigned *xbits) {
       double f = (double)xbits[i]*100/(double)t;
       unsigned u = round(f);
       printf("%.2d:", i); for(int j=0; j < u; j++) printf("#");
-      if     (f >  10)  printf(" %.0f%% ", f);
-      else if(f > 0.1)  printf(" %.1f%% ", f);
-      else              printf(" %.3f%% ", f);
+      if     (f >  10)    printf(" %.0f%% ", f);
+      else if(f > 0.1)    printf(" %.1f%% ", f);
+      else if(f > 0.01)   printf(" %.2f%% ", f);
+      else if(f > 0.001)  printf(" %.3f%% ", f);
+      else if(f > 0.0001) printf(" %.4f%% ", f);
+      else if(f > 0.00001) printf(" %.5f%% ", f);
+      else                printf(" %.6f%% ", f);
       printf("\n");
     }
 }
@@ -371,7 +376,7 @@ unsigned datagen(unsigned char *in, unsigned n, int isize, double be_mindelta) {
     case 4: zipu32((unsigned *)in, n, a, rm, rx);                                   //{ int i; for(i = 0; i < n; i++) in[i] = i; }  //
                                                                                 for(i = 1; i <= n; i++) xbits[bsr32(ctou32(in+i*4))]++;
       if(mindelta == 0 || mindelta == 1) {
-        unsigned *ip = (unsigned *)in, v;                                       stprint("delta", xbits);
+        unsigned *ip = (unsigned *)in, v;                                       stprint(mindelta?"delta=1":"delta=0", xbits);
         for(ip[0]=0,v = 1; v < n; v++) {
           ip[v] += ip[v-1] + mindelta;                                          if(ip[v]>=(1u<<31)) die("overflow generating sorted array %d\n", ip[v]);
         }
@@ -445,11 +450,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
           a: IPUSH(in,n,isize,nmax,u);                          c=*q; *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%llu  ", p, u); *q = c;
         } else if(isize > 0) {
           while(!isdigit(*p) && *p != '-' && *p != '+') p++;
-          uint64_t u = strtoull(p, &q, 10);
-          if(decs){
-              u *= pre;
-          }
-          u -= mdelta;
+          uint64_t u = strtoll(p, &q, 10)*pre - mdelta;
           if(*q == '.')
             u = pre>1.0?round(strtod(p, &q)*pre):strtod(p, &q) - mdelta;
           switch(isize) {
@@ -457,7 +458,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
             case 2: if(u >     0xffffu) ovf++; break;
             case 4: if(u > 0xffffffffu) ovf++; break;
           }
-          IPUSH(in,n,isize,nmax,u);                             c=*q;   *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%llu ", p, u); *q = c;
+          IPUSH(in,n,isize,nmax,u);                             c=*q;   *q=0; if(verbose>=5 && n < 100 || verbose>=9) printf("\'%s\'->%lld ", p, u); *q = c;
         } else {
           while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') {  if(keysep && strchr(keysep,*p)) keyid++; p++; }
           double d = strtod(p, &q) - mdelta;
@@ -555,6 +556,7 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
 #include "vsimple.h"
 #include "transpose.h"
 #include "trle.h"
+//#include "bic.h"
 
   #ifdef STREAMVBYTE
 #include "streamvbyte/include/streamvbyte.h"
@@ -783,147 +785,150 @@ size_t spdpdec(unsigned char *in, size_t n, unsigned char *out, unsigned bsize, 
 //------------------------------------- Benchmark -------------------------------------------------------------------
 
 #define ID_MEMCPY 120
-unsigned char *bestr(unsigned id, unsigned b, unsigned char *s) {
+unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int prmi) {
   static char *fmt[] = {
-    "000              ",
-    "p4nenc%d         TurboPFor           ",                //1
-    "p4nenc128v%d     TurboPForV          ",
-    "p4nenc256v%d     TurboPFor256        ",
-    "p4ndenc%d        TurboPFor    delta  ",
-    "p4ndenc128v%d    TurboPForV   delta  ",
-    "p4ndenc256v%d    TurboPFor256 delta  ",
-    "p4nd1enc%d       TurboPFor    delta1 ",
-    "p4nd1enc128v%d   TurboPForV   delta1 ",
-    "p4nd1enc256v%d   TurboPFor256 delta1 ",
+    "%3d:000              ",
+    "%3d:p4nenc%d         TurboPFor           ",                //1
+    "%3d:p4nenc128v%d     TurboPForV          ",
+    "%3d:p4nenc256v%d     TurboPFor256        ",
+    "%3d:p4ndenc%d        TurboPFor    delta  ",
+    "%3d:p4ndenc128v%d    TurboPForV   delta  ",
+    "%3d:p4ndenc256v%d    TurboPFor256 delta  ",
+    "%3d:p4nd1enc%d       TurboPFor    delta1 ",
+    "%3d:p4nd1enc128v%d   TurboPForV   delta1 ",
+    "%3d:p4nd1enc256v%d   TurboPFor256 delta1 ",
 
-    "p4nzenc%d        TurboPFor    zigzag ",        //10
-    "p4nzenc128v%d    TurboPForV   zigzag ",
-    "p4nzenc256v%d    TurboPFor256 zigzag ",
-    "p4nzzenc128v%d   TurboPFor zzag/delta",
-    "14               ",
-    "15               ",
-    "16               ",
-    "17               ",
-    "18               ",
-    "19               ",
+    "%3d:p4nzenc%d        TurboPFor    zigzag ",        //10
+    "%3d:p4nzenc128v%d    TurboPForV   zigzag ",
+    "%3d:p4nzenc256v%d    TurboPFor256 zigzag ",
+    "%3d:p4nzzenc128v%d   TurboPFor zzag/delta",
+//    "%3d:bics32           Interpolative Cod. S",
+//    "%3d:bic32            Interpolative Cod. L",
+//    "%3d:bicm32           Interpolative Cod. M",
+    "%3d:17               ",
+    "%3d:18               ",
+    "%3d:19               ",
 
-    "bitnpack%d       TurboPack           ",                //20
-    "bitnpack128v%d   TurboPackV          ",
-    "bitnpack256v%d   TurboPack256        ",
-    "bitndpack%d      TurboPack    delta  ",
-    "bitndpack128v%d  TurboPackV   delta  ",
-    "bitndpack256v%d  TurboPack256 delta  ",
-    "bitnd1pack%d     TurboPack    delta1 ",
-    "bitnd1pack128v%d TurboPackV   delta1 ",
-    "bitnd1pack256v%d TurboPack256 delta1 ",
-    "bitnzpack%d      TurboPack    zigzag ",
+    "%3d:bitnpack%d       TurboPack           ",                //20
+    "%3d:bitnpack128v%d   TurboPackV          ",
+    "%3d:bitnpack256v%d   TurboPack256        ",
+    "%3d:bitndpack%d      TurboPack    delta  ",
+    "%3d:bitndpack128v%d  TurboPackV   delta  ",
+    "%3d:bitndpack256v%d  TurboPack256 delta  ",
+    "%3d:bitnd1pack%d     TurboPack    delta1 ",
+    "%3d:bitnd1pack128v%d TurboPackV   delta1 ",
+    "%3d:bitnd1pack256v%d TurboPack256 delta1 ",
+    "%3d:bitnzpack%d      TurboPack    zigzag ",
 
-    "bitnzpack128v%d  TurboPackV   zigzag ",        //30
-    "bitnzpack256v%d  TurboPack256 zigzag ",
-    "bitnfpack%d      TurboPack    FOR    ",
-    "bitnfpack128v%d  TurboPackV   FOR    ",
-    "bitnfpack256v%d  TurboPack256 FOR    ",
-    "bitns1pack128v32 TurboPack256 delt4_1",
-    "36                 ",
-    "37                 ",
-    "vsenc%d          TurboVSimple        ",
-    "vszenc%d         TurboVSimple zigzag ",
+    "%3d:bitnzpack128v%d  TurboPackV   zigzag ",        //30
+    "%3d:bitnzpack256v%d  TurboPack256 zigzag ",
+    "%3d:bitnfpack%d      TurboPack    FOR    ",
+    "%3d:bitnfpack128v%d  TurboPackV   FOR    ",
+    "%3d:bitnfpack256v%d  TurboPack256 FOR    ",
+    "%3d:bitns1pack128v32 TurboPack256 delt4_1",
+    "%3d:36               ",
+    "%3d:37               ",
+    "%3d:vsenc%d          TurboVSimple        ",
+    "%3d:vszenc%d         TurboVSimple zigzag ",
 
-    "vbenc%d          TurboVByte scalar   ",         //40
-    "vbzenc%d         TurboVByte zigzag   ",
-    "vbdenc%d         TurboVByte delta    ",
-    "vbd1enc%d        TurboVByte delta1   ",
-    "vbddenc%d        TurboVByte zzag delt",
-    "v8enc%d          TurboByte SIMD      ",
-    "v8denc%d         TurboByte delta     ",
-    "v8d1enc%d        TurboByte delta1    ",
-    "v8xenc%d         TurboByte xor       ",
-    "v8zenc%d         TurboByte zigzag    ",
+    "%3d:vbenc%d          TurboVByte scalar   ",         //40
+    "%3d:vbzenc%d         TurboVByte zigzag   ",
+    "%3d:vbdenc%d         TurboVByte delta    ",
+    "%3d:vbd1enc%d        TurboVByte delta1   ",
+    "%3d:vbddenc%d        TurboVByte zzag delt",
+    "%3d:v8enc%d          TurboByte SIMD      ",
+    "%3d:v8denc%d         TurboByte delta     ",
+    "%3d:v8d1enc%d        TurboByte delta1    ",
+    "%3d:v8xenc%d         TurboByte xor       ",
+    "%3d:v8zenc%d         TurboByte zigzag    ",
 
-    "v8nenc128v%d     TurboByte+TbPackV   ",        //50    //TurboByte Hybrid
-    "v8nzenc128v%d    TByte+TPackV zigzag ",
-    "v8ndenc128v%d    TByte+TPackV delta  ",
-    "v8nd1enc128v%d   TByte+TPackV delta1 ",
-    "54                                   ",
-    "v8nenc256v%d     TurboByte+TbPackV   ",
-    "v8nzenc256v%d    TByte+TPackV zigzag ",
-    "v8ndenc256v%d    TByte+TPackV delta  ",
-    "v8nd1enc256v%d   TByte+TPackV delta1 ",
-    "59                                   ",
+    "%3d:v8nenc128v%d     TurboByte+TbPackV   ",        //50    //TurboByte Hybrid
+    "%3d:v8nzenc128v%d    TByte+TPackV zigzag ",
+    "%3d:v8ndenc128v%d    TByte+TPackV delta  ",
+    "%3d:v8nd1enc128v%d   TByte+TPackV delta1 ",
+    "%3d:54                                   ",
+    "%3d:v8nenc256v%d     TurboByte+TbPackV   ",
+    "%3d:v8nzenc256v%d    TByte+TPackV zigzag ",
+    "%3d:v8ndenc256v%d    TByte+TPackV delta  ",
+    "%3d:v8nd1enc256v%d   TByte+TPackV delta1 ",
+    "%3d:59                                   ",
 
-    "bvzzenc%d        bitio zigzag/delta  ",       //60
-    "bvzenc%d         bitio zigzag        ",
-    "fpgenc%d         bitio TurboGorilla  ",
-    "63                                   ",
-    "64                                   ",                                                //"fphenc%d         slope predictor",
-    "fpxenc%d         TurboFloat XOR      ",        //bvzaenc%d        moving average pred.",
-    "fpfcmenc%d       TurboFloat FCM      ",
-    "fpdfcmenc%d      TurboFloat DFCM     ",
-    "fp2dfcmenc%d     TurboFloat DFCM 2D  ",
-    "69                 ",
+    "%3d:bvzzenc%d        bitio zigzag/delta  ",       //60
+    "%3d:bvzenc%d         bitio zigzag        ",
+    "%3d:fpgenc%d         bitio TurboGorilla  ",
+    "%3d:63                                   ",
+    "%3d:64                                   ",                                                //"fphenc%d         slope predictor",
+    "%3d:fpxenc%d         TurboFloat XOR      ",        //bvzaenc%d        moving average pred.",
+    "%3d:fpfcmenc%d       TurboFloat FCM      ",
+    "%3d:fpdfcmenc%d      TurboFloat DFCM     ",
+    "%3d:fp2dfcmenc%d     TurboFloat DFCM 2D  ",
+    "%3d:69                 ",
 
-    "trle             TurboRLE            ",        //70
-    "trlex            TurboRLE xor        ",
-    "trlez            TurboRLE zigzag     ",
-    "srle%d           TurboRLE ESC        ",
-    "srlex%d          TurboRLE ESC xor    ",
-    "srlez%d          TurboRLE ESC zigzag ",
-    "76                                   ",
-    "77                                   ",
-    "78                                   ",
-    "79                                   ",
+    "%3d:trle             TurboRLE            ",        //70
+    "%3d:trlex            TurboRLE xor        ",
+    "%3d:trlez            TurboRLE zigzag     ",
+    "%3d:srle%d           TurboRLE ESC        ",
+    "%3d:srlex%d          TurboRLE ESC xor    ",
+    "%3d:srlez%d          TurboRLE ESC zigzag ",
+    "%3d:76                                   ",
+    "%3d:77                                   ",
+    "%3d:78                                   ",
+    "%3d:79                                   ",
 
-    "Lz               lz                  ",        //80
-    "Lztp   Byte      Transpose+lz        ",
-    "Lztpx  Byte      Transpose+xor+lz    ",
-    "Lztpz  Byte      Transpose+zzag+lz   ",
-    "Lztp4  Nibble    Transpose+lz        ",
-    "Lztp4x Nibble    Transpose+xor+lz    ",
-    "Lztp4z Nibble    Transpose+zigzag+lz ",
-    "Lztp1  Bit       Bitshuffle+lz       ",
-    "Lztp1x Bit       Bitshuffle+xor+lz   ",
-    "Lztp1z Bit       Bitshuffle+zigzag+lz",
+    "%3d:Lz               %s,%d               ",        //80
+    "%3d:Lztp   Byte      Transpose+%s,%d        ",
+    "%3d:Lztpx  Byte      Transpose+xor+%s,%d    ",
+    "%3d:Lztpz  Byte      Transpose+zzag+%s,%d   ",
+    "%3d:Lztp4  Nibble    Transpose+%s,%d        ",
+    "%3d:Lztp4x Nibble    Transpose+xor+%s,%d    ",
+    "%3d:Lztp4z Nibble    Transpose+zigzag+%s,%d ",
+    "%3d:Lztp1  Bit       Bitshuffle+%s,%d       ",
+    "%3d:Lztp1x Bit       Bitshuffle+xor+%s,%d   ",
+    "%3d:Lztp1z Bit       Bitshuffle+zigzag+%s,%d",
 
-    "lztprle          Transpose+rle+lz    ",     //90
-    "lztprlex         Transpose+xor+rle+lz",
-    "lztprlez         Transpose+zzg+rle+lz",
-    "lzv8enc          TurboByte+lz        ",
-    "lzv8xenc         TurboByte+xor+lz    ",
-    "lzv8zenc         TurboByte+zzag+lz   ",
-    "96                                   ",
-    "97                                   ",
-    "98                                   ",
-    "99                                   ",
+    "%3d:lztprle          Transpose+rle+%s,%d    ",     //90
+    "%3d:lztprlex         Transpose+xor+rle+%s,%d",
+    "%3d:lztprlez         Transpose+zzg+rle+%s,%d",
+    "%3d:lzv8enc          TurboByte+%s,%d        ",
+    "%3d:lzv8xenc         TurboByte+xor+%s,%d    ",
+    "%3d:lzv8zenc         TurboByte+zzag+%s,%d   ",
+    "%3d:96                                   ",
+    "%3d:97                                   ",
+    "%3d:98                                   ",
+    "%3d:99                                   ",
 
-    "LztpD2byte       2D Transpose+lz     ",    //100
-    "LztpxD2byte      2D Transpose+xor+lz ",
-    "LztpzD2byte      2D Transpose+zzag+lz",
-    "LztpD3byte       3D Transpose+lz     ",
-    "LztpxD3byte      3D Transpose+xor+lz ",
-    "LztpzD3byte      3D Transpose+zzag+lz",
-    "LztpD4byte       4D Transpose+lz     ",
-    "LztpxD4byte      4D Transpose+xor+lz ",
-    "LztpzD4byte      4D Transpose+zzag+lz",
-    "SPDP             SPDP Floating Point ",
+    "%3d:LztpD2byte       2D Transpose+%s,%d     ",    //100
+    "%3d:LztpxD2byte      2D Transpose+xor+%s,%d ",
+    "%3d:LztpzD2byte      2D Transpose+zzag+%s,%d",
+    "%3d:LztpD3byte       3D Transpose+%s,%d     ",
+    "%3d:LztpxD3byte      3D Transpose+xor+%s,%d ",
+    "%3d:LztpzD3byte      3D Transpose+zzag+%s,%d",
+    "%3d:LztpD4byte       4D Transpose+%s,%d     ",
+    "%3d:LztpxD4byte      4D Transpose+xor+%s,%d ",
+    "%3d:LztpzD4byte      4D Transpose+zzag+%s,%d",
+    "%3d:SPDP             SPDP Floating Point ",
 
-    "streamvbyte      StreamVByte SIMD    ",    //110
-    "streamvbyte delt StreamVByte delta   ",
-    "streamvbyte zzag StreamVByte zigzag  ",
-    "maskeydvbyte     MasedVByte SIMD     ",
-    "FastPFor         FastPFor            ",
-    "SimdFastPFor     FastPFor SIMD       ",
-    "SimdOptPFor      FastPFor SIMD       ",
-    "tpenc            Byte transpose      ",
-    "tp4enc           Nibble transpose    ",
-    "bitshuffle       Bit transpose       ",
+    "%3d:streamvbyte      StreamVByte SIMD    ",    //110
+    "%3d:streamvbyte delt StreamVByte delta   ",
+    "%3d:streamvbyte zzag StreamVByte zigzag  ",
+    "%3d:maskeydvbyte     MasedVByte SIMD     ",
+    "%3d:FastPFor         FastPFor            ",
+    "%3d:SimdFastPFor     FastPFor SIMD       ",
+    "%3d:SimdOptPFor      FastPFor SIMD       ",
+    "%3d:tpenc            Byte transpose      ",
+    "%3d:tp4enc           Nibble transpose    ",
+    "%3d:bitshuffle       Bit transpose       ",
 
-    "memcpy           memcpy              ",        //120
-    "vtenc            VTEnc lib           "
-  };
-  sprintf(s,fmt[id], b,b);
-  char ss[33];
-  sprintf(ss,fmt[id]+16, b);
-  strcpy(&s[16], ss);
+    "%3d:memcpy           memcpy              ",        //120
+    "%3d:vtenc            VTEnc lib           ",
+    "%3d:vbz              vbz (nanopore)      "
+  }; 
+  #define CID_BEG  76
+  #define CID_END 108
+  if(id >= CID_BEG && id <= CID_END)
+    sprintf(s,fmt[id], id, prms, prmi); 
+  else
+    sprintf(s,fmt[id], id, b, prms, prmi);  
   return s;
 }
 
@@ -1008,7 +1013,7 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
   _t_ *_p = (_t_ *)_in_, _i;\
   for(_dmin_ = (_t_)-1, _i = 1; _i < _n_; _i++)\
     if(_p[_i] < _p[_i-1]) { dmin = (_t_)-1; break; }\
-    else { _t_ _d = _p[_i] - _p[_i-1]; if(_d < _dmin_) _dmin_ = _d; }\
+    else { _t_ _d = _p[_i] - _p[_i-1]; if(_d < _dmin_) { _dmin_ = _d; /*printf("[%u]", _dmin_);*/} }\
 }
 
 uint8_t  mindelta8( unsigned char *in, unsigned n) { uint8_t  dmin; MINDELTA(uint8_t,  in, n, dmin); return dmin; }
@@ -1022,7 +1027,7 @@ uint64_t mindelta(  unsigned char *in, unsigned n, unsigned siz) {
     case 4: { uint32_t d = mindelta32(in,n); return d == (uint32_t)-1?(uint64_t)-1:d; };
     case 8: { uint64_t d = mindelta64(in,n); return d == (uint64_t)-1?(uint64_t)-1:d; };
   }
-  return -1;
+  return -2;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1132,11 +1137,11 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 119: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);  pr(l,n); TMBENCH2("119", bitunshuffle(out, n,cpy, USIZE),n); break;
       #endif
     case ID_MEMCPY: if(!mcpy) goto end;
-                     TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
+                     TMBENCH( "", libmemcpy(out,in,n) ,n); l=n;     pr(l,n); pr(n,n); TMBENCH2("120", libmemcpy( cpy,out,n) ,n); break;
     default: goto end;
   }
   if(l) {
-    char s[65]; printf("%-30s ", bestr(id, 8,s));
+    char s[65]; printf("%-35 ", bestr(id, 8, s, codstr(codid), codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1285,12 +1290,16 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 119: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);  pr(l,n); TMBENCH2("119", bitunshuffle(out, n,cpy, USIZE),n); break;
       #endif
     case ID_MEMCPY: if(!mcpy) goto end;
-                     TMBENCH( "", libmemcpy(out,in,n) ,n);              pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
-
-    default: goto end;
+                     TMBENCH( "", libmemcpy(out,in,n) ,n); l=n;      pr(l,n); TMBENCH2("120", libmemcpy( cpy,out,n) ,n); break;
+      #ifdef VBZ
+    case 122: { CompressionOptions opt; opt.perform_delta_zig_zag = 1; opt.integer_size = 2; opt.zstd_compression_level = 22; opt.vbz_version = VBZ_DEFAULT_VERSION;
+            TMBENCH("", l = vbz_compress(in, n, out, ns, &opt),n); pr(l,n); TMBENCH2("122", vbz_decompress(out, l, cpy, n, &opt),n); 
+      } break;
+      #endif
+   default: goto end;
   }
   if(l) {
-    char s[65]; printf("%-30s ", bestr(id, 16,s));
+    char s[65]; printf("%-30s ", bestr(id, 16,s, codstr(codid),codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1302,9 +1311,10 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 #undef USIZE
 #define USIZE 4
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) {
-  unsigned l=0,m = n/(USIZE),rc = 0, d,ns=CBUF(n);  uint32_t dmin = mindelta32(in,m);
+  unsigned l=0,m = n/(USIZE),rc = 0, d,ns=CBUF(n);  
   uint32_t *p;
   char     *tmp = NULL;
+  uint32_t dmin = mindelta32(in,m);
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
   memrcpy(cpy,in,n);
 
@@ -1342,6 +1352,9 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 13: TMBENCH("",l=p4nzzenc128v32(  in, m, out,0),n);        pr(l,n); TMBENCH2(" 13",p4nzzdec128v32(    out, m, cpy,0) ,n); break;
       #endif
   //case 13: TMBENCH("",l=p4nsenc32(       in, m, out)  ,n);        pr(l,n); TMBENCH2("",p4nsdec32(         out, m, cpy)   ,n); break;
+  //  case 14: if(dmin!=(uint32_t)-1 && dmin > 0) { TMBENCH("",l=bicsenc32(     in, m, out)  ,n);          pr(l,n); TMBENCH2(" 14",bicsdec32(out, m, cpy)   ,n); } break;
+  //  case 15: if(dmin!=(uint32_t)-1 && dmin > 0) { TMBENCH("",l=bicenc32(      in, m, out)  ,n);          pr(l,n); TMBENCH2(" 15",bicdec32(out, m, cpy)   ,n); } break;
+  //  case 16: if(dmin!=(uint32_t)-1 && dmin > 0) { TMBENCH("",l=bicmenc32(     in, m, out)  ,n);          pr(l,n); TMBENCH2(" 16",bicmdec32(out, m, cpy)   ,n); }break;
 
     case 20: TMBENCH("",l=bitnpack32(      in, m, out)  ,n);        pr(l,n); TMBENCH2(" 20",bitnunpack32(      out, m, cpy)   ,n); break;
       #ifdef SSE
@@ -1385,7 +1398,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 35: if(dmin==(uint32_t)-1) goto end;
              TMBENCH("",l=bitns1pack128v32( in, m, out)  ,n);       pr(l,n); TMBENCH2(" 35",bitns1unpack128v32( out, m, cpy)   ,n); break;
       #endif
-    //case 35: if(dmin==-1 /*|| !dmin*/) goto end;  TMBENCH("",l=efanoenc32(     in, m, out,0)  ,n); pr(l,n); TMBENCH2("efanoenc32       ",efanodec32( out, m, cpy,0)   ,n); break;
+   //case 35: if(dmin==-1 /*|| !dmin*/) goto end;  TMBENCH("",l=efanoenc32(     in, m, out,0)  ,n); pr(l,n); TMBENCH2("efanoenc32       ",efanodec32( out, m, cpy,0)   ,n); break;
     case 38: TMBENCH("",l=vsenc32(         in, m, out)-out,n);      pr(l,n); TMBENCH2(" 38",vsdec32(           out, m, cpy) ,n); break;   // vsimple : variable simple
     case 39: TMBENCH("",l=vszenc32(        in, m, out,tmp)-out,n);  pr(l,n); TMBENCH2(" 39",vszdec32(          out, m, cpy) ,n); break;
 
@@ -1489,14 +1502,14 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 119: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);  pr(l,n); TMBENCH2("119", bitunshuffle(out, n,cpy, USIZE),n); break;
       #endif
     case ID_MEMCPY: if(!mcpy) goto end;
-                     TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("120", libmemcpy( cpy,out,n) ,n); break;
+                     TMBENCH( "", libmemcpy(out,in,n) ,n); l=n;     pr(l,n); TMBENCH2("120", libmemcpy( cpy,out,n) ,n); break;
     //case 121: if(dmin == (uint32_t)-1) goto end;
     // { size_t _l; TMBENCH("",vtenc_list_encode_u32(in, m, out,ns,&_l),n); l = _l; pr(l,n); TMBENCH2("104", vtenc_list_decode_u32(out, _l, cpy, m),n); } break;
     //case 112: TMBENCH("",fppad32(in, m, out,errlim),n);              pr(n,n); TMBENCH2("fppad32      ", fppad32(in, m, out,errlim),n); break;
     default: goto end;
   }
   if(l) {
-    char s[65]; printf("%-30s ", bestr(id,32,s));
+    char s[128];AC(codstr(codid), "Fatal"); printf("%-40s ", bestr(id,32,s, codstr(codid),codlev));
     if(cpy) rc = memcheck32(in,m,cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1630,11 +1643,11 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 119: l = n; TMBENCH("", bitshuffle(in, n, out, USIZE),n);  pr(l,n); TMBENCH2("109", bitunshuffle(out, n,cpy, USIZE),n); break;
       #endif
     case ID_MEMCPY: if(!mcpy) goto end;
-                     TMBENCH( "", libmemcpy(out,in,n) ,n);          pr(n,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
+                     TMBENCH( "", libmemcpy(out,in,n) ,n); l=n;     pr(l,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
     default: goto end;
   }
   if(l) {
-    char s[65]; printf("%-30s ", bestr(id, 64,s));
+    char s[65]; printf("%-30s ", bestr(id, 64,s, codstr(codid),codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1644,7 +1657,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 }
 
 void usage(char *pgm) {
-  fprintf(stderr, "\nIcApp Copyright (c) 2013-2019 Powturbo %s\n", __DATE__);
+  fprintf(stderr, "\nIcApp Copyright (c) 2013-2021 Powturbo %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   //fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
   fprintf(stderr, " -B#s     # = max. benchmark filesize (default 1GB) ex. -B4G\n");
@@ -1746,7 +1759,7 @@ int main(int argc, char* argv[]) {
       case 'y': mcpy = 0;                    break;
 
       case 'a': a = strtod(optarg, NULL);    break;
-      case 'd': mdelta  = strtod(optarg, NULL);break;
+      case 'd': mdelta  = strtod(optarg, NULL); /*printf("MDELTA=%d ");*/break;
       case 'n': m       = argtoi(optarg,1);  break;
       case 'm': rm      = argtoi(optarg,1);  break;
       case 'M': rx      = argtoi(optarg,1);  break;
@@ -1823,6 +1836,11 @@ int main(int argc, char* argv[]) {
     if(fi) {
       if(!dfmt) n = fread(in, 1, n, fi);
       fclose(fi);
+	  int delta = mdelta;
+	  if(delta>=0) { uint32_t *_in = in,*p,m = n/sizeof(_in[0]); for(p = _in+1; p < _in+m; p++) { uint64_t u = (uint64_t)p[0]+p[-1]+delta; if(u>0xffffffffull) { printf("delta overflow\n"); exit(0); } p[0]=u; } 
+                  printf("delta=%d in[m-1]=%u ", delta, _in[m-1]);
+				  for(unsigned i = 1; i < m; i++) { AC(_in[i]>_in[i-1], "icapp: Not sorted at=%u,count=%d\n", i, n); }
+      }
     } else if(!strcmp(inname,"TMS") && abs(isize) == 8)
       tms64(in, m, rm, rx, a);
     else
@@ -1849,7 +1867,7 @@ int main(int argc, char* argv[]) {
       }
         #endif
     }
-    be_mindelta = mindelta(in, n/abs(isize), abs(isize));
+    be_mindelta = mindelta(in, n/abs(isize), abs(isize)); 
 
     if(fi && verbose) { unsigned l;                                                                     // Calculate bits distributions
       switch(abs(isize)) {
