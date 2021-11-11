@@ -32,62 +32,6 @@
 #include "vp4.h"
 #include "bitutil.h"
 #include "fp.h"
-
-// ------------------ bitio genaral macros ---------------------------
-  #ifdef __AVX2__
-    #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#include <intrin.h>
-    #else
-#include <x86intrin.h>
-    #endif
-#define bzhi_u32(_u_, _b_)               _bzhi_u32(_u_, _b_)
-
-    #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
-#define bzhi_u64(_u_, _b_)               ((_u_) & ((1ull<<(_b_))-1))
-    #else
-#define bzhi_u64(_u_, _b_)               _bzhi_u64(_u_, _b_)
-    #endif
-  #else
-#define bzhi_u64(_u_, _b_)               ((_u_) & ((1ull<<(_b_))-1))
-#define bzhi_u32(_u_, _b_)               ((_u_) & ((1u  <<(_b_))-1))
-  #endif
-
-#define BZHI64(_u_, _b_)                 (_b_ == 64?0xffffffffffffffffull:((_u_) & ((1ull<<(_b_))-1)))
-#define BZHI32(_u_, _b_)                 (_b_ == 32?        0xffffffffu  :((_u_) & ((1u  <<(_b_))-1)))
-
-#define bitdef(     _bw_,_br_)           uint64_t _bw_=0; unsigned _br_=0
-#define bitini(     _bw_,_br_)           _bw_=_br_=0
-//-- bitput ---------
-#define bitput(     _bw_,_br_,_nb_,_x_)  _bw_ += (uint64_t)(_x_) << _br_, _br_ += (_nb_)
-#define bitenorm(   _bw_,_br_,_op_)      ctou64(_op_) = _bw_; _op_ += (_br_>>3), _bw_ >>=(_br_&~7), _br_ &= 7
-#define bitflush(   _bw_,_br_,_op_)      ctou64(_op_) = _bw_, _op_ += (_br_+7)>>3, _bw_=_br_=0
-//-- bitget ---------
-#define bitbw(      _bw_,_br_)           (_bw_>>_br_)
-#define bitrmv(     _bw_,_br_,_nb_)      _br_ += _nb_
-
-#define bitdnorm(   _bw_,_br_,_ip_)      _bw_ = ctou64(_ip_ += (_br_>>3)), _br_ &= 7
-#define bitalign(   _bw_,_br_,_ip_)      (_ip_ += (_br_+7)>>3)
-
-#define BITPEEK32(  _bw_,_br_,_nb_)      BZHI32(bitbw(_bw_,_br_), _nb_)
-#define BITGET32(   _bw_,_br_,_nb_,_x_)  _x_ = BITPEEK32(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
-#define BITPEEK64(  _bw_,_br_,_nb_)      BZHI64(bitbw(_bw_,_br_), _nb_)
-#define BITGET64(   _bw_,_br_,_nb_,_x_)  _x_ = BITPEEK64(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
-
-#define bitpeek57(  _bw_,_br_,_nb_)      bzhi_u64(bitbw(_bw_,_br_), _nb_)
-#define bitget57(   _bw_,_br_,_nb_,_x_)  _x_ = bitpeek57(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
-#define bitpeek31(  _bw_,_br_,_nb_)      bzhi_u32(bitbw(_bw_,_br_), _nb_)
-#define bitget31(   _bw_,_br_,_nb_,_x_)  _x_ = bitpeek31(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
-//------------------ templates -----------------------------------
-#define bitput8( _bw_,_br_,_b_,_x_,_op_) bitput(_bw_,_br_,_b_,_x_)
-#define bitput16(_bw_,_br_,_b_,_x_,_op_) bitput(_bw_,_br_,_b_,_x_)
-#define bitput32(_bw_,_br_,_b_,_x_,_op_) bitput(_bw_,_br_,_b_,_x_)
-#define bitput64(_bw_,_br_,_b_,_x_,_op_) if((_b_)>45) { bitput(_bw_,_br_,(_b_)-32, (_x_)>>32); bitenorm(_bw_,_br_,_op_); bitput(_bw_,_br_,32,(unsigned)(_x_)); } else bitput(_bw_,_br_,_b_,_x_)
-
-#define bitget8( _bw_,_br_,_b_,_x_,_ip_) bitget31(_bw_,_br_,_b_,_x_)
-#define bitget16(_bw_,_br_,_b_,_x_,_ip_) bitget31(_bw_,_br_,_b_,_x_)
-#define bitget32(_bw_,_br_,_b_,_x_,_ip_) bitget57(_bw_,_br_,_b_,_x_)
-#define bitget64(_bw_,_br_,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget57(_bw_,_br_,(_b_)-32,_x_); bitdnorm(_bw_,_br_,_ip_); BITGET64(_bw_,_br_,32,_v); _x_ = _x_<<32|_v; } else bitget57(_bw_,_br_,_b_,_x_)
-
 //---------------------- template generation --------------------------------------------
 #define VSIZE 128
 
@@ -176,7 +120,7 @@ size_t TEMPLATE2(p4nzzdec128v,USIZE)(unsigned char *in, size_t n, uint_t *out, u
 /*---------------- TurboFloat XOR: last value Predictor with TurboPFor ---------------------------------------------------------
  Compress significantly (115% - 160%) better than Facebook's Gorilla algorithm for values
  BEST results are obtained with LOSSY COMPRESSION (using fppad32/fppad64 in bitutil.c)
- 1: XOR value with previous value. We may have now leading (for common sign/exponent bits) + mantissa trailing zero bits
+ 1: XOR value with previous value. We have now leading (for common sign/exponent bits) + mantissa trailing zero bits
  2: Eliminate the common block leading zeros of sign/exponent by shifting all values in the block to left
  3: reverse values to bring the mantissa trailing zero bits to left for better compression with TurboPFor
 */
@@ -233,9 +177,9 @@ size_t TEMPLATE2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t 
     for(p = _p; p != &_p[VSIZE]; p+=32/(USIZE/8)) {
       __m128i v0 = _mm_loadu_si128((__m128i *) p);
       __m128i v1 = _mm_loadu_si128((__m128i *)(p+16/(USIZE/8)));
-              v0 = TEMPLATE2(_mm_slli_epi, USIZE)(v0,b);
+              v0 = TEMPLATE2( mm_slli_epi, USIZE)(v0,b);
               v0 = TEMPLATE2( mm_rbit_epi, USIZE)(v0);
-              v1 = TEMPLATE2(_mm_slli_epi, USIZE)(v1,b);
+              v1 = TEMPLATE2( mm_slli_epi, USIZE)(v1,b);
               v1 = TEMPLATE2( mm_rbit_epi, USIZE)(v1);
       _mm_storeu_si128((__m128i *) p,               v0);
       _mm_storeu_si128((__m128i *)(p+16/(USIZE/8)), v1);
@@ -288,10 +232,10 @@ size_t TEMPLATE2(fpxdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
       __m128i v0 = _mm_loadu_si128((__m128i *)p);
       __m128i v1 = _mm_loadu_si128((__m128i *)(p+16/(USIZE/8)));
               v0 = TEMPLATE2( mm_rbit_epi, USIZE)(v0);
-              v0 = TEMPLATE2(_mm_srli_epi, USIZE)(v0,b);
+              v0 = TEMPLATE2( mm_srli_epi, USIZE)(v0,b);
               v0 = TEMPLATE2( mm_xord_epi, USIZE)(v0,sv);
               v1 = TEMPLATE2( mm_rbit_epi, USIZE)(v1);
-              v1 = TEMPLATE2(_mm_srli_epi, USIZE)(v1,b);
+              v1 = TEMPLATE2( mm_srli_epi, USIZE)(v1,b);
               sv = TEMPLATE2( mm_xord_epi, USIZE)(v1,v0);
       _mm_storeu_si128((__m128i *) op,               v0);
       _mm_storeu_si128((__m128i *)(op+16/(USIZE/8)), sv);
@@ -346,9 +290,9 @@ size_t TEMPLATE2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_
     for(p = _p; p != &_p[VSIZE]; p+=32/(USIZE/8)) {
       __m128i v0 = _mm_loadu_si128((__m128i *) p);
       __m128i v1 = _mm_loadu_si128((__m128i *)(p+16/(USIZE/8)));
-              v0 = TEMPLATE2(_mm_slli_epi, USIZE)(v0,b);
+              v0 = TEMPLATE2( mm_slli_epi, USIZE)(v0,b);
               v0 = TEMPLATE2( mm_rbit_epi, USIZE)(v0);
-              v1 = TEMPLATE2(_mm_slli_epi, USIZE)(v1,b);
+              v1 = TEMPLATE2( mm_slli_epi, USIZE)(v1,b);
               v1 = TEMPLATE2( mm_rbit_epi, USIZE)(v1);
       _mm_storeu_si128((__m128i *) p,               v0);
       _mm_storeu_si128((__m128i *)(p+16/(USIZE/8)), v1);
@@ -735,5 +679,6 @@ size_t TEMPLATE2(bvzdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
   bitalign(bw,br,ip);
   return ip - in;
 }
+
 #undef USIZE
   #endif
