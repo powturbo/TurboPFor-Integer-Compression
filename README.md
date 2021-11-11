@@ -1,10 +1,11 @@
-TurboPFor: Fastest Integer Compression [![Build Status][travisBadge]][travisLink]
+TurboPFor: Fastest Integer Compression 
 
-[travisBadge]: https://api.travis-ci.com/powturbo/TurboPFor-Integer-Compression.svg?branch=master
-[travisLink]: https://app.travis-ci.com/powturbo/TurboPFor-Integer-Compression
+#[![Build Status][travisBadge]][travisLink]
+#[travisBadge]: https://api.travis-ci.com/powturbo/TurboPFor-Integer-Compression.svg?branch=master
+#[travisLink]: https://app.travis-ci.com/powturbo/TurboPFor-Integer-Compression
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
-  * :new: (2019.11) **ALL** functions now available for **64 bits ARMv8 NEON** & **Power9 Altivec**
+  * **ALL** functions now available for **64 bits ARMv8 NEON** & **Power9 Altivec**
   * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
@@ -21,8 +22,8 @@ TurboPFor: Fastest Integer Compression [![Build Status][travisBadge]][travisLink
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
   * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
-  * :new: (2019.11) SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,...
-  * :new: (2019.11) **TurboByte+TurboPackV** novel hybrid scheme combining the fastest SIMD codecs.
+  * SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,...
+  * **TurboByte+TurboPackV** novel hybrid scheme combining the fastest SIMD codecs.
 * **Simple family**
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
@@ -471,7 +472,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  20 Aug 2020
+Last update:  11 Nov 2021
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
