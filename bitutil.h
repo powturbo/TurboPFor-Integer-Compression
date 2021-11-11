@@ -331,13 +331,68 @@ static ALWAYS_INLINE __m256i mm256_rbit_epi32(__m256i v) { return mm256_rbit_epi
 static ALWAYS_INLINE __m256i mm256_rbit_epi64(__m256i v) { return mm256_rbit_epi8(mm256_rev_epi64(v)); }
 static ALWAYS_INLINE __m256i mm256_rbit_si128(__m256i v) { return mm256_rbit_epi8(mm256_rev_si128(v)); }
   #endif
+
+// ------------------ bitio genaral macros ---------------------------
+  #ifdef __AVX2__
+    #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#include <intrin.h>
+    #else
+#include <x86intrin.h>
+    #endif
+#define bzhi_u32(_u_, _b_)               _bzhi_u32(_u_, _b_)
+
+    #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
+#define bzhi_u64(_u_, _b_)               ((_u_) & ((1ull<<(_b_))-1))
+    #else
+#define bzhi_u64(_u_, _b_)               _bzhi_u64(_u_, _b_)
+    #endif
+  #else
+#define bzhi_u64(_u_, _b_)               ((_u_) & ((1ull<<(_b_))-1))
+#define bzhi_u32(_u_, _b_)               ((_u_) & ((1u  <<(_b_))-1))
+  #endif
+
+#define BZHI64(_u_, _b_)                 (_b_ == 64?0xffffffffffffffffull:((_u_) & ((1ull<<(_b_))-1)))
+#define BZHI32(_u_, _b_)                 (_b_ == 32?        0xffffffffu  :((_u_) & ((1u  <<(_b_))-1)))
+
+#define bitdef(     _bw_,_br_)           uint64_t _bw_=0; unsigned _br_=0
+#define bitini(     _bw_,_br_)           _bw_=_br_=0
+//-- bitput ---------
+#define bitput(     _bw_,_br_,_nb_,_x_)  (_bw_) += (uint64_t)(_x_) << (_br_), (_br_) += (_nb_)
+#define bitenorm(   _bw_,_br_,_op_)      ctou64(_op_) = _bw_; _op_ += ((_br_)>>3), (_bw_) >>=((_br_)&~7), (_br_) &= 7
+#define bitflush(   _bw_,_br_,_op_)      ctou64(_op_) = _bw_, _op_ += ((_br_)+7)>>3, _bw_=_br_=0
+//-- bitget ---------
+#define bitbw(      _bw_,_br_)           ((_bw_)>>(_br_))
+#define bitrmv(     _bw_,_br_,_nb_)      (_br_) += _nb_
+
+#define bitdnorm(   _bw_,_br_,_ip_)      _bw_ = ctou64((_ip_) += ((_br_)>>3)), (_br_) &= 7
+#define bitalign(   _bw_,_br_,_ip_)      ((_ip_) += ((_br_)+7)>>3)
+
+#define BITPEEK32(  _bw_,_br_,_nb_)      BZHI32(bitbw(_bw_,_br_), _nb_)
+#define BITGET32(   _bw_,_br_,_nb_,_x_)  _x_ = BITPEEK32(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
+#define BITPEEK64(  _bw_,_br_,_nb_)      BZHI64(bitbw(_bw_,_br_), _nb_)
+#define BITGET64(   _bw_,_br_,_nb_,_x_)  _x_ = BITPEEK64(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
+
+#define bitpeek57(  _bw_,_br_,_nb_)      bzhi_u64(bitbw(_bw_,_br_), _nb_)
+#define bitget57(   _bw_,_br_,_nb_,_x_)  _x_ = bitpeek57(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
+#define bitpeek31(  _bw_,_br_,_nb_)      bzhi_u32(bitbw(_bw_,_br_), _nb_)
+#define bitget31(   _bw_,_br_,_nb_,_x_)  _x_ = bitpeek31(_bw_, _br_, _nb_), bitrmv(_bw_, _br_, _nb_)
+//------------------ templates -----------------------------------
+#define bitput8( _bw_,_br_,_b_,_x_,_op_) bitput(_bw_,_br_,_b_,_x_)
+#define bitput16(_bw_,_br_,_b_,_x_,_op_) bitput(_bw_,_br_,_b_,_x_)
+#define bitput32(_bw_,_br_,_b_,_x_,_op_) bitput(_bw_,_br_,_b_,_x_)
+#define bitput64(_bw_,_br_,_b_,_x_,_op_) if((_b_)>45) { bitput(_bw_,_br_,(_b_)-32, (_x_)>>32); bitenorm(_bw_,_br_,_op_); bitput(_bw_,_br_,32,(unsigned)(_x_)); } else bitput(_bw_,_br_,_b_,_x_)
+
+#define bitget8( _bw_,_br_,_b_,_x_,_ip_) bitget31(_bw_,_br_,_b_,_x_)
+#define bitget16(_bw_,_br_,_b_,_x_,_ip_) bitget31(_bw_,_br_,_b_,_x_)
+#define bitget32(_bw_,_br_,_b_,_x_,_ip_) bitget57(_bw_,_br_,_b_,_x_)
+#define bitget64(_bw_,_br_,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget57(_bw_,_br_,(_b_)-32,_x_); bitdnorm(_bw_,_br_,_ip_); BITGET64(_bw_,_br_,32,_v); _x_ = _x_<<32|_v; } else bitget57(_bw_,_br_,_b_,_x_)  
 #endif
 
 //---------- max. bit length + transform for sorted/unsorted arrays, delta,delta 1, delta > 1, zigzag, zigzag of delta, xor, FOR,----------------
 #ifdef __cplusplus
 extern "C" {
 #endif
-//------ ORed array, for maximum bit length of the elements in the unsorted integer array ---------------------
+//------ ORed array, used to determine the maximum bit length of the elements in an unsorted integer array ---------------------
 uint8_t  bit8( uint8_t  *in, unsigned n, uint8_t  *px);
 uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px);
 uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px);
