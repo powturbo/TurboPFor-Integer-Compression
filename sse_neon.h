@@ -30,6 +30,7 @@
   #ifdef __ARM_NEON  //--------------------------------------------------------------------------------------------------
 #include <arm_neon.h>
 #define __m128i uint32x4_t
+#define __m128  float32x4_t
 
 //#define USE_MACROS
 #define uint8x16_to_8x8x2(_a_)                  ((uint8x8x2_t) { vget_low_u8(_a_), vget_high_u8(_a_) })
@@ -41,10 +42,11 @@
                          u3,u2,u1,u0)           ({ uint8_t  __attribute__((aligned(16))) _u[16] = { u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12,u13,u14,u15 }; (uint32x4_t)vld1q_u8( _u);})
 #define _mm_set_epi16(   u7,u6,u5,u4,\
                          u3,u2,u1,u0)           ({ uint16_t __attribute__((aligned(16))) _u[ 8] = { u0,u1,u2,u3,u4,u5,u6,u7 };                               (uint32x4_t)vld1q_u16(_u);})
-#define _mm_set_epi32(   u3,u2,u1,u0)           ({ uint32_t __attribute__((aligned(16))) _u[ 4] = { u0,u1,u2,u3 };                                                      vld1q_u32(_u);})
-#define _mm_set_epi64x(        u1,u0)           ({ uint64_t __attribute__((aligned(16))) _u[ 2] = { u0,u1 };                                                 (uint32x4_t)vld1q_u64(_u);})
+//#define _mm_set_epi32(   u3,u2,u1,u0)           ({ uint32_t __attribute__((aligned(16))) _u[ 4] = { u0,u1,u2,u3 };                                                      vld1q_u32(_u);})
+//#define _mm_set_epi64x(        u1,u0)           ({ uint64_t __attribute__((aligned(16))) _u[ 2] = { u0,u1 };                                                 (uint32x4_t)vld1q_u64(_u);})
 #define _mm_set_epi32(u3, u2, u1, u0)           vcombine_u32(vcreate_u32((uint64_t)u1 << 32 | u0), vcreate_u32((uint64_t)u3 << 32 | u2))
 #define _mm_set_epi64x(u1, u0)                  (__m128i)vcombine_u64(vcreate_u64(u0), vcreate_u64(u1))
+
 #else
 static ALWAYS_INLINE __m128i _mm_set_epi8(      uint8_t u15, uint8_t u14, uint8_t u13, uint8_t u12, uint8_t u11, uint8_t u10, uint8_t  u9, uint8_t  u8,
                                                 uint8_t  u7, uint8_t  u6, uint8_t  u5, uint8_t  u4,
@@ -53,22 +55,31 @@ static ALWAYS_INLINE __m128i _mm_set_epi8(      uint8_t u15, uint8_t u14, uint8_
 static ALWAYS_INLINE __m128i _mm_set_epi16(     uint16_t u7, uint16_t u6, uint16_t u5, uint16_t u4,
                                                 uint16_t u3, uint16_t u2, uint16_t u1, uint16_t u0) { uint16_t __attribute__((aligned(16))) u[ 8] = { u0,u1,u2,u3,u4,u5,u6,u7 }; return (uint32x4_t)vld1q_u16(u); }
 static ALWAYS_INLINE __m128i _mm_set_epi32(     uint32_t u3, uint32_t u2, uint32_t u1, uint32_t u0) { uint32_t __attribute__((aligned(16))) u[ 4] = { u0,u1,u2,u3 };             return             vld1q_u32(u); }
-static ALWAYS_INLINE __m128i _mm_set_epi64x(    uint64_t u1, uint64_t u0) { uint64_t __attribute__((aligned(16))) u[ 2] = { u0,u1 };                                         return (uint32x4_t)vld1q_u64(u); }
+static ALWAYS_INLINE __m128i _mm_set_epi64x(    uint64_t u1, uint64_t u0) { uint64_t __attribute__((aligned(16))) u[ 2] = { u0,u1 };                                             return (uint32x4_t)vld1q_u64(u); }
 #endif
+
+#define _mm_setr_epi16(  u7,u6,u5,u4,\
+                         u3,u2,u1,u0)           _mm_set_epi16( u0,u1,u2,u3,u4,u5,u6,u7)   
+#define _mm_setr_epi32(  u3,u2,u1,u0)           _mm_set_epi32( u0,u1,u2,u3)   
+#define _mm_setr_epi64x(       u1,u0)           _mm_set_epi64x(u0,u0)
 
 #define _mm_set1_epi8(  _u8_ )                  (__m128i)vdupq_n_u8( _u8_ )
 #define _mm_set1_epi16( _u16_)                  (__m128i)vdupq_n_u16(_u16_)
 #define _mm_set1_epi32( _u32_)                           vdupq_n_u32(_u32_)
 #define _mm_set1_epi64x(_u64_)                  (__m128i)vdupq_n_u64(_u64_)
 #define _mm_setzero_si128()                              vdupq_n_u32( 0   )
+
+#define _mm_cvtss_f32(_a_)                      vgetq_lane_f32((float32x4_t)(_a_), 0)
+#define _mm_setzero_ps()	                    (__m128)vdupq_n_f32(0)
+#define _mm_set1_ps(_f32_)	                    (__m128)vdupq_n_f32(_f32_)
 //---------------------------------------------- Arithmetic -----------------------------------------------------------------------
-#define _mm_add_epi8(  _a_,_b_)                 (__m128i)vaddq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_))
+#define _mm_add_epi8(   _a_,_b_)                (__m128i)vaddq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_))
 #define _mm_add_epi16(  _a_,_b_)                (__m128i)vaddq_u16((uint16x8_t)(_a_), (uint16x8_t)(_b_))
-#define _mm_add_epi32(  _a_,_b_)                            vaddq_u32(             _a_,               _b_ )
+#define _mm_add_epi32(  _a_,_b_)                         vaddq_u32(             _a_,               _b_ )
 #define _mm_sub_epi8(   _a_,_b_)                (__m128i)vsubq_s8( ( int8x16_t)(_a_), ( int8x16_t)(_b_))
 #define _mm_sub_epi16(  _a_,_b_)                (__m128i)vsubq_u16((uint16x8_t)(_a_), (uint16x8_t)(_b_))
 #define _mm_sub_epi32(  _a_,_b_)                (__m128i)vsubq_u32((uint32x4_t)(_a_), (uint32x4_t)(_b_))
-#define _mm_subs_epu8(   _a_,_b_)               (__m128i)vqsubq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_))
+#define _mm_subs_epu8(  _a_,_b_)                (__m128i)vqsubq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_))
 
 #define _mm_mullo_epi16(_a_,_b_)                (__m128i)vmulq_s16(( int16x8_t)(_a_), ( int16x8_t)(_b_))
 #define _mm_mullo_epi32(_a_,_b_)                (__m128i)vmulq_s32(( int32x4_t)(_a_), ( int32x4_t)(_b_))
@@ -86,9 +97,9 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b) {
   return (__m128i)vcombine_s32(alo, ahi);
 }
 //---------------------------------------------- Special math functions -----------------------------------------------------------
-#define _mm_min_epu8(   _a_,_b_)                (__m128i)vminq_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_))
+#define _mm_min_epu8(   _a_,_b_)                (__m128i)vminq_u8( (uint8x16_t)(_a_), (uint8x16_t)(_b_))
 #define _mm_min_epu16(  _a_,_b_)                (__m128i)vminq_u16((uint16x8_t)(_a_), (uint16x8_t)(_b_))
-#define _mm_min_epi16(  _a_,_b_)                (__m128i)vminq_s16((int16x8_t)(_a_), (int16x8_t)(_b_))
+#define _mm_min_epi16(  _a_,_b_)                (__m128i)vminq_s16(( int16x8_t)(_a_), ( int16x8_t)(_b_))
 //---------------------------------------------- Logical --------------------------------------------------------------------------
 #define  mm_testnz_epu32(_a_)                   vmaxvq_u32(_a_) //vaddvq_u32(_a_)
 #define  mm_testnz_epu8(_a_)                    vmaxv_u8(_a_)
@@ -96,19 +107,19 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b) {
 #define _mm_and_si128(  _a_,_b_)                (__m128i)vandq_u32(  (uint32x4_t)(_a_), (uint32x4_t)(_b_))
 #define _mm_xor_si128(  _a_,_b_)                (__m128i)veorq_u32(  (uint32x4_t)(_a_), (uint32x4_t)(_b_))
 //---------------------------------------------- Shift ----------------------------------------------------------------------------
-#define _mm_slli_epi16( _a_,_m_)                (__m128i)vshlq_n_u16((uint16x8_t)(_a_), _m_)
-#define _mm_slli_epi32( _a_,_m_)                (__m128i)vshlq_n_u32((uint32x4_t)(_a_), _m_)
-#define _mm_slli_epi64( _a_,_m_)                (__m128i)vshlq_n_u64((uint64x2_t)(_a_), _m_)
-#define _mm_slli_si128( _a_,_m_)                (__m128i)vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_a_), 16 - (_m_) ) // _m_: 1 - 15
+#define _mm_slli_epi16( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>15?vdupq_n_u16(0):vshlq_n_u16((uint16x8_t)(_a_), (_m_))) )
+#define _mm_slli_epi32( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>31?vdupq_n_u32(0):vshlq_n_u32((uint32x4_t)(_a_), (_m_))) )
+#define _mm_slli_epi64( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_a_), (_m_))) )
+#define _mm_slli_si128( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):((_m_)>15?(__m128i)vdupq_n_u8(0):(__m128i)vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_a_), 16 - ((_m_)) )) ) // (_m_): 1 - 15
 
-#define _mm_srli_epi16( _a_,_m_)                (__m128i)vshrq_n_u16((uint16x8_t)(_a_), _m_)
-#define _mm_srli_epi32( _a_,_m_)                (__m128i)vshrq_n_u32((uint32x4_t)(_a_), _m_)
-#define _mm_srli_epi64( _a_,_m_)                (__m128i)vshlq_n_u64((uint64x2_t)(_a_), _m_)
-#define _mm_srli_si128( _a_,_m_)                (__m128i)vextq_s8((int8x16_t)(_a_), vdupq_n_s8(0), (_m_))
+#define _mm_srli_epi16( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>15?vdupq_n_u16(0):vshrq_n_u16((uint16x8_t)(_a_), (_m_))) ) 
+#define _mm_srli_epi32( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>31?vdupq_n_u32(0):vshrq_n_u32((uint32x4_t)(_a_), (_m_))) )
+#define _mm_srli_epi64( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_a_), (_m_))) )
+#define _mm_srli_si128( _a_,_m_)                (__m128i)(_m_<=0?(_a_):(_m_>15?(__m128i)vdupq_n_u8( 0):(__m128i)vextq_s8((int8x16_t)(_a_), vdupq_n_s8(0), (_m_))))
 
-#define _mm_srai_epi16( _a_,_m_)                (__m128i)vshrq_n_s16((int16x8_t)(_a_), _m_)
-#define _mm_srai_epi32( _a_,_m_)                (__m128i)vshrq_n_s32((int32x4_t)(_a_), _m_)
-#define _mm_srai_epi64( _a_,_m_)                (__m128i)vshrq_n_s64((int64x2_t)(_a_), _m_)
+#define _mm_srai_epi16( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>15?vshrq_n_s16((int16x8_t)vshrq_n_s16((int16x8_t)(_a_),  8),  8):vshrq_n_s16((int16x8_t)(_a_), (_m_))) )
+#define _mm_srai_epi32( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>31?vshrq_n_s32((int32x4_t)vshrq_n_s32((int32x4_t)(_a_), 16), 16):vshrq_n_s32((int32x4_t)(_a_), (_m_))) )
+#define _mm_srai_epi64( _a_,_m_)                (__m128i)((_m_)<=0?(_a_):(__m128i)((_m_)>63?vshrq_n_s64((int64x2_t)vshrq_n_s64((int64x2_t)(_a_), 32), 32):vshrq_n_s64((int64x2_t)(_a_), (_m_))) )
 
 #define _mm_sllv_epi32( _a_,_b_)                (__m128i)vshlq_u32((uint32x4_t)(_a_), (uint32x4_t)(_b_))
 #define _mm_srlv_epi32( _a_,_b_)                (__m128i)vshlq_u32((uint32x4_t)(_a_), vnegq_s32((int32x4_t)(_b_)))
@@ -128,9 +139,19 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b) {
 #define  mm_loadu_epi64p(  _u64p_,_a_)          (__m128i)vld1q_lane_u64((uint64_t *)(_u64p_), (uint64x2_t)(_a_), 0)
 #define _mm_loadu_si128(  _ip_)                 vld1q_u32(_ip_)
 #define _mm_load_si128(   _ip_)                 vld1q_u32(_ip_)
+
+#define _mm_load_ps(      _ip_)	                (__m128)vld1q_f32((float32_t *)(_ip_))
+#define _mm_loadu_ps(     _ip_)	                (__m128)vld1q_f32((float32_t *)(_ip_))
+#define _mm_load1_ps(     _ip_)	                (__m128)vld1q_dup_f32((float32_t *)(_p_))
+#define _mm_loadl_pi(_a_, _ip_) 	            (__m128)vcombine_f32((float32x2_t)vld1_f32((float32_t *)(_ip)), (float32x2_t)vget_high_f32(_a_))
+#define _mm_loadh_pi(_a_, _ip_)	                (__m128)vcombine_f32((float32x2_t)vget_low_f32(_a_), (float32x2_t)vld1_f32((const float *)(_ip_)))
 //---------------------------------------------- Store ----------------------------------------------------------------------------
 #define _mm_storel_epi64(_ip_,_a_)              vst1q_lane_u64((uint64_t *)(_ip_), (uint64x2_t)(_a_), 0)
 #define _mm_storeu_si128(_ip_,_a_)              vst1q_u32((__m128i *)(_ip_),_a_)
+
+#define _mm_store_ps(    _ip_,_a_)              vst1q_f32(     (float32_t *)_ip_, (float32x4_t)(_a_))
+#define _mm_storeu_ps(   _ip_,_a_)              vst1q_f32(     (float32_t *)_ip_, (float32x4_t)(_a_))
+#define _mm_store_ss(    _ip_,_a_)	            vst1q_lane_f32((float32_t *)_ip_, (float32x4_t)(_a_), 0)
 //---------------------------------------------- Convert --------------------------------------------------------------------------
 #define  mm_cvtsi64_si128p(_u64p_,_a_)          mm_loadu_epi64p(_u64p_,_a_)
 #define _mm_cvtsi64_si128(_a_)                  (__m128i)vdupq_n_u64(_a_)  //vld1q_s64(_a_)
@@ -179,7 +200,7 @@ static ALWAYS_INLINE uint64_t  mm_movemask_epu64(__m128i v) { const uint64x2_t m
 static ALWAYS_INLINE uint32_t  mm_movemask_epu32(uint32x4_t v) { const uint32x4_t mask = {1,2,4,8}, av = vandq_u32(v, mask), xv = vextq_u32(av, av, 2), ov = vorrq_u32(av, xv); return vgetq_lane_u32(vorrq_u32(ov, vextq_u32(ov, ov, 3)), 0); }
     #endif
 // --------------------------------------------- Swizzle : _mm_shuffle_epi8 / _mm_shuffle_epi32 / Pack/Unpack -----------------------------------------
-#define _MM_SHUFFLE(u3,u2,u1,u0)                ((u3) << 6 | (u2) << 4 | (u1) << 2 | (u0))
+#define _MM_SHUFFLE(_u3_,_u2_,_u1_,_u0_)        ((_u3_) << 6 | (_u2_) << 4 | (_u1_) << 2 | (_u0_))
 
 #define _mm_shuffle_epi8(_a_, _b_)              (__m128i)vqtbl1q_u8((uint8x16_t)(_a_), (uint8x16_t)(_b_))
     #if defined(__aarch64__)
@@ -244,7 +265,307 @@ static ALWAYS_INLINE __m128i _mm_unpackhi_epi32(__m128i _a_, __m128i _b_) { uint
 static ALWAYS_INLINE __m128i _mm_unpackhi_epi64(__m128i _a_, __m128i _b_) {                                                                                                  return (uint32x4_t)vcombine_u64(vget_high_u64((uint64x2_t)(_a_)), vget_high_u64((uint64x2_t)(_b_))); }
 #endif
 
-  #else //------------------------------------- intel SSE2/SSSE3 --------------------------------------------------------------
+#if __clang__  // emulate _mm_slli_epi8 when count c is not (constant) immediate (solves a compiler issue w. clang on arm)
+#define _mm_slli_epi8(_a_, _m_ )                _mm_and_si128(_mm_set1_epi8(0xff << _m_), _mm_slli_epi32(_a_, _m_ ))
+#define _mm_srli_epi8(_a_, _m_ )                _mm_and_si128(_mm_set1_epi8(0xff >> _m_), _mm_srli_epi32(_a_, _m_ ))
+static ALWAYS_INLINE __m128i mm_slli_epi8(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_slli_epi8(a, 1);
+    case  2: return _mm_slli_epi8(a, 2);
+    case  3: return _mm_slli_epi8(a, 3);
+    case  4: return _mm_slli_epi8(a, 4);
+    case  5: return _mm_slli_epi8(a, 5);
+    case  6: return _mm_slli_epi8(a, 6);
+    case  7: return _mm_slli_epi8(a, 7);
+    default: return _mm_setzero_si128(); 
+  }
+}  
+
+static ALWAYS_INLINE __m128i mm_slli_epi16(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_slli_epi16(a, 1);
+    case  2: return _mm_slli_epi16(a, 2);
+    case  3: return _mm_slli_epi16(a, 3);
+    case  4: return _mm_slli_epi16(a, 4);
+    case  5: return _mm_slli_epi16(a, 5);
+    case  6: return _mm_slli_epi16(a, 6);
+    case  7: return _mm_slli_epi16(a, 7);
+    case  8: return _mm_slli_epi16(a, 8);
+    case  9: return _mm_slli_epi16(a, 9);
+    case 10: return _mm_slli_epi16(a,10);
+    case 11: return _mm_slli_epi16(a,11);
+    case 12: return _mm_slli_epi16(a,12);
+    case 13: return _mm_slli_epi16(a,13);
+    case 14: return _mm_slli_epi16(a,14);
+    case 15: return _mm_slli_epi16(a,15);
+	default:  return _mm_setzero_si128(); 
+  }
+}  
+
+static ALWAYS_INLINE __m128i mm_slli_epi32(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_slli_epi32(a, 1);
+    case  2: return _mm_slli_epi32(a, 2);
+    case  3: return _mm_slli_epi32(a, 3);
+    case  4: return _mm_slli_epi32(a, 4);
+    case  5: return _mm_slli_epi32(a, 5);
+    case  6: return _mm_slli_epi32(a, 6);
+    case  7: return _mm_slli_epi32(a, 7);
+    case  8: return _mm_slli_epi32(a, 8);
+    case  9: return _mm_slli_epi32(a, 9);
+    case 10: return _mm_slli_epi32(a,10);
+    case 11: return _mm_slli_epi32(a,11);
+    case 12: return _mm_slli_epi32(a,12);
+    case 13: return _mm_slli_epi32(a,13);
+    case 14: return _mm_slli_epi32(a,14);
+    case 15: return _mm_slli_epi32(a,15);
+    case 16: return _mm_slli_epi32(a,16);
+    case 17: return _mm_slli_epi32(a,17);
+    case 18: return _mm_slli_epi32(a,18);
+    case 19: return _mm_slli_epi32(a,19);
+    case 20: return _mm_slli_epi32(a,20);
+    case 21: return _mm_slli_epi32(a,21);
+    case 22: return _mm_slli_epi32(a,22);
+    case 23: return _mm_slli_epi32(a,23);
+    case 24: return _mm_slli_epi32(a,24);
+    case 25: return _mm_slli_epi32(a,25);
+    case 26: return _mm_slli_epi32(a,26);
+    case 27: return _mm_slli_epi32(a,27);
+    case 28: return _mm_slli_epi32(a,28);
+    case 29: return _mm_slli_epi32(a,29);
+    case 30: return _mm_slli_epi32(a,30);
+    case 31: return _mm_slli_epi32(a,31);
+	default:  return _mm_setzero_si128(); 
+  }
+}  
+
+static ALWAYS_INLINE __m128i mm_slli_epi64(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_slli_epi64(a, 1);
+    case  2: return _mm_slli_epi64(a, 2);
+    case  3: return _mm_slli_epi64(a, 3);
+    case  4: return _mm_slli_epi64(a, 4);
+    case  5: return _mm_slli_epi64(a, 5);
+    case  6: return _mm_slli_epi64(a, 6);
+    case  7: return _mm_slli_epi64(a, 7);
+    case  8: return _mm_slli_epi64(a, 8);
+    case  9: return _mm_slli_epi64(a, 9);
+    case 10: return _mm_slli_epi64(a,10);
+    case 11: return _mm_slli_epi64(a,11);
+    case 12: return _mm_slli_epi64(a,12);
+    case 13: return _mm_slli_epi64(a,13);
+    case 14: return _mm_slli_epi64(a,14);
+    case 15: return _mm_slli_epi64(a,15);
+    case 16: return _mm_slli_epi64(a,16);
+    case 17: return _mm_slli_epi64(a,17);
+    case 18: return _mm_slli_epi64(a,18);
+    case 19: return _mm_slli_epi64(a,19);
+    case 20: return _mm_slli_epi64(a,20);
+    case 21: return _mm_slli_epi64(a,21);
+    case 22: return _mm_slli_epi64(a,22);
+    case 23: return _mm_slli_epi64(a,23);
+    case 24: return _mm_slli_epi64(a,24);
+    case 25: return _mm_slli_epi64(a,25);
+    case 26: return _mm_slli_epi64(a,26);
+    case 27: return _mm_slli_epi64(a,27);
+    case 28: return _mm_slli_epi64(a,28);
+    case 29: return _mm_slli_epi64(a,29);
+    case 30: return _mm_slli_epi64(a,30);
+    case 31: return _mm_slli_epi64(a,31);
+    case 32: return _mm_slli_epi64(a,32);
+    case 33: return _mm_slli_epi64(a,33);
+    case 34: return _mm_slli_epi64(a,34);
+    case 35: return _mm_slli_epi64(a,35);
+    case 36: return _mm_slli_epi64(a,36);
+    case 37: return _mm_slli_epi64(a,37);
+    case 38: return _mm_slli_epi64(a,38);
+    case 39: return _mm_slli_epi64(a,39);
+    case 40: return _mm_slli_epi64(a,40);
+    case 41: return _mm_slli_epi64(a,41);
+    case 42: return _mm_slli_epi64(a,42);
+    case 43: return _mm_slli_epi64(a,43);
+    case 44: return _mm_slli_epi64(a,44);
+    case 45: return _mm_slli_epi64(a,45);
+    case 46: return _mm_slli_epi64(a,46);
+    case 47: return _mm_slli_epi64(a,47);
+    case 48: return _mm_slli_epi64(a,48);
+    case 49: return _mm_slli_epi64(a,49);
+    case 50: return _mm_slli_epi64(a,50);
+    case 51: return _mm_slli_epi64(a,51);
+    case 52: return _mm_slli_epi64(a,52);
+    case 53: return _mm_slli_epi64(a,53);
+    case 54: return _mm_slli_epi64(a,54);
+    case 55: return _mm_slli_epi64(a,55);
+    case 56: return _mm_slli_epi64(a,56);
+    case 57: return _mm_slli_epi64(a,57);
+    case 58: return _mm_slli_epi64(a,58);
+    case 59: return _mm_slli_epi64(a,59);
+    case 60: return _mm_slli_epi64(a,60);
+    case 61: return _mm_slli_epi64(a,61);
+    case 62: return _mm_slli_epi64(a,62);
+    case 63: return _mm_slli_epi64(a,63);
+	default:  return _mm_setzero_si128(); 
+  }
+}
+
+static ALWAYS_INLINE __m128i mm_srli_epi8(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_srli_epi8(a, 1);
+    case  2: return _mm_srli_epi8(a, 2);
+    case  3: return _mm_srli_epi8(a, 3);
+    case  4: return _mm_srli_epi8(a, 4);
+    case  5: return _mm_srli_epi8(a, 5);
+    case  6: return _mm_srli_epi8(a, 6);
+    case  7: return _mm_srli_epi8(a, 7);
+    default: return _mm_setzero_si128(); 
+  }
+}
+
+static ALWAYS_INLINE __m128i mm_srli_epi16(__m128i a, unsigned c) {
+  switch(c&0x1f) {
+    case  0: return a;
+    case  1: return _mm_srli_epi16(a, 1);
+    case  2: return _mm_srli_epi16(a, 2);
+    case  3: return _mm_srli_epi16(a, 3);
+    case  4: return _mm_srli_epi16(a, 4);
+    case  5: return _mm_srli_epi16(a, 5);
+    case  6: return _mm_srli_epi16(a, 6);
+    case  7: return _mm_srli_epi16(a, 7);
+    case  8: return _mm_srli_epi16(a, 8);
+    case  9: return _mm_srli_epi16(a, 9);
+    case 10: return _mm_srli_epi16(a,10);
+    case 11: return _mm_srli_epi16(a,11);
+    case 12: return _mm_srli_epi16(a,12);
+    case 13: return _mm_srli_epi16(a,13);
+    case 14: return _mm_srli_epi16(a,14);
+    case 15: return _mm_srli_epi16(a,15);
+	default: return _mm_setzero_si128(); 
+  }
+}
+
+static ALWAYS_INLINE __m128i mm_srli_epi32(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_srli_epi32(a, 1);
+    case  2: return _mm_srli_epi32(a, 2);
+    case  3: return _mm_srli_epi32(a, 3);
+    case  4: return _mm_srli_epi32(a, 4);
+    case  5: return _mm_srli_epi32(a, 5);
+    case  6: return _mm_srli_epi32(a, 6);
+    case  7: return _mm_srli_epi32(a, 7);
+    case  8: return _mm_srli_epi32(a, 8);
+    case  9: return _mm_srli_epi32(a, 9);
+    case 10: return _mm_srli_epi32(a,10);
+    case 11: return _mm_srli_epi32(a,11);
+    case 12: return _mm_srli_epi32(a,12);
+    case 13: return _mm_srli_epi32(a,13);
+    case 14: return _mm_srli_epi32(a,14);
+    case 15: return _mm_srli_epi32(a,15);
+    case 16: return _mm_srli_epi32(a,16);
+    case 17: return _mm_srli_epi32(a,17);
+    case 18: return _mm_srli_epi32(a,18);
+    case 19: return _mm_srli_epi32(a,19);
+    case 20: return _mm_srli_epi32(a,20);
+    case 21: return _mm_srli_epi32(a,21);
+    case 22: return _mm_srli_epi32(a,22);
+    case 23: return _mm_srli_epi32(a,23);
+    case 24: return _mm_srli_epi32(a,24);
+    case 25: return _mm_srli_epi32(a,25);
+    case 26: return _mm_srli_epi32(a,26);
+    case 27: return _mm_srli_epi32(a,27);
+    case 28: return _mm_srli_epi32(a,28);
+    case 29: return _mm_srli_epi32(a,29);
+    case 30: return _mm_srli_epi32(a,30);
+    case 31: return _mm_srli_epi32(a,31);
+	default: return _mm_setzero_si128(); 
+  }
+}  
+
+static ALWAYS_INLINE __m128i mm_srli_epi64(__m128i a, unsigned c) {
+  switch(c) {
+    case  0: return a;
+    case  1: return _mm_srli_epi64(a, 1);
+    case  2: return _mm_srli_epi64(a, 2);
+    case  3: return _mm_srli_epi64(a, 3);
+    case  4: return _mm_srli_epi64(a, 4);
+    case  5: return _mm_srli_epi64(a, 5);
+    case  6: return _mm_srli_epi64(a, 6);
+    case  7: return _mm_srli_epi64(a, 7);
+    case  8: return _mm_srli_epi64(a, 8);
+    case  9: return _mm_srli_epi64(a, 9);
+    case 10: return _mm_srli_epi64(a,10);
+    case 11: return _mm_srli_epi64(a,11);
+    case 12: return _mm_srli_epi64(a,12);
+    case 13: return _mm_srli_epi64(a,13);
+    case 14: return _mm_srli_epi64(a,14);
+    case 15: return _mm_srli_epi64(a,15);
+    case 16: return _mm_srli_epi64(a,16);
+    case 17: return _mm_srli_epi64(a,17);
+    case 18: return _mm_srli_epi64(a,18);
+    case 19: return _mm_srli_epi64(a,19);
+    case 20: return _mm_srli_epi64(a,20);
+    case 21: return _mm_srli_epi64(a,21);
+    case 22: return _mm_srli_epi64(a,22);
+    case 23: return _mm_srli_epi64(a,23);
+    case 24: return _mm_srli_epi64(a,24);
+    case 25: return _mm_srli_epi64(a,25);
+    case 26: return _mm_srli_epi64(a,26);
+    case 27: return _mm_srli_epi64(a,27);
+    case 28: return _mm_srli_epi64(a,28);
+    case 29: return _mm_srli_epi64(a,29);
+    case 30: return _mm_srli_epi64(a,30);
+    case 31: return _mm_srli_epi64(a,31);
+    case 32: return _mm_srli_epi64(a,32);
+    case 33: return _mm_srli_epi64(a,33);
+    case 34: return _mm_srli_epi64(a,34);
+    case 35: return _mm_srli_epi64(a,35);
+    case 36: return _mm_srli_epi64(a,36);
+    case 37: return _mm_srli_epi64(a,37);
+    case 38: return _mm_srli_epi64(a,38);
+    case 39: return _mm_srli_epi64(a,39);
+    case 40: return _mm_srli_epi64(a,40);
+    case 41: return _mm_srli_epi64(a,41);
+    case 42: return _mm_srli_epi64(a,42);
+    case 43: return _mm_srli_epi64(a,43);
+    case 44: return _mm_srli_epi64(a,44);
+    case 45: return _mm_srli_epi64(a,45);
+    case 46: return _mm_srli_epi64(a,46);
+    case 47: return _mm_srli_epi64(a,47);
+    case 48: return _mm_srli_epi64(a,48);
+    case 49: return _mm_srli_epi64(a,49);
+    case 50: return _mm_srli_epi64(a,50);
+    case 51: return _mm_srli_epi64(a,51);
+    case 52: return _mm_srli_epi64(a,52);
+    case 53: return _mm_srli_epi64(a,53);
+    case 54: return _mm_srli_epi64(a,54);
+    case 55: return _mm_srli_epi64(a,55);
+    case 56: return _mm_srli_epi64(a,56);
+    case 57: return _mm_srli_epi64(a,57);
+    case 58: return _mm_srli_epi64(a,58);
+    case 59: return _mm_srli_epi64(a,59);
+    case 60: return _mm_srli_epi64(a,60);
+    case 61: return _mm_srli_epi64(a,61);
+    case 62: return _mm_srli_epi64(a,62);
+    case 63: return _mm_srli_epi64(a,63);
+	default: return _mm_setzero_si128(); 
+  }
+}
+
+#else
+#define mm_slli_epi16(a, c)                     _mm_slli_epi16(a, c)
+#define mm_slli_epi32(a, c)                     _mm_slli_epi32(a, c)
+#define mm_slli_epi64(a, c)                     _mm_slli_epi64(a, c)
+#define mm_srli_epi16(a, c)                     _mm_srli_epi16(a, c)
+#define mm_srli_epi32(a, c)                     _mm_srli_epi32(a, c)	
+#define mm_srli_epi64(a, c)                     _mm_srli_epi64(a, c)	
+#endif
+
+  #else //----------------- intel SSE2/SSSE3 ( wraper functions compatible with intel/arm; permits to have on source code version for arm+intel) --------------
 #define mm_movemask_epu32(_a_)                  _mm_movemask_ps(_mm_castsi128_ps(_a_))
 #define mm_movemask_epu16(_a_)                  _mm_movemask_epi8(_a_)
 #define mm_loadu_epi64p( _u64p_,_a_)            _a_ = _mm_cvtsi64_si128(ctou64(_u64p_))
@@ -257,11 +578,24 @@ static ALWAYS_INLINE __m128i _mm_unpackhi_epi64(__m128i _a_, __m128i _b_) {     
 #define mm_mullo_epu32(   _a_,_b_)              _mm_mullo_epi32(_a_,_b_)
 #define mm_cvtsi64_si128p(_u64p_,_a_)           _a_ = _mm_cvtsi64_si128(ctou64(_u64p_))
 
-#define mm_cmpgt_epu32(   _a_, _b_)             _mm_cmpgt_epi32(_mm_xor_si128(_a_, cv80000000), _mm_xor_si128(_b_, cv80000000))
+#define mm_cmplt_epu32(   _a_, _b_)             _mm_cmplt_epi32(_mm_xor_si128(_a_, cv80000000), _mm_xor_si128(_b_, cv80000000)) //__m128i cv80000000 = _mm_set1_epi32(0x80000000); must be declared 
+#define mm_cmpgt_epu32(   _a_, _b_)             _mm_cmpgt_epi32(_mm_xor_si128(_a_, cv80000000), _mm_xor_si128(_b_, cv80000000)) 
+#define _mm_cmplt_epu32(  _a_, _b_)             _mm_cmplt_epi32(_mm_xor_si128(_a_, _mm_set1_epi32(0x80000000)), _mm_xor_si128(_b_, _mm_set1_epi32(0x80000000))) 
+#define _mm_cmpgt_epu32(  _a_, _b_)             _mm_cmpgt_epi32(_mm_xor_si128(_a_, _mm_set1_epi32(0x80000000)), _mm_xor_si128(_b_, _mm_set1_epi32(0x80000000))) 
 
 #define mm_shuffle_nnnn_epi32(_a_, _n_)         _mm_shuffle_epi32(_a_, _MM_SHUFFLE(_n_,_n_,_n_,_n_))
 #define mm_shuffle_2031_epi32(_a_)              _mm_shuffle_epi32(_a_, _MM_SHUFFLE(2,0,3,1))
 #define mm_shuffle_3120_epi32(_a_)              _mm_shuffle_epi32(_a_, _MM_SHUFFLE(3,1,2,0))
+
+#define mm_slli_epi8( a, c)                     _mm_slli_epi8( a, c)
+#define mm_slli_epi16(a, c)                     _mm_slli_epi16(a, c)
+#define mm_slli_epi32(a, c)                     _mm_slli_epi32(a, c)
+#define mm_slli_epi64(a, c)                     _mm_slli_epi64(a, c)
+
+#define mm_srli_epi8( a, c)                     _mm_srli_epi8( a, c)
+#define mm_srli_epi16(a, c)                     _mm_srli_epi16(a, c)
+#define mm_srli_epi32(a, c)                     _mm_srli_epi32(a, c)
+#define mm_srli_epi64(a, c)                     _mm_srli_epi64(a, c)
 
     #ifdef __SSSE3__
 static ALWAYS_INLINE __m128i mm_rbit_epi8(__m128i v) { // reverse bits in bytes
