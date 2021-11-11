@@ -248,7 +248,14 @@ static ALWAYS_INLINE uint16_t _mm_cvtsi128_si16(__m128i v) { return (uint16_t)_m
 #define DELTRB(_in_, _n_, _start_, _mindelta_, _b_, _out_) { unsigned _v; for(_b_=0,_v = 0; _v < _n_; _v++) _out_[_v] = _in_[_v] - (_start_) - _v*(_mindelta_) - (_mindelta_), _b_ |= _out_[_v]; _b_ = bsr32(_b_); }
 
 //----------------------------------------- bitreverse scalar + SIMD -------------------------------------------
-  #if __has_builtin(__builtin_bitreverse64)
+  #if __clang__ && defined __has_builtin
+    #if __has_builtin(__builtin_bitreverse64)
+#define BUILTIN_BITREVERSE      
+    #else
+#define BUILTIN_BITREVERSE  
+    #endif 
+  #endif
+  #ifdef BUILTIN_BITREVERSE
 #define rbit8(x)  __builtin_bitreverse8( x)
 #define rbit16(x) __builtin_bitreverse16(x)
 #define rbit32(x) __builtin_bitreverse32(x)
