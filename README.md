@@ -35,7 +35,7 @@ TurboPFor: Fastest Integer Compression
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
   * Point wise relative error bound **lossy** floating point compression
-  * :new: (2019.11) **TurboFloat** novel efficient floating point compression using TurboPFor
+  * **TurboFloat** novel efficient floating point compression using TurboPFor
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
@@ -51,7 +51,7 @@ TurboPFor: Fastest Integer Compression
 ![Promo video](turbopfor.jpg?raw=true)
 
 ### Integer Compression Benchmark (single thread):
-- :new: Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
+- Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
 - [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues/47)
@@ -472,7 +472,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  11 Nov 2021
+Last update:  13 Nov 2021
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
