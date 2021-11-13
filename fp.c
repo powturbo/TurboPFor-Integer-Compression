@@ -177,9 +177,9 @@ size_t TEMPLATE2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t 
     for(p = _p; p != &_p[VSIZE]; p+=32/(USIZE/8)) {
       __m128i v0 = _mm_loadu_si128((__m128i *) p);
       __m128i v1 = _mm_loadu_si128((__m128i *)(p+16/(USIZE/8)));
-              v0 = TEMPLATE2( mm_slli_epi, USIZE)(v0,b);
+              v0 = TEMPLATE2(_mm_slli_epi, USIZE)(v0,b);
               v0 = TEMPLATE2( mm_rbit_epi, USIZE)(v0);
-              v1 = TEMPLATE2( mm_slli_epi, USIZE)(v1,b);
+              v1 = TEMPLATE2(_mm_slli_epi, USIZE)(v1,b);
               v1 = TEMPLATE2( mm_rbit_epi, USIZE)(v1);
       _mm_storeu_si128((__m128i *) p,               v0);
       _mm_storeu_si128((__m128i *)(p+16/(USIZE/8)), v1);
@@ -232,10 +232,10 @@ size_t TEMPLATE2(fpxdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t 
       __m128i v0 = _mm_loadu_si128((__m128i *)p);
       __m128i v1 = _mm_loadu_si128((__m128i *)(p+16/(USIZE/8)));
               v0 = TEMPLATE2( mm_rbit_epi, USIZE)(v0);
-              v0 = TEMPLATE2( mm_srli_epi, USIZE)(v0,b);
+              v0 = TEMPLATE2(_mm_srli_epi, USIZE)(v0,b);
               v0 = TEMPLATE2( mm_xord_epi, USIZE)(v0,sv);
               v1 = TEMPLATE2( mm_rbit_epi, USIZE)(v1);
-              v1 = TEMPLATE2( mm_srli_epi, USIZE)(v1,b);
+              v1 = TEMPLATE2(_mm_srli_epi, USIZE)(v1,b);
               sv = TEMPLATE2( mm_xord_epi, USIZE)(v1,v0);
       _mm_storeu_si128((__m128i *) op,               v0);
       _mm_storeu_si128((__m128i *)(op+16/(USIZE/8)), sv);
@@ -290,9 +290,9 @@ size_t TEMPLATE2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_
     for(p = _p; p != &_p[VSIZE]; p+=32/(USIZE/8)) {
       __m128i v0 = _mm_loadu_si128((__m128i *) p);
       __m128i v1 = _mm_loadu_si128((__m128i *)(p+16/(USIZE/8)));
-              v0 = TEMPLATE2( mm_slli_epi, USIZE)(v0,b);
+              v0 = TEMPLATE2(_mm_slli_epi, USIZE)(v0,b);
               v0 = TEMPLATE2( mm_rbit_epi, USIZE)(v0);
-              v1 = TEMPLATE2( mm_slli_epi, USIZE)(v1,b);
+              v1 = TEMPLATE2(_mm_slli_epi, USIZE)(v1,b);
               v1 = TEMPLATE2( mm_rbit_epi, USIZE)(v1);
       _mm_storeu_si128((__m128i *) p,               v0);
       _mm_storeu_si128((__m128i *)(p+16/(USIZE/8)), v1);
