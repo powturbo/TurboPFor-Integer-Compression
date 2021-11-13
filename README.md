@@ -17,7 +17,7 @@ TurboPFor: Fastest Integer Compression
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
   * Compress 70 times faster and decompress up to 4 times faster than OptPFD
 * **Bit Packing**
-  * Fastest and most efficient **"SIMD Bit Packing"** **10 Billions integers/sec (40Gb/s!)**
+  * Fastest and most efficient **"SIMD Bit Packing"** **15 Billions integers/sec (60Gb/s!)**
   * Scalar **"Bit Packing"** decoding nearly as fast as SIMD-Packing in realistic (No "pure cache") scenarios
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
