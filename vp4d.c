@@ -266,7 +266,7 @@ extern char _shuffle_16[256][16];
 ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out P4DELTA(uint_t start), unsigned b, unsigned bx ) {
   if(!(b & 0x80)) {
       #if USIZE == 64
-    b = (b == 63)?64:b;  // 64 is encoded for bitsize 63 (permits using only 6 bits for b)
+    b = (b == 63)?64:b;  // 63,64 are both encoded w. same bitsize 64 (permits using only 6 bits for b)
       #endif
     return TEMPLATE2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);  // bitunpack only
   }
@@ -311,7 +311,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     { uint_t *_op = out,*op,*pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf;
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
+          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
         } _op+=64;
       }
     }
@@ -319,7 +319,7 @@ ALWAYS_INLINE unsigned char *TEMPLATE2(_P4DEC, USIZE)(unsigned char *__restrict 
     { uint_t *_op = out, *op, *pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op = _op;  bb[i]; bb[i] >>= 8,op += 8) { const unsigned char m = bb[i];
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
+          _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
         } _op += 64;
       }
     }
