@@ -6,7 +6,7 @@ TurboPFor: Fastest Integer Compression
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
   * **ALL** functions available for **AMD/Intel** **64 bits ARMv8 NEON** Linux+MacOS/M1 & **Power9 Altivec**
-  * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs Amd/intel + Apple M1,
+  * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs (Amd/intel + Apple M1),
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
