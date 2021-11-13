@@ -22,7 +22,7 @@ DIRLIB ?= $(PREFIX)/lib
 
 OPT=-fstrict-aliasing
 ifeq (,$(findstring clang, $(CC)))
-OPT+=-falign-loops
+OPT+=-falign-loops 
 endif
 
 #------- OS/ARCH -------------------
@@ -48,7 +48,8 @@ ifeq ($(ARCH),ppc64le)
 else ifeq ($(ARCH),aarch64)
   CFLAGS=-march=armv8-a 
 ifneq (,$(findstring clang, $(CC)))
-  OPT+=-fomit-frame-pointer
+  OPT+=-fomit-frame-pointer 
+#-fmacro-backtrace-limit=0
 endif
   SSE=-march=armv8-a
 else ifeq ($(ARCH),$(filter $(ARCH),x86_64))
