@@ -463,6 +463,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * <a name="DocId"></a>[Document identifier data set](http://lemire.me/data/integercompression2014.html)
 
 * **Integer compression publications:**
+  * :green_book:[Evaluating Lightweight Integer Compression Algorithms in Column-Oriented In-Memory DBMS](http://www.adms-conf.org/2021-camera-ready/heinzl_adms21.pdf)
   * :green_book:[In Vacuo and In Situ Evaluation of SIMD Codecs (TurboPackV,TurboPFor/QMX)](http://dl.acm.org/citation.cfm?id=3015023) + [paper](http://www.cs.otago.ac.nz/homepages/andrew/papers/)
   * :green_book:[SIMD Compression and the Intersection of Sorted Integers](http://arxiv.org/abs/1401.6399)
   * :green_book:[Partitioned Elias-Fano Indexes](http://www.di.unipi.it/~ottavian/files/elias_fano_sigir14.pdf)
