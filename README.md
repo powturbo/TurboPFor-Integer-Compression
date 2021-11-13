@@ -6,7 +6,7 @@ TurboPFor: Fastest Integer Compression
 ======================================
 * **TurboPFor: The new synonym for "integer compression"**
   * **ALL** functions now available for **64 bits ARMv8 NEON** & **Power9 Altivec**
-  * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs
+  * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs Amd/intel + Apple M1,
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SIMD/AVX2!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
@@ -433,6 +433,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 - Linux arm64: 64 bits aarch64 ARMv8:  gcc (>=6.3)
 - Linux arm64: 64 bits aarch64 ARMv8:  clang
 - MaxOS: XCode (>=9)
+- MaxOS: Apple M1 (Clang)
 - PowerPC ppc64le (incl. SIMD): gcc (>=8.0)
 
 ###### Multithreading:
