@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-// intel sse to arm neon optimized for maximum speed with possible minor changes to the source code
+// Intel SSE to ARM NEON optimized for maximum speed (and compatibility gcc/clang) with possible minor changes to the source code
 
 #ifndef _SSE_NEON_H_
 #define _SSE_NEON_H_
@@ -111,26 +111,27 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i u, __m128i v) {
 #define _mm_and_si128(   _u_,_v_)               (__m128i)vandq_u32(  (uint32x4_t)(_u_), (uint32x4_t)(_v_))
 #define _mm_xor_si128(   _u_,_v_)               (__m128i)veorq_u32(  (uint32x4_t)(_u_), (uint32x4_t)(_v_))
 //---------------------------------------------- Shift ----------------------------------------------------------------------------
-#define  mm_slli_epi8(   _u_,_c_)               (__m128i)vshlq_n_u8( (uint8x16_t)(_u_), (_c_))             // c=0- 7 parameter c MUST be a constant
-#define  mm_slli_epi16(  _u_,_c_)               (__m128i)vshlq_n_u16((uint16x8_t)(_u_), (_c_))             // c=0-15
-#define  mm_slli_epi32(  _u_,_c_)               (__m128i)vshlq_n_u32((uint32x4_t)(_u_), (_c_))             // c=0-31
-#define  mm_slli_epi64(  _u_,_c_)               (__m128i)vshlq_n_u64((uint64x2_t)(_u_), (_c_))             // c=0-63
+#define  mm_slli_epi8(   _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)> 7?vdupq_n_u8( 0):vshlq_n_u8( (uint8x16_t)(_u_), (_c_))))  // parameter c MUST be a constant / vshlq_n_u8: __constrange(0-(N-1))
+#define  mm_slli_epi16(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>15?vdupq_n_u16(0):vshlq_n_u16((uint16x8_t)(_u_), (_c_))))
+#define  mm_slli_epi32(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>31?vdupq_n_u32(0):vshlq_n_u32((uint32x4_t)(_u_), (_c_))))           
+#define  mm_slli_epi64(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_u_), (_c_))))           
+#define _mm_slli_si128(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>15?vdupq_n_u8( 0):vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_u_), 16-(_c_) )) ) // vextq_u8: __constrange(0-15)
 
-#define  mm_srli_epi8(   _u_,_c_)               (__m128i)vshrq_n_u8( (uint8x16_t)(_u_), (_c_))  
-#define  mm_srli_epi16(  _u_,_c_)               (__m128i)vshrq_n_u16((uint16x8_t)(_u_), (_c_))  
-#define  mm_srli_epi32(  _u_,_c_)               (__m128i)vshrq_n_u32((uint32x4_t)(_u_), (_c_))  
-#define  mm_srli_epi64(  _u_,_c_)               (__m128i)vshlq_n_u64((uint64x2_t)(_u_), (_c_))  
+#define  mm_srli_epi8(   _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)> 7?vdupq_n_u8( 0):vshrq_n_u8( (uint8x16_t)(_u_), (_c_)))) // vshrq_n: __constrange(1-N)
+#define  mm_srli_epi16(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>15?vdupq_n_u16(0):vshrq_n_u16((uint16x8_t)(_u_), (_c_))))
+#define  mm_srli_epi32(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>31?vdupq_n_u32(0):vshrq_n_u32((uint32x4_t)(_u_), (_c_))))
+#define  mm_srli_epi64(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_u_), (_c_))))
+#define _mm_srli_si128(  _u_,_c_)               (__m128i)((_m_)<1?(_u_):((_m_)>15?vdupq_n_u8(0):vextq_u8((uint8x16_t)(_u_), vdupq_n_u8(0), (_c_) )) ) // vextq_u8: __constrange(0-15)
 
-#define  mm_srai_epi8(   _u_,_c_)               (__m128i)vshrq_n_s8( (int8x16_t)(_u_), (_c_))
-#define  mm_srai_epi16(  _u_,_c_)               (__m128i)vshrq_n_s16((int16x8_t)(_u_), (_c_))
-#define  mm_srai_epi32(  _u_,_c_)               (__m128i)vshrq_n_s32((int32x4_t)(_u_), (_c_))
-#define  mm_srai_epi64(  _u_,_c_)               (__m128i)vshrq_n_s64((int64x2_t)(_u_), (_c_))
+#define  mm_srai_epi8(   _u_,_c_)               (__m128i)((_c_)<1?(_u_):vshrq_n_s8( (int8x16_t)(_u_), (_c_))) // c <=  8 (vshrq_n:1-N)
+#define  mm_srai_epi16(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):vshrq_n_s16((int16x8_t)(_u_), (_c_))) // c <= 16
+#define  mm_srai_epi32(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):vshrq_n_s32((int32x4_t)(_u_), (_c_))) // c <= 32
+#define  mm_srai_epi64(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):vshrq_n_s64((int64x2_t)(_u_), (_c_))) // c <= 64
 
 #define _mm_slli_epi8(   _u_,_m_)               (__m128i)vshlq_u8( (uint8x16_t)(_u_), vdupq_n_s8(  (_m_))) // parameter c integer constant/variable
 #define _mm_slli_epi16(  _u_,_m_)               (__m128i)vshlq_u16((uint16x8_t)(_u_), vdupq_n_s16( (_m_)))
 #define _mm_slli_epi32(  _u_,_m_)               (__m128i)vshlq_u32((uint32x4_t)(_u_), vdupq_n_s32( (_m_)))
 #define _mm_slli_epi64(  _u_,_m_)               (__m128i)vshlq_u64((uint64x2_t)(_u_), vdupq_n_s64( (_m_)))
-#define _mm_slli_si128(  _u_,_m_)               (__m128i)((_m_)<=0?(_u_):((_m_)>15?(__m128i)vdupq_n_u8(0):(__m128i)vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_u_), 16 - ((_m_)) )) ) // (_m_): 1 - 15
 
 #define _mm_srli_epi8(   _u_,_m_)               (__m128i)vshlq_u8( (uint8x16_t)(_u_), vdupq_n_s8( -(_m_)))
 #define _mm_srli_epi16(  _u_,_m_)               (__m128i)vshlq_u16((uint16x8_t)(_u_), vdupq_n_s16(-(_m_)))
