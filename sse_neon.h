@@ -121,7 +121,7 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i u, __m128i v) {
 #define  mm_srli_epi16(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>15?vdupq_n_u16(0):vshrq_n_u16((uint16x8_t)(_u_), (_c_))))
 #define  mm_srli_epi32(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>31?vdupq_n_u32(0):vshrq_n_u32((uint32x4_t)(_u_), (_c_))))
 #define  mm_srli_epi64(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_u_), (_c_))))
-#define _mm_srli_si128(  _u_,_c_)               (__m128i)((_m_)<1?(_u_):((_m_)>15?vdupq_n_u8(0):vextq_u8((uint8x16_t)(_u_), vdupq_n_u8(0), (_c_) )) ) // vextq_u8: __constrange(0-15)
+#define _mm_srli_si128(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):((_c_)>15?vdupq_n_u8(0):vextq_u8((uint8x16_t)(_u_), vdupq_n_u8(0), (_c_) )) ) // vextq_u8: __constrange(0-15)
 
 #define  mm_srai_epi8(   _u_,_c_)               (__m128i)((_c_)<1?(_u_):vshrq_n_s8( (int8x16_t)(_u_), (_c_))) // c <=  8 (vshrq_n:1-N)
 #define  mm_srai_epi16(  _u_,_c_)               (__m128i)((_c_)<1?(_u_):vshrq_n_s16((int16x8_t)(_u_), (_c_))) // c <= 16
