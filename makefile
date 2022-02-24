@@ -14,6 +14,7 @@ CXX ?= g++
 #CC=powerpc64le-linux-gnu-gcc
 CL = $(CC)
 #DEBUG=-DDEBUG -g
+DEBUG=-DNDEBUG -s
 
 PREFIX ?= /usr/local
 DIRBIN ?= $(PREFIX)/bin
