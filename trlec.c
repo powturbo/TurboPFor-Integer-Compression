@@ -252,7 +252,8 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
     TRLEPUT(pp, ip, m, rmap, op);
     pp = ++ip;
   }
-  if(ip < ie) PUTC(op, *ip++);                                      AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
+  if(ip < ie) PUTC(op, *ip++);
+                                                                    AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
 
   if(op - out < inlen)
     return op - out;                                            // RETURN length = rle

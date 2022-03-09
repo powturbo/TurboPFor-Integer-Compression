@@ -449,7 +449,8 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
           unsigned b = ((*ip++) >> 5)+1;
           *op = *(unsigned long long *)ip;
           if(unlikely(b!=8))
-            *op &= (1ull<<(b*8))-1;         op++; ip += b;
+            *op &= (1ull<<(b*8))-1;
+                                            op++; ip += b;
           break;
         }
           #endif
