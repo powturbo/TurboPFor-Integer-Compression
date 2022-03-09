@@ -1141,7 +1141,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     default: goto end;
   }
   if(l) {
-    char s[65]; printf("%-35 ", bestr(id, 8, s, codstr(codid), codlev));
+    char s[65]; printf("%-35s ", bestr(id, 8, s, codstr(codid), codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
