@@ -122,7 +122,7 @@ uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
     vo1 = _mm_or_si128(vo1, v1);
     vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
     vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }                                                                             start = _mm_cvtsi128_si16(_mm_srli_si128(vs,14));
+  }                                                                             start = mm_cvtsi128_si16(_mm_srli_si128(vs,14));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi16(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);
     #else
@@ -443,7 +443,7 @@ uint16_t bitz16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
     vo1 = _mm_or_si128(vo1, v1);
     vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
     vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }                                                                                         start = _mm_cvtsi128_si16(_mm_srli_si128(vs,14));
+  }                                                                                         start = mm_cvtsi128_si16(_mm_srli_si128(vs,14));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi16(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);
     #else
@@ -488,7 +488,7 @@ uint32_t bitz32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
     vo1 = _mm_or_si128(vo1, v1);
     vx0 = _mm_or_si128(vx0, _mm_xor_si128(v0, vb0));
     vx1 = _mm_or_si128(vx1, _mm_xor_si128(v1, vb0));
-  }                                                                             start = _mm_cvtsi128_si16(_mm_srli_si128(vs,12));
+  }                                                                             start = mm_cvtsi128_si16(_mm_srli_si128(vs,12));
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi32(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);
     #else
