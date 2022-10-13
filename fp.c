@@ -88,6 +88,7 @@
 #define int_t  TEMPLATE3(int,  USIZE, _t)
 
 //-------- TurboPFor Zigzag of zigzag for unsorted/sorted integer/floating point array ---------------------------------------
+//returns the end_address - start_address of the compressed data(char*) = size of compressed data in bytes
 size_t TEMPLATE2(p4nzzenc128v,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t        _p[VSIZE+32], *ip, *p, pd = 0;
   unsigned char *op = out;
@@ -104,6 +105,7 @@ size_t TEMPLATE2(p4nzzenc128v,USIZE)(uint_t *in, size_t n, unsigned char *out, u
   return op - out;
 }
 
+//returns the (end_address - start_address)*sizeof(uint_t) of the decompressed data(uint_t*) = size of the decompressed data in bytes
 size_t TEMPLATE2(p4nzzdec128v,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
   uint_t        _p[VSIZE+32],*p, *op, pd=0;
   unsigned char *ip = in;
@@ -114,7 +116,7 @@ size_t TEMPLATE2(p4nzzdec128v,USIZE)(unsigned char *in, size_t n, uint_t *out, u
   }
   if(n = (out+n) - op)
     for(ip = TEMPLATE2(P4DEC,USIZE)(ip, n, _p), p = _p; p != &_p[n]; p++,op++) FD(0,USIZE);
-  return ip - in;
+  return (op - out)*sizeof(uint_t);
 }
 
 /*---------------- TurboFloat XOR: last value Predictor with TurboPFor ---------------------------------------------------------
