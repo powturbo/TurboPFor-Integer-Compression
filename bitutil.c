@@ -183,7 +183,7 @@ uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
 
 //----- Undelta: In-place prefix sum (min. Delta = 0) -------------------
 #define DD(i) _ip[i] = (start += _ip[i] + _md);
-#define BITDD(_t_, _in_, _n_, _md_) { _t_ *_ip; const _md = _md_;\
+#define BITDD(_t_, _in_, _n_, _md_) { _t_ *_ip; const int _md = _md_;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { DD(0); DD(1); DD(2); DD(3); }\
   for(;_ip != _in_+_n_; _ip++) DD(0);\
 }
@@ -240,7 +240,7 @@ uint32_t bitzzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uin
 uint64_t bitzzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o=0,*op = out,u,d,startd=0; BITZDE(uint64_t, in, n, mindelta, 64,o |= u;*op++ = u); return o;}
 
 #define ZDD(i) u = _ip[i]; d = u - start; _ip[i] = zigzagdec64(u)+(int64_t)startd+_md; startd = d; start = u
-#define BITZDD(_t_, _in_, _n_, _md_) { _t_ *_ip, startd=0,d,u; const _md = _md_;\
+#define BITZDD(_t_, _in_, _n_, _md_) { _t_ *_ip, startd=0,d,u; const int _md = _md_;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { ZDD(0); ZDD(1); ZDD(2); ZDD(3); }\
   for(;_ip != _in_+_n_; _ip++) ZDD(0);\
 }
