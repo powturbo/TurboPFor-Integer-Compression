@@ -228,14 +228,14 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 
 ### Compile:
         Download or clone TurboPFor
-		git clone git://github.com/powturbo/TurboPFor.git
-		cd TurboPFor
+		git clone git://github.com/powturbo/TurboPFor-Integer-Compression.git
+		cd TurboPFor-Integer-Compression
 		make
         
 
         To benchmark external libraries + lz77 compression:
-		git clone --recursive git://github.com/powturbo/TurboPFor.git
-		cd TurboPFor
+		git clone --recursive git://github.com/powturbo/TurboPFor-Integer-Compression.git
+		cd TurboPFor-Integer-Compression
         make CODEC1=1 CODEC2=1 LZ=1
 
 ###### Windows visual c++
@@ -480,14 +480,14 @@ Last update:  13 Nov 2021
 
 ##### TurboPFor + external libraries
 <pre>
-TurboPFor               	https://github.com/powturbo/TurboPFor
+TurboPFor               	https://github.com/powturbo/TurboPFor-Integer-Compression
 FastPFor (FP)              	https://github.com/lemire/FastPFor
 lz4				https://github.com/Cyan4973/lz4
 LittleIntPacker (LI)       	https://github.com/lemire/LittleIntPacker
 MaskedVbyte             	http://maskedvbyte.org
 Polycom (PC)               	https://github.com/encode84/bcm
 simdcomp (SC)              	https://github.com/lemire/simdcomp
-Simple-8b optimized     	https://github.com/powturbo/TurboPFor
+Simple-8b optimized     	https://github.com/powturbo/TurboPFor-Integer-Compression
 Streamvbyte             	https://github.com/lemire/streamvbyte
 VarintG8IU              	https://github.com/lemire/FastPFor
 </pre>
