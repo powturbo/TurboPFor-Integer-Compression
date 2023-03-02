@@ -355,14 +355,22 @@ unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned c
       op += r;
       ip += (r+1)*sizeof(uint_t);                                               PREFETCH(ip+512, 0);
        #else
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a; ip += sizeof(uint_t); *op++ = c;          PREFETCH(ip +512, 0);
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;
+    ip += sizeof(uint_t); *op++ = c;          PREFETCH(ip +512, 0);
     continue;
     a: ip += sizeof(uint_t);                                                    PREFETCH(ip +512, 0);
        #endif

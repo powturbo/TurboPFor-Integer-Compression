@@ -79,7 +79,7 @@ static unsigned cntcalc32(const unsigned char *__restrict in, unsigned inlen, cn
 #define PUTE(_op_, _e_) do { PUTC(_op_, _e_); vlput32(_op_, 0); } while(0)
 
 #define SZ64 if((z = (ctou64(ip) ^ ctou64(ip+1)))) goto a; ip += 8;
-#define SZ32 if((z = (ctou32(ip) ^ ctou32(ip+1)))) break; ip += 4;
+#define SZ32 if((z = (ctou32(ip) ^ ctou32(ip+1)))) goto a; ip += 4;
 
 #define SRLEPUT8(_pp_, _ip_, _e_, _op_) do {\
   unsigned _r = (_ip_ - _pp_)+1;\
@@ -252,7 +252,8 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
     TRLEPUT(pp, ip, m, rmap, op);
     pp = ++ip;
   }
-  if(ip < ie) PUTC(op, *ip++);                                      AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
+  if(ip < ie) PUTC(op, *ip++);
+                                                                    AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
 
   if(op - out < inlen)
     return op - out;                                            // RETURN length = rle

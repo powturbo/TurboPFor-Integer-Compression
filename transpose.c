@@ -596,7 +596,7 @@ void TEMPLATE2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
   for(ip = in,op = out; ip != in+v; ip += ESIZE*32, op += ESIZE*32/STRIDE) {
     unsigned char *p = op;                                                      PREFETCH(ip+ESIZE*192,0);
-    __m256i iv[ESIZE],ov[ESIZE];
+    __m256i iv[ESIZE],ov[ESIZE == 2 ? ESIZE + 2 : ESIZE];
       #if   ESIZE == 2
     ov[0] = _mm256_shuffle_epi8(LD256((__m256i *) ip    ), sv0);
     ov[1] = _mm256_shuffle_epi8(LD256((__m256i *)(ip+32)), sv1);
@@ -724,7 +724,7 @@ void TEMPLATE2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
     #endif
 
   for(op = out,ip = in; op != out+v; ip += ESIZE*32/STRIDE, op += ESIZE*32) { unsigned char *p = ip;    PREFETCH(ip+ESIZE*192,0);
-    __m256i iv[ESIZE], ov[ESIZE];
+    __m256i iv[ESIZE], ov[ESIZE == 2 ? ESIZE + 2 : ESIZE];
 
       #if STRIDE > ESIZE
     NBL0(0,1); NBL( 2,3); NB(0,1,iv[0]); NB(2,3,iv[1]);
@@ -842,7 +842,7 @@ void TEMPLATE2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
       #endif
 
   for(ip = in, op = out; ip != in+v; ip+=ESIZE*16,op += ESIZE*16/STRIDE) { unsigned char *p = op;   PREFETCH(ip+(ESIZE*16)*ESIZE,0);
-    __m128i iv[ESIZE],ov[ESIZE];
+    __m128i iv[ESIZE],ov[ESIZE == 2 ? ESIZE + 2 : ESIZE];
       #if defined(__SSSE3__) || defined(__ARM_NEON)
         #if   ESIZE == 2
           #ifdef __ARM_NEON
@@ -1100,7 +1100,7 @@ void TEMPLATE2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *o
 
   for(op = out,ip = in; op != out+v; op+=ESIZE*16,ip += ESIZE*16/STRIDE) {
     unsigned char *p=ip;                                                        PREFETCH(ip+(ESIZE*16/STRIDE)*ESIZE,0);
-    __m128i iv[ESIZE], ov[ESIZE];
+    __m128i iv[ESIZE], ov[ESIZE == 2 ? ESIZE + 2 : ESIZE];
 
       #if STRIDE > ESIZE //------------ Nibble transpose -------------------
     ov[0] = _mm_loadl_epi64((__m128i *)    p   );
