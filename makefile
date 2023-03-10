@@ -1,21 +1,24 @@
-# powturbo (c) Copyright 2013-2019
+# powturbo (c) Copyright 2013-2023
 # Download or clone TurboPFor:
 # git clone git://github.com/powturbo/TurboPFor.git 
 # make
 #
 # To benchmark external libraries:
-# git clone --recursive git://github.com/powturbo/TurboPFor.git 
-#        make: "make CODEC1=1 CODEC2=1 LZ=1" 
-# on arm make: "make CODEC1=1 LZ=1"
+# 1 - clone/download the external repository into the TurboPFor directoty
+# 2 - activate the repository in the makefile ext/libext.mak
+# 3 -       make: "make CODEC1=1 CODEC2=1 ICCODEC=1" 
+# on arm make: "make CODEC1=1 ICCODEC=1"
 
+ICCODEC=1
+#AVX2=1
+SSE=1
+#-------------------------------------------------
 CC ?= gcc
 CXX ?= g++
 
 #CC=powerpc64le-linux-gnu-gcc
 CL = $(CC)
 #DEBUG=-DDEBUG -g
-DEBUG=-DNDEBUG -s
-
 JAVA_HOME ?= /usr/lib/jvm/java-8-openjdk-amd64
 PREFIX ?= /usr/local
 DIRBIN ?= $(PREFIX)/bin
@@ -32,6 +35,7 @@ ifneq (,$(filter Windows%,$(OS)))
   OS := Windows
   CC=gcc
   CXX=g++
+#  CC=clang
   ARCH=x86_64
 else
   OS := $(shell uname -s)
@@ -45,26 +49,26 @@ endif
 endif
 
 ifeq ($(ARCH),ppc64le)
-  SSE=-D__SSSE3__
-  CFLAGS=-mcpu=power9 -mtune=power9 $(SSE)
+  _SSE=-D__SSSE3__
+  CFLAGS=-mcpu=power9 -mtune=power9 $(_SSE)
 else ifeq ($(ARCH),aarch64)
   CFLAGS=-march=armv8-a 
 ifneq (,$(findstring clang, $(CC)))
   OPT+=-fomit-frame-pointer 
 #-fmacro-backtrace-limit=0
 endif
-  SSE=-march=armv8-a
+  _SSE=-march=armv8-a
 else ifeq ($(ARCH),$(filter $(ARCH),x86_64))
 # set minimum arch sandy bridge SSE4.1 + AVX
-  SSE=-march=corei7-avx -mtune=corei7-avx 
-# SSE+=-mno-avx -mno-aes
-  CFLAGS=$(SSE)
-  AVX2=-march=haswell
-#  SSE=$(AVX2)
+  _SSE=-march=corei7-avx -mtune=corei7-avx 
+# _SSE+=-mno-avx -mno-aes
+  _AVX2=-march=haswell
 endif
 
-CFLAGS+=-w -Wall $(DEBUG) $(OPT) 
-
+CFLAGS+=$(DEBUG) $(OPT) -w 
+CXXFLAGS+=-w 
+#-Wall -Wincompatible-pointer-types
+#LDFLAGS=-Wl,--stack,33554432
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
 LDFLAGS+=-lrt -lm
 endif
@@ -79,44 +83,43 @@ endif
 
 all: icapp 
 
-vp4c_sse.o: vp4c.c
-	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c vp4c.c -o vp4c_sse.o
+bitutil_avx2.o: bitutil.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitutil.c -o bitutil_avx2.o
 
 vp4c_avx2.o: vp4c.c
-	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c vp4c.c -o vp4c_avx2.o
-
-vp4d_sse.o: vp4d.c
-	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c vp4d.c -o vp4d_sse.o
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c vp4c.c -o vp4c_avx2.o
 
 vp4d_avx2.o: vp4d.c
-	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c vp4d.c -o vp4d_avx2.o
-
-bitpack_sse.o: bitpack.c
-	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c bitpack.c -o bitpack_sse.o
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c vp4d.c -o vp4d_avx2.o
 
 bitpack_avx2.o: bitpack.c
-	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c bitpack.c -o bitpack_avx2.o
-
-bitunpack_sse.o: bitunpack.c
-	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c bitunpack.c -o bitunpack_sse.o
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitpack.c -o bitpack_avx2.o
 
 bitunpack_avx2.o: bitunpack.c
-	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c bitunpack.c -o bitunpack_avx2.o
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitunpack.c -o bitunpack_avx2.o
+
+transpose.o: transpose.c
+	$(CC) -O3 -w $(OPT) -c transpose.c -o transpose.o
 
 transpose_sse.o: transpose.c
-	$(CC) -O3 -w $(SSE) -DSSE2_ON $(OPT) -c transpose.c -o transpose_sse.o
+	$(CC) -O3 -w $(_SSE) $(OPT) -c transpose.c -o transpose_sse.o
 
 transpose_avx2.o: transpose.c
-	$(CC) -O3 -w $(AVX2) -DAVX2_ON $(OPT) -c transpose.c -o transpose_avx2.o
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c transpose.c -o transpose_avx2.o
 
 -include ext/libext.mak
 
-LIB=bitpack.o bitpack_sse.o bitunpack.o bitunpack_sse.o \
-    vp4c.o vp4c_sse.o vp4d.o vp4d_sse.o \
-	bitutil.o fp.o v8.o vint.o transpose.o transpose_sse.o trlec.o trled.o vsimple.o eliasfano.o
-#bic.o 	
+LIB=bic.o bitpack.o bitunpack.o bitutil.o eliasfano.o fp.o transpose.o transpose_sse.o trlec.o trled.o vp4c.o vp4d.o v8.o v8pack.o vint.o vsimple.o vbit.o iccodec.o
 ifeq ($(ARCH),x86_64)
-LIB+=bitpack_avx2.o bitunpack_avx2.o vp4c_avx2.o vp4d_avx2.o transpose_avx2.o
+LIB+=vp4c_avx2.o vp4d_avx2.o transpose_avx2.o bitpack_avx2.o bitunpack_avx2.o bitutil_avx2.o
+endif
+
+ifeq ($(AVX2),1)
+CFLAGS+=$(_AVX2)
+else
+ifeq ($(SSE),1) 
+CFLAGS+=$(_SSE)
+endif
 endif
 
 libic.a: $(LIB)
@@ -149,7 +152,7 @@ myapp: myapp.o libic.a
 mycpp: mycpp.o libic.a
 	$(CXX) $^ $(LDFLAGS) -o mycpp
 
-.c.o:
+%.o: %.c
 	$(CC) -O3 $(CFLAGS) $< -c -o $@  
 
 .cc.o:
@@ -162,6 +165,7 @@ ifeq ($(OS),Windows_NT)
 clean:
 	del /S *.o
 	del /S *~
+	del libic.a
 else
 clean:
 	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete -or -name "icbench" -delete -or -name "libic.a" -delete
