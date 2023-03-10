@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-//  TurboPFor: Integer Compression - Benchmark App
+// TurboPFor: Integer Compression - Benchmark App
 #define _LARGEFILE64_SOURCE 1
 #define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
@@ -114,7 +114,7 @@ enum {
   TB_BPN128V,
   TB_EF128V,
 
-  #if defined(__AVX2__)
+  #if defined(__AVX2__) && defined(USE_AVX2)
 #define C_TURBOPFOR256  CODEC0V
   #else
 #define C_TURBOPFOR256  0
@@ -172,7 +172,7 @@ enum {
   #endif
   LI_HORPACK,
 
-  #if defined(__AVX2__)
+  #if defined(__AVX2__) && defined(USE_AVX2)
 #define C_LITTLEPACKBMI CODEC1
   #else
 #define C_LITTLEPACKBMI 0
@@ -224,7 +224,7 @@ enum {
   SC_FORDA,
   SC_SIMDPACK128,
 
-  #if defined(__AVX2__)
+  #if defined(__AVX2__) && defined(USE_AVX2)
 #define C_SIMDCOMP256   CODEC0V
   #else
 #define C_SIMDCOMP256   0
