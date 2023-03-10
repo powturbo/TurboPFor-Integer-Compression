@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2015-2019
+    Copyright (C) powturbo 2015-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,8 @@
 **/
   #ifndef USIZE
 #include <string.h>
-#include "conf.h"
-#include "trle.h"
+#include "include_/conf.h"
+#include "include_/trle.h"
 #include "trle_.h"
 
   #ifdef __ARM_NEON
@@ -252,14 +252,81 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
     TRLEPUT(pp, ip, m, rmap, op);
     pp = ++ip;
   }
-  if(ip < ie) PUTC(op, *ip++);
-                                                                    AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
+  if(ip < ie) PUTC(op, *ip++);                                      
+                                                                AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
 
   if(op - out < inlen)
     return op - out;                                            // RETURN length = rle
   memcpy(out, in, inlen);                                       // no compression, use memcpy
   return inlen;                                                 // RETURN outlen = inlen (memcpy)
 }
+
+#if 0
+unsigned trlelen(const unsigned char *__restrict in, unsigned inlen) {
+  unsigned      cnt[256] = {0}, m=-1, x=0, im, i, a, c;
+  unsigned char rmap[256], *ie = in+inlen, *ip = in,*pp = in, ix;
+  if(!inlen) return 0;                                          // RETURN 0 = zero length
+
+  a = cntcalc32(in, inlen, cnt);
+  if(cnt[a-1] == inlen) {
+    *out = *in;
+    return 1;                                                   // RETURN 1 = memset
+  }
+
+  if(a != 256) {                                                // determine escape char
+    for(im = a, i = m = 0; i < a; i++)
+      if(cnt[i] > x) x = cnt[i],ix = i;
+  } else for(i = 0; i < a; i++) {
+    if(cnt[i] < m) m = cnt[i],im = i;                           // minimum for ESC char
+    if(cnt[i] > x) x = cnt[i],ix = i;                           // maximum for embeding in the run length
+  }
+  if(m) {                                                       // no unused bytes found
+    rlelen++;                                                // 0: srle mode
+    rlelen++;                                               // _srlec8 escape char
+    rlelen += _srlelen8(in, inlen, op, im);
+    if(rlelen < inlen) return rlelen;                       // RETURN rle/escape
+    return inlen;                                               // RETURN outlen = inlen (memcpy)
+  }
+
+  c = (a+7)/8;
+  rlelen++; //PUTC(op, c);                                                  // c = bitmap length in bytes
+  //memset(op, 0, 32);
+  for(m = i = 0; i != c*8; i++)                                 // set bitmap for unused chars
+    if(!cnt[i]) op[i>>3] |= 1<<(i&7), rmap[m++] = i;
+  rlelen += c; //op += c;
+  for(; i != 256; i++) rmap[m++] = i;
+
+  m--;
+  rlelen++; //PUTC(op, ix);
+
+  if(inlen > SRLE8+1)                                           // encode
+    while(ip < ie-1-SRLE8) {
+        #if __WORDSIZE == 64
+      uint64_t z; SZ64; SZ64; SZ64; SZ64;                       __builtin_prefetch(ip +256, 0);
+      continue;
+      a: ip += ctz64(z)>>3;
+        #else
+      uint32_t z; SZ32; SZ32; SZ32; SZ32;                       __builtin_prefetch(ip +256, 0);
+      continue;
+      a: ip += ctz32(z)>>3;
+        #endif
+      TRLEPUT(pp, ip, m, rmap, op);
+      pp = ++ip;
+    }
+
+  while(ip < ie-1) {
+    while(ip < ie-1 && ip[1] == *pp) ip++;
+    TRLEPUT(pp, ip, m, rmap, op);
+    pp = ++ip;
+  }
+  if(ip < ie) PUTC(op, *ip++);                                      AS(ip == ie, "Fatal ip>ie=%d ", (int)(ip-ie));
+
+  if(op - out < inlen)
+    return op - out;                                            // RETURN length = rle
+  memcpy(out, in, inlen);                                       // no compression, use memcpy
+  return inlen;                                                 // RETURN outlen = inlen (memcpy)
+}
+#endif
 
 #undef USIZE
 #undef SRLE8
@@ -277,7 +344,7 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
 #undef USIZE
 
 #else // ------------------- include RLE 16, 32, 64
-#define uint_t TEMPLATE3(uint, USIZE, _t)
+#define uint_t T3(uint, USIZE, _t)
 #define ctout(_x_) *(uint_t *)(_x_)
 
 #define PUTC(_op_, _x_) ctout(_op_) = _x_, _op_ += sizeof(uint_t)
@@ -292,7 +359,7 @@ unsigned trlec(const unsigned char *__restrict in, unsigned inlen, unsigned char
 } while(0)
 
   #if !SRLE8
-unsigned TEMPLATE2(_srlec, USIZE)(const unsigned char *__restrict cin, unsigned inlen, unsigned char *__restrict out, uint_t e) {
+unsigned T2(_srlec, USIZE)(const unsigned char *__restrict cin, unsigned inlen, unsigned char *__restrict out, uint_t e) {
   unsigned  char *op = out;
   unsigned  n = inlen/sizeof(uint_t);
   uint_t   *in = (uint_t *)cin, *pp = in, *ip = in, *ie = in+n;
@@ -332,8 +399,8 @@ unsigned TEMPLATE2(_srlec, USIZE)(const unsigned char *__restrict cin, unsigned 
 #undef PUTC
 #undef PUTE
 
-unsigned TEMPLATE2(srlec, USIZE)(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, uint_t e) {
-  unsigned l = TEMPLATE2(_srlec, USIZE)(in, inlen, out, e);
+unsigned T2(srlec, USIZE)(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, uint_t e) {
+  unsigned l = T2(_srlec, USIZE)(in, inlen, out, e);
 
   if(l < inlen)
     return l;
