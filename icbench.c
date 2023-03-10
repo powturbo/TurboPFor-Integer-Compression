@@ -65,7 +65,7 @@
   #endif
 
 #include <time.h>
-#include "conf.h"
+#include "include_/conf.h"
 #define VINT_IN
 #include "vint.h"
 #include "bitpack.h"
