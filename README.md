@@ -22,20 +22,27 @@ TurboPFor: Fastest Integer Compression
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
   * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
-  * SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,...
-  * **TurboByte+TurboPackV** novel hybrid scheme combining the fastest SIMD codecs.
+  * SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,xor,...
+  * :new:(2023.03)**TurboByte+TurboPackV** novel hybrid scheme combining the fastest SIMD codecs.
 * **Simple family**
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
+* :new:(2023.03)**TurboVLC** novel variable length encoding for large integers 
+  with exponent + bitio mantissa similar to mu-law/extra-bits
+* :new:(2023.03)**Binary interpolative coding** : fastest implementation
 + **Transform**
-  * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, Transpose/Shuffle, 
+  * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, 
+  * :new:(2023.03) Transpose/Shuffle with integrated Xor and zigzag delta
+  * :new:(2023.03) 2D/3D/4D transpose
   * **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77
++ :new:(2023.03)**IC Codecs** transpose/rle + general purpose compression with lz4,zstd,turborc,...
 * **Floating Point Compression**
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
   * Point wise relative error bound **lossy** floating point compression
   * **TurboFloat** novel efficient floating point compression using TurboPFor
+  * :new:(2023.03)**TurboFloat LzXor** novel floating point compression using lempel-ziv compression
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
@@ -474,7 +481,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  13 Nov 2021
+Last update:  10 Mar 2023
 
 ## APPENDIX: icbench Integer Compression Benchmark
 
