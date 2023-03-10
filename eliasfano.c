@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2019
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -22,18 +22,20 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 
-//    eliasfano.c - "Integer Compression" Elias Fano
+//   eliasfano.c - "Integer Compression" Elias Fano
 #ifndef USIZE
 #include <string.h>
+#include "include_/conf.h"
+#include "include_/bitpack.h"
+#include "include_/bitutil.h"
+#include "include_/eliasfano.h"
+
+#include "include_/bitutil_.h"
+
 #pragma warning( disable : 4005)
 #pragma warning( disable : 4090)
 #pragma warning( disable : 4068)
 
-#include "conf.h"
-#include "bitpack.h"
-#define BITUTIL_IN
-#include "bitutil.h"
-#include "eliasfano.h"
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
@@ -105,11 +107,13 @@
 
 #define USIZE 32
 #include "eliasfano.c"
+#undef EF_INC
+#undef EFANOENC
+#undef EFANODEC
 
 #define EF_INC 0
 #define EFANOENC  efanoenc128v
 #define EFANODEC  efanodec128v
-
 #include "eliasfano.c"
   #endif
 
@@ -129,12 +133,12 @@
   #endif
 
 #else //--------------------------------------------- implementation ---------------------------------------------------------------
-#define uint_t TEMPLATE3(uint, USIZE, _t)
+#define uint_t T3(uint, USIZE, _t)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wparentheses"
 
-unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
+unsigned char *T2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned char *__restrict out, uint_t start) {
   uint_t *ip, e,x,hl,i;
   unsigned char *op;
   unsigned lb;
@@ -144,7 +148,7 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
   e = EFE(in,n-1,start);
   if(!e) { out[0] = 0; if(pa != _pa) free(pa);return out+1; }
 
-  lb = TEMPLATE2(bsr, USIZE)(e/n);
+  lb = T2(bsr, USIZE)(e/n);
   x = ((uint_t)1 << lb)-1; hl = PAD8((e>>lb)+n);
 
   for(i = 0; i != n&~3;) {
@@ -155,7 +159,7 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
   }
   while(i < n) pa[i] = EFE(in,i,start) & x, ++i;
   *out = lb+1;
-  op = TEMPLATE2(BITPACK,USIZE)(pa, n, out+1, lb);
+  op = T2(BITPACK,USIZE)(pa, n, out+1, lb);
 
   memset(op, 0, hl);
   for(i = 0; i != n&~3; ) {
@@ -169,7 +173,7 @@ unsigned char *TEMPLATE2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, uns
   return op+hl;
 }
 
-unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
+unsigned char *T2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t *__restrict out, uint_t start) {
   unsigned char *ip = in;
   uint_t        i,j,lb = *ip++;
   uint64_t      b,x;
@@ -189,7 +193,7 @@ unsigned char *TEMPLATE2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned
     return ip;
   }
 
-  ip = TEMPLATE2(BITUNPACK,USIZE)(ip, n, out, --lb);
+  ip = T2(BITUNPACK,USIZE)(ip, n, out, --lb);
   #define EFD(i) if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i;
 
   for(i=j=0;; j += sizeof(uint64_t)*8) {                                            //PREFETCH(ip+256,0);
