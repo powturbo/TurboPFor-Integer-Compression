@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2019
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -27,14 +27,18 @@
 #include <emmintrin.h>
     #elif defined(__ARM_NEON)
 #include <arm_neon.h>
-#include "sse_neon.h"
+#include "include_/sse_neon.h"
     #endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "include_/vlcbyte.h"
+#include "include_/conf.h"
+
 #pragma warning( disable : 4005)
 #pragma warning( disable : 4090)
 #pragma warning( disable : 4068)
-
-#include "conf.h"
-#include "vsimple.h"
 
   #ifdef __ARM_NEON
 #define PREFETCH(_ip_,_rw_)
@@ -93,17 +97,12 @@ static SV_LIM64;
 
   #else
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "conf.h"
-#define VINT_IN
-#include "vint.h"
-#define uint_t TEMPLATE3(uint, USIZE, _t)
+#define uint_t T3(uint, USIZE, _t)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsequenced"
 
-unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
+unsigned char *T2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned char *__restrict out) {
   unsigned xm,m,r,x;
   uint_t *e = in+n,*ip,*sp;
   unsigned char *op = out,*op_ = out+n*(USIZE/8);
@@ -114,15 +113,15 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned
       uint_t *q = ip+1;
       while(q+1 < e && *(q+1) == *ip) q++;
       r = q - ip;
-      if(r*TEMPLATE2(bsr, USIZE)(*ip) > 16 || (!*ip && r>4)) {
+      if(r*T2(bsr, USIZE)(*ip) > 16 || (!*ip && r>4)) {
         m = (*ip)?(USIZE<=32?33:65):0;
         goto a;
       }
     } else
       #endif
       r = 0;
-    for(m = x = TEMPLATE2(bsr, USIZE)(*ip);(r+1)*(xm = x > m?x:m) <= TEMPLATE2(s_lim, USIZE)[xm] && ip+r<e;) m = xm, x = TEMPLATE2(bsr, USIZE)(ip[++r]);
-    while(r < TEMPLATE2(s_itm, USIZE)[m]) m++;
+    for(m = x = T2(bsr, USIZE)(*ip);(r+1)*(xm = x > m?x:m) <= T2(s_lim, USIZE)[xm] && ip+r<e;) m = xm, x = T2(bsr, USIZE)(ip[++r]);
+    while(r < T2(s_itm, USIZE)[m]) m++;
 
     a:; //printf("%d,", m);
     switch(m) {
@@ -315,7 +314,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned
           else
             vbxput32(op, r);
         } else *op++ = r<<4|8;
-        TEMPLATE2(vbxput, USIZE)(op, ip[0]);
+        T2(vbxput, USIZE)(op, ip[0]);
         break;
         #endif
 
@@ -330,7 +329,7 @@ unsigned char *TEMPLATE2(VSENC, USIZE)(uint_t *__restrict in, size_t n, unsigned
 #define OP(__x) op[__x] // *op++ //
 #define OPI(__x) op+=__x// //
 
-unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, uint_t *__restrict op) {
+unsigned char *T2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, uint_t *__restrict op) {
   uint_t *op_ = op+n;
   while(op < op_) {
     uint64_t w = *(uint64_t *)ip;                                               PREFETCH(ip+256, 0);
@@ -449,8 +448,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
           unsigned b = ((*ip++) >> 5)+1;
           *op = *(unsigned long long *)ip;
           if(unlikely(b!=8))
-            *op &= (1ull<<(b*8))-1;
-                                            op++; ip += b;
+            *op &= (1ull<<(b*8))-1;         op++; ip += b;
           break;
         }
           #endif
@@ -471,7 +469,7 @@ unsigned char *TEMPLATE2(VSDEC, USIZE)(unsigned char *__restrict ip, size_t n, u
             r = (w>>8)&0xff, ip++;
           else { vbxget32(ip, r); }
         }
-        op += r+1; TEMPLATE2(vbxget, USIZE)(ip,u);
+        op += r+1; T2(vbxget, USIZE)(ip,u);
           #if (defined(__SSE2__) || defined(__ARM_NEON)) && USIZE == 32
         { __m128i v = _mm_set1_epi32(u);
           while(q < op) {
