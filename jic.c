@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2019
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -25,11 +25,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "bitutil.h"
-#include "vint.h"
-#include "vsimple.h"
-#include "bitpack.h"
-#include "vp4.h"
+
+#include "include_/conf.h"
+#include "include_/bitutil.h"
+#include "include_/vint.h"
+#include "include_/vsimple.h"
+#include "include_/bitpack.h"
+#include "include_/vp4.h"
 
 #include "jic.h"
 
