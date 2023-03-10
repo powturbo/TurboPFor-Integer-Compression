@@ -4,12 +4,6 @@
 [submodule "ext/bitshuffle"]
 	path = ext/bitshuffle
 	url = https://github.com/kiyo-masui/bitshuffle.git
-[submodule "bitshuffle"]
-	path = bitshuffle
-	url = https://github.com/kiyo-masui/bitshuffle.git
-[submodule "lz4"]
-	path = lz4
-	url = https://github.com/lz4/lz4.git
-[submodule "zstd"]
-	path = zstd
+[submodule "ext/zstd"]
+	path = ext/zstd
 	url = https://github.com/facebook/zstd.git
