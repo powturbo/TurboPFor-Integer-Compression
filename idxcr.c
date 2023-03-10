@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2019
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -37,11 +37,10 @@
 #include <malloc.h>
 #endif
 
-#include "conf.h"
-#define VINT_IN
-#include "vint.h"
-#include "bitpack.h"
-#include "vp4.h"
+#include "include_/conf.h"
+#include "include_/vint.h"
+#include "include_/bitpack.h"
+#include "include_/vp4.h"
 #include "idx.h"
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
@@ -58,7 +57,7 @@
 int verb;
 
 void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2019 Powturbo  %s\n", __DATE__);
+  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2023 Powturbo  %s\n", __DATE__);
   fprintf(stderr, "https://github.com/powturbo/TurboPFor\n\n");
   fprintf(stderr, "Create inverted index from 'Document identifier data set' format\n");
   fprintf(stderr, "See http://lemire.me/data/integercompression2014.html'\n");
