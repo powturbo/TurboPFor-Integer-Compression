@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2015-2019
+    Copyright (C) powturbo 2015-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -43,17 +43,18 @@
 #include <emmintrin.h>
   #elif defined(__ARM_NEON)
 #include <arm_neon.h>
-#include "sse_neon.h"
+#include "include_/sse_neon.h"
   #endif
-
+#include "include_/conf.h"
+#include "include_/trle.h"
+#include "trle_.h"
+  
   #ifdef __ARM_NEON
 #define PREFETCH(_ip_,_rw_)
   #else
 #define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
   #endif
 
-#include "trle.h"
-#include "trle_.h"
 //------------------------------------- RLE 8 with Escape char ------------------------------------------------------------------
 //#define MEMSAFE
 #define SRLE8 32
@@ -291,12 +292,12 @@ unsigned trled(const unsigned char *__restrict in, unsigned inlen, unsigned char
 #define rmemset(_op_, _c_, _i_) while(_i_--) *_op_++ = _c_
   #elif (__AVX2__ != 0) && USIZE < 64
 #define rmemset(_op_, _c_, _i_) do {\
-  __m256i cv = TEMPLATE2(_mm256_set1_epi, USIZE)(_c_); unsigned char *_p = _op_; _op_ += _i_;\
+  __m256i cv = T2(_mm256_set1_epi, USIZE)(_c_); unsigned char *_p = _op_; _op_ += _i_;\
   do _mm256_storeu_si256((__m256i *)_p, cv),_p+=32; while(_p < _op_);\
 } while(0)
   #elif (__SSE__ != 0 || __ARM_NEON != 0) && USIZE < 64
 #define rmemset(_op_, _c_, _i_) do { \
-  __m128i *_up = (__m128i *)_op_, cv = TEMPLATE2(_mm_set1_epi, USIZE)(_c_);\
+  __m128i *_up = (__m128i *)_op_, cv = T2(_mm_set1_epi, USIZE)(_c_);\
   _op_ += _i_;\
   do { _mm_storeu_si128(  _up, cv); _mm_storeu_si128(_up+1, cv); _up+=2; } while(_up < (__m128i *)_op_);\
 } while(0)
@@ -307,28 +308,28 @@ unsigned trled(const unsigned char *__restrict in, unsigned inlen, unsigned char
 #define _cset8( _cc,_c_) _cc = (uint32_t)_c_<<24 | (uint32_t)_c_<<16 | (uint32_t)_c_<<8 | (uint32_t)_c_; _cc = _cc<<32|_cc
 
 #define rmemset(_op_, _c_, _i_) do {  uint64_t _cc; uint8_t *_up = (uint8_t *)_op_; _op_ +=_i_;\
- TEMPLATE2(_cset, USIZE)(_cc,_c_);\
+ T2(_cset, USIZE)(_cc,_c_);\
   do {\
-    TEMPLATE2(ctou, USIZE)(_up) = _c_; _up += USIZE/8;\
-    TEMPLATE2(ctou, USIZE)(_up) = _c_; _up += USIZE/8;\
+    T2(ctou, USIZE)(_up) = _c_; _up += USIZE/8;\
+    T2(ctou, USIZE)(_up) = _c_; _up += USIZE/8;\
   } while(_up < (uint8_t *)_op_);\
 } while(0)
   #endif
 
-#define uint_t TEMPLATE3(uint, USIZE, _t)
+#define uint_t T3(uint, USIZE, _t)
 #define ctout(_x_) *(uint_t *)(_x_)
   #if !SRLE8
-unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned char *__restrict cout, unsigned outlen, uint_t e) {
+unsigned T2(_srled, USIZE)(const unsigned char *__restrict in, unsigned char *__restrict cout, unsigned outlen, uint_t e) {
   uint_t *out = (uint_t *)cout, *op = out, c;
   const unsigned char *ip = in;
 
     #ifdef __AVX2__
   #define _mm256_set1_epi64 _mm256_set1_epi64x
-  __m256i ev = TEMPLATE2(_mm256_set1_epi, USIZE)(e);
+  __m256i ev = T2(_mm256_set1_epi, USIZE)(e);
     #elif (defined(__SSE__) /*|| defined(__ARM_NEON)*/)
        // #if USIZE != 64
   #define _mm_set1_epi64 _mm_set1_epi64x
-  __m128i ev = TEMPLATE2(_mm_set1_epi, USIZE)(e);
+  __m128i ev = T2(_mm_set1_epi, USIZE)(e);
        // #endif
     #endif
 
@@ -336,8 +337,8 @@ unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned c
     while(op < out+outlen/sizeof(uint_t)-sizeof(uint_t)*8) { int r;
         #if __AVX2__ != 0 && USIZE != 64
       uint32_t mask;
-      __m256i v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(TEMPLATE2(_mm256_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 32; op += 256/USIZE;
-              v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(TEMPLATE2(_mm256_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 32; op += 256/USIZE;
+      __m256i v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(T2(_mm256_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 32; op += 256/USIZE;
+              v = _mm256_loadu_si256((__m256i*)ip); _mm256_storeu_si256((__m256i *)op, v); mask = _mm256_movemask_epi8(T2(_mm256_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 32; op += 256/USIZE;
                                                                                 PREFETCH(ip+512, 0);
       continue;
       a: r = ctz32(mask)/(USIZE/8);
@@ -345,32 +346,24 @@ unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned c
       ip += (r+1)*sizeof(uint_t);                                               PREFETCH(ip+512, 0);
         #elif (__SSE__ != 0 /*|| __ARM_NEON != 0*/) && USIZE != 64
       uint32_t mask;
-    __m128i v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
-            v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
-            v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
-            v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(TEMPLATE2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
+    __m128i v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(T2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
+            v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(T2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
+            v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(T2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
+            v = _mm_loadu_si128((__m128i*)ip); _mm_storeu_si128((__m128i *)op, v); mask = _mm_movemask_epi8(T2(_mm_cmpeq_epi,USIZE)(v, ev)); if(mask) goto a; ip += 16; op += 128/USIZE;
                                                                                 PREFETCH(ip+512, 0);
       continue;
       a: r = ctz32(mask)/(USIZE/8);
       op += r;
       ip += (r+1)*sizeof(uint_t);                                               PREFETCH(ip+512, 0);
        #else
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;
-    if(((c = ctout(ip)) == e)) goto a;
-    ip += sizeof(uint_t); *op++ = c;          PREFETCH(ip +512, 0);
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;
+    if(((c = ctout(ip)) == e)) goto a;        ip += sizeof(uint_t); *op++ = c;          PREFETCH(ip +512, 0);
     continue;
     a: ip += sizeof(uint_t);                                                    PREFETCH(ip +512, 0);
        #endif
@@ -408,13 +401,13 @@ unsigned TEMPLATE2(_srled, USIZE)(const unsigned char *__restrict in, unsigned c
 }
   #endif
 
-unsigned TEMPLATE2(srled, USIZE)(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, unsigned outlen, uint_t e) {
+unsigned T2(srled, USIZE)(const unsigned char *__restrict in, unsigned inlen, unsigned char *__restrict out, unsigned outlen, uint_t e) {
   if(inlen == outlen)
     memcpy(out, in, outlen);
   else if(inlen == 1)
     memset(out, in[0], outlen);
   else
-    return TEMPLATE2(_srled, USIZE)(in, out, outlen, e);
+    return T2(_srled, USIZE)(in, out, outlen, e);
   return inlen;
 }
  #endif
