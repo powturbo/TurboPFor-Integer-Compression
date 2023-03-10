@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2019
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@
 #endif
 
 #include <getopt.h>
-#include "conf.h"
+#include "include_/conf.h"
 
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
@@ -55,7 +55,7 @@ unsigned argtoi(char *s) {
 }
 
 void usage() {
-  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2019 Powturbo  %s\n", __DATE__);
+  fprintf(stderr, "\nTurboPFor Copyright (c) 2013-2023 Powturbo  %s\n", __DATE__);
   fprintf(stderr, "Partitioning\n");
   fprintf(stderr, "Usage: idxseg -nNs -sPs <docid file> <destination dir>\n");
   fprintf(stderr, "Ns=total number of documents. Ps=number of partitions\n");
