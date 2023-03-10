@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2015-2019
+    Copyright (C) powturbo 2015-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
     TurboRLE - "Most efficient and fastest Run Length Encoding"
 **/
 //------------------------- Variable Byte ( see https://github.com/powturbo/TurboPFor )-----------------------------------------------------
-#include "conf.h"
+#include "include_/conf.h"
 #define TMIN 3
 
 #define VL_SIZE 32
