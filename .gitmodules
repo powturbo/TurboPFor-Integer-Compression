@@ -4,3 +4,6 @@
 [submodule "ext/bitshuffle"]
 	path = ext/bitshuffle
 	url = https://github.com/kiyo-masui/bitshuffle.git
+[submodule "bitshuffle"]
+	path = bitshuffle
+	url = https://github.com/kiyo-masui/bitshuffle.git
