@@ -267,26 +267,21 @@ struct _PACKED doubleu   { double             d; };
 #include <x86intrin.h>
       #endif
 #define bzhi32(_u_, _b_)                 _bzhi_u32(_u_, _b_)  // b variable
-#define bzhi31(_u_, _b_)                 _bzhi_u32(_u_, _b_)
 #define bextr32(x,start,len)             _bextr_u32(x,start,len)  
 
       #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
 #define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
-#define bzhi63(_u_, _b_)                 ((_u_) & ((1ull<<(_b_))-1))
       #else
 #define bzhi64(_u_, _b_)                 _bzhi_u64(_u_, _b_)
-#define bzhi63(_u_, _b_)                 _bzhi_u64(_u_, _b_)
       #endif
     #else
 #define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_) 
-#define bzhi63(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1)) 
-#define bzhi32(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1))
-#define bzhi31(_u_, _b_)                 ((_u_) & ((1    <<(_b_))-1))
+#define bzhi32(_u_, _b_)                 BZHI32(_u_, _b_)
 #define bextr32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
     #endif
 
-#define bzhi16(_u_, _b_)                 bzhi31(_u_, _b_)
-#define bzhi8( _u_, _b_)                 bzhi31(_u_, _b_)
+#define bzhi16(_u_, _b_)                 bzhi32(_u_, _b_)
+#define bzhi8( _u_, _b_)                 bzhi32(_u_, _b_)
 
 #define SIZE_ROUNDUP(_n_, _a_) (((size_t)(_n_) + (size_t)((_a_) - 1)) & ~(size_t)((_a_) - 1))
 #define ALIGN_DOWN(__ptr, __a) ((void *)((uintptr_t)(__ptr) & ~(uintptr_t)((__a) - 1)))
