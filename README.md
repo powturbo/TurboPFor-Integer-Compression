@@ -59,7 +59,7 @@ TurboPFor: Fastest Integer Compression
 ### Integer Compression Benchmark (single thread):
 - Download [IcApp](hhttps://github.com/powturbo/TurboPFor-Integer-Compression/releases/tag/2023.03) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
-- Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
+  ( type icapp ZIPF )
 - [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues/47)
 - [Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz](https://github.com/powturbo/TurboPFor/issues/49)
 
@@ -253,35 +253,46 @@ q/s: queries/second, ms/q:milliseconds/query
   + benchmark groups of "integer compression" functions <br />
 
         ./icapp -a1.2 -m0 -M255 -n100M ZIPF
-        ./icapp -a1.2 -m0 -M255 -n100M ZIPF
-
-   >*Type "icbench -l1" for a list*
-
+        ./icapp -a1.2 -m0 -M255 -n100M ZIPF -e20-50
+   
    >*-zipfian distribution alpha = 1.2 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
      -number of integers = 100.000.000<br />
      -integer range from 0 to 255<br />*
   
-  + Unsorted lists: individual function test (ex. Copy TurboPack TurboPFor)<br />
+  + Unsorted lists: individual function test<br />
 
-        ./icbench -a1.5 -m0 -M255 -ecopy/turbopack/turbopfor/turbopack256v ZIPF
+        ./icapp -a1.5 -m0 -M255 -e1,2,3 ZIPF
 
   + Unsorted lists: Zigzag encoding w/ option **-fz** or FOR encoding<br />
 
-        ./icbench -fz -eturbovbyte/turbopfor/turbopackv ZIPF
-        ./icbench -eturboforv ZIPF
+         ./icapp -e10,11,12 ZIPF
 
-  + Sorted lists: differential coding w/ option **-fs** (increasing) or **-fS** (strictly increasing)<br />
+  + Sorted lists: differential coding (increasing/strictly increasing)<br />
 
-        ./icbench -fs -eturbopack/turbopfor/turbopfor256v ZIPF
+        ./icapp -e4,5,6 ZIPF
+        ./icapp -e7,8,9 ZIPF
+        
+  + Transpose/RLE/TurboVByte + General purpose compressor (lz,zstd,turborc,...)<br />
 
-  + Generate interactive "file.html" plot for browsing
-  
-        ./icbench -p2 -S2 -Q3 file.tbb
-		
-  + Unit test: test function from bit size 0 to 32
-  
-        ./icbench -m0 -M32 -eturbpfor -fu 
-        ./icbench -m0 -M8 -eturbopack -fs -n1M 
+        ./icapp file -e80-95
+        ./icapp file -e80-95 -Ezstd,15 
+        ./icapp file -e80-95 -Eturborc,1
+        ./icapp file -e80-95 -Eturborc,20
+        
+  + 2D/3D/4D Transpose + General purpose compressor (lz,zstd,turborc,...)<br />
+        ./icapp file512x128.f32 R512x128 -Ff  
+        ./icapp file512x128.f32 -R512x128 -Ff -e100,101,102 
+        ./icapp file1024x512x128.f32 -R1024x512x128 -Ff -e100,101,102
+        
+    Automatic dimension determination from file name ( option -R0 )
+        ./icapp file1024x512x128.f32 -R0 -Ff -e103,104,105
+        ./icapp file1024x512x128.f64 -R0 -Fl -e103,104,105
+        
+  + Lossy floating point compression
+        ./icapp file512x128.f32 -R512x128 -Ff -g.0001
+        ./icapp file.f32 -Ff -g.001
+        ./icapp file.f64 -Ff -g.001
+
 
 ##### - Data files:
   - Raw 32 bits binary data file [Test data](https://github.com/ot/partitioned_elias_fano/tree/master/test/test_data)
@@ -366,7 +377,7 @@ q/s: queries/second, ms/q:milliseconds/query
   >*run queries in file "1mq.txt" over the index of all gov2 partitions "gov2.sorted.s00.i - gov2.sorted.s07.i".*
 
 ### Function usage:
-See benchmark "icbench" program for "integer compression" usage examples.
+See benchmark "icapp" program for "integer compression" usage examples.
 In general encoding/decoding functions are of the form:
 
   >**char *endptr = encode( unsigned *in, unsigned n, char *out, [unsigned start], [int b])**<br />
