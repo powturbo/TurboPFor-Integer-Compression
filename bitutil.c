@@ -728,6 +728,7 @@ uint16_t bitx16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
  
 uint32_t bitx32(unsigned *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, *ip = in;
+  
     #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vo0 = _mm_setzero_si128(),
           vo1 = _mm_setzero_si128(),                                          
