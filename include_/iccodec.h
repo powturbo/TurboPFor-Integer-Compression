@@ -1,5 +1,20 @@
 //-- codec: general purpose compression (lz, entropy coder, bwt,....)---------------------------------------------------------------------------------------------------
 
+enum {
+  ICC_NONE,
+  ICC_LZTURBO,
+  ICC_LZ4,
+  ICC_ZLIB,
+
+  ICC_ZSTD,
+  ICC_FSE,
+  ICC_FSEH,
+  ICC_LZTANS,
+  ICC_TURBORC,
+  ICC_MEMCPY,
+  ICC_LAST, 
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
