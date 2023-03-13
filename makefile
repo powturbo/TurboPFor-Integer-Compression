@@ -37,6 +37,7 @@ ifneq (,$(filter Windows%,$(OS)))
   CXX=g++
 #  CC=clang
   ARCH=x86_64
+  LDFLAGS=-Wl,--stack,33554432
 else
   OS := $(shell uname -s)
   ARCH := $(shell uname -m)
@@ -68,7 +69,6 @@ endif
 CFLAGS+=$(DEBUG) $(OPT) -w 
 CXXFLAGS+=-w 
 #-Wall -Wincompatible-pointer-types
-#LDFLAGS=-Wl,--stack,33554432
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
 LDFLAGS+=-lrt -lm
 endif
