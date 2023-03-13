@@ -154,7 +154,7 @@
     </ClCompile>
     <ClCompile Include="..\..\eliasfano.c" />
     <ClCompile Include="..\..\fp.c" />
-    <ClCompile Include="..\..\lz.c" />
+    <ClCompile Include="..\..\iccodec.c" />
     <ClCompile Include="..\..\transpose.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NoExtensions</EnableEnhancedInstructionSet>
