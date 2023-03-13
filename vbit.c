@@ -29,7 +29,7 @@
 #include <string.h>
 #include "include_/conf.h"
 #include "include_/vbit.h"
- 
+
 #include "include_/bitutil_.h"
 #include "include_/bitiobe.h"
 #include "include_/vlcbit.h"
@@ -42,7 +42,7 @@
 
 //-------- Gamma Coding: Full 32-bit range length limited gamma coding ---------------------------------------------------------------------
 #define _bitgenc32(_bw_, _br_, _op_, _x_, _qmax_) do {\
-  uint64_t _x = (uint64_t)(_x_)+1, \
+  uint64_t _x = (uint64_t)(_x_)+1,\
            _q = __bsr64(_x), _log2m_ = _q; 												/*_x >> _log2m_ */\
   if(_q > _qmax_) {											           					/* quotient greater than limit _qmax_ */\
     unsigned _qx = _q - _qmax_, _qb = __bsr32(_qx)+1; 		           					/* (_q - _qmax_) size in bits */\
@@ -72,16 +72,16 @@ size_t bitgenc32(unsigned char *_in, size_t _inlen, unsigned char *out) {
   uint32_t      *in = (uint32_t *)_in, *ip;
   INDEC;
   bitedef(bw,br); biteinir(bw,br,bp);
-  
+
   for(ip = in; ip < in+inlen; ip++) {
 	uint32_t x = ip[0];
 	_bitgenc32(bw,br, bp, x, QMAX_G);                                        //bitgxput32(&bw, &br, QMAX_G, x, &bp); //  bitvcput(bw,br,op,bp,VLC_VN8,VLC_VB8, x); 	
 	bitenormr(bw,br,bp);	                                                 OVERFLOWR(_in, _inlen, out, op,bp, goto e);
   }
-  
-  bitflushr(bw,br,bp); 
-  unsigned l = out_ - bp; 
-  memmove(op, bp, l); op += l; 
+
+  bitflushr(bw,br,bp);
+  unsigned l = out_ - bp;
+  memmove(op, bp, l); op += l;
   ctou32(out) = op - out;                                                    OVERFLOW(_in,_inlen,out, op, goto e);
   e:return op - out;
 }
@@ -93,12 +93,12 @@ size_t bitgdec32(unsigned char *in, size_t _outlen, unsigned char *_out) {
   OUTDEC;
   bitddef(bw, br); bitdinir(bw,br,ip_);
 
-  for(op = out; op < out+outlen; op++) { 
+  for(op = out; op < out+outlen; op++) {
     bitdnormr(bw,br,ip_);
-	_bitgdec32(bw, br, ip_, x, QMAX_G);                                      //bitgxget32(&bw, &br, QMAX_G, &x, &ip_);    bitvcget(bw,br,ip,ip_,VLC_VN8,VLC_VB8, x); 
+	_bitgdec32(bw, br, ip_, x, QMAX_G);                                      //bitgxget32(&bw, &br, QMAX_G, &x, &ip_);    bitvcget(bw,br,ip,ip_,VLC_VN8,VLC_VB8, x);
 	*op = x;
   }
-  
+
   bitalignr(bw, br, ip_);
   return ip_ - in;
 }
@@ -134,17 +134,17 @@ size_t bitrenc32(unsigned char *_in, size_t _inlen, unsigned char *out) {
   uint32_t      *in = (uint32_t *)_in, *ip, log2m=1,ema=0;
   INDEC;
   bitedef(bw,br); biteinir(bw,br,op_);
-  
+
   for(ip = in; ip < in+inlen; ip++) {
 	uint32_t x = ip[0];
-	log2m = RICEK(ema); 
+	log2m = RICEK(ema);
 	_bitrenc32(bw, br, op_, x, QMAX_R, log2m); bitenormr(bw,br,op_);      OVERFLOWR(_in, _inlen, out, op,op_, goto e);
 	ema = EMA(5,ema, 23, x);                                              //  bitvcput(bw,br,op,op_,VLC_VN8,VLC_VB8, x); 		//bitrxput16(&bw, &br, QMAX_R, 4, x) ;
   }
-  
-  bitflushr(bw,br,op_); 
-  unsigned l = out_-op_; 
-  memmove(op, op_, l); op += l; 
+
+  bitflushr(bw,br,op_);
+  unsigned l = out_-op_;
+  memmove(op, op_, l); op += l;
   ctou32(out) = op - out;                                                   OVERFLOW(_in,_inlen,out, op, goto e);
   e: return op - out;
 }
@@ -154,17 +154,16 @@ size_t bitrdec32(unsigned char *in, size_t _outlen, unsigned char *_out) {
   unsigned char *ip   = in+4,*ip_ = in+inlen;
   uint32_t      *out  = (uint32_t *)_out, *op, x, log2m = 1,ema = 0;
   OUTDEC;
-  bitddef(bw, br); 
+  bitddef(bw, br);
   bitdinir(bw,br,ip_);
 
-  for(op = out; op < out+outlen; op++) { 
+  for(op = out; op < out+outlen; op++) {
     bitdnormr(bw,br,ip_);
-	log2m = RICEK(ema); 
-	_bitrdec32(bw, br, ip_, x, QMAX_R, log2m); 
-	ema = EMA(5, ema, 23, x);	                                            //bitrxget32(&bw, &br, QMAX_R, 4, &x, &ip_); //    bitvcget(bw,br,ip,ip_,VLC_VN8,VLC_VB8, x); 
+	log2m = RICEK(ema);
+	_bitrdec32(bw, br, ip_, x, QMAX_R, log2m);
+	ema = EMA(5, ema, 23, x);	                                            //bitrxget32(&bw, &br, QMAX_R, 4, &x, &ip_); //    bitvcget(bw,br,ip,ip_,VLC_VN8,VLC_VB8, x);
 	*op = x;
   }
-  
   bitalignr(bw, br, ip_);
   return ip_ - in;
 }
@@ -174,65 +173,62 @@ size_t vlcenc32(unsigned char *_in, size_t _inlen, unsigned char *out) {
   unsigned char *op   = out+4, *out_ = out+_inlen, *bp = out_;
   uint32_t      *in   = (uint32_t *)_in, *ip = in;
   INDEC;
-  bitedef(bw,br); 
+  bitedef(bw,br);
   biteinir(bw,br,bp);
 
-  #define VE(_i_) { bitvbput(bw,br,op,bp,VLC_VN8,0/*VLC_VB8*/, ip[_i_]); }
-  for(; ip < in + inlen&~(4-1); ip += 4) { VE(0); VE(1); VE(2); VE(3); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
-  for(; ip < in+inlen; ip++) { VE(0); if(bp <= op+5) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }}
- 
-  bitflushr(bw,br,bp); 
-  unsigned l  = out_ - bp; 
+  #define VE(_i_) { bitvcput(bw,br,op,bp,VLC_VN8,0/*VLC_VB8*/, ip[_i_]); }
+  for(; ip < in + inlen&~(4-1); ip += 4) { VE(0); VE(1); bitenormr(bw,br,bp); VE(2); VE(3); bitenormr(bw,br,bp); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
+  for(; ip < in+inlen; ip++) { VE(0); bitenormr(bw,br,bp); if(bp <= op+5) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }}
+
+  bitflushr(bw,br,bp);
+  unsigned l  = out_ - bp;
   if(op+l >= out+_inlen) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }
-  memmove(op, bp, l); op += l; 
-  ctou32(out) = op-out;                                                         
+  memmove(op, bp, l); op += l;
+  ctou32(out) = op-out;
   e: return op - out;
-} 
+}
 
 size_t vlcdec32(unsigned char *in, size_t _outlen, unsigned char *_out) {
   unsigned      inlen = ctou32(in);
-  unsigned char *ip = in+4, *ip_ = in+inlen;
+  unsigned char *ip = in+4, *bp = in+inlen;
   uint32_t      *out = (uint32_t *)_out, *op = out, x;
   OUTDEC;
-  bitddef(bw, br); bitdinir(bw,br,ip_);
-  #define VD(_i_) { bitvbget(bw,br,ip,ip_,VLC_VN8,0/*VLC_VB8*/, op[_i_]); }
-  for(; op != out+outlen&~(4-1); op+=4) { VD(0); VD(1); VD(2); VD(3); }
-  for(; op != out+outlen; op++) VD(0);
+  bitddef(bw, br); bitdinir(bw,br,bp);
+  #define VD(_i_) { bitvcget(bw,br,ip,bp,VLC_VN8,0/*VLC_VB8*/, op[_i_]); }
+  for(; op != out+outlen&~(4-1); op+=4) { bitdnormr(bw,br,bp); VD(0); VD(1); bitdnormr(bw,br,bp); VD(2); VD(3); }
+  for(; op != out+outlen; op++) { bitdnormr(bw,br,bp); VD(0); }
   return inlen+4;
 }
 
 size_t vlcenc16(unsigned char *_in, size_t _inlen, unsigned char *out) {
-  unsigned char *op = out+4, *out_ = out+_inlen, *bp = out_;
-  uint16_t      *in = (uint16_t *)_in, *ip;
+  unsigned char *op   = out+4, *out_ = out+_inlen, *bp = out_;
+  uint16_t      *in   = (uint16_t *)_in, *ip = in;
   INDEC;
-  bitedef(bw,br); biteinir(bw,br,bp);
-  
-  for(ip = in; ip < in+inlen; ip++) {
-	uint16_t x = ip[0]; 
-	bitvput(bw,br, VLC_VN6,VLC_VB6, x); bitenormr(bw,br,bp);                   OVERFLOWR(_in, _inlen, out,op,bp, goto e);
-  }
-  
+  bitedef(bw,br);
+  biteinir(bw,br,bp);
+
+  #define VE(_i_) { bitvput(bw,br,VLC_VN6,VLC_VB6, ip[_i_]); }
+  for(; ip < in + inlen&~(4-1); ip += 4) { VE(0); VE(1); bitenormr(bw,br,bp); VE(2); VE(3); bitenormr(bw,br,bp); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
+  for(; ip < in+inlen; ip++) { VE(0); bitenormr(bw,br,bp); if(bp <= op+5) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }}
+
   bitflushr(bw,br,bp);
-  unsigned l = out_-bp; 
-  memmove(op, bp, l); op += l; 
-  ctou32(out) = op-out;   
-  OVERFLOW(_in,_inlen,out, op, goto e);
-  e:return op - out;
+  unsigned l  = out_ - bp;
+  if(op+l >= out+_inlen) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }
+  memmove(op, bp, l); op += l;
+  ctou32(out) = op-out;
+  e: return op - out;
 }
 
 size_t vlcdec16(unsigned char *in, size_t _outlen, unsigned char *_out) {
-  unsigned inlen = ctou32(in);
-  unsigned char *ip = in+4,*ip_ = in+inlen;
-  uint16_t      *out = (uint16_t *)_out, *op, x, start = 0;
+  unsigned      inlen = ctou32(in);
+  unsigned char *ip = in+4, *bp = in+inlen;
+  uint16_t      *out = (uint16_t *)_out, *op = out, x;
   OUTDEC;
-  bitddef(bw, br); bitdinir(bw,br,ip_);
-
-  for(op = out; op < out+outlen; op++) { 
-	bitdnormr(bw,br,ip_); 
-	bitvget(bw,br,VLC_VN6,VLC_VB6, x);
-	*op = x;
-  }
-  return inlen + 4;
+  bitddef(bw, br); bitdinir(bw,br,bp);
+  #define VD(_i_) { bitvget(bw,br,VLC_VN6,VLC_VB6, op[_i_]); }
+  for(; op != out+outlen&~(4-1); op+=4) { bitdnormr(bw,br,bp); VD(0); VD(1); bitdnormr(bw,br,bp); VD(2); VD(3); }
+  for(; op != out+outlen; op++) { bitdnormr(bw,br,bp); VD(0); }
+  return inlen+4;
 }
 
 size_t vlczenc16(unsigned char *_in, size_t _inlen, unsigned char *out) {
@@ -240,33 +236,69 @@ size_t vlczenc16(unsigned char *_in, size_t _inlen, unsigned char *out) {
   uint16_t      *in = (uint16_t *)_in, *ip, start = 0;
   INDEC;
   bitedef(bw,br); biteinir(bw,br,bp);
-  
+
   for(ip = in; ip < in+inlen; ip++) {
-	uint16_t x = ip[0]; 
-	x = zigzagenc16(x - start); 
-	start = ip[0]; 
+	uint16_t x = ip[0];
+	x = zigzagenc16(x - start);
+	start = ip[0];
 	bitvput(bw,br, VLC_VN6,VLC_VB6, x); bitenormr(bw,br,bp);                   OVERFLOWR(_in, _inlen, out,op,bp, goto e);
   }
-  
+
   bitflushr(bw,br,bp);
-  unsigned l = out_-bp; 
-  memmove(op, bp, l); op += l; 
-  ctou32(out) = op-out;   
+  unsigned l = out_-bp;
+  memmove(op, bp, l); op += l;
+  ctou32(out) = op-out;
   OVERFLOW(_in,_inlen,out, op, goto e);
   e:return op - out;
 }
 
 size_t vlczdec16(unsigned char *in, size_t _outlen, unsigned char *_out) {
   unsigned      inlen = ctou32(in);
-  unsigned char *ip = in+4,*ip_ = in+inlen;
+  unsigned char *ip = in+4,*bp = in+inlen;
   uint16_t      *out = (uint16_t *)_out, *op, x, start = 0;
   OUTDEC;
-  bitddef(bw, br); bitdinir(bw,br,ip_);
+  bitddef(bw, br); bitdinir(bw,br,bp);
 
-  for(op = out; op < out+outlen; op++) { 
-	bitdnormr(bw,br,ip_); 
+  for(op = out; op < out+outlen; op++) {
+	bitdnormr(bw,br,bp);
 	bitvget(bw,br,VLC_VN6,VLC_VB6, x);
 	*op = (start+=zigzagdec16(x));
+  }
+  return inlen + 4;
+}
+
+size_t vlczenc32(unsigned char *_in, size_t _inlen, unsigned char *out) {
+  unsigned char *op = out+4, *out_ = out+_inlen, *bp = out_;
+  uint32_t      *in = (uint32_t *)_in, *ip, start = 0;
+  INDEC;
+  bitedef(bw,br); biteinir(bw,br,bp);
+
+  for(ip = in; ip < in+inlen; ip++) {
+	uint32_t x = ip[0];
+	x = zigzagenc32(x - start);
+	start = ip[0];
+	bitvput(bw,br, VLC_VN8,0/*VLC_VB8*/, x); bitenormr(bw,br,bp);                   OVERFLOWR(_in, _inlen, out,op,bp, goto e);
+  }
+
+  bitflushr(bw,br,bp);
+  unsigned l = out_-bp;
+  memmove(op, bp, l); op += l;
+  ctou32(out) = op-out;
+  OVERFLOW(_in,_inlen,out, op, goto e);
+  e:return op - out;
+}
+
+size_t vlczdec32(unsigned char *in, size_t _outlen, unsigned char *_out) {
+  unsigned      inlen = ctou32(in);
+  unsigned char *ip = in+4,*bp = in+inlen;
+  uint32_t      *out = (uint32_t *)_out, *op, x, start = 0;
+  OUTDEC;
+  bitddef(bw, br); bitdinir(bw,br,bp);
+
+  for(op = out; op < out+outlen; op++) {
+	bitdnormr(bw,br,bp);
+	bitvget(bw,br,VLC_VN8,0/*VLC_VB8*/, x);
+	*op = (start+=zigzagdec32(x));
   }
   return inlen + 4;
 }
