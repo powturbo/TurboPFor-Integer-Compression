@@ -253,7 +253,7 @@ struct _PACKED doubleu   { double             d; };
 #define BZMASK32(_b_)                    (~(~0u   << (_b_)))
 #define BZMASK64(_b_)                    (~(~0ull << (_b_)))
 #define BZHI64(_u_, _b_)                 ((_u_) & BZMASK64(_b_))  // b Constant
-#define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_)) 
+#define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_))
 #define BZHI16(_u_, _b_)                 BZHI32(_u_, _b_)
 #define BZHI8( _u_, _b_)                 BZHI32(_u_, _b_)
 #define BEXTR32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
@@ -266,7 +266,7 @@ struct _PACKED doubleu   { double             d; };
       #endif
 #define bzhi32(_u_, _b_)                 _bzhi_u32(_u_, _b_)  // b variable
 #define bzhi31(_u_, _b_)                 _bzhi_u32(_u_, _b_)
-#define bextr32(x,start,len)             _bextr_u32(x,start,len)  
+#define bextr32(x,start,len)             _bextr_u32(x,start,len)
 
       #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
 #define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
@@ -276,8 +276,8 @@ struct _PACKED doubleu   { double             d; };
 #define bzhi63(_u_, _b_)                 _bzhi_u64(_u_, _b_)
       #endif
     #else
-#define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_) 
-#define bzhi63(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1)) 
+#define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
+#define bzhi63(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1))
 #define bzhi32(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1))
 #define bzhi31(_u_, _b_)                 ((_u_) & ((1    <<(_b_))-1))
 #define bextr32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
@@ -323,7 +323,7 @@ struct _PACKED doubleu   { double             d; };
 #define die(fmt,args...) do { fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); exit(-1); } while(0)
     #endif
   #endif
-  
+
 //---- "Integer Compression" scalar variable byte -------------------------------
 //----------------------------------- Variable byte: single value macros (low level) -----------------------------------------------
 //------------- 32 bits -------------
@@ -493,7 +493,7 @@ static ALWAYS_INLINE void vbget32(unsigned char **_ip, unsigned *_x)  { unsigned
 static ALWAYS_INLINE unsigned vlget32(unsigned char **_ip)  { unsigned char *ip = *_ip; unsigned x; _vbget(ip, x, 32, VB_MAX, 4, 3, ;); *_ip = ip; return x; }
 static ALWAYS_INLINE unsigned vllen32(unsigned       x) { return _vblen(      x, 32, VB_MAX, 4, 3); }
   #endif
-  
+
   
 //-- Turbo VLC : Novel Variable Length Coding for large integers with exponent + mantissa
 
