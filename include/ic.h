@@ -171,6 +171,12 @@ unsigned char *bitzpack16(  uint16_t *__restrict in, unsigned n, const unsigned 
 unsigned char *bitzpack32(  uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out, uint32_t start, unsigned b);
 unsigned char *bitzpack64(  uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out, uint64_t start, unsigned b);
 
+// xor : unsorted integer array
+unsigned char *bitxpack8(   uint8_t  *__restrict in, unsigned n, const unsigned char *__restrict out, uint8_t  start, unsigned b);
+unsigned char *bitxpack16(  uint16_t *__restrict in, unsigned n, const unsigned char *__restrict out, uint16_t start, unsigned b);
+unsigned char *bitxpack32(  uint32_t *__restrict in, unsigned n, const unsigned char *__restrict out, uint32_t start, unsigned b);
+unsigned char *bitxpack64(  uint64_t *__restrict in, unsigned n, const unsigned char *__restrict out, uint64_t start, unsigned b);
+
 //-------------------------------------- SIMD ------------------------------------------------------------------------------------------
 // Pack array with 128 unsigned (32 bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
 unsigned char *bitpack128v16(  unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out                      , unsigned b);
@@ -179,25 +185,26 @@ unsigned char *bitd1pack128v16(unsigned short    *__restrict in, unsigned n, uns
 unsigned char *bitfpack128v16( unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitf1pack128v16(unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 unsigned char *bitzpack128v16( unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
+unsigned char *bitxpack128v16( unsigned short    *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
 
-unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out                , unsigned b);
-unsigned char *bitdpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitfpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitf1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitxpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitpack128v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out,                       unsigned b);
+unsigned char *bitdpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitd1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitfpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitf1pack128v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitzpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitxpack128v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
 
 //unsigned char *bitpack256w32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out                  , unsigned b);
-unsigned char *bitpack128v64(  uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out                , unsigned b);
+unsigned char *bitpack128v64(  uint64_t          *__restrict in, unsigned n, unsigned char *__restrict out,                       unsigned b);
 
-unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out                , unsigned b);
-unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitd1pack256v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitfpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitf1pack256v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
-unsigned char *bitxpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bitpack256v32(  unsigned          *__restrict in, unsigned n, unsigned char *__restrict out,                       unsigned b);
+unsigned char *bitdpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitd1pack256v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitfpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitf1pack256v32(unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
+unsigned char *bitxpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
 
 //********************************** Bit Packing : Unpack ****************************************************************
 
@@ -479,7 +486,7 @@ void bitzdec(unsigned char *in, unsigned n,                     unsigned esize);
 
 //------- Lossy floating point transform: pad the trailing mantissa bits with zeros according to the error e (ex. e=0.00001)
   #ifdef USE_FLOAT16
-_Float16 _fppad16(_Float16 d, float e, int lg2e);  
+_Float16 _fppad16(_Float16 d, float e, int lg2e);
 void fppad16(_Float16 *in, unsigned n, _Float16  *out, float  e);
   #endif
 
@@ -640,6 +647,100 @@ size_t fp2dfcmdec64(unsigned char *in, size_t n, uint64_t      *out, uint64_t st
 }
 #endif
 
+//-- codec: general purpose compression (lz, entropy coder, bwt,....)---------------------------------------------------------------------------------------------------
+
+enum {
+  ICC_NONE,
+  ICC_LZTURBO,
+  ICC_LZ4,
+  ICC_ZLIB,
+
+  ICC_ZSTD,
+  ICC_FSE,
+  ICC_FSEH,
+  ICC_LZTANS,
+  ICC_TURBORC,
+  ICC_MEMCPY,
+  ICC_LAST, 
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+int lzidget(char *scmd);
+char *codstr(unsigned cid);
+size_t lzenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned outsize, int codid, int codlev, char *codprm);
+size_t lzdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned outlen,  int codec, int codlev, char *codprm);
+unsigned meshenc(const float *in,                             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned outsize, unsigned char *tmp, int codid, int codlev, char *codprm);
+void meshdec(  const uint8_t *in, unsigned inlen, float *out, unsigned nx, unsigned ny, unsigned nz,                                       unsigned char *tmp, int codid, int codlev, char *codprm);
+//------------------- TurboByte + lz ----------------------------
+unsigned lzv8enc(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lzv8dec(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lzv8zenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lzv8zdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lzv8xenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // TurboVByte
+unsigned v8lzxdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+//----------------- Byte transpose  + Lz -------------------------------------------------------------------------------------
+unsigned lztpenc(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztpdec(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztpxenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // XOR
+unsigned lztpxdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztpzenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag
+unsigned lztpzdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+//------- rle ------------------------
+unsigned tprleenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp);
+unsigned tprledec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp);
+unsigned tprlexenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp); // xor rle
+unsigned tprlexdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp);
+unsigned tprlezenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp); // Zigzag rle
+unsigned tprlezdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp);
+//------- rle + lz -------------------
+unsigned lztprleenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag rle
+unsigned lztprledec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztprlexenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag rle
+unsigned lztprlexdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztprlezenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag rle
+unsigned lztprlezdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp4enc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztpd4ec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp4xenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); //XOR
+unsigned lztp4xdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp4zenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp4zdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztpd2enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); 
+unsigned lztpd2dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); //printf("#2D[%u,%u]", x, y);
+unsigned lztpd2xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); 
+unsigned lztpd2xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm);
+unsigned lztpd2zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); 
+unsigned lztpd2zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm);
+unsigned lztpd3enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd3dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd3xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd3xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd3zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd3zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd4enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd4dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd4xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd4xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd4zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztpd4zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
+unsigned lztp1enc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp1dec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp1xenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp1xdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp1zenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+unsigned lztp1zdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
+void tpsizeset(unsigned _tpsize);
+
+//-- TurboVLC : Novel Variable Length Coding for large integers with exponent + mantissa ------------------------
+size_t vlccomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, char *codprm); 
+size_t vlcdecomp32(unsigned char *in,  size_t inlen,  unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, char *codprm);
+
+#ifdef __cplusplus
+}
+#endif
+
 //--  transpose.h - Byte/Nibble transpose for further compressing with lz77 or other compressors -------------------------------------
 
 #ifdef __cplusplus
@@ -661,11 +762,11 @@ void tpxdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned e
 
 void tp2denc(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize); //2D transpose
 void tp2ddec(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize);
-void tp2denc2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
+void tp2denc2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 void tp2ddec2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
-void tp2denc4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
+void tp2denc4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 void tp2ddec4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
-void tp2denc8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
+void tp2denc8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 void tp2ddec8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 
 
@@ -781,7 +882,7 @@ void tp4zdec128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4xenc128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4xdec128v8( unsigned char *in, unsigned n, unsigned char *out);
 
-//-- avx2 
+//-- avx2
 //-- byte transpose
 void tpenc256v2(   unsigned char *in, unsigned n, unsigned char *out); //-- 16 bits
 void tpdec256v2(   unsigned char *in, unsigned n, unsigned char *out);
@@ -890,27 +991,34 @@ unsigned  trled(  const unsigned char *__restrict in, unsigned inlen, unsigned c
 extern "C" {
 #endif
 //-- Gamma coding (length limited) : Full 32 bit range
-size_t bitgenc32(  unsigned char *_in, size_t _inlen,  unsigned char *out);  
-size_t bitgdec32(  unsigned char *in,  size_t _outlen, unsigned char *_out);
+size_t bitgenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);  
+size_t bitgdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
 //-- Rice Coding (adaptive length limited) : Full 32 bit range ---
-size_t bitrenc32(  unsigned char *_in, size_t _inlen, unsigned char *out);   
-size_t bitrdec32(  unsigned char *in, size_t _outlen, unsigned char *_out);
+size_t bitrenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);   
+size_t bitrdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
-size_t vlcenc32(   unsigned char *_in, size_t _inlen,  unsigned char *out);   // TurboVLC 32 bits
-size_t vlcdec32(   unsigned char *in,  size_t _outlen, unsigned char *_out);
+size_t vlcenc32(   unsigned char *_in, size_t _inlen,  unsigned char  *out);   // TurboVLC 32 bits
+size_t vlcdec32(   unsigned char  *in, size_t _outlen, unsigned char *_out);
 
-size_t vlcenc16(   unsigned char *_in, size_t _inlen,  unsigned char *out);  // TurboVLC 16 bits
-size_t vlcdec16(   unsigned char *in,  size_t _outlen, unsigned char *_out);
+size_t vlcenc16(   unsigned char *_in, size_t _inlen,  unsigned char  *out);  // TurboVLC 16 bits
+size_t vlcdec16(   unsigned char  *in, size_t _outlen, unsigned char *_out);
 
-size_t vlczenc16(  unsigned char *_in, size_t _inlen,  unsigned char *out);  // TurboVLC 16 bits zigzag
-size_t vlczdec16(  unsigned char *in,  size_t _outlen, unsigned char *_out);
+size_t vlczenc16(  unsigned char *_in, size_t _inlen,  unsigned char  *out);  // TurboVLC 16 bits zigzag
+size_t vlczdec16(  unsigned char  *in, size_t _outlen, unsigned char *_out);
+
+size_t vlczenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);  // TurboVLC 32 bits zigzag
+size_t vlczdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
 #ifdef __cplusplus
 }
 #endif
 
 //-- "Integer Compression" variable byte (scalar TurboVByte+ SIMD TurboByte) ---------------------------------------------------------------
+#define V8PAYLOAD(_n_, _usize_) (((_n_)*(_usize_/16)+7)/8)
+#define V8BOUND_(_n_, _usize_) (V8PAYLOAD(_n_, _usize_)+ (_n_)*(_usize_/8))
+#define V8BOUND16(_n_) V8BOUND_(_n_, 16)
+#define V8BOUND32(_n_) V8BOUND_(_n_, 32)
 
 #ifdef __cplusplus
 extern "C" {
@@ -1408,7 +1516,7 @@ unsigned char *p4zdec64(      unsigned char *__restrict in, unsigned n, uint64_t
   #ifdef TURBOPFOR_DAC
 #include "conf.h"
 #define BITPACK_DAC
-#include "bitpack.h"
+#include "../include_/bitpack.h"
 #define P4D_PAD8(_x_)       ( (((_x_)+8-1)/8) )
 #define P4D_B(_x_)          ((_x_) & 0x7f)
 #define P4D_XB(_x_)         (((_x_) & 0x80)?((_x_) >> 8):0)
@@ -1499,83 +1607,3 @@ unsigned char *vsdec64(unsigned char  *__restrict in, size_t n, uint64_t       *
 #ifdef __cplusplus
 }
 #endif
-
-//-- codec: general purpose compression (lz, entropy coder, bwt,....)---------------------------------------------------------------------------------------------------
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-int lzidget(char *scmd);
-char *codstr(unsigned cid);
-size_t lzenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned outsize, int codid, int codlev, char *codprm);
-size_t lzdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned outlen,  int codec, int codlev, char *codprm);
-unsigned meshenc(const float *in,                             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned outsize, unsigned char *tmp, int codid, int codlev, char *codprm);
-void meshdec(  const uint8_t *in, unsigned inlen, float *out, unsigned nx, unsigned ny, unsigned nz,                                       unsigned char *tmp, int codid, int codlev, char *codprm);
-//------------------- TurboByte + lz ----------------------------
-unsigned lzv8enc(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lzv8dec(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lzv8zenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lzv8zdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lzv8xenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // TurboVByte
-unsigned v8lzxdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-//----------------- Byte transpose  + Lz -------------------------------------------------------------------------------------
-unsigned lztpenc(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztpdec(    unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztpxenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // XOR
-unsigned lztpxdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztpzenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag
-unsigned lztpzdec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-//------- rle ------------------------
-unsigned tprleenc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp);
-unsigned tprledec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp);
-unsigned tprlexenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp); // xor rle
-unsigned tprlexdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp);
-unsigned tprlezenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp); // Zigzag rle
-unsigned tprlezdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp);
-//------- rle + lz -------------------
-unsigned lztprleenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag rle
-unsigned lztprledec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztprlexenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag rle
-unsigned lztprlexdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztprlezenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); // Zigzag rle
-unsigned lztprlezdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp4enc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztpd4ec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp4xenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm); //XOR
-unsigned lztp4xdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp4zenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp4zdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztpd2enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); 
-unsigned lztpd2dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); //printf("#2D[%u,%u]", x, y);
-unsigned lztpd2xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); 
-unsigned lztpd2xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm);
-unsigned lztpd2zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm); 
-unsigned lztpd2zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, char *codprm);
-unsigned lztpd3enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd3dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd3xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd3xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd3zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd3zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd4enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd4dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd4xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd4xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd4zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztpd4zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, char *codprm);
-unsigned lztp1enc(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp1dec(   unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp1xenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp1xdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp1zenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-unsigned lztp1zdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm);
-void tpsizeset(unsigned _tpsize);
-
-//-- TurboVLC : Novel Variable Length Coding for large integers with exponent + mantissa ------------------------
-size_t vlccomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, char *codprm); 
-size_t vlcdecomp32(unsigned char *in,  size_t inlen,  unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, char *codprm);
-
-#ifdef __cplusplus
-}
-#endif
-
