@@ -280,15 +280,18 @@ q/s: queries/second, ms/q:milliseconds/query
         ./icapp file -e80-95 -Eturborc,20
         
   + 2D/3D/4D Transpose + General purpose compressor (lz,zstd,turborc,...)<br />
+  
         ./icapp file512x128.f32 R512x128 -Ff  
         ./icapp file512x128.f32 -R512x128 -Ff -e100,101,102 
         ./icapp file1024x512x128.f32 -R1024x512x128 -Ff -e100,101,102
         
     Automatic dimension determination from file name ( option -R0 )
+    
         ./icapp file1024x512x128.f32 -R0 -Ff -e103,104,105
         ./icapp file1024x512x128.f64 -R0 -Fl -e103,104,105
         
   + Lossy floating point compression
+  
         ./icapp file512x128.f32 -R512x128 -Ff -g.0001
         ./icapp file.f32 -Ff -g.001
         ./icapp file.f64 -Ff -g.001
