@@ -31,22 +31,21 @@
 #include "include_/vint.h"
 #include "include_/bitutil_.h" 
 
-size_t v8len32(const uint32_t *in, size_t n) {
-  size_t   c = 0;
-  uint32_t *ip;
-  for(ip = in; ip < in+n; ip++)
-    c += ip[0]?(bsr32(ip[0]) + 7)/8:1;
-  return c + (n*2+7)/8;
-}
-
 size_t v8len16(const uint16_t *in, size_t n) {
   size_t   c = 0;
   uint16_t *ip;
   for(ip = in; ip < in + n; ip++)
     c += ip[0]?(bsr16(ip[0]) + 7)/8:1;
-  return c + (n+7)/8;
+  return c + V8PAYLOAD(n, 16);
 }
 
+size_t v8len32(const uint32_t *in, size_t n) {
+  size_t   c = 0;
+  uint32_t *ip;
+  for(ip = in; ip < in+n; ip++)
+    c += ip[0]?(bsr32(ip[0]) + 7)/8:1;
+  return c + V8PAYLOAD(n, 32);
+}
 
 #define LEN32(_m_,_i_) len32[(uint8_t)(_m_>>(_i_*8))]
 static const unsigned char len32[256] = {
@@ -797,7 +796,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 #define OP    out
 #define IP    in
 #define IPINC 0
-#define DATABEG(_p_,_n_,_s_)  _p_ + (((_n_)+(_s_-1))/_s_)
+#define DATABEG(_p_,_n_,_usize_)  _p_ + V8PAYLOAD(_n_, _usize_)
 #define PNEXT(_p0_,_p_,_i_)   _p0_ += _i_
 #define PNEXTA(_p0_,_p_,_i_)  0
 #define PNEXTB(_p0_,_i_)      _p0_ += _i_
@@ -866,31 +865,31 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 
 #include "v8.c"
 
-#define V8ENC           v8xenc //------------ xor -----------------------------
-#define V8DEC           v8xdec
-#define VDELTA          0
+#define V8ENC               v8xenc //------------ xor -----------------------------
+#define V8DEC               v8xdec
+#define VDELTA              0
 
-#define VEINI128v16     __m128i sv =    _mm_set1_epi16(start);
-#define VEINI128v32     __m128i sv =    _mm_set1_epi32(start);
-#define VEINI256v32     __m256i sv = _mm256_set1_epi32(start)
+#define VEINI128v16         __m128i sv =    _mm_set1_epi16(start);
+#define VEINI128v32         __m128i sv =    _mm_set1_epi32(start);
+#define VEINI256v32         __m256i sv = _mm256_set1_epi32(start)
 
-#define VE16(_x_)   v = (_x_)^start; start = _x_
-#define VE32(_x_)   v = (_x_)^start; start = _x_
+#define VE16(_x_)           v = (_x_)^start; start = _x_
+#define VE32(_x_)           v = (_x_)^start; start = _x_
 
-#define VD16(_x_)   (start ^= _x_)
-#define VD32(_x_)   (start ^= _x_)
+#define VD16(_x_)           (start ^= _x_)
+#define VD32(_x_)           (start ^= _x_)
 
-#define VE128v16(_iv_,_sv_) { __m128i _tv = _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VE128v32(_iv_,_sv_) { __m128i _tv = _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VE128v16(_iv_,_sv_) { __m128i _tv =    _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VE128v32(_iv_,_sv_) { __m128i _tv =    _mm_xor_si128(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VE256v32(_iv_,_sv_) { __m256i _tv = _mm256_xor_si256(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 
 #define VDINI128v16         __m128i sv =    _mm_set1_epi16(start);
 #define VDINI128v32         __m128i sv =    _mm_set1_epi32(start);
 #define VDINI256v32         __m256i sv = _mm256_set1_epi32(start);
 
-#define VD128v16(_v_,_sv_) _v_ = _sv_ = _mm_xor_si128(_v_,_sv_);
-#define VD128v32(_v_,_sv_) _v_ = _sv_ = _mm_xor_si128(_v_,_sv_);
-#define VD256v32(_v_,_sv_) _v_ = _sv_ = _mm256_xor_si256(_v_,_sv_);
+#define VD128v16(_v_,_sv_)  _v_ = _sv_ =    _mm_xor_si128(_v_,_sv_);
+#define VD128v32(_v_,_sv_)  _v_ = _sv_ =    _mm_xor_si128(_v_,_sv_);
+#define VD256v32(_v_,_sv_)  _v_ = _sv_ = _mm256_xor_si256(_v_,_sv_);
 
 #include "v8.c"
 
@@ -960,7 +959,7 @@ static const ALIGNED(unsigned char, svd16[256][16],16) = {
 
 unsigned char *T2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA32) {
   uint32_t      *ip,v;
-  unsigned char *op = DATABEG(out,n,4),*sp=out;
+  unsigned char *op = DATABEG(out,n,32),*sp = out;
   
     #ifdef __AVX2__ // slightly faster than SSE ----------------------------------------------------------------------------------------------
   VEINI256v32; const __m256i cv1_8 = _mm256_set1_epi8(1), cv7f00 = _mm256_set1_epi16(0x7F00), zv = _mm256_setzero_si256();
@@ -1062,7 +1061,7 @@ unsigned char *T2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *
  
 unsigned char *T2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t *__restrict out V8DELTA32) { 
   uint32_t      *op=out, v;
-  unsigned char *ip = DATABEG(in,n,4);
+  unsigned char *ip = DATABEG(in,n,32);
   if(!n) return in;
     #ifdef __AVX2__ //slightly faster than SSE ------------------------------------------------------------------------------------------
   VDINI256v32;
@@ -1217,7 +1216,7 @@ unsigned char *T2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t 
 
 unsigned char *T2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned char *__restrict out V8DELTA16) {
   uint16_t      *ip,v;
-  unsigned char *op = DATABEG(out,n,2);
+  unsigned char *op = DATABEG(out,n,16);
 
     #if defined(__SSSE3__) || defined(__ARM_NEON) //--------------------------------
   VEINI128v16; const __m128i cv1_8 = _mm_set1_epi8(1);
@@ -1284,7 +1283,7 @@ unsigned char *T2(V8ENC,16)(uint16_t *__restrict in, unsigned n, unsigned char *
 
 unsigned char *T2(V8DEC,16)(unsigned char  *__restrict in, unsigned n, uint16_t *__restrict out V8DELTA16) {
   uint16_t      *op;
-  unsigned char *ip = DATABEG(in,n,2);
+  unsigned char *ip = DATABEG(in,n,16);
   uint16_t v;
 
     #if defined(__SSSE3__) || defined(__ARM_NEON)//-----------------------
