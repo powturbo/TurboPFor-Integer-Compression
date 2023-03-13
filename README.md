@@ -15,10 +15,9 @@ TurboPFor: Fastest Integer Compression
 * **For/PFor/PForDelta**
   * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**. **+RLE**
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
-  * Compress 70 times faster and decompress up to 4 times faster than OptPFD
 * **Bit Packing**
-  * Fastest and most efficient **"SIMD Bit Packing"** **15 Billions integers/sec (60Gb/s!)**
-  * Scalar **"Bit Packing"** decoding nearly as fast as SIMD-Packing in realistic (No "pure cache") scenarios
+  * Fastest and most efficient **"SIMD Bit Packing"** **>20 Billions integers/sec (80Gb/s!)**
+  * Extremely fast scalar **"Bit Packing"**
   * **Direct/Random Access** : Access any single bit packed entry with **zero decompression**
 * **Variable byte**
   * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
@@ -29,20 +28,20 @@ TurboPFor: Fastest Integer Compression
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
 * :new:(2023.03)**TurboVLC** novel variable length encoding for large integers 
-  with exponent + bitio mantissa similar to mu-law/extra-bits
+  with exponent + variable bit mantissa 
 * :new:(2023.03)**Binary interpolative coding** : fastest implementation
 + **Transform**
   * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, 
   * :new:(2023.03) Transpose/Shuffle with integrated Xor and zigzag delta
   * :new:(2023.03) 2D/3D/4D transpose
-  * **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77
-+ :new:(2023.03)**IC Codecs** transpose/rle + general purpose compression with lz4,zstd,turborc,...
+  * **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77/bwt
++ :new:(2023.03)**IC Codecs** transpose/rle + general purpose compression with lz4,zstd,turborc (range coder),bwt...
 * **Floating Point Compression**
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
-  * Using **TurboPFor**, unsurpassed compression and more than 5 GB/s throughput
+  * Using **TurboPFor**, unsurpassed compression and more than 8 GB/s throughput
   * Point wise relative error bound **lossy** floating point compression
   * **TurboFloat** novel efficient floating point compression using TurboPFor
-  * :new:(2023.03)**TurboFloat LzXor** novel floating point compression using lempel-ziv compression
+  * :new:(2023.03)**TurboFloat LzXor** novel floating point lempel-ziv compression
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
@@ -58,7 +57,7 @@ TurboPFor: Fastest Integer Compression
 ![Promo video](turbopfor.jpg?raw=true)
 
 ### Integer Compression Benchmark (single thread):
-- Download [IcApp](https://sites.google.com/site/powturbo/downloads) a new benchmark for TurboPFor<br>
+- Download [IcApp](hhttps://github.com/powturbo/TurboPFor-Integer-Compression/releases/tag/2023.03) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
 - Practical (No **PURE** cache) "integer compression" benchmark w/ **large** arrays.
 - [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues/47)
@@ -69,7 +68,7 @@ TurboPFor: Fastest Integer Compression
    Note: Unlike general purpose compression, a small fixed size (ex. 128 integers) is in general used in "integer compression".
    Large blocks involved, while processing queries (inverted index, search engines, databases, graphs, in memory computing,...) need to be entirely decoded.
 
-        ./icbench -a1.5 -m0 -M255 -n100M ZIPF
+        ./icapp -a1.5 -m0 -M255 -n100M ZIPF
 
 |C Size|ratio%|Bits/Integer|C MB/s|D MB/s|Name  2019.11|
 |--------:|-----:|--------:|----------:|----------:|--------------|
@@ -173,7 +172,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |memcpy          |13397|577,141,992|100.00||
 
 ##### - Transpose/Shuffle (no compression)
-        ./icbench -eTRANSFORM ZIPF
+        ./icapp -e117,118,119 ZIPF
 
 |Size |C Time MB/s|D Time MB/s|Function|
 |----------:|------:|------:|-----------------------------------|
@@ -229,34 +228,32 @@ q/s: queries/second, ms/q:milliseconds/query
 ###### Notes:
 - Search engines are spending 90% of the time in intersections when processing queries. 
 - Most search engines are using pruning strategies, caching popular queries,... to reduce the time for intersections and query processing.
-- As indication, google is processing [40.000 Queries per seconds](http://www.internetlivestats.com/google-search-statistics/),
-using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-know-server-farms/) for searching [8 billions web pages](http://searchenginewatch.com/sew/study/2063479/coincidentally-googles-index-size-jumps) (320 X size of GOV2).
-- Recent "integer compression" GOV2 experiments (best paper at ECIR 2014) [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
+- "integer compression" GOV2 experiments [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
 
 ### Compile:
         Download or clone TurboPFor
-		git clone git://github.com/powturbo/TurboPFor-Integer-Compression.git
+		git clone https://github.com/powturbo/TurboPFor-Integer-Compression.git
 		cd TurboPFor-Integer-Compression
 		make
         
 
         To benchmark external libraries + lz77 compression:
-		git clone --recursive git://github.com/powturbo/TurboPFor-Integer-Compression.git
+		git clone --recursive https://github.com/powturbo/TurboPFor-Integer-Compression.git
 		cd TurboPFor-Integer-Compression
-        make CODEC1=1 CODEC2=1 LZ=1
+        make CODEC1=1 CODEC2=1
 
 ###### Windows visual c++
 		nmake /f makefile.vs
 
 ###### Windows visual studio c++
-        project files under vs/vs2017
+        project files under vs/vs2022
   
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
   + benchmark groups of "integer compression" functions <br />
 
-        ./icbench -eBENCH -a1.2 -m0 -M255 -n100M ZIPF
-        ./icbench -eBITPACK/VBYTE -a1.2 -m0 -M255 -n100M ZIPF
+        ./icapp -a1.2 -m0 -M255 -n100M ZIPF
+        ./icapp -a1.2 -m0 -M255 -n100M ZIPF
 
    >*Type "icbench -l1" for a list*
 
@@ -289,7 +286,6 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
 ##### - Data files:
   - Raw 32 bits binary data file [Test data](https://github.com/ot/partitioned_elias_fano/tree/master/test/test_data)
 
-        ./icbench file
         ./icapp file           
         ./icapp -Fs file         "16 bits raw binary file
         ./icapp -Fu file         "32 bits raw binary file
@@ -298,9 +294,6 @@ using [900.000 multicore servers](https://www.cloudyn.com/blog/10-facts-didnt-kn
         ./icapp -Fd file         "64 bits raw floating point binary file
 
   - Text file: 1 entry per line. [Test data: ts.txt(sorted) and lat.txt(unsorted)](https://github.com/zhenjl/encoding/tree/master/benchmark/data))
-
-        ./icbench -eBENCH -fts ts.txt
-        ./icbench -eBENCH -ft  lat.txt
 
         ./icapp -Fts data.txt            "text file, one 16 bits integer per line
         ./icapp -Ftu ts.txt              "text file, one 32 bits integer per line
@@ -434,7 +427,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 ###### OS/Compiler (64 bits):
 - Windows: MinGW-w64 makefile
 - Windows: Visual c++ (>=VS2008) - makefile.vs (for nmake)
-- Windows: Visual Studio project file - vs/vs2017 - Thanks to [PavelP](https://github.com/pps83)
+- Windows: Visual Studio project file - vs/vs2022
 - Linux amd64: GNU GCC (>=4.6)
 - Linux amd64: Clang (>=3.2) 
 - Linux arm64: 64 bits aarch64 ARMv8:  gcc (>=6.3)
