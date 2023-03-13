@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2019-2023
     GPL v2 License
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -22,19 +22,19 @@
     - twitter  : https://twitter.com/powturbo
 **/
 //  Binary Interpolative Coding
-// Reference: "On Implementing the Binary Interpolative Coding Algorithm" GIULIO ERMANNO PIBIRI, ISTI-CNS http://pages.di.unipi.it/pibiri/papers/BIC.pdf 
+// Reference: "On Implementing the Binary Interpolative Coding Algorithm" GIULIO ERMANNO PIBIRI, ISTI-CNS http://pages.di.unipi.it/pibiri/papers/BIC.pdf
 //            "Techniques for Inverted Index Compression" GIULIO ERMANNO PIBIRI, ROSSANO VENTURINI, University of Pisa https://arxiv.org/abs/1908.10598
 
 #ifndef USIZE
 #include "include_/conf.h"
 #include "include_/bic.h"
 
-#include "include_/bitutil_.h" 
+#include "include_/bitutil_.h"
 
 static ALWAYS_INLINE unsigned pow2next(unsigned x) { return x<2?1:(1ull << (__bsr32((x)-1)+1)); }
 
 // Simple binary
-#define bicput(bw,br, _u_, _x_, _usize_) bitput(  bw,br, T2(__bsr,_usize_)(_u_) + 1, _x_)   /*AS(_u_ > 0, "Fatal bicput"); AS(_x_ <= _u_, "Fatal bicput2");*/ 
+#define bicput(bw,br, _u_, _x_, _usize_) bitput(  bw,br, T2(__bsr,_usize_)(_u_) + 1, _x_)   /*AS(_u_ > 0, "Fatal bicput"); AS(_x_ <= _u_, "Fatal bicput2");*/
 #define bicget(bw,br, _u_, _x_, _usize_) bitget57(bw,br, T2(__bsr,_usize_)(_u_) + 1, _x_)
 #define BICENC_ bicbenc_
 #define BICDEC_ bicbdec_
@@ -125,7 +125,7 @@ static ALWAYS_INLINE unsigned pow2next(unsigned x) { return x<2?1:(1ull << (__bs
 
 #else //-------------------- Template functions ----------------------------------------------------------------------------------------------------------
 static void T2(BICENC_,USIZE)(uint_t *in, unsigned n, unsigned char **_op, unsigned lo, unsigned hi, unsigned h, uint64_t *bw, unsigned *br) {
-  while(n) 
+  while(n)
     if(hi - lo + 1 != n) { 												//AC(lo <= hi,"bicenc fatal lo=%d>hi=%d n=%d\n", lo, hi, n); AS(hi - lo >= n - 1, "bicenc_32 fatal hi-lo>n-1\n");
       unsigned x = in[h];
 	  bicput(*bw, *br, hi-n-lo+1, x-lo-h, USIZE);  bitenorm(*bw,*br,*_op);
@@ -133,15 +133,15 @@ static void T2(BICENC_,USIZE)(uint_t *in, unsigned n, unsigned char **_op, unsig
       in += h+1; n -= h+1; lo = x+1; h = n >> 1;
 	} else break;
 }
- 
-#define RE(a) //a  // recursion : RE(a) a 
-#define RD(a) a    // recursion : RD(a) 
+
+#define RE(a) //a  // recursion : RE(a) a
+#define RD(a) a    // recursion : RD(a)
 static void T2(BICDEC_,USIZE)(unsigned char **_ip, unsigned n, uint_t *out, unsigned lo, unsigned hi, unsigned h, uint64_t *bw, unsigned *br) {
-  RE(if(!n) return);  
+  RE(if(!n) return);
   RD(do) {
     if(likely(hi - lo + 1 != n)) {						    //AS(lo <= hi, "bicdec fatal");
-      unsigned x; 
-	  bitdnorm(*bw,*br,*_ip); bicget(*bw,*br, hi-lo+1-n, x, USIZE); 
+      unsigned x;
+	  bitdnorm(*bw,*br,*_ip); bicget(*bw,*br, hi-lo+1-n, x, USIZE);
       out[h] = (x += lo + h);
       if(n != 1) {
            T2(BICDEC_,USIZE)(_ip,   h,   out,         lo,  x-1,       h>>1, bw,br);
@@ -150,17 +150,17 @@ static void T2(BICDEC_,USIZE)(unsigned char **_ip, unsigned n, uint_t *out, unsi
 	  } RD(else break);
     } else {
 	  BITFORSET_(out, n, lo, 1); 					//for(unsigned i = 0; i != n; ++i) out[i] = lo+i; //
-	  RD(break);									
-    }  
+	  RD(break);
+    }
   } RD(while(n));
 }
 
-unsigned T2(BICENC,USIZE)(uint_t *in, unsigned n, unsigned char *out) { 
+unsigned T2(BICENC,USIZE)(uint_t *in, unsigned n, unsigned char *out) {
   if(!n) return 0; 						//for(unsigned i = 1; i < n; i++) { AC(in[i]>in[i-1], "bicenc32: Not sorted at=%u,count=%d\n", i, n);  } //printf("n=%u ", n);printf("%u,", in[i]);
   bitdef(bw,br);
-  unsigned char *op = out; 
-  unsigned      x = in[n-1]; 
-  
+  unsigned char *op = out;
+  unsigned      x = in[n-1];
+
   ctou32(op) = x; op += 4;
   T2(BICENC_,USIZE)(in, n-1, &op, 0, x, pow2next(n)>>1, &bw,&br);
   bitflush(bw,br,op);
@@ -169,12 +169,12 @@ unsigned T2(BICENC,USIZE)(uint_t *in, unsigned n, unsigned char *out) {
 
 unsigned T2(BICDEC,USIZE)(unsigned char *in, unsigned n, uint_t *out) {
   if(!n) return 0;
-  bitdef(bw,br); 
-  unsigned char *ip = in; 
-  unsigned      x = ctou32(ip); 
-  
-  ip       += 4; 
-  out[n-1]  = x;                    
+  bitdef(bw,br);
+  unsigned char *ip = in;
+  unsigned      x = ctou32(ip);
+
+  ip       += 4;
+  out[n-1]  = x;
   T2(BICDEC_,USIZE)(&ip, n-1, out, 0, x, pow2next(n)>>1, &bw,&br);
   bitalign(bw,br,ip);
   return ip - in;
