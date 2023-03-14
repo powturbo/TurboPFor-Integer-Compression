@@ -57,9 +57,9 @@ TurboPFor: Fastest Integer Compression
 ![Promo video](turbopfor.jpg?raw=true)
 
 ### Integer Compression Benchmark (single thread):
-- Download [IcApp](hhttps://github.com/powturbo/TurboPFor-Integer-Compression/releases/tag/2023.03) a new benchmark for TurboPFor<br>
+- Download [IcApp](https://github.com/powturbo/TurboPFor-Integer-Compression/releases/tag/2023.03) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
-  ( type icapp ZIPF )
+  ( type: icapp ZIPF )
 - [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues/47)
 - [Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz](https://github.com/powturbo/TurboPFor/issues/49)
 
@@ -238,9 +238,12 @@ q/s: queries/second, ms/q:milliseconds/query
         
 
         To benchmark external libraries + lz77 compression:
-		git clone --recursive https://github.com/powturbo/TurboPFor-Integer-Compression.git
+        git clone --recursive https://github.com/powturbo/TurboPFor-Integer-Compression.git
 		cd TurboPFor-Integer-Compression
+		Download the external libraries from github into the current directory
+		Axctivate/deactivate the ext. libs in the makefile 
         make CODEC1=1 CODEC2=1
+
 
 ###### Windows visual c++
 		nmake /f makefile.vs
@@ -263,7 +266,7 @@ q/s: queries/second, ms/q:milliseconds/query
 
         ./icapp -a1.5 -m0 -M255 -e1,2,3 ZIPF
 
-  + Unsorted lists: Zigzag encoding w/ option **-fz** or FOR encoding<br />
+  + Unsorted lists: Zigzag encoding<br />
 
          ./icapp -e10,11,12 ZIPF
 
@@ -272,7 +275,7 @@ q/s: queries/second, ms/q:milliseconds/query
         ./icapp -e4,5,6 ZIPF
         ./icapp -e7,8,9 ZIPF
         
-  + Transpose/RLE/TurboVByte + General purpose compressor (lz,zstd,turborc,...)<br />
+  + Transpose/RLE/TurboVByte + General purpose compressor (lz,zstd,turborc,bwt...)<br />
 
         ./icapp file -e80-95
         ./icapp file -e80-95 -Ezstd,15 
