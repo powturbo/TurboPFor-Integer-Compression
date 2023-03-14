@@ -662,7 +662,7 @@ unsigned zfpcompress(const void *in, int nx, int ny, int nz, int nw, uint8_t *ou
   field.nw   = nw;
   field.data = in;
   zfp_stream *zfp = zfp_stream_open(NULL);
-  errlim <= DBL_EPSILON?zfp_stream_set_reversible(zfp):zfp_stream_set_accuracy(zfp, errlim); //outsize = zfp_stream_maximum_size(zfp, &field);
+  errlim <= DBL_EPSILON?zfp_stream_set_reversible(zfp):zfp_stream_set_accuracy(zfp, errlim); 
   bitstream *stream = stream_open(out, outsize);
   zfp_stream_set_bit_stream(zfp, stream);  //zfp_stream_rewind(zfp);
 
