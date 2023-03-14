@@ -35,6 +35,8 @@
 #include "include_/vlcbyte.h"
 
 #include "include_/bitutil_.h"
+#define V8PAYLOAD(_n_, _usize_) (((_n_)*(_usize_/16)+7)/8)  //from v8.c
+#define V8BOUND_(_n_, _usize_) (V8PAYLOAD(_n_, _usize_)+ (_n_)*(_usize_/8))
 
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
