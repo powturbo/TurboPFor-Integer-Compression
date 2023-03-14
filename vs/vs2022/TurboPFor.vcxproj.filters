@@ -148,5 +148,14 @@
     <ClInclude Include="..\..\..\include_\bitutil_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\bitpack_.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bitunpack_.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\trle_.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
