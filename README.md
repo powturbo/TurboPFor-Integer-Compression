@@ -297,7 +297,7 @@ q/s: queries/second, ms/q:milliseconds/query
   
         ./icapp file512x128.f32 -R512x128 -Ff -g.0001
         ./icapp file.f32 -Ff -g.001
-        ./icapp file.f64 -Fl -g.001
+        ./icapp file.f64 -Fd -g.001
 
 
 ##### - Data files:
