@@ -247,8 +247,11 @@
     <ClInclude Include="..\..\..\include\vsimple.h" />
     <ClInclude Include="..\..\..\include_\bitutil_.h" />
     <ClInclude Include="..\..\bitpack.h" />
+    <ClInclude Include="..\..\bitpack_.h" />
+    <ClInclude Include="..\..\bitunpack_.h" />
     <ClInclude Include="..\..\transpose.h" />
     <ClInclude Include="..\..\trle.h" />
+    <ClInclude Include="..\..\trle_.h" />
     <ClInclude Include="..\..\vint.h" />
     <ClInclude Include="..\..\vp4.h" />
     <ClInclude Include="..\..\vsimple.h" />
