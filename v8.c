@@ -31,6 +31,15 @@
 #include "include_/vint.h"
 #include "include_/bitutil_.h" 
 
+#define V8PAYLOAD(_n_, _usize_) (((_n_)*(_usize_/16)+7)/8)
+#define V8BOUND_(_n_, _usize_) (V8PAYLOAD(_n_, _usize_)+ (_n_)*(_usize_/8))
+#define V8BOUND16(_n_) V8BOUND_(_n_, 16)
+#define V8BOUND32(_n_) V8BOUND_(_n_, 32)
+
+size_t v8bound16(const uint16_t *in, size_t n) { return V8BOUND16(n); }
+size_t v8bound32(const uint32_t *in, size_t n) { return V8BOUND32(n); }
+
+
 size_t v8len16(const uint16_t *in, size_t n) {
   size_t   c = 0;
   uint16_t *ip;
