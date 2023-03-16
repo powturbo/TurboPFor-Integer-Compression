@@ -13,6 +13,7 @@ ZSTD=1
 #ZLIB=1
 BITSHUFFLE=1
 #LZTURBO=1
+TURBORC=1
 endif
 
 ifeq ($(CODEC1),1)
@@ -26,7 +27,6 @@ SPDP=1
 STREAMVBYTE=1
 #VTENC=1
 SIMPLE8B=1
-TURBORC=1
 ZFP=1
 #ZLIB=1
 LIBROUNDFAST=1
@@ -84,7 +84,7 @@ varintg8iu.o: ext/varintg8iu.c ext/varintg8iu.h
 #-------------------------------------------------------------------
 ifeq ($(BLOSC),1)
 LDFLAGS+=-lpthread
-CFLAGS+=-D_BLOSC -Iext/c-blosc2/include -Iext/c-blosc2/include/blosc2 -Iext/lz4/lib
+CFLAGS+=-D_BLOSC -Iext/c-blosc2/include -Iext/c-blosc2/include/blosc2 -Iext/lz4/lib -DHAVE_ZSTD
 
 ext/c-blosc2/blosc/shuffle-sse2.o: ext/c-blosc2/blosc/shuffle-sse2.c
 	$(CC) -O3 $(CFLAGS) -msse2 -c ext/c-blosc2/blosc/shuffle-sse2.c -o ext/c-blosc2/blosc/shuffle-sse2.o
@@ -282,7 +282,7 @@ CFLAGS+=-D_ZSTD -Iext/zstd/lib -Iext/zstd/lib/common
 OB+=ext/zstd/lib/common/pool.o ext/zstd/lib/common/xxhash.o ext/zstd/lib/common/error_private.o \
     ext/zstd/lib/compress/hist.o ext/zstd/lib/compress/zstd_compress.o ext/zstd/lib/compress/zstd_compress_literals.o ext/zstd/lib/compress/zstd_compress_sequences.o ext/zstd/lib/compress/zstd_double_fast.o ext/zstd/lib/compress/zstd_fast.o ext/zstd/lib/compress/zstd_lazy.o ext/zstd/lib/compress/zstd_ldm.o ext/zstd/lib/compress/zstdmt_compress.o ext/zstd/lib/compress/zstd_opt.o \
     ext/zstd/lib/decompress/zstd_decompress.o ext/zstd/lib/decompress/zstd_decompress_block.o ext/zstd/lib/decompress/zstd_ddict.o ext/zstd/lib/compress/fse_compress.o ext/zstd/lib/common/fse_decompress.o ext/zstd/lib/compress/huf_compress.o ext/zstd/lib/decompress/huf_decompress.o ext/zstd/lib/common/zstd_common.o ext/zstd/lib/common/entropy_common.o ext/zstd/lib/compress/zstd_compress_superblock.o\
-    ext/zstd/lib/decompress/huf_decompress_amd64.o
+    ext/zstd/lib/decompress/huf_decompress_amd64.o ext/zstd/lib/dictBuilder/zdict.o ext/zstd/lib/dictBuilder/fastcover.o ext/zstd/lib/dictBuilder/cover.o ext/zstd/lib/dictBuilder/divsufsort.o
 endif
 
 ifeq ($(FSE), 1)
