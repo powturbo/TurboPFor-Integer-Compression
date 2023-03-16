@@ -9,7 +9,7 @@
 # 3 -       make: "make CODEC1=1 CODEC2=1 ICCODEC=1" 
 # on arm make: "make CODEC1=1 ICCODEC=1"
 
-ICCODEC=1
+#ICCODEC=1
 #AVX2=1
 SSE=1
 #-------------------------------------------------
@@ -37,7 +37,9 @@ ifneq (,$(filter Windows%,$(OS)))
   CXX=g++
 #  CC=clang
   ARCH=x86_64
+ifeq ($(ICCODEC),1) 
   LDFLAGS=-Wl,--stack,33554432
+endif
 else
   OS := $(shell uname -s)
   ARCH := $(shell uname -m)
@@ -109,7 +111,7 @@ transpose_avx2.o: transpose.c
 
 -include ext/libext.mak
 
-LIB=bic.o bitpack.o bitunpack.o bitutil.o eliasfano.o fp.o transpose.o transpose_sse.o trlec.o trled.o vp4c.o vp4d.o v8.o v8pack.o vint.o vsimple.o vbit.o iccodec.o
+LIB=bic.o bitpack.o bitunpack.o bitutil.o eliasfano.o fp.o transpose.o transpose_sse.o trlec.o trled.o vp4c.o vp4d.o v8.o v8pack.o vint.o vsimple.o vbit.o 
 ifeq ($(ARCH),x86_64)
 LIB+=vp4c_avx2.o vp4d_avx2.o transpose_avx2.o bitpack_avx2.o bitunpack_avx2.o bitutil_avx2.o
 endif
@@ -120,6 +122,11 @@ else
 ifeq ($(SSE),1) 
 CFLAGS+=$(_SSE)
 endif
+endif
+
+ifeq ($(ICCODEC),1) 
+CFLAGS+=-D_ICCODEC
+LIB+=iccodec.o
 endif
 
 libic.a: $(LIB)
