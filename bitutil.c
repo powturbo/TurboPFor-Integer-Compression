@@ -653,8 +653,8 @@ void bitzdec16(uint16_t *in, unsigned n, uint16_t start) {
   __m128i vs = _mm_set1_epi16(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   uint16_t *ip = in;
   for(; ip != in+(n&~(8-1)); ip += 8) {
-    __m128i iv =  _mm_loadu_si128((__m128i *)ip);
-    iv = mm_zzagd_epi16(iv);
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip);                   
+	iv = mm_zzagd_epi16(iv);
     vs = mm_scan_epi16(iv, vs);
     _mm_storeu_si128((__m128i *)ip, vs);
   }
@@ -761,9 +761,49 @@ uint64_t bitxenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start) { ui
 }
 
 void bitxdec8( uint8_t  *in, unsigned n, uint8_t  start) { BITXDEC(uint8_t,  in, n); }
-void bitxdec16(uint16_t *in, unsigned n, uint16_t start) { BITXDEC(uint16_t, in, n); }
-void bitxdec32(uint32_t *in, unsigned n, uint32_t start) { BITXDEC(uint32_t, in, n); }
 void bitxdec64(uint64_t *in, unsigned n, uint64_t start) { BITXDEC(uint64_t, in, n); }
+
+void bitxdec16(uint16_t *in, unsigned n, uint16_t start) {
+    #if defined(__SSSE3__) || defined(__ARM_NEON)
+  __m128i vs = _mm_set1_epi16(start);
+  uint16_t *ip = in;
+  for(; ip != in+(n&~(8-1)); ip += 8) {
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip);                   
+	vs = mm_xord_epi16(iv, vs);
+    _mm_storeu_si128((__m128i *)ip, vs);
+  }
+  start = (uint16_t)_mm_cvtsi128_si32(_mm_srli_si128(vs,14));
+  while(ip != in+n) {
+    uint16_t z = *ip;
+    *ip++ = (start ^= z);
+  }
+    #else
+  BITXDEC(uint16_t, in, n);
+    #endif
+}
+
+void bitxdec32(unsigned *in, unsigned n, unsigned start) {
+    #if defined(__SSSE3__) || defined(__ARM_NEON)
+  __m128i vs = _mm_set1_epi32(start);
+  unsigned *ip = in;
+  for(; ip != in+(n&~(8-1)); ip += 8) {
+    __m128i iv0 = _mm_loadu_si128((__m128i *)ip),
+            iv1 = _mm_loadu_si128((__m128i *)(ip+4));
+    vs = mm_xord_epi32(iv0, vs);
+	__m128i _vs = vs;
+    vs = mm_xord_epi32(iv1, vs);
+    _mm_storeu_si128((__m128i *)ip,    _vs);
+    _mm_storeu_si128((__m128i *)(ip+4), vs);
+  }
+  start = (unsigned)_mm_cvtsi128_si32(_mm_srli_si128(vs,12));
+  while(ip != in+n) {
+    unsigned z = *ip;
+    *ip++ = (start ^= z);
+  }
+    #else
+  BITXDEC(uint32_t, 32, in, n);
+    #endif
+}
 
 //-------------- For : calc max. bits, min,max value ------------------------
 #define FM(i) mi = _ip[i] < mi?_ip[i]:mi; mx = _ip[i] > mx?_ip[i]:mx
