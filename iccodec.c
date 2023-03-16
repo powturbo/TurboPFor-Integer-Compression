@@ -93,6 +93,7 @@ size_t codecenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
 			           LZ4_compress_HC(     (char *)in, (char *)out, inlen, outsize, codlev)); 
 	  } else { 
 	    char *q;
+		  #if 1
         LZ4F_preferences_t opts = LZ4F_INIT_PREFERENCES;
         opts.compressionLevel      = codlev;
         if(strchr(codprm,'s'))   opts.favorDecSpeed         = 1;
@@ -101,11 +102,14 @@ size_t codecenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
         if(q=strchr(codprm,'B')) 
 		  opts.frameInfo.blockSizeID = (LZ4F_blockSizeID_t)atoi(q+(q[1]=='='?2:1));
         if(opts.frameInfo.blockSizeID > LZ4F_max4MB) 
-		  opts.frameInfo.blockSizeID=LZ4F_max4MB;
+		  opts.frameInfo.blockSizeID = LZ4F_max4MB;
         else if(opts.frameInfo.blockSizeID && opts.frameInfo.blockSizeID<LZ4F_default) 
-		  opts.frameInfo.blockSizeID=LZ4F_default;
+		  opts.frameInfo.blockSizeID = LZ4F_default;
         int rc = LZ4F_compressFrame(out, outsize, in, inlen, &opts);
 		if(LZ4F_isError(rc)) return -1;
+		  #else
+		int rc = LZ4_compress_fast(in, out, (int)inlen, (int)outsize, 0);
+          #endif
 		return rc;
       }
       #endif
@@ -129,8 +133,7 @@ size_t codecenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
       ZSTD_parameters p = ZSTD_getParams(codlev, inlen, 0);
       if(inlen) { 
 	    int windowLog = bsr32(inlen)-powof2(inlen); 
-		ZSTD_CCtx_setParameter(ctx, 
-		ZSTD_c_windowLog, windowLog); 
+		ZSTD_CCtx_setParameter(ctx, ZSTD_c_windowLog, windowLog); 
 	  }
       unsigned rc = ZSTD_compress_advanced(ctx, out, outsize, in, inlen, NULL, 0, p);
       ZSTD_freeCCtx(ctx);
@@ -183,10 +186,15 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
     case ICC_LZ4:
       if(strchr(codprm,'M')) { LZ4_decompress_safe((const char *)in, (char *)out, inlen, outlen); break; }
       else {
-        LZ4F_dctx *ctx; LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);
+		  #if 1
+        LZ4F_dctx *ctx; 
+		LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);
         size_t ilen = inlen, olen = outlen, rc = LZ4F_decompress(ctx, out, &olen, in, &ilen, NULL);
         LZ4F_freeDecompressionContext(ctx);
         return rc;
+		  #else
+		LZ4_decompress_safe(in, out, (int)inlen, (int)outlen);
+		  #endif
       }
       #endif
 
@@ -204,7 +212,6 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
       }
     }
       #endif
-
       #ifdef _ZSTD
     case ICC_ZSTD: ZSTD_decompress( out, outlen, in, inlen); break;
 	  #endif
@@ -225,28 +232,31 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
   return 0;
 }
 
-//------------------------------------ https://github.com/zeux/meshoptimizer ------------------------------------------------------------------------------------------
-  #ifdef _MESHOPT 
-#include "ext/meshoptimizer/src/meshoptimizer.h"
-unsigned meshenc(const float *in, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned outsize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  unsigned vs   = nz <= 64?nz*sizeof(in[0]):sizeof(in[0]), vn = nz <= 64?nx*ny:nx*ny*nz, 
-           clen = meshopt_encodeVertexBuffer(tmp, outsize, in, vn, vs);
-  ctou32(out) = clen;
-  return codecenc(tmp, clen, out+4, outsize-4, codid, codlev, codprm)+4;
-}
+//------------ block processing -----------------------------------------------
+#define ICCBEG unsigned char *ip = in, *op = out;\
+  unsigned iplen = 0;\
+  bsize = bsize < inlen?bsize:inlen;\
+  for(; ip < in + inlen; ip += iplen) {\
+    iplen = (in+inlen) - ip;\
+	iplen = iplen>bsize?bsize:iplen;\
+	if(op+iplen > out+outsize) { ctou32(out) = (unsigned)-1; memcpy(out+4, in, inlen); return inlen+4; }
 
-void meshdec(const uint8_t *in, unsigned inlen, float *out, unsigned nx, unsigned ny, unsigned nz, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  unsigned vs   = nz <= 64?nz*sizeof(out[0]):sizeof(out[0]), vn = nz <= 64?nx*ny:nx*ny*nz,
-           clen = ctou32(in); 
-  codecdec(in+4, inlen-4, tmp, clen, codid, codlev, codprm);
-  meshopt_decodeVertexBuffer(out, vn, vs, tmp, clen);
-}
-  #endif
-  
+#define ICCEND if(op >= out+inlen) { ctou32(out) = (unsigned)-1; memcpy(out+4, in, inlen); return inlen+4; } }
+
+#define ICDBEG unsigned char *ip = in, *op = out;\
+  unsigned oplen = 0;\
+  if(ctou32(in) == (unsigned)-1) { memcpy(out, in+4, outlen); return inlen-4; }\
+  bsize = bsize < outlen?bsize:outlen;\
+  for(; op < out + outlen; op += oplen) {\
+	oplen = (out+outlen)-op;\
+	oplen = oplen>bsize?bsize:oplen;
+	
+#define ICDEND }
+
 //------------------------------------------------ TurboByte (SIMD Varint) -> codec (lz, entropy coding, bwt...) ----------------------------
 //-- TurboByte -> codec
 unsigned lzv8enc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  unsigned clen=0;
+  unsigned clen = 0;
   switch(esize) {
     case 1: clen = inlen; memcpy(tmp, in, inlen); break;
     case 2: clen = v8enc16(in, inlen/2, tmp) - tmp; break;
@@ -295,7 +305,7 @@ unsigned v8lzxdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigne
 
 // TurboByte zigzag -> codec
 unsigned lzv8zenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  unsigned clen=0; // = (unsigned char *)(esize==2?v8zenc16(in, inlen/2, tmp,0):v8zenc32(in, inlen/4, tmp,0)) - tmp; 
+  unsigned clen = 0;
   switch(esize) {
     case 1: clen = inlen; memcpy(tmp, in, inlen); break;
     case 2: clen = v8zenc16(in, inlen/2, tmp, 0) - tmp; break;
@@ -317,124 +327,124 @@ unsigned lzv8zdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigne
   return inlen;
 }
 //-------------------------------------------- Byte transpose -> codec (lz, entropy coding, bwt,...) ------------------------------------------------------------------------
-//-- transpose in blocks ---------
-static unsigned tpbsize;
-
-void tpsizeset(unsigned _tpbsize) {
-  tpbsize = _tpbsize;   
-}
-
-void tpbenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned esize) {
-  unsigned char *ip = in, *op = out;
-  unsigned bsize = tpbsize?tpbsize:inlen, iplen=0; 
-  
-  for(; ip < in + inlen; ip += bsize, op += iplen) {
-    iplen = (in+inlen)-ip; iplen = iplen>bsize?bsize:iplen;
-	tpenc(ip, iplen, op, esize);
-  }
-}
-
-void tpbdec(unsigned char *in, unsigned outlen, unsigned char *out, unsigned esize) {
-  unsigned char *ip = in, *op = out;
-  unsigned bsize = tpbsize?tpbsize:outlen, oplen=0;
-  
-  for(; op < out + outlen; ip += bsize, op += oplen) {
-	oplen = (out+outlen)-op; oplen = oplen>bsize?bsize:oplen;
-	tpdec(ip, oplen, op, esize);
-  }
-}
 
 //-- transpose -> codec
-unsigned lztpenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  tpbenc(in, inlen, tmp, esize);
-  return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
+unsigned lztpenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICCBEG;
+    tpenc(ip, iplen, tmp, esize);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);  AC(clen > 0 && clen <= iplen, "#lztpenc %u ", clen);
+    op += 4 + clen;
+  ICCEND;
+  return op - out;
 }
-unsigned lztpdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  codecdec(in, inlen, tmp, outlen, codid, codlev, codprm);
-  tpbdec(tmp, outlen, out, esize);
+unsigned lztpdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICDBEG;
+    unsigned iplen = ctou32(ip); 
+    codecdec(ip+4, iplen, tmp, oplen, codid, codlev, codprm);
+    ip += 4 + iplen;
+    tpdec(tmp, oplen, op, esize);
+  ICDEND;
   return inlen;
 }
 
 //-- xor -> transpose -> codec
-unsigned lztpxenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) { // XOR
-  tpxenc(in, inlen, tmp, esize);
-  return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
+unsigned lztpxenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) { // XOR
+  ICCBEG;
+    tpxenc(ip, iplen, tmp, esize);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);
+    op += 4 + clen;
+  ICCEND;
+  return op - out;
 }
 
-unsigned lztpxdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  codecdec(in, inlen, tmp, outlen, codid, codlev, codprm);
-  tpxdec(tmp, outlen, out, esize);
+unsigned lztpxdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICDBEG;
+    unsigned iplen = ctou32(ip); 
+    codecdec(ip+4, iplen, tmp, oplen, codid, codlev, codprm);
+    ip += 4+iplen;
+    tpxdec(tmp, oplen, op, esize);
+  ICDEND;
   return inlen;
 }
 
 //-- zigzag -> transpose -> codec
-unsigned lztpzenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) { // Zigzag
-  tpzenc(in, inlen, tmp, esize);
-  return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
+unsigned lztpzenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) { // Zigzag
+  ICCBEG;
+    tpzenc(ip, iplen, tmp, esize);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);
+    op += 4 + clen;
+  ICCEND;
+  return op - out;
 }
 
-unsigned lztpzdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  codecdec(in, inlen, tmp, outlen, codid, codlev, codprm);
-  tpzdec(tmp, outlen, out, esize);
+unsigned lztpzdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICDBEG;
+    unsigned iplen = ctou32(ip); 
+    codecdec(ip+4, iplen, tmp, oplen, codid, codlev, codprm);
+    ip += 4+iplen;
+    tpzdec(tmp, oplen, op, esize);
+  ICDEND;
   return inlen;
 }
-//----------------------------------------------------------------------------------------------------------------
-//-- transpose in blocks/segments
-void tp4benc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned esize) {
-  unsigned char *ip = in, *op = out;
-  unsigned bsize = tpbsize?tpbsize:inlen, iplen=0; 
-  
-  for(; ip < in + inlen; ip += bsize, op += iplen) {
-    iplen = (in+inlen)-ip; iplen = iplen>bsize?bsize:iplen;
-	tp4enc(ip, iplen, op, esize);
-  }
-}
-
-void tp4bdec(unsigned char *in, unsigned outlen, unsigned char *out, unsigned esize) {
-  unsigned char *ip = in, *op = out;
-  unsigned bsize = tpbsize?tpbsize:outlen, oplen=0;
-  
-  for(; op < out + outlen; ip += bsize, op += oplen) {
-	oplen = (out+outlen)-op; oplen = oplen>bsize?bsize:oplen;
-	tp4dec(ip, oplen, op, esize);
-  }
-}
-
 //----------------------------------------------- tp4 : Nibble transpose -> codec --------------------------------
 
 //-- transpose Nibble -> codec
-unsigned lztp4enc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  tp4enc(in, inlen, tmp, esize);
-  return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
+unsigned lztp4enc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICCBEG;
+    tp4enc(ip, iplen, tmp, esize);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);
+    op += 4 + clen;
+  ICCEND;
+  return op - out;
 }
 
-unsigned lztpd4ec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  codecdec(in, inlen, tmp, outlen, codid, codlev, codprm);
-  tp4dec(tmp, outlen, out, esize);
+unsigned lztpd4ec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICDBEG;
+    unsigned iplen = ctou32(ip); 
+    codecdec(ip+4, iplen, tmp, oplen, codid, codlev, codprm);
+    ip += 4 + iplen;
+    tp4dec(tmp, oplen, op, esize);
+  ICDEND;
   return inlen;
 }
 
 //-- xor -> transpose Nibble -> codec
-unsigned lztp4xenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) { //XOR
-  tp4xenc(in, inlen, tmp, esize);
-  return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
+unsigned lztp4xenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) { //XOR
+  ICCBEG;
+    tp4xenc(ip, iplen, tmp, esize);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);
+    op += 4 + clen;
+  ICCEND;
+  return op - out;
 }
 
-unsigned lztp4xdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  codecdec(in, inlen, tmp, outlen, codid, codlev, codprm);
-  tp4xdec( tmp, outlen, out, esize);
+unsigned lztp4xdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICDBEG;
+    unsigned iplen = ctou32(ip); 
+    codecdec(ip+4, iplen, tmp, oplen, codid, codlev, codprm);
+    ip += 4 + iplen;
+    tp4xdec(tmp, oplen, op, esize);
+  ICDEND;
   return inlen;
 }
 
 //-- zigzag delta -> transpose Nibble -> codec
-unsigned lztp4zenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  tp4zenc(in, inlen, tmp, esize);
-  return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
+unsigned lztp4zenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICCBEG;
+    tp4zenc(ip, iplen, tmp, esize);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);
+    op += 4 + clen;
+  ICCEND;
+  return op - out;
 }
 
-unsigned lztp4zdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm) {
-  codecdec(in, inlen, tmp, outlen, codid, codlev, codprm);
-  tp4zdec(tmp, outlen, out, esize);
+unsigned lztp4zdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
+  ICDBEG;
+    unsigned iplen = ctou32(ip); 
+    codecdec(ip+4, iplen, tmp, oplen, codid, codlev, codprm);
+    ip += 4 + iplen;
+    tp4zdec(tmp, oplen, op, esize);
+  ICDEND;
   return inlen;
 }
 
@@ -444,8 +454,8 @@ void tpmodeset(unsigned _tpmode) {
   tpmode = _tpmode;   printf("tpmode=%d ", tpmode);
 }
 
-#define TPENC(in, n, out, esize) tpmode==4?tp4benc(in, n, out, esize):tpbenc(in, n, out, esize)   // use nibble transpose
-#define TPDEC(in, n, out, esize) tpmode==4?tp4bdec(in, n, out, esize):tpbdec(in, n, out, esize) 
+#define TPENC(in, n, out, esize) tpmode==4?tp4enc(in, n, out, esize):tpenc(in, n, out, esize)   // use nibble transpose
+#define TPDEC(in, n, out, esize) tpmode==4?tp4dec(in, n, out, esize):tpdec(in, n, out, esize) 
 
 //-- transpose -> rle
 unsigned tprleenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp) {
