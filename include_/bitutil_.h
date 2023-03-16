@@ -67,21 +67,24 @@ static inline uint64_t       zigzagenc64(int64_t  x)       { return x << 1 ^ x >
 static inline  int64_t       zigzagdec64(uint64_t x)       { return x >> 1 ^ -(x & 1); }
 
   #if defined(__SSE2__) || defined(__ARM_NEON)
-static ALWAYS_INLINE __m128i mm_zzage_epi16(__m128i v) { return _mm_xor_si128( mm_slli_epi16(v,1),  mm_srai_epi16(v,15)); }
-static ALWAYS_INLINE __m128i mm_zzage_epi32(__m128i v) { return _mm_xor_si128( mm_slli_epi32(v,1),  mm_srai_epi32(v,31)); }
-//static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128( mm_slli_epi64(v,1), _mm_srai_epi64(v,63)); }
+#define mm_srai_epi64_63(_v_, _s_) _mm_srai_epi32(_mm_shuffle_epi32(_v_, _MM_SHUFFLE(3, 3, 1, 1)), 31)
+  
+static ALWAYS_INLINE __m128i mm_zzage_epi16(__m128i v) { return _mm_xor_si128( mm_slli_epi16(v,1),  mm_srai_epi16(   v,15)); }
+static ALWAYS_INLINE __m128i mm_zzage_epi32(__m128i v) { return _mm_xor_si128( mm_slli_epi32(v,1),  mm_srai_epi32(   v,31)); }
+static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128( mm_slli_epi64(v,1),  mm_srai_epi64_63(v,63)); }
 
-static ALWAYS_INLINE __m128i mm_zzagd_epi16(__m128i v) { return _mm_xor_si128( mm_srli_epi16(v,1),  mm_srai_epi16( mm_slli_epi16(v,15),15) ); }
-static ALWAYS_INLINE __m128i mm_zzagd_epi32(__m128i v) { return _mm_xor_si128( mm_srli_epi32(v,1),  mm_srai_epi32( mm_slli_epi32(v,31),31) ); }
-//static ALWAYS_INLINE __m128i mm_zzagd_epi64(__m128i v) { return _mm_xor_si128(mm_srli_epi64(v,1), _mm_srai_epi64( m_slli_epi64(v,63),63) ); }
+static ALWAYS_INLINE __m128i mm_zzagd_epi16(__m128i v) { return _mm_xor_si128( mm_srli_epi16(v,1),  mm_srai_epi16(    mm_slli_epi16(v,15),15)); }
+static ALWAYS_INLINE __m128i mm_zzagd_epi32(__m128i v) { return _mm_xor_si128( mm_srli_epi32(v,1),  mm_srai_epi32(    mm_slli_epi32(v,31),31)); }
+static ALWAYS_INLINE __m128i mm_zzagd_epi64(__m128i v) { return _mm_xor_si128( mm_srli_epi64(v,1),  mm_srai_epi64_63( mm_slli_epi64(v,63),63)); }
 
   #endif
   #ifdef __AVX2__
 #define mm256_srai_epi64_63(v, s) _mm256_srai_epi32(_mm256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1)), 31)
-static ALWAYS_INLINE __m256i mm256_zzage_epi32(__m256i v) { return _mm256_xor_si256(_mm256_slli_epi32(v,1), _mm256_srai_epi32(v,31)); }
-static ALWAYS_INLINE __m256i mm256_zzagd_epi32(__m256i v) { return _mm256_xor_si256(_mm256_srli_epi32(v,1), _mm256_srai_epi32(_mm256_slli_epi32(v,31),31) ); }
-static ALWAYS_INLINE __m256i mm256_zzage_epi64(__m256i v) { return _mm256_xor_si256(_mm256_slli_epi64(v,1), mm256_srai_epi64_63(v,63)); }
-static ALWAYS_INLINE __m256i mm256_zzagd_epi64(__m256i v) { return _mm256_xor_si256(_mm256_srli_epi64(v,1), mm256_srai_epi64_63(_mm256_slli_epi64(v,63),63) ); }
+
+static ALWAYS_INLINE __m256i mm256_zzage_epi32(__m256i v) { return _mm256_xor_si256(_mm256_slli_epi32(v,1), _mm256_srai_epi32(   v,31)); }
+static ALWAYS_INLINE __m256i mm256_zzage_epi64(__m256i v) { return _mm256_xor_si256(_mm256_slli_epi64(v,1),  mm256_srai_epi64_63(v,63)); }
+static ALWAYS_INLINE __m256i mm256_zzagd_epi32(__m256i v) { return _mm256_xor_si256(_mm256_srli_epi32(v,1), _mm256_srai_epi32(   _mm256_slli_epi32(v,31),31) ); }
+static ALWAYS_INLINE __m256i mm256_zzagd_epi64(__m256i v) { return _mm256_xor_si256(_mm256_srli_epi64(v,1),  mm256_srai_epi64_63(_mm256_slli_epi64(v,63),63) ); }
   #endif
 
 //-------------- AVX2 delta + prefix sum (scan) / xor encode/decode ---------------------------------------------------------------------------------------
@@ -119,12 +122,24 @@ static ALWAYS_INLINE __m256i mm256_scani_epi32(__m256i v, __m256i sv, __m256i vi
   #if defined(__SSSE3__) || defined(__ARM_NEON)
 static ALWAYS_INLINE __m128i mm_delta_epi16(__m128i v, __m128i sv) { return _mm_sub_epi16(v, _mm_alignr_epi8(v, sv, 14)); }
 static ALWAYS_INLINE __m128i mm_delta_epi32(__m128i v, __m128i sv) { return _mm_sub_epi32(v, _mm_alignr_epi8(v, sv, 12)); }
+static ALWAYS_INLINE __m128i mm_delta_epi64(__m128i v, __m128i sv) { return _mm_sub_epi64(v, _mm_alignr_epi8(v, sv,  8)); }
 static ALWAYS_INLINE __m128i mm_xore_epi16( __m128i v, __m128i sv) { return _mm_xor_si128(v, _mm_alignr_epi8(v, sv, 14)); }
 static ALWAYS_INLINE __m128i mm_xore_epi32( __m128i v, __m128i sv) { return _mm_xor_si128(v, _mm_alignr_epi8(v, sv, 12)); }
+static ALWAYS_INLINE __m128i mm_xore_epi64( __m128i v, __m128i sv) { return _mm_xor_si128(v, _mm_alignr_epi8(v, sv,  8)); }
 
-#define MM_HDEC_EPI32(_v_,_sv_,_hop_) { _v_ = _hop_(_v_, _mm_slli_si128(_v_, 4)); _v_ = _hop_(mm_shuffle_nnnn_epi32(_sv_, 3), _hop_(_mm_slli_si128(_v_, 8), _v_)); }
+#define MM_HDEC_EPI32(_v_,_sv_,_hop_) { \
+  _v_ = _hop_(_v_, _mm_slli_si128(_v_, 4)); \
+  _v_ = _hop_(mm_shuffle_nnnn_epi32(_sv_, 3), _hop_(_mm_slli_si128(_v_, 8), _v_));\
+}
 static ALWAYS_INLINE __m128i mm_scan_epi32(__m128i v, __m128i sv) { MM_HDEC_EPI32(v,sv,_mm_add_epi32); return v; }
 static ALWAYS_INLINE __m128i mm_xord_epi32(__m128i v, __m128i sv) { MM_HDEC_EPI32(v,sv,_mm_xor_si128); return v; }
+
+#define MM_HDEC_EPI64(_v_,_sv_,_hop_) { \
+  _v_ = _hop_(_v_, _mm_slli_si128(_v_, 8)); \
+  _v_ = _hop_(_mm_shuffle_epi8(_sv_, _mm_set_epi8(15,14,13,12,11,10,9,8, 15,14,13,12,11,10,9,8)), _v_);\
+}
+static ALWAYS_INLINE __m128i mm_scan_epi64(__m128i v, __m128i sv) { MM_HDEC_EPI64(v,sv,_mm_add_epi64); return v; }
+static ALWAYS_INLINE __m128i mm_xord_epi64(__m128i v, __m128i sv) { MM_HDEC_EPI64(v,sv,_mm_xor_si128); return v; }
 
 #define MM_HDEC_EPI16(_v_,_sv_,_hop_) {\
   _v_  = _hop_(      _v_, _mm_slli_si128(_v_, 2));\
