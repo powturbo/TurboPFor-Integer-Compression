@@ -58,7 +58,7 @@
 #define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
   #endif
 
-#define powof2(n) !((n)&((n)-1))
+#define powof2(n)        !((n)&((n)-1))
 
 //------------ Scalar -------------------
 #define TPENC tpenc
@@ -79,21 +79,21 @@
 #undef ESIZE
 
 //----------------- SIMD --------------------------------------------------------------------------------------------
-#define LD128(_ip_)     _mm_loadu_si128((__m128i *)(_ip_))
-#define ST128(_op_,_v_) _mm_storeu_si128((__m128i *)(_op_),_v_)
+#define LD128(_ip_)      _mm_loadu_si128( (__m128i *)(_ip_))
+#define ST128(_op_,_v_)  _mm_storeu_si128((__m128i *)(_op_),_v_)
 
-#define LD256(ip)   _mm256_loadu_si256(ip)
-#define ST256(op,v) _mm256_storeu_si256(op,v)
+#define LD256(ip)        _mm256_loadu_si256(ip)
+#define ST256(op,v)      _mm256_storeu_si256(op,v)
 //-------------------------------- 16 bits -------------------------------------------------
-#define ESIZE 2
+#define ESIZE  2
 #define USIZE 16
 
 //------------ byte ---------
-#define STRIDE ESIZE
-#define TPENC128V   tpenc128v
-#define TPDEC128V   tpdec128v
-#define TPENC256V   tpenc256v
-#define TPDEC256V   tpdec256v
+#define STRIDE           ESIZE
+#define TPENC128V        tpenc128v
+#define TPDEC128V        tpdec128v
+#define TPENC256V        tpenc256v
+#define TPDEC256V        tpdec256v
 
 #define VEINI128
 #define VEINI256
@@ -104,49 +104,39 @@
 #define VD128(_ov_,_sv_)
 #define VD256(_ov_,_sv_)
 #include "transpose.c"
+#undef  TPENC256V                
+#undef  TPDEC256V   
 //--------------
 #define ISDELTA
 //-- zigzag 
-#define TPENC128V   tpzenc128v
-#define TPDEC128V   tpzdec128v
-#undef  TPENC256V                
-#undef  TPDEC256V   
+#define TPENC128V        tpzenc128v
+#define TPDEC128V        tpzdec128v
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_delta_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi16(_tv); }
-#define VEINI256         //__m256i sv = _mm256_set1_epi16(start)
-#define VE256(_iv_,_sv_) //{ __m256i _tv = mm256_delta_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi16(_tv); }
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _v_ = mm_zzagd_epi16( _v_); _sv_ = mm_scan_epi16(_v_,_sv_); _v_ = _sv_
-#define VDINI256         //__m256i sv = _mm256_set1_epi16(start); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  //_v_ = mm256_zzagd_epi16(_v_); _sv_ = mm256_scan_epi16(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 //-- xor 
-#define TPENC128V   tpxenc128v
-#define TPDEC128V   tpxdec128v
-#undef  TPENC256V                
-#undef  TPDEC256V   
+#define TPENC128V        tpxenc128v
+#define TPDEC128V        tpxdec128v
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_xore_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VEINI256         
-#define VE256(_iv_,_sv_) 
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
-#define VD128(_v_,_sv_)  _sv_ = mm_xord_epi16(_v_,_sv_); _v_ = _sv_
-#define VDINI256        
-#define VD256(_v_,_sv_)  
+#define VDINI128         __m128i sv = _mm_setzero_si128()
+#define VD128(_v_,_sv_)  _sv_ = _v_ = mm_xord_epi16(_v_,_sv_)
 #include "transpose.c"
 //--
 #undef ISDELTA
 #undef STRIDE
 //----------- nibble ---------
 #define STRIDE 4
-#define TPENC128V   tp4enc128v
-#define TPDEC128V   tp4dec128v
-#define TPENC256V   tp4enc256v
-#define TPDEC256V   tp4dec256v
+#define TPENC128V        tp4enc128v
+#define TPDEC128V        tp4dec128v
+#define TPENC256V        tp4enc256v
+#define TPDEC256V        tp4dec256v
 
 #define VEINI128
 #define VEINI256
@@ -158,38 +148,29 @@
 #define VD256(_ov_,_sv_)
 
 #include "transpose.c"
+#undef  TPENC256V        
+#undef  TPDEC256V        
+
 #define ISDELTA
 //-- zigzag
 #define TPENC128V        tp4zenc128v
 #define TPDEC128V        tp4zdec128v
-#undef  TPENC256V        
-#undef  TPDEC256V        
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_delta_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi16(_tv); }
-#define VEINI256         //__m256i sv = _mm256_set1_epi16(start)
-#define VE256(_iv_,_sv_) //{ __m256i _tv = mm256_delta_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi16(_tv); }
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _v_ = mm_zzagd_epi16( _v_); _sv_ = mm_scan_epi16(_v_,_sv_); _v_ = _sv_
-#define VDINI256         //__m256i sv = _mm256_set1_epi16(start); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  //_v_ = mm256_zzagd_epi16(_v_); _sv_ = mm256_scan_epi16(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 //-- xor
 #define TPENC128V        tp4xenc128v
 #define TPDEC128V        tp4xdec128v
-#undef  TPENC256V        
-#undef  TPDEC256V        
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_xore_epi16(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VEINI256         
-#define VE256(_iv_,_sv_) 
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
-#define VD128(_v_,_sv_)  _sv_ = mm_xord_epi16(_v_,_sv_); _v_ = _sv_
-#define VDINI256        
-#define VD256(_v_,_sv_)  
+#define VDINI128         __m128i sv = _mm_setzero_si128()
+#define VD128(_v_,_sv_)  _sv_ = _v_ = mm_xord_epi16(_v_,_sv_)
 #include "transpose.c"
 //-- 
 #undef ISDELTA
@@ -200,10 +181,10 @@
 
 #define STRIDE ESIZE
 //----------------- byte ------------
-#define TPENC128V   tpenc128v
-#define TPDEC128V   tpdec128v
-#define TPENC256V   tpenc256v
-#define TPDEC256V   tpdec256v
+#define TPENC128V        tpenc128v
+#define TPDEC128V        tpdec128v
+#define TPENC256V        tpenc256v
+#define TPDEC256V        tpdec256v
 
 #define VEINI128
 #define VEINI256
@@ -218,36 +199,36 @@
 //---------------------------------
 #define ISDELTA
 //-- zigzag 
-#define TPENC128V   tpzenc128v
-#define TPDEC128V   tpzdec128v
-#define TPENC256V   tpzenc256v
-#define TPDEC256V   tpzdec256v
+#define TPENC128V        tpzenc128v
+#define TPDEC128V        tpzdec128v
+#define TPENC256V        tpzenc256v
+#define TPDEC256V        tpzdec256v
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi32(_tv); }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
 #define VE256(_iv_,_sv_) { __m256i _tv = mm256_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi32(_tv); }
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _v_ = mm_zzagd_epi32( _v_); _sv_ = mm_scan_epi32(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
 #define VD256(_v_,_sv_)  _v_ = mm256_zzagd_epi32(_v_); _sv_ = mm256_scan_epi32(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 //-- xor 
-#define TPENC128V   tpxenc128v
-#define TPDEC128V   tpxdec128v
-#define TPENC256V   tpxenc256v
-#define TPDEC256V   tpxdec256v
+#define TPENC128V        tpxenc128v
+#define TPDEC128V        tpxdec128v
+#define TPENC256V        tpxenc256v
+#define TPDEC256V        tpxdec256v
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv =    mm_xore_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
 #define VE256(_iv_,_sv_) { __m256i _tv = mm256_xore_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VDINI128         __m128i sv =    _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
-#define VD128(_v_,_sv_)  _sv_ = mm_xord_epi32(_v_,_sv_);    _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  _sv_ = mm256_xord_epi32(_v_,_sv_); _v_ = _sv_
+#define VDINI128         __m128i sv =    _mm_setzero_si128()
+#define VD128(_v_,_sv_)  _sv_ = _v_ = mm_xord_epi32(_v_,_sv_)
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
+#define VD256(_v_,_sv_)  _sv_ = _v_ = mm256_xord_epi32(_v_,_sv_)
 #include "transpose.c"
 //---------
 
@@ -255,10 +236,10 @@
 #undef STRIDE
 //----------------- nibble ----------
 #define STRIDE 8
-#define TPENC128V   tp4enc128v
-#define TPDEC128V   tp4dec128v
-#define TPENC256V   tp4enc256v
-#define TPDEC256V   tp4dec256v
+#define TPENC128V        tp4enc128v
+#define TPDEC128V        tp4dec128v
+#define TPENC256V        tp4enc256v
+#define TPDEC256V        tp4dec256v
 
 #define VEINI128
 #define VEINI256
@@ -272,35 +253,35 @@
 //-------------
 #define ISDELTA
 //-- zigzag 
-#define TPENC128V   tp4zenc128v
-#define TPDEC128V   tp4zdec128v
-#define TPENC256V   tp4zenc256v
-#define TPDEC256V   tp4zdec256v
+#define TPENC128V        tp4zenc128v
+#define TPDEC128V        tp4zdec128v
+#define TPENC256V        tp4zenc256v
+#define TPDEC256V        tp4zdec256v
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128() 
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi32(_tv); }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
 #define VE256(_iv_,_sv_) { __m256i _tv = mm256_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi32(_tv); }
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _v_ = mm_zzagd_epi32( _v_); _sv_ = mm_scan_epi32(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
+#define VDINI256         __m256i sv = _mm256_setzero_si256() 
 #define VD256(_v_,_sv_)  _v_ = mm256_zzagd_epi32(_v_); _sv_ = mm256_scan_epi32(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 //-- xor 
-#define TPENC128V   tp4xenc128v
-#define TPDEC128V   tp4xdec128v
-#define TPENC256V   tp4xenc256v
-#define TPDEC256V   tp4xdec256v
+#define TPENC128V        tp4xenc128v
+#define TPDEC128V        tp4xdec128v
+#define TPENC256V        tp4xenc256v
+#define TPDEC256V        tp4xdec256v
 
 #define VDELTA           0
-#define VEINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv = _mm_setzero_si128()
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_xore_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
 #define VE256(_iv_,_sv_) { __m256i _tv = mm256_xore_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VDINI128         __m128i sv = _mm_setzero_si128(); const __m128i zv =    _mm_setzero_si128()
+#define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _sv_ = mm_xord_epi32(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
 #define VD256(_v_,_sv_)  _sv_ = mm256_xord_epi32(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 //--------------
@@ -314,10 +295,10 @@
 
 #define STRIDE ESIZE
 //--- byte 64 bits ------------
-#define TPENC128V   tpenc128v
-#define TPDEC128V   tpdec128v
-#define TPENC256V   tpenc256v
-#define TPDEC256V   tpdec256v
+#define TPENC128V        tpenc128v
+#define TPDEC128V        tpdec128v
+#define TPENC256V        tpenc256v
+#define TPDEC256V        tpdec256v
 
 #define VEINI128
 #define VEINI256
@@ -328,50 +309,51 @@
 #define VD128(_ov_,_sv_)
 #define VD256(_ov_,_sv_)
 #include "transpose.c"
+
 //---------------
 #define ISDELTA
 //--- zigzag
-#define TPENC128V   tpzenc128v
-#define TPDEC128V   tpzdec128v
-#define TPENC256V   tpzenc256v
-#define TPDEC256V   tpzdec256v
+#define TPENC128V        tpzenc128v
+#define TPDEC128V        tpzdec128v
+#define TPENC256V        tpzenc256v
+#define TPDEC256V        tpzdec256v
 
-#define VDELTA           0
-#define VEINI128         //__m128i sv = _mm_set1_epi64x(start); const __m128i zv = _mm_setzero_si128()
-#define VE128(_iv_,_sv_) //{ __m128i _tv = mm_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi64(_tv); }
+#define VDELTA           0 
+#define VEINI128         __m128i sv =    _mm_setzero_si128()
+#define VE128(_iv_,_sv_)                                     { __m128i _tv =   mm_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ =    mm_zzage_epi64(_tv); }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
-#define VE256(_iv_,_sv_) { __m256i _tv = mm256_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi64(_tv); }
-#define VDINI128         //__m128i sv = _mm_set1_epi64x(start); const __m128i zv =    _mm_setzero_si128()
-#define VD128(_v_,_sv_)  //_v_ = mm_zzagd_epi64( _v_); _sv_ = mm_scan_epi64(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  _v_ = mm256_zzagd_epi64(_v_); _sv_ = mm256_scan_epi64(_v_,_sv_); _v_ = _sv_
+#define VE256(_iv_,_sv_)                                     { __m256i _tv = mm256_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi64(_tv); }
+#define VDINI128         __m128i sv =    _mm_setzero_si128()
+#define VD128(_v_,_sv_)                                      _v_ =    mm_zzagd_epi64(_v_); _sv_ =    mm_scan_epi64(_v_,_sv_); _v_ = _sv_
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
+#define VD256(_v_,_sv_)                                      _v_ = mm256_zzagd_epi64(_v_); _sv_ = mm256_scan_epi64(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 //--- xor
-#define TPENC128V   tpxenc128v
-#define TPDEC128V   tpxdec128v
-#define TPENC256V   tpxenc256v
-#define TPDEC256V   tpxdec256v
+#define TPENC128V        tpxenc128v
+#define TPDEC128V        tpxdec128v
+#define TPENC256V        tpxenc256v
+#define TPDEC256V        tpxdec256v
 
 #define VDELTA           0
-#define VEINI128         //__m128i sv = _mm_set1_epi64x(start); const __m128i zv = _mm_setzero_si128()
-#define VE128(_iv_,_sv_) //{ __m128i _tv = mm_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi64(_tv); }
+#define VEINI128         __m128i sv = _mm_setzero_si128()
+#define VE128(_iv_,_sv_)                                      { __m128i _tv =    mm_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
-#define VE256(_iv_,_sv_) { __m256i _tv = mm256_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VDINI128         //__m128i sv = _mm_set1_epi64x(start); const __m128i zv =    _mm_setzero_si128()
-#define VD128(_v_,_sv_)  //_v_ = mm_zzagd_epi64( _v_); _sv_ = mm_scan_epi64(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  _sv_ = mm256_xord_epi64(_v_,_sv_); _v_ = _sv_
+#define VE256(_iv_,_sv_)                                      { __m256i _tv = mm256_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VDINI128         __m128i sv =    _mm_setzero_si128()
+#define VD128(_v_,_sv_)                                       _sv_ = _v_ =    mm_xord_epi64(_v_,_sv_)
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
+#define VD256(_v_,_sv_)                                       _sv_ = _v_ = mm256_xord_epi64(_v_,_sv_)
 #include "transpose.c"
 //-----------
 #undef ISDELTA
 #undef STRIDE
 //---------- nibble ----------
 #define STRIDE 16
-#define TPENC128V   tp4enc128v
-#define TPDEC128V   tp4dec128v
-#define TPENC256V   tp4enc256v
-#define TPDEC256V   tp4dec256v
-
+#define TPENC128V        tp4enc128v
+#define TPDEC128V        tp4dec128v
+#define TPENC256V        tp4enc256v
+#define TPDEC256V        tp4dec256v
+ 
 #define VEINI128
 #define VEINI256
 #define VE128(_v_,_sv_)
@@ -384,37 +366,37 @@
 //-------------------------
 #define ISDELTA
 //-- zigzag
-#define TPENC128V   tp4zenc128v
-#define TPDEC128V   tp4zdec128v
-#define TPENC256V   tp4zenc256v
-#define TPDEC256V   tp4zdec256v
+#define TPENC128V        tp4zenc128v
+#define TPDEC128V        tp4zdec128v
+#define TPENC256V        tp4zenc256v
+#define TPDEC256V        tp4zdec256v
 
 #define VDELTA           0
-#define VEINI128         //__m128i sv = _mm_set1_epi64(start); const __m128i zv = _mm_setzero_si128()
-#define VE128(_iv_,_sv_) //{ __m128i _tv = mm_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VEINI128         __m128i sv =    _mm_setzero_si128()
+#define VE128(_iv_,_sv_)                                     { __m128i _tv =   mm_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ =    mm_zzage_epi64(_tv); }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
-#define VE256(_iv_,_sv_) { __m256i _tv = mm256_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi64(_tv); }
-#define VDINI128         //__m128i sv = _mm_set1_epi64(start); const __m128i zv =    _mm_setzero_si128()
-#define VD128(_v_,_sv_)  //_v_ = mm_zzagd_epi64( _v_); _sv_ = mm_scan_epi64(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  _v_ = mm256_zzagd_epi64(_v_); _sv_ = mm256_scan_epi64(_v_,_sv_); _v_ = _sv_
+#define VE256(_iv_,_sv_)                                     { __m256i _tv = mm256_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi64(_tv); }
+#define VDINI128         __m128i sv =    _mm_setzero_si128()
+#define VD128(_v_,_sv_)                                      _v_ =    mm_zzagd_epi64(_v_); _sv_ =    mm_scan_epi64(_v_,_sv_); _v_ = _sv_
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
+#define VD256(_v_,_sv_)                                      _v_ = mm256_zzagd_epi64(_v_); _sv_ = mm256_scan_epi64(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
 
 //-- xor
-#define TPENC128V   tp4xenc128v
-#define TPDEC128V   tp4xdec128v
-#define TPENC256V   tp4xenc256v
-#define TPDEC256V   tp4xdec256v
+#define TPENC128V        tp4xenc128v
+#define TPDEC128V        tp4xdec128v
+#define TPENC256V        tp4xenc256v
+#define TPDEC256V        tp4xdec256v
 
 #define VDELTA           0
-#define VEINI128         //__m128i sv = _mm_set1_epi64(start); const __m128i zv = _mm_setzero_si128()
-#define VE128(_iv_,_sv_) //{ __m128i _tv = mm_delta_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi64(_tv); }
+#define VEINI128         __m128i sv = _mm_setzero_si128()
+#define VE128(_iv_,_sv_)                                      { __m128i _tv =    mm_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
-#define VE256(_iv_,_sv_) { __m256i _tv = mm256_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
-#define VDINI128         //__m128i sv = _mm_set1_epi64(start); const __m128i zv =    _mm_setzero_si128()
-#define VD128(_v_,_sv_)  //_v_ = mm_zzagd_epi64( _v_); _sv_ = mm_scan_epi64(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256(); const __m256i zv = _mm256_setzero_si256()
-#define VD256(_v_,_sv_)  _sv_ = mm256_xord_epi64(_v_,_sv_); _v_ = _sv_
+#define VE256(_iv_,_sv_)                                      { __m256i _tv = mm256_xore_epi64(_iv_,_sv_); _sv_ = _iv_; _iv_ = _tv; }
+#define VDINI128         __m128i sv =    _mm_setzero_si128()
+#define VD128(_v_,_sv_)                                       _sv_ = _v_ =    mm_xord_epi64(_v_,_sv_)
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
+#define VD256(_v_,_sv_)                                       _sv_ = _v_ = mm256_xord_epi64(_v_,_sv_)
 #include "transpose.c"
 //--
 #undef ISDELTA
@@ -577,22 +559,22 @@ char *cpustr(unsigned cpuisa) {
 //----------------------------------------------------------------------------------------------------------------------
 typedef void (*TPFUNC)( unsigned char *in, unsigned n, unsigned char *out);
 
-                       // 0  1       2       3       4       5  6  7       8   9                    16
-static TPFUNC _tpe[]   = { 0, 0, tpenc2,  tpenc3,  tpenc4,   0, 0, 0, tpenc8,  0, 0, 0, 0, 0, 0, 0, tpenc16 };
+                        // 0  1       2       3       4      5  6  7       8   9                    16
+static TPFUNC _tpe[]   = { 0, 0, tpenc2,  tpenc3,  tpenc4,   0, 0, 0, tpenc8,  0, 0, 0, 0, 0, 0, 0, tpenc16 }; //  byte
 static TPFUNC _tpd[]   = { 0, 0, tpdec2,  tpdec3,  tpdec4,   0, 0, 0, tpdec8,  0, 0, 0, 0, 0, 0, 0, tpdec16 };
 
 static TPFUNC _tp4e[]  = { 0, 0, tpenc2,  tpenc3,  tpenc4,   0, 0, 0, tpenc8,  0, 0, 0, 0, 0, 0, 0, tpenc16 }; // Nibble
 static TPFUNC _tp4d[]  = { 0, 0, tpdec2,  tpdec3,  tpdec4,   0, 0, 0, tpdec8,  0, 0, 0, 0, 0, 0, 0, tpdec16 };
 
 //-- zigzag delta
-static TPFUNC _tpze[]  = { 0, 0, tpzenc2, tpzenc3, tpzenc4,  0, 0, 0, tpzenc8, 0, 0, 0, 0, 0, 0, 0, tpzenc16 };
+static TPFUNC _tpze[]  = { 0, 0, tpzenc2, tpzenc3, tpzenc4,  0, 0, 0, tpzenc8, 0, 0, 0, 0, 0, 0, 0, tpzenc16 }; // byte
 static TPFUNC _tpzd[]  = { 0, 0, tpzdec2, tpzdec3, tpzdec4,  0, 0, 0, tpzdec8, 0, 0, 0, 0, 0, 0, 0, tpzdec16 };
 
 static TPFUNC _tp4ze[] = { 0, 0, tpzenc2, tpzenc3, tpzenc4,  0, 0, 0, tpzenc8, 0, 0, 0, 0, 0, 0, 0, tpzenc16 }; // Nibble
 static TPFUNC _tp4zd[] = { 0, 0, tpzdec2, tpzdec3, tpzdec4,  0, 0, 0, tpzdec8, 0, 0, 0, 0, 0, 0, 0, tpzdec16 };
 
 //-- xor 
-static TPFUNC _tpxe[]  = { 0, 0, tpxenc2, tpxenc3, tpxenc4,  0, 0, 0, tpxenc8, 0, 0, 0, 0, 0, 0, 0, tpxenc16 };
+static TPFUNC _tpxe[]  = { 0, 0, tpxenc2, tpxenc3, tpxenc4,  0, 0, 0, tpxenc8, 0, 0, 0, 0, 0, 0, 0, tpxenc16 }; // byte
 static TPFUNC _tpxd[]  = { 0, 0, tpxdec2, tpxdec3, tpxdec4,  0, 0, 0, tpxdec8, 0, 0, 0, 0, 0, 0, 0, tpxdec16 };
 
 static TPFUNC _tp4xe[] = { 0, 0, tpxenc2, tpxenc3, tpxenc4,  0, 0, 0, tpxenc8, 0, 0, 0, 0, 0, 0, 0, tpxenc16 }; // Nibble
@@ -607,24 +589,24 @@ void tpini(int id) {
   i = id?id:cpuisa();
     #if defined(__i386__) || defined(__x86_64__) || defined(_M_X64)
   if(i >= IS_AVX2) {
-    _tpe[2]  = tpenc256v2;  _tpd[2]  = tpdec256v2;  _tp4e[2]  = tp4enc256v2;  _tp4d[2]  = tp4dec256v2;
-    _tpe[4]  = tpenc256v4;  _tpd[4]  = tpdec256v4;  _tp4e[4]  = tp4enc256v4;  _tp4d[4]  = tp4dec256v4; 
-    _tpe[8]  = tpenc256v8;  _tpd[8]  = tpdec256v8;  _tp4e[8]  = tp4enc256v8;  _tp4d[8]  = tp4dec256v8;
+    _tpe[ 2] = tpenc256v2;  _tpd[ 2] = tpdec256v2;  _tp4e[ 2] = tp4enc256v2;  _tp4d[ 2] = tp4dec256v2;
+    _tpe[ 4] = tpenc256v4;  _tpd[ 4] = tpdec256v4;  _tp4e[ 4] = tp4enc256v4;  _tp4d[ 4] = tp4dec256v4; 
+    _tpe[ 8] = tpenc256v8;  _tpd[ 8] = tpdec256v8;  _tp4e[ 8] = tp4enc256v8;  _tp4d[ 8] = tp4dec256v8;
 
-    _tpze[2] = tpzenc128v2; _tpzd[2] = tpzdec128v2; _tp4ze[2] = tp4zenc128v2; _tp4zd[2] = tp4zdec128v2; // only sse
+    _tpze[2] = tpzenc128v2; _tpzd[2] = tpzdec128v2; _tp4ze[2] = tp4zenc128v2; _tp4zd[2] = tp4zdec128v2; // 16 bits: only sse 
     _tpze[4] = tpzenc256v4; _tpzd[4] = tpzdec256v4; _tp4ze[4] = tp4zenc256v4; _tp4zd[4] = tp4zdec256v4; 
     _tpze[8] = tpzenc256v8; _tpzd[8] = tpzdec256v8; _tp4ze[8] = tp4zenc256v8; _tp4zd[8] = tp4zdec256v8;
 
-    _tpxe[2] = tpxenc128v2; _tpxd[2] = tpxdec128v2; _tp4xe[2] = tp4xenc128v2; _tp4xd[2] = tp4xdec128v2; // only sse
+    _tpxe[2] = tpxenc128v2; _tpxd[2] = tpxdec128v2; _tp4xe[2] = tp4xenc128v2; _tp4xd[2] = tp4xdec128v2; // 16 bits: only sse 
     _tpxe[4] = tpxenc256v4; _tpxd[4] = tpxdec256v4; _tp4xe[4] = tp4xenc256v4; _tp4xd[4] = tp4xdec256v4; 
     _tpxe[8] = tpxenc256v8; _tpxd[8] = tpxdec256v8; _tp4xe[8] = tp4xenc256v8; _tp4xd[8] = tp4xdec256v8;
   } else
     #endif
       #if defined(__i386__) || defined(__x86_64__) || defined(__ARM_NEON) || defined(__powerpc64__) || defined(_M_X64)
     if(i >= IS_SSE2) {
-      _tpe[2]  = tpenc128v2;  _tpd[2]  = tpdec128v2;  _tp4e[2]  = tp4enc128v2;  _tp4d[2]  = tp4dec128v2;
-      _tpe[4]  = tpenc128v4;  _tpd[4]  = tpdec128v4;  _tp4e[4]  = tp4enc128v4;  _tp4d[4]  = tp4dec128v4;
-      _tpe[8]  = tpenc128v8;  _tpd[8]  = tpdec128v8;  _tp4e[8]  = tp4enc128v8;  _tp4d[8]  = tp4dec128v8;
+      _tpe[ 2] = tpenc128v2;  _tpd[ 2] = tpdec128v2;  _tp4e[ 2] = tp4enc128v2;  _tp4d[ 2] = tp4dec128v2;
+      _tpe[ 4] = tpenc128v4;  _tpd[ 4] = tpdec128v4;  _tp4e[ 4] = tp4enc128v4;  _tp4d[ 4] = tp4dec128v4;
+      _tpe[ 8] = tpenc128v8;  _tpd[ 8] = tpdec128v8;  _tp4e[ 8] = tp4enc128v8;  _tp4d[ 8] = tp4dec128v8;
       if(i == 35) _tpd[8] = tpdec8; // ARM NEON scalar is faster!, TODO:retest on Apple M1
       _tpze[2] = tpzenc128v2; _tpzd[2] = tpzdec128v2; _tp4ze[2] = tp4zenc128v2; _tp4zd[2] = tp4zdec128v2;
       _tpze[4] = tpzenc128v4; _tpzd[4] = tpzdec128v4; _tp4ze[4] = tp4zenc128v4; _tp4zd[4] = tp4zdec128v4;
@@ -696,7 +678,7 @@ void tpzenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
       for(i = 0; i < esize; i++)
         op[i*stride] = *ip++; // TODO:zigzag
     for(op = out + esize*stride; ip < in+n;)
-      *op++ = *ip++;         // TODO:zigzag
+      *op++ = *ip++;          // TODO:zigzag
   }
 } 
 
@@ -882,7 +864,9 @@ void tp4ddec(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned 
 #undef ODX4
 #undef E
   #endif
-#else //---------------------------------------------- Templates --------------------------------------------------------------
+  
+#else 
+//*************************************************************  Templates (separat part included multiple times) ********************************************************************
 
 #define SIE(p,i)  (p+=stride) //faster on ARM
 //#define SIE(_p_,_i_)  (_p_+ _i_*stride)
@@ -1215,7 +1199,7 @@ void T2(TPXDEC, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
   #ifdef TPENC256V
 void T2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
   unsigned      v = n&~(ESIZE*32-1);
-  unsigned stride = v/STRIDE;
+  unsigned      stride = v/STRIDE;
   unsigned char *op,*ip;
   VEINI256; 
     #if ESIZE == 2
