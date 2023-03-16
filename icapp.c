@@ -50,6 +50,7 @@
 #include <float.h>
 
 #include "../include/ic.h"
+#include "../include_/iccodec.h"
 
 #include "include_/conf.h"
 #include "include_/time_.h"
@@ -143,7 +144,7 @@ void stprint(char *s, unsigned *xbits) {
   printf("\n");
   for(i = 0; i <= 64; i++)
     if(xbits[i]) {
-      double f = (double)xbits[i]*100/(double)t;
+      double   f = (double)xbits[i]*100/(double)t;
       unsigned u = round(f);
       printf("%.2d:", i);
 	  for(int j=0; j < u; j++) printf("#");
@@ -639,6 +640,7 @@ static size_t streamvbyte_zzag_decode(const uint8_t *in, uint32_t *out, uint32_t
 
   #ifdef _BLOSC
 #include "ext/c-blosc2/include/blosc2.h"
+#include "ext/c-blosc2/include/blosc2/filters-registry.h"
   #endif
 
   #ifdef _VBZ
@@ -653,8 +655,8 @@ static size_t streamvbyte_zzag_decode(const uint8_t *in, uint32_t *out, uint32_t
   #ifdef _ZFP
 #include "zfp/include/zfp.h"
 
-unsigned zfpcompress(const void *in, int nx, int ny, int nz, int nw, uint8_t *out, unsigned outsize, int dtype, double errlim) { if(verbose>2) printf("x=%d,y=%d,z=%d", nx, ny, nz);
-  zfp_field field = {0};
+unsigned zfpcompress(const void *in, int nx, int ny, int nz, int nw, uint8_t *out, unsigned outsize, int dtype, double errlim) { 
+  zfp_field field = {0};                                                        if(verbose>2) printf("x=%d,y=%d,z=%d", nx, ny, nz);
   field.type = dtype;
   field.nx   = nx;
   field.ny   = ny;
@@ -664,7 +666,7 @@ unsigned zfpcompress(const void *in, int nx, int ny, int nz, int nw, uint8_t *ou
   zfp_stream *zfp = zfp_stream_open(NULL);
   errlim <= DBL_EPSILON?zfp_stream_set_reversible(zfp):zfp_stream_set_accuracy(zfp, errlim); 
   bitstream *stream = stream_open(out, outsize);
-  zfp_stream_set_bit_stream(zfp, stream);  //zfp_stream_rewind(zfp);
+  zfp_stream_set_bit_stream(zfp, stream);  
 
   unsigned outlen = zfp_compress(zfp, &field);	
   zfp_stream_close(zfp);
@@ -683,7 +685,7 @@ void zfpdecompress(const uint8_t *in, unsigned inlen, void *out, int nx, int ny,
   zfp_stream *zfp = zfp_stream_open(NULL);									
   errlim <= DBL_EPSILON?zfp_stream_set_reversible(zfp):zfp_stream_set_accuracy(zfp, errlim);
   bitstream *stream = stream_open(in, inlen);
-  zfp_stream_set_bit_stream(zfp, stream);  //zfp_stream_rewind(zfp);
+  zfp_stream_set_bit_stream(zfp, stream);
 
   zfp_decompress(zfp, &field);	
   zfp_stream_close(zfp);
@@ -692,24 +694,42 @@ void zfpdecompress(const uint8_t *in, unsigned inlen, void *out, int nx, int ny,
 }
   #endif
 
+//------------------------------------ https://github.com/zeux/meshoptimizer ------------------------------------------------------------------------------------------
+  #ifdef _MESHOPT 
+#include "ext/meshoptimizer/src/meshoptimizer.h"
+unsigned meshenc(const float *in, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned outsize, unsigned char *tmp, int codid, int codlev, char *codprm) {
+  unsigned vs   = nz <= 64?nz*sizeof(in[0]):sizeof(in[0]), vn = nz <= 64?nx*ny:nx*ny*nz, 
+           clen = meshopt_encodeVertexBuffer(tmp, outsize, in, vn, vs);
+  ctou32(out) = clen;
+  return codecenc(tmp, clen, out+4, outsize-4, codid, codlev, codprm)+4;
+}
+
+void meshdec(const uint8_t *in, unsigned inlen, float *out, unsigned nx, unsigned ny, unsigned nz, unsigned char *tmp, int codid, int codlev, char *codprm) {
+  unsigned vs   = nz <= 64?nz*sizeof(out[0]):sizeof(out[0]), vn = nz <= 64?nx*ny:nx*ny*nz,
+           clen = ctou32(in); 
+  codecdec(in+4, inlen-4, tmp, clen, codid, codlev, codprm);
+  meshopt_decodeVertexBuffer(out, vn, vs, tmp, clen);
+}
+  #endif
+
   #ifdef _BLOSC
-unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned compcode, unsigned lev, unsigned esize, int shuffle, int delta) {
-  blosc2_cparams params = BLOSC2_CPARAMS_DEFAULTS;
-        params.compcode = BLOSC_BLOSCLZ;
-	    params.compcode = compcode; // BLOSC_LZ4HC, BLOSC_LZ4, BLOSC_ZSTD, BLOSC_LZ4
-		params.clevel   = lev;
-		params.typesize = esize;
-		params.filters[BLOSC2_MAX_FILTERS - 1] = shuffle; //BLOSC_NOFILTER, BLOSC_SHUFFLE
-		params.filters[BLOSC2_MAX_FILTERS - 2] = delta;   //BLOSC_DELTA;
-  blosc2_context *ctx = blosc2_create_cctx(params);
+unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned compcode, int codlev, unsigned esize, int filter0, int filter1) {
+  blosc2_cparams cp = BLOSC2_CPARAMS_DEFAULTS; 		   
+		cp.typesize = esize;
+	    cp.compcode = compcode;                                                        //BLOSC_LZ4HC, BLOSC_LZ4, BLOSC_ZSTD, BLOSC_LZ4, BLOSC_BLOSCLZ
+		cp.clevel   = codlev<1?1:(codlev<9?codlev:9);                                  //blocksize=[1,32768[2,65536][3,131072][4,262144][5,262144][6,524288][7,524288][8,524288][9,1048576]
+		cp.nthreads = 1;
+		cp.filters[BLOSC2_MAX_FILTERS - 1] = filter0; //BLOSC_NOFILTER, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE
+		cp.filters[BLOSC2_MAX_FILTERS - 2] = filter1; //BLOSC_DELTA, BLOSC_FILTER_BYTEDELTA
+  blosc2_context *ctx = blosc2_create_cctx(cp);
   int rc = blosc2_compress_ctx(ctx, in, (int)inlen, out, (int)outsize);
   blosc2_free_ctx(ctx);
   return rc;
 }
 
 unsigned bloscdecomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen) {
-  blosc2_dparams params = BLOSC2_DPARAMS_DEFAULTS;
-  blosc2_context *ctx = blosc2_create_dctx(params);
+  blosc2_dparams   dp = BLOSC2_DPARAMS_DEFAULTS;
+  blosc2_context *ctx = blosc2_create_dctx(dp);
   int rc = blosc2_decompress_ctx(ctx, in, inlen, out, outlen);
   blosc2_free_ctx(ctx);
   return rc;
@@ -731,8 +751,15 @@ void fround64(double *in, unsigned n, double *out, int nsd) {
 	*out++ = droundFast(*ip, nsd);
 }	
   #endif
+  
   #ifdef _BITGROOMING
 #include "ext/bg/bg.c"
+  #endif
+  #ifndef _ICCODEC
+char *codstr(unsigned codecid) { return ""; }  
+void tpsizeset(unsigned _tpbsize) {}
+void tpmodeset(unsigned _tpmode) {}
+int lzidget(char *scmd) { return 0; }
   #endif
 //----------------------------------------------------------------------------------
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
@@ -755,6 +782,10 @@ void tpz0enc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize, 
 void tpz0dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize                    ) { tpdec(  in, n, out, esize); bitzdec(out, n, esize); }
 void tpx0enc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize, unsigned char *tmp) { bitxenc(in, n, tmp, esize); tpenc( tmp, n, out, esize); }
 void tpx0dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize                    ) { tpdec(  in, n, out, esize); bitxdec(out, n, esize); }
+void tp4z0enc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize, unsigned char *tmp) { bitzenc(in, n, tmp, esize); tp4enc( tmp, n, out, esize); }
+void tp4z0dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize                    ) { tp4dec(  in, n, out, esize); bitzdec(out, n, esize); }
+void tp4x0enc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize, unsigned char *tmp) { bitxenc(in, n, tmp, esize); tp4enc( tmp, n, out, esize); }
+void tp4x0dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize                    ) { tp4dec(  in, n, out, esize); bitxdec(out, n, esize); }
 
 //------------------ TurboRLE (Run Length Encoding) + zigzag/xor -------------------------
 #define RLE8  0xdau
@@ -1002,9 +1033,9 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",	
     "%3d:meshoptimizer    3D lz%s,%d          ",	
     "%3d:meshoptimizer    3D lz%s,%d          ",	
-    "%3d:blosc            blosc+shuffle       ",   	
-    "%3d:blosc            blosc+shuffle delta ",   	
-    "%3d:149                                  ",   	
+    "%3d:blosc            shuffle+%s,%d       ",   	
+    "%3d:blosc            shuffle delta+%s,%d ",   	
+    "%3d:blosc            shuffle bytedelta   ",   	
 
     "%3d:fpadd            speed test          ", //150
     "%3d:libdroundfast    speed test          ",
@@ -1012,10 +1043,21 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:tpzenc           transp+zzag integrat",   	
     "%3d:tpz0enc          transpose+zigzag    ",   	
     "%3d:tpxenc           tranp+xor integrated",   	
-    "%3d:tpx0enc          transpose+xor       ",   	
-    "%3d:157              speed test          ",   	
-    "%3d:158              speed test          ",   	
-    "%3d:159              speed test          ",   	
+    "%3d:tpx0enc          tranp+xor           ",   	
+    "%3d:tp4zenc  Nibble  transp+zzag integrat",   	
+    "%3d:tp4z0enc Nibble  transpose+zigzag    ",  	
+    "%3d:tp4xenc  Nibble  tranp+xor integrated", 
+  	
+    "%3d:tp4x0enc Nibble  transpose+xor       ",   	
+    "%3d:161              speed test          ",   	
+    "%3d:162              speed test          ",   	
+    "%3d:163              speed test          ",   	
+    "%3d:164              speed test          ",   	
+    "%3d:165              speed test          ",   	
+    "%3d:166              speed test          ",   	
+    "%3d:167              speed test          ",   	
+    "%3d:168              speed test          ",   	
+    "%3d:169              speed test          ",   	
 };
   if(id < 80)
     sprintf(s,fmt[id], id, b, prms, prmi);  // print bitsize
@@ -1116,7 +1158,8 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
 
 //---------------------------------------------------------------------------------------
 #define MINDELTA(_t_, _in_, _n_, _dmin_) {\
-  _t_ *_p = (_t_ *)_in_, _i;\
+  _t_ *_p = (_t_ *)_in_;\
+  unsigned _i;\
   for(_dmin_ = (_t_)-1, _i = 1; _i < _n_; _i++)\
     if(_p[_i] < _p[_i-1]) { dmin = (_t_)-1; break; }\
     else { _t_ _d = _p[_i] - _p[_i-1]; if(_d < _dmin_) { _dmin_ = _d; /*printf("[%u]", _dmin_);*/} }\
@@ -1126,8 +1169,8 @@ uint8_t  mindelta8( unsigned char *in, unsigned n) { uint8_t  dmin; MINDELTA(uin
 uint16_t mindelta16(unsigned char *in, unsigned n) { uint16_t dmin; MINDELTA(uint16_t, in, n, dmin); return dmin; }
 uint32_t mindelta32(unsigned char *in, unsigned n) { uint32_t dmin; MINDELTA(uint32_t, in, n, dmin); return dmin; }
 uint64_t mindelta64(unsigned char *in, unsigned n) { uint64_t dmin; MINDELTA(uint64_t, in, n, dmin); return dmin; }
-uint64_t mindelta(  unsigned char *in, unsigned n, unsigned siz) {
-  switch(siz) {
+uint64_t mindelta(  unsigned char *in, unsigned n, unsigned esize) {
+  switch(esize) {
     case 1: { uint8_t  d = mindelta8( in,n); return d == (uint8_t )-1?(uint64_t)-1:d; }
     case 2: { uint16_t d = mindelta16(in,n); return d == (uint16_t)-1?(uint64_t)-1:d; };
     case 4: { uint32_t d = mindelta32(in,n); return d == (uint32_t)-1?(uint64_t)-1:d; };
@@ -1137,11 +1180,11 @@ uint64_t mindelta(  unsigned char *in, unsigned n, unsigned siz) {
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
-#define NEEDTMP (id == 39 || id >= 71 && id <= 139)
+#define NEEDTMP (id == 39 || id >= 71)
 unsigned nx,ny,nz,nw;
 
 #define USIZE 1
-unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) {
+unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, int bsize) {
   unsigned l = 0, m = n/(USIZE), rc = 0, ns = CBUF(n);
   uint8_t  dmin = mindelta8(in,m), *p;
   char     *tmp = NULL;
@@ -1194,14 +1237,14 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 73: TMBENCH("",l=srlec8(      in, n,out,RLE8),n);      pr(l,n); TMBENCH2(" 73",srled8(           out,l,cpy, n,RLE8),n);break;
     case 74: TMBENCH("",l=srlexc8(     in, n,out,tmp,RLE8),n);  pr(l,n); TMBENCH2(" 74",srlexd8(          out,l,cpy, n,RLE8),n);break;
     case 75: TMBENCH("",l=srlezc8(     in, n,out,tmp,RLE8),n);  pr(l,n); TMBENCH2(" 75",srlezd8(          out,l,cpy, n,RLE8),n);break;
-
+      #ifdef _ICCODEC
     case 80: TMBENCH("",l=codecenc(      in,n,out,ns,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 80",codecdec(out,l,cpy,n,codid,codlev,codprm),n); break;
-    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
+    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
       #ifdef _BITSHUFFLE
     case 87: TMBENCH("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 87",lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
     case 88: TMBENCH("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 88",lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
@@ -1234,7 +1277,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
       TMBENCH("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n);pr(l,n); TMBENCH2("107",lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm),n);} break;
     case 108: if(nw<=0) goto end; {
       TMBENCH("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n);pr(l,n); TMBENCH2("108",lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm),n); } break;
-
+      #endif
     case 117: l = n; TMBENCH("", tpenc( in, n, out,USIZE),n);       pr(l,n); TMBENCH2("117", tpdec( out, n,cpy, USIZE),n); break;
     case 118: l = n; TMBENCH("", tp4enc(in, n, out,USIZE),n);       pr(l,n); TMBENCH2("118", tp4dec(out, n,cpy, USIZE),n); break;
       #ifdef _BITSHUFFLE
@@ -1262,7 +1305,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 //--------------------------------------- 16 bits ------------------------------------------------------------------------------
 #undef USIZE
 #define USIZE 2
-unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) {
+unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
   unsigned l=0,m = n/(USIZE),rc = 0, d=0,ns = CBUF(n);
   uint16_t dmin = mindelta16(in,m);
   uint16_t *p;
@@ -1360,13 +1403,14 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 74: TMBENCH("",l=srlexc16(        in, n,out,tmp,RLE16),n); pr(l,n); TMBENCH2(" 74",srlexd16(          out,l,cpy, n,RLE16),n);break;
     case 75: TMBENCH("",l=srlezc16(        in, n,out,tmp,RLE16),n); pr(l,n); TMBENCH2(" 75",srlezd16(          out,l,cpy, n,RLE16),n);break;
 
+      #ifdef _ICCODEC
     case 80: TMBENCH("",l=codecenc(      in,n,out,ns,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 80",codecdec(out,l,cpy,n,codid,codlev,codprm),n); break;
-    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
+    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
       #ifdef _BITSHUFFLE
     case 87: TMBENCH("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 87",lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
     case 88: TMBENCH("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 88",lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
@@ -1406,7 +1450,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 108: if(nw<=0) goto end; {
       TMBENCH("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n);pr(l,n); TMBENCH2("108",lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm),n);
 	} break;
-
+      #endif
     case 110: TMBENCH("", l=vlcenc16(in,  n, out),n);                       pr(l,n); TMBENCH2("110", l==n?memcpy(cpy,in,n):(void *)vlcdec16( out, n,cpy),n); break;
     case 111: TMBENCH("", l=vlczenc16(in,  n, out),n);                      pr(l,n); TMBENCH2("111", l==n?memcpy(cpy,in,n):(void*)vlczdec16(out, n,cpy),n); break;
 
@@ -1424,8 +1468,14 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
       } break;
       #endif
 
-    case 153: l = n; TMBENCH("", tpzenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec( out, n,cpy, USIZE),n); break;
-    case 154: if(!tmp) tmp = (unsigned char*)malloc(ns); if(tmp) { l = n; TMBENCH("", tpz0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("154", tpz0dec(out, n,cpy, USIZE),n); } break;
+    case 153: l = n; TMBENCH("", tpzenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec(  out, n,cpy, USIZE),n); break;
+    case 154: l = n; TMBENCH("", tpz0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("154", tpz0dec( out, n,cpy, USIZE),n); break;
+    case 155: l = n; TMBENCH("", tpxenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("155", tpxdec(  out, n,cpy, USIZE),n); break;
+    case 156: l = n; TMBENCH("", tpx0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("156", tpx0dec( out, n,cpy, USIZE),n); break;
+    case 157: l = n; TMBENCH("", tp4zenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("157", tp4zdec( out, n,cpy, USIZE),n); break;
+    case 158: l = n; TMBENCH("", tp4z0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("158", tp4z0dec(out, n,cpy, USIZE),n); break;
+    case 159: l = n; TMBENCH("", tp4xenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("159", tp4xdec( out, n,cpy, USIZE),n); break;
+    case 160: l = n; TMBENCH("", tp4x0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("160", tp4x0dec(out, n,cpy, USIZE),n); break;
 
    default: goto end;
   }
@@ -1442,7 +1492,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 //---------------------------------------- 32 bits ----------------------------------------------------------------------------------------------------------------
 #undef USIZE
 #define USIZE 4
-unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) {
+unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
   unsigned l = 0, m = n/(USIZE), rc = 0, d, ns = CBUF(n);
   //uint32_t *p;
   char     *tmp = NULL;
@@ -1578,29 +1628,30 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 66: TMBENCH("",l=fpfcmenc32(      in, m, out,0),n);        pr(l,n); TMBENCH2(" 66",fpfcmdec32(        out, m, cpy,0) ,n); break;
     case 67: TMBENCH("",l=fpdfcmenc32(     in, m, out,0),n);        pr(l,n); TMBENCH2(" 67",fpdfcmdec32(       out, m, cpy,0) ,n); break;
     case 68: TMBENCH("",l=fp2dfcmenc32(    in, m, out,0),n);        pr(l,n); TMBENCH2(" 68",fp2dfcmdec32(      out, m, cpy,0) ,n); break;
-
+ 
     case 70: TMBENCH("",l=trlec(           in, n,out),n);           pr(l,n); TMBENCH2(" 70",trled(             out,l,cpy, n),n);      break;  // TurboRLE
     case 71: TMBENCH("",l=trlexc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2(" 71",trlexd(            out,l,cpy, n),n);      break;
     case 72: TMBENCH("",l=trlezc(          in, n,out,tmp),n);       pr(l,n); TMBENCH2(" 72",trlezd(            out,l,cpy, n),n);      break;
     case 73: TMBENCH("",l=srlec32(         in, n,out,RLE32),n);     pr(l,n); TMBENCH2(" 73",srled32(           out,l,cpy, n,RLE32),n);break;
     case 74: TMBENCH("",l=srlexc32(        in, n,out,tmp,RLE32),n); pr(l,n); TMBENCH2(" 74",srlexd32(          out,l,cpy, n,RLE32),n);break;
     case 75: TMBENCH("",l=srlezc32(        in, n,out,tmp,RLE32),n); pr(l,n); TMBENCH2(" 75",srlezd32(          out,l,cpy, n,RLE32),n);break;
+      #ifdef _ICCODEC
     case 76: TMBENCH("",l=tprleenc( in,n,out,ns,USIZE,tmp) ,n);     pr(l,n); TMBENCH2(" 76",tprledec( out,l,cpy,n,USIZE,tmp) ,n); break;
     case 77: TMBENCH("",l=tprlexenc(in,n,out,ns,USIZE,tmp) ,n);     pr(l,n); TMBENCH2(" 77",tprlexdec(out,l,cpy,n,USIZE,tmp) ,n); break;
     case 78: TMBENCH("",l=tprlezenc(in,n,out,ns,USIZE,tmp) ,n);     pr(l,n); TMBENCH2(" 78",tprlezdec(out,l,cpy,n,USIZE,tmp) ,n); break;
 
-    case 80: TMBENCH("",l=codecenc(   in,n,out,ns,codid,codlev,codprm) ,n);           pr(l,n); TMBENCH2(" 80",codecdec(out,l,cpy,n,codid,codlev,codprm),n); break;
-    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-      #ifdef _BITSHUFFLE
+    case 80: TMBENCH("",l=codecenc(   in,n,out,ns,          codid,codlev,codprm)       ,n); pr(l,n); TMBENCH2(" 80",codecdec(   out,l,cpy,n,          codid,codlev,codprm),n); break;
+    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+        #ifdef _BITSHUFFLE
     case 87: TMBENCH("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 87",lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
     case 88: TMBENCH("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 88",lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
     case 89: TMBENCH("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 89",lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
-      #endif
+        #endif
     case 90: TMBENCH("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 90",lztprledec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 91: TMBENCH("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 91",lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 92: TMBENCH("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 92",lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
@@ -1637,7 +1688,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 108: if(nw<=0) goto end; {
       TMBENCH("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n); pr(l,n); TMBENCH2("108",lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm),n);
 	} break;
-
+      #endif
     case 110: TMBENCH("", l=vlcenc32( in, n, out),n);                       pr(l,n); TMBENCH2("110", l==n?memcpy(cpy,in,n):(void*)vlcdec32( out, n,cpy),n); break;
     case 111: TMBENCH("", l=vlczenc32(in, n, out),n);                       pr(l,n); TMBENCH2("111", l==n?memcpy(cpy,in,n):(void*)vlczdec32(out, n,cpy),n); break;
     case 113: TMBENCH("", l=bitgenc32(in, n, out),n);                       pr(l,n); TMBENCH2("113", l==n?memcpy(cpy,in,n):(void*)bitgdec32(out, n,cpy),n); break;
@@ -1693,13 +1744,13 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	  TMBENCH("", l = meshenc(in, nx,ny,_nz, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("146", meshdec(out, l,cpy, nx,ny,_nz, tmp,codid,codlev,codprm),n);
 	} break;
 	  #endif	
-	  #ifdef _BLOSC  // zstd not working!
-    case 147: blosc2_init(); blosc2_set_nthreads(1); TMBENCH("",l = blosccomp(in, n, out, ns, /*codid==ICC_ZSTD?BLOSC_ZSTD:*/(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4), codlev<=9?codlev:9, 4, BLOSC_SHUFFLE, 0),n);           pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); break;
-    case 148: blosc2_init(); blosc2_set_nthreads(1); TMBENCH("",l = blosccomp(in, n, out, ns, /*codid==ICC_ZSTD?BLOSC_ZSTD:*/(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4), codlev<=9?codlev:9, 4, BLOSC_SHUFFLE, BLOSC_DELTA),n); pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
+	  #ifdef _BLOSC
+    case 147: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, BLOSC_NOFILTER),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); break;
+    case 148: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, BLOSC_DELTA),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
 	  #endif
-	// ----- speed test -----------------------
+	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------
     case 150: if(verbose) { fppad32(  in, m, out,0.001); fpstat(in, m, out, -4); }
-	                 TMBENCH("", fppad32(  in, m, out,0.001),n); memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("150", fppad32(in, m, out,0.001),n);  break;
+	                 TMBENCH("", fppad32(  in, m, out,0.001),n); memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("150", fppad32(in, m, out,0.001),n); break;
 	  #ifdef _LIBROUNDFAST
     case 151: if(verbose) { fround32( in, m, out, 3);    fpstat(in, m, out, -4); } // digirounding algo
 	                 TMBENCH("", fround32( in, m, out, 3),n);    memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("151", fround32(in, m, out,3),n); break;
@@ -1709,10 +1760,15 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	                 TMBENCH("",     BG_compress_args(BG_FLOAT, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); memcpy(cpy,in,n); l=n; pr(l,n);
 	                 TMBENCH2("152", BG_compress_args(BG_FLOAT, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); } break;
  	  #endif
-    case 153: l = n; TMBENCH("", tpzenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec( out, n,cpy, USIZE),n); break;
-    case 154: if(!tmp) tmp = (unsigned char*)malloc(ns); if(tmp) { l = n; TMBENCH("", tpz0enc(in, n, out, USIZE, tmp),n);  pr(l,n); TMBENCH2("154", tpz0dec(out, n,cpy, USIZE),n); } break;
-    case 155: l = n; TMBENCH("", tpxenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpxdec( out, n,cpy, USIZE),n); break;
-    case 156: if(!tmp) tmp = (unsigned char*)malloc(ns); if(tmp) { l = n; TMBENCH("", tpx0enc(in, n, out, USIZE, tmp),n);  pr(l,n); TMBENCH2("154", tpx0dec(out, n,cpy, USIZE),n); } break;
+	// ----- speed test transpose integrated -----------------------
+    case 153: l = n; TMBENCH("", tpzenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec(  out, n,cpy, USIZE),n); break;
+    case 154: l = n; TMBENCH("", tpz0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("154", tpz0dec( out, n,cpy, USIZE),n); break;
+    case 155: l = n; TMBENCH("", tpxenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("155", tpxdec(  out, n,cpy, USIZE),n); break;
+    case 156: l = n; TMBENCH("", tpx0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("156", tpx0dec( out, n,cpy, USIZE),n); break;
+    case 157: l = n; TMBENCH("", tp4zenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("157", tp4zdec( out, n,cpy, USIZE),n); break;
+    case 158: l = n; TMBENCH("", tp4z0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("158", tp4z0dec(out, n,cpy, USIZE),n); break;
+    case 159: l = n; TMBENCH("", tp4xenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("159", tp4xdec( out, n,cpy, USIZE),n); break;
+    case 160: l = n; TMBENCH("", tp4x0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("160", tp4x0dec(out, n,cpy, USIZE),n); break;
     default: goto end;
   }
   if(l) {
@@ -1727,7 +1783,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 
 #undef USIZE
 #define USIZE 8
-unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev) {
+unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
   unsigned l = 0,m = n/(USIZE), rc = 0, d=0, ns = CBUF(n);
   uint64_t dmin = mindelta64(in,m);
   uint64_t *p=NULL;
@@ -1802,19 +1858,19 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 73: TMBENCH("",l=srlec64(         in, n,out,RLE64),n);     pr(l,n); TMBENCH2(" 73",srled64(           out,l,cpy, n,RLE64),n);break;
     case 74: TMBENCH("",l=srlexc64(        in, n,out,tmp,RLE64),n); pr(l,n); TMBENCH2(" 74",srlexd64(          out,l,cpy, n,RLE64),n);break;
     case 75: TMBENCH("",l=srlezc64(        in, n,out,tmp,RLE64),n); pr(l,n); TMBENCH2(" 75",srlezd64(          out,l,cpy, n,RLE64),n);break;
-
-    case 80: TMBENCH("",l=codecenc(      in,n,out,ns,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 80",codecdec(out,l,cpy,n,codid,codlev,codprm),n); break;
-    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-      #ifdef _BITSHUFFLE
+      #ifdef _ICCODEC
+    case 80: TMBENCH("",l=codecenc(   in,n,out,ns,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 80",codecdec(out,l,cpy,n,codid,codlev,codprm),n); break;
+    case 81: TMBENCH("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 81",lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 82: TMBENCH("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 82",lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 83: TMBENCH("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 83",lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 84: TMBENCH("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 84",lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 85: TMBENCH("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 85",lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+    case 86: TMBENCH("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize) ,n); pr(l,n); TMBENCH2(" 86",lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize) ,n); break;
+        #ifdef _BITSHUFFLE
     case 87: TMBENCH("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 87",lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
     case 88: TMBENCH("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 88",lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
     case 89: TMBENCH("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n); pr(l,n); TMBENCH2(" 89",lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm), n); break;
-      #endif
+        #endif
     case 90: TMBENCH("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 90",lztprledec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 91: TMBENCH("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 91",lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 92: TMBENCH("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 92",lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
@@ -1841,7 +1897,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
       TMBENCH("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n);pr(l,n); TMBENCH2("107",lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm),n);} break;
     case 108: if(nw<=0) goto end; {
       TMBENCH("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n);pr(l,n); TMBENCH2("108",lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm),n); } break;
-
+      #endif
     case 117: l = n; TMBENCH("", tpenc( in, n, out,USIZE),n);       pr(l,n); TMBENCH2("107", tpdec( out, n,cpy, USIZE),n); break;
     case 118: l = n; TMBENCH("", tp4enc(in, n, out,USIZE),n);       pr(l,n); TMBENCH2("108", tp4dec(out, n,cpy, USIZE),n); break;
       #ifdef _BITSHUFFLE
@@ -1879,6 +1935,14 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	                 TMBENCH("",     BG_compress_args(BG_DOUBLE, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); memcpy(cpy,in,n); l=n; pr(l,n);
 	                 TMBENCH2("143", BG_compress_args(BG_DOUBLE, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); } break;
  	  #endif
+    case 153: l = n; TMBENCH("", tpzenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec(  out, n,cpy, USIZE),n); break;
+    case 154: l = n; TMBENCH("", tpz0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("154", tpz0dec( out, n,cpy, USIZE),n); break;
+    case 155: l = n; TMBENCH("", tpxenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("155", tpxdec(  out, n,cpy, USIZE),n); break;
+    case 156: l = n; TMBENCH("", tpx0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("156", tpx0dec( out, n,cpy, USIZE),n); break;
+    case 157: l = n; TMBENCH("", tp4zenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("157", tp4zdec( out, n,cpy, USIZE),n); break;
+    case 158: l = n; TMBENCH("", tp4z0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("158", tp4z0dec(out, n,cpy, USIZE),n); break;
+    case 159: l = n; TMBENCH("", tp4xenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("159", tp4xdec( out, n,cpy, USIZE),n); break;
+    case 160: l = n; TMBENCH("", tp4x0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("160", tp4x0dec(out, n,cpy, USIZE),n); break;
     default: goto end;
   }
   if(l) {
@@ -1964,7 +2028,7 @@ int main(int argc, char* argv[]) {
     if((c = getopt_long(argc, argv, "a:B:b:C:d:D:d:e:E:f:F:g:G:I:J:k:K:hH:l:m:M:n:p:R:s:v:V:w:yz:", long_options, &option_index)) == -1) break;
     switch(c) {
       case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;
-	  case 'b': bsize = argtoi(optarg,1); tpsizeset(bsize); break;
+	  case 'b': bsize = argtoi(optarg,1); break;
       case 'C': cmp    = atoi(optarg); break;
       case 'e': icmd   = optarg; break;
       case 'E': scmd   = optarg; break;
@@ -2067,14 +2131,21 @@ int main(int argc, char* argv[]) {
         fseek(fi, 0, SEEK_SET);
         if(flen > b) flen = b;
         n = flen;
-        if(dim0) {
-		  char *p; if(!(p = strrchr(inname, '\\')) && !(p = strrchr(inname, '/'))) p=inname;
-          nx = ny = nz = nw=0;
-          while(!isdigit(*p)) p++;                                                  if(verbose>1) printf("fn='%s' ", p);
+        if(dim0) { 
+		  char *q,*p = &inname[strlen(inname)]; 
+		  if(q = strrchr(inname, '.')) p = q;
+          nx = ny = nz = nw = 0;
+          while(p > &inname[0] && (isdigit(p[-1]) || p[-1]=='x') ) p--;         if(verbose>1) printf("fn='%s' ", p);
                           nx = strtoul(p,   &p, 10);
            if(nx && *p) ny = strtoul(p+1, &p, 10);
            if(ny && *p) nz = strtoul(p+1, &p, 10);
            if(nz && *p) nw = strtoul(p+1, &p, 10);
+		   if(verbose > 1 && nx) {       printf("dim=%u", nx);
+		     if(ny) {     printf("x%u", ny);
+               if(nz) {   printf("x%u", nz);
+		         if(nw) { printf("x%u", nw); }}}
+			 printf(" ");
+		   }		 
         }
       }
     }
@@ -2157,10 +2228,10 @@ int main(int argc, char* argv[]) {
       for(i = id; i <= idx; i++) {
 	    unsigned l = 0;
         switch(abs(isize)) {
-          case 1: l = bench8( in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname,codlev); break;
-          case 2: l = bench16(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname,codlev); break;
-          case 4: l = bench32(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname,codlev); break;
-          case 8: l = bench64(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname,codlev); /*double *d = in; for(int i=0; i < 100; i++) printf("%.3f ", d[i]);*/break;
+          case 1: l = bench8( in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); break;
+          case 2: l = bench16(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); break;
+          case 4: l = bench32(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); break;
+          case 8: l = bench64(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); /*double *d = in; for(int i=0; i < 100; i++) printf("%.3f ", d[i]);*/break;
           default: die("integer size must be 1, 2, 4 or 8\n");
         }
 		if(l > 0) {
