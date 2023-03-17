@@ -7,6 +7,3 @@
 [submodule "ext/zstd"]
 	path = ext/zstd
 	url = https://github.com/facebook/zstd.git
-[submodule "Turbo-Range-Coder"]
-	path = Turbo-Range-Coder
-	url = https://github.com/powturbo/Turbo-Range-Coder
