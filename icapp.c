@@ -1,6 +1,6 @@
 /**
     Copyright (C) powturbo 2015-2023
-    GPL v2 License
+    SPDX-License-Identifier: GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    SPDX-License-Identifier: GPL v2 License
 	- email    : powturbo [AT] gmail.com
     - github   : https://github.com/powturbo
     - homepage : https://sites.google.com/site/powturbo/
@@ -713,7 +712,7 @@ void meshdec(const uint8_t *in, unsigned inlen, float *out, unsigned nx, unsigne
   #endif
 
   #ifdef _BLOSC
-unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned compcode, int codlev, unsigned esize, int filter0, int filter1) {
+unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned compcode, int codlev, unsigned esize, int filter0, int filter1, int filter2) {
   blosc2_cparams cp = BLOSC2_CPARAMS_DEFAULTS; 		   
 		cp.typesize = esize;
 	    cp.compcode = compcode;                                                        //BLOSC_LZ4HC, BLOSC_LZ4, BLOSC_ZSTD, BLOSC_LZ4, BLOSC_BLOSCLZ
@@ -721,6 +720,7 @@ unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsign
 		cp.nthreads = 1;
 		cp.filters[BLOSC2_MAX_FILTERS - 1] = filter0; //BLOSC_NOFILTER, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE
 		cp.filters[BLOSC2_MAX_FILTERS - 2] = filter1; //BLOSC_DELTA, BLOSC_FILTER_BYTEDELTA
+		cp.filters[BLOSC2_MAX_FILTERS - 3] = filter2; //BLOSC_TRUNC_PREC
   blosc2_context *ctx = blosc2_create_cctx(cp);
   int rc = blosc2_compress_ctx(ctx, in, (int)inlen, out, (int)outsize);
   blosc2_free_ctx(ctx);
@@ -1035,7 +1035,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",	
     "%3d:blosc            shuffle+%s,%d       ",   	
     "%3d:blosc            shuffle delta+%s,%d ",   	
-    "%3d:blosc            shuffle bytedelta   ",   	
+    "%3d:blosc            shuffle trunc_prec  ",   	
 
     "%3d:fpadd            speed test          ", //150
     "%3d:libdroundfast    speed test          ",
@@ -1745,8 +1745,10 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	} break;
 	  #endif	
 	  #ifdef _BLOSC
-    case 147: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, BLOSC_NOFILTER),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); break;
-    case 148: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, BLOSC_DELTA),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
+    case 147: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, 0, 0),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); break;
+    case 148: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, BLOSC_DELTA, 0),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
+    //case 149: if(zerrlim>DBL_EPSILON) truncate_precision(6, 4, n, in, out);
+	//  codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_TRUNC_PREC, BLOSC_SHUFFLE, BLOSC_DELTA),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
 	  #endif
 	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------
     case 150: if(verbose) { fppad32(  in, m, out,0.001); fpstat(in, m, out, -4); }
