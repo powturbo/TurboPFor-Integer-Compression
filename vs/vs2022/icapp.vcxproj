@@ -27,6 +27,10 @@
       <Project>{a162f37f-183f-4250-88ab-9b9fbde30b04}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\ic.h" />
+    <ClInclude Include="..\..\include_\iccodec.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{6876BEB8-2B45-48B9-8381-1D4094FE8868}</ProjectGuid>
