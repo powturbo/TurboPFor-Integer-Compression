@@ -21,7 +21,7 @@
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 **/
-//  Binary Interpolative Coding
+// Binary Interpolative Coding
 // Reference: "On Implementing the Binary Interpolative Coding Algorithm" GIULIO ERMANNO PIBIRI, ISTI-CNS http://pages.di.unipi.it/pibiri/papers/BIC.pdf
 //            "Techniques for Inverted Index Compression" GIULIO ERMANNO PIBIRI, ROSSANO VENTURINI, University of Pisa https://arxiv.org/abs/1908.10598
 
