@@ -6,7 +6,8 @@
 # To benchmark external libraries:
 # 1 - clone/download the external repository into the TurboPFor directoty
 # 2 - activate the repository in the makefile ext/libext.mak
-# 3 -       make: "make CODEC1=1 CODEC2=1 ICCODEC=1" 
+# 3 -       make: "make CODEC1=1 ICCODEC=1" 
+#           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
 # on arm make: "make CODEC1=1 ICCODEC=1"
 
 #ICCODEC=1
@@ -100,18 +101,19 @@ bitpack_avx2.o: bitpack.c
 bitunpack_avx2.o: bitunpack.c
 	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitunpack.c -o bitunpack_avx2.o
 
-transpose.o: transpose.c
-	$(CC) -O3 -w $(OPT) -c transpose.c -o transpose.o
+#transpose.o: transpose.c
+#	$(CC) -O3 -w $(OPT) -c transpose.c -o transpose.o
 
-transpose_sse.o: transpose.c
-	$(CC) -O3 -w $(_SSE) $(OPT) -c transpose.c -o transpose_sse.o
+#transpose_sse.o: transpose.c
+#	$(CC) -O3 -w $(_SSE) $(OPT) -c transpose.c -o transpose_sse.o
 
 transpose_avx2.o: transpose.c
 	$(CC) -O3 -w $(_AVX2) $(OPT) -c transpose.c -o transpose_avx2.o
 
 -include ext/libext.mak
 
-LIB=bic.o bitpack.o bitunpack.o bitutil.o eliasfano.o fp.o transpose.o transpose_sse.o trlec.o trled.o vp4c.o vp4d.o v8.o v8pack.o vint.o vsimple.o vbit.o 
+LIB=bic.o bitpack.o bitunpack.o bitutil.o eliasfano.o fp.o transpose.o transpose_.o trlec.o trled.o vp4c.o vp4d.o v8.o v8pack.o vint.o vsimple.o vbit.o 
+#transpose_sse.o
 ifeq ($(ARCH),x86_64)
 LIB+=vp4c_avx2.o vp4d_avx2.o transpose_avx2.o bitpack_avx2.o bitunpack_avx2.o bitutil_avx2.o
 endif
