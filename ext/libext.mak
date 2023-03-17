@@ -13,7 +13,7 @@ ZSTD=1
 #ZLIB=1
 BITSHUFFLE=1
 #LZTURBO=1
-#TURBORC=1
+TURBORC=1
 endif
 
 ifeq ($(CODEC1),1)
@@ -244,7 +244,8 @@ endif
 ifeq ($(TURBORC), 1)
 CFLAGS+=-D_TURBORC
 T=ext/Turbo-Range-Coder/
-OB+=$(T)rc_s.o $(T)rc_ss.o $(T)rcqlfc_s.o $(T)rcqlfc_ss.o $(T)rcbwt.o $(T)rcutil.o $(T)libsais/src/libsais.o $(T)rccm_s.o $(T)rccm_ss.o $(T)bec_b.o
+OB+=$(T)rc_s.o $(T)rc_ss.o $(T)rcutil.o $(T)libsais/src/libsais.o $(T)rccm_s.o $(T)rccm_ss.o $(T)bec_b.o $(T)rcbwt_s.o $(T)rcbwt_ss.o
+#$(T)rcqlfc_s.o $(T)rcqlfc_ss.o $(T)rcbwt.o 
 endif
 
 ifeq ($(VARINTG8IU),1)
