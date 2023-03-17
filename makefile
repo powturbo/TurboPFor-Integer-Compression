@@ -1,8 +1,11 @@
 # powturbo (c) Copyright 2013-2023
-# Download or clone TurboPFor:
+# 1 - Download or clone TurboPFor:
 # git clone git://github.com/powturbo/TurboPFor.git 
 # make
 #
+# 2 - include general purpose compression codecs
+# git clone --recursive https://github.com/powturbo/TurboPFor-Integer-Compression.git
+# make ICCODEC=1
 # To benchmark external libraries:
 # 1 - clone/download the external repository into the TurboPFor directoty
 # 2 - activate the repository in the makefile ext/libext.mak
