@@ -234,13 +234,15 @@ q/s: queries/second, ms/q:milliseconds/query
 		cd TurboPFor-Integer-Compression
 		make
         
-
-        To benchmark external libraries + lz77 compression:
+        To benchmark TurboPFor + general purpose compression codecs (zstd,lz4, Turbo-Range-Coder, bwt, bitshuffle):
         git clone --recursive https://github.com/powturbo/TurboPFor-Integer-Compression.git
 		cd TurboPFor-Integer-Compression
+        make ICCODEC=1
+
+        To benchmark external libraries: 
 		Download the external libraries from github into the current directory
-		Axctivate/deactivate the ext. libs in the makefile 
-        make CODEC1=1 CODEC2=1
+		Activate/deactivate the ext. libs in the makefile 
+        make CODEC1=1 CODEC2=1 ICCODEC=1
 
 
 ###### Windows visual c++
