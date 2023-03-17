@@ -1,6 +1,6 @@
 /**
     Copyright (C) powturbo 2013-2023
-    GPL v2 License
+    SPDX-License-Identifier: GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #define BT(_i_) { o |= ip[_i_]; x |= ip[_i_] ^ u0; }
 
 #ifdef __AVX2__
+
 uint32_t bit256v32(uint32_t *in, unsigned n, uint32_t *px) {
   uint32_t o = 0,x,u0 = in[0], *ip = in;
   __m256i vb0 = _mm256_set1_epi32(*in), 
@@ -55,7 +56,8 @@ uint32_t bit256v32(uint32_t *in, unsigned n, uint32_t *px) {
   return o;
 }
 
-uint32_t bitd256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
+// delta ---------------------------------------------------------------------------------------------------------------
+uint32_t bitd256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) { 
   uint32_t o = 0, x, *ip = in, u0 = in[0] - start;
   __m256i vb0 = _mm256_set1_epi32(u0),
           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
@@ -96,6 +98,7 @@ void bitddec256v32(uint32_t *in, unsigned n, unsigned start) {
   }
 }
 
+//-- delta 1 --------------------------------------------------------------------------------------------------------------------------------------
 uint32_t bitd1256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o, x, *ip = in, u0 = in[0]-start-1;
    __m256i vb0 = _mm256_set1_epi32(u0),
@@ -116,7 +119,7 @@ uint32_t bitd1256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
     uint32_t u = ip[0] - start-1; start = *ip;
     o |= u;
     x |= u ^ u0;
-  }
+}
   if(px) *px = x;
   return o;
 }
@@ -135,6 +138,7 @@ void bitd1dec256v32(uint32_t *in, unsigned n, uint32_t start) {
   }
 }
 
+//--  Xor ----------------------------------------------------------------------------------------------------------------------
 uint32_t bitx256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   uint32_t o = 0, *ip = in;
   __m256i vo0 = _mm256_setzero_si256(),
@@ -156,6 +160,7 @@ uint32_t bitx256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   return o; 
 }
 
+//-- zigzag ------------------------------------------------------------------------------------------------------------------------------------------------
 uint32_t bitz256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   uint32_t o, x, *ip; uint32_t u0 = zigzagenc32((int)in[0] - (int)start);
   __m256i vb0 = _mm256_set1_epi32(u0), 
@@ -184,9 +189,9 @@ uint32_t bitz256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   return o; 
 }
 
-#if 0 // slower than SSE
+/* slower than SSE
 void bitzdec256v32(unsigned *in, unsigned n, unsigned start) {
-  __m256i vs = _mm256_set1_epi32(start); //, zv = _mm256_setzero_si256()*/; //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
+  __m256i vs = _mm256_set1_epi32(start);
   unsigned *ip = in;
   for(; ip != in+(n&~(16-1)); ip += 16) {
     __m256i iv0 = _mm256_loadu_si256((__m256i *)ip),
@@ -204,9 +209,9 @@ void bitzdec256v32(unsigned *in, unsigned n, unsigned start) {
     unsigned z = *ip;
     *ip++ = (start += (z >> 1 ^ -(z & 1)));
   }
-}
-#endif
-#else
+}*/
+
+#else // avx2
 //------------ 'or' for bitsize + 'xor' for all duplicate ------------------
 #define BIT(_in_, _n_, _usize_) {\
   u0 = _in_[0]; o = x = 0;\
@@ -219,9 +224,11 @@ uint64_t bit64(uint64_t *in, unsigned n, uint64_t *px) { uint64_t o,x,u0,*ip; BI
 
 uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
   uint16_t o, x, u0 = in[0], *ip = in;
+  
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi16(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
-                                     vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();
+  __m128i vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
+          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(), vb0 = _mm_set1_epi16(u0);
+									
   for(; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
     __m128i v1 = _mm_loadu_si128((__m128i *)(ip+8));
@@ -233,8 +240,9 @@ uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi16(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi16(vx0);
     #else
-  ip = in; o = x = 0; //BIT( in, n, 16);
+  ip = in; o = x = 0;
     #endif
+	
   for(; ip != in+n; ip++) BT(0);
   if(px) *px = x;
   return o;
@@ -242,9 +250,11 @@ uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
 
 uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
   uint32_t o,x,u0 = in[0], *ip = in;
+  
     #if defined(__SSE2__) || defined(__ARM_NEON)
-  __m128i vb0 = _mm_set1_epi32(u0), vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
-                                    vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128();
+  __m128i vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
+          vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(), vb0 = _mm_set1_epi32(u0);
+									
   for(; ip != in+(n&~(8-1)); ip += 8) {                                  PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
     __m128i v1 = _mm_loadu_si128((__m128i *)(ip+4));
@@ -256,8 +266,9 @@ uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
   vo0 = _mm_or_si128(vo0, vo1); o = mm_hor_epi32(vo0);
   vx0 = _mm_or_si128(vx0, vx1); x = mm_hor_epi32(vx0);
     #else
-  ip = in; o = x = 0; //BIT( in, n, 32);
+  ip = in; o = x = 0;
     #endif
+	
   for(; ip != in+n; ip++) BT(0);
   if(px) *px = x;
   return o;
@@ -294,6 +305,7 @@ uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
     #else
   ip = in; o = x = 0;
     #endif
+	
   for(;ip != in+n; ip++) {
     uint16_t u = *ip - start; start = *ip;
     o |= u;
@@ -305,6 +317,7 @@ uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
 
 uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, x=0, *ip = in, u0 = in[0] - start;
+  
     #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vb0 = _mm_set1_epi32(u0),
           vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
@@ -323,6 +336,7 @@ uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
     #else
   ip = in; o = x = 0;
     #endif
+	
   for(;ip != in+n; ip++) {
     uint32_t u = *ip - start; start = *ip;
     o |= u;
@@ -342,6 +356,7 @@ uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
 void bitddec8( uint8_t  *in, unsigned n, uint8_t  start) { BITDD(uint8_t,  in, n, 0); }
 void bitddec16(uint16_t *in, unsigned n, uint16_t start) { BITDD(uint16_t, in, n, 0); }
 void bitddec64(uint64_t *in, unsigned n, uint64_t start) { BITDD(uint64_t, in, n, 0); }
+
 void bitddec32(uint32_t *in, unsigned n, unsigned start) {
     #if defined(__SSSE3__) || defined(__ARM_NEON)
   __m128i vs = _mm_set1_epi32(start);
@@ -364,7 +379,7 @@ void bitddec32(uint32_t *in, unsigned n, unsigned start) {
     #endif
 }
 
-//----------- Zigzag of Delta --------------------------
+//----------- Zigzag Delta ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #define ZDE(i, _usize_) d = (_ip[i]-start)-_md; u = T2(zigzagenc, _usize_)(d - startd); startd = d; start = _ip[i]
 #define BITZDE(_t_, _in_, _n_, _md_, _usize_, _act_) { _t_ *_ip, _md = _md_;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { ZDE(0, _usize_);_act_; ZDE(1, _usize_);_act_; ZDE(2, _usize_);_act_; ZDE(3, _usize_);_act_; }\
@@ -375,6 +390,7 @@ uint8_t  bitzz8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8
 uint16_t bitzz16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) { uint16_t o=0, x=0,d,startd=0,u; BITZDE(uint16_t, in, n, 1, 16, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
 uint32_t bitzz32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) { uint64_t o=0, x=0,d,startd=0,u; BITZDE(uint32_t, in, n, 1, 32, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
 uint64_t bitzz64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o=0, x=0,d,startd=0,u; BITZDE(uint64_t, in, n, 1, 64, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
+
 uint8_t  bitzzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o=0,*op = out,u,d,startd=0; BITZDE(uint8_t,  in, n, mindelta,  8,o |= u;*op++ = u); return o;}
 uint16_t bitzzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t o=0,*op = out,u,d,startd=0; BITZDE(uint16_t, in, n, mindelta, 16,o |= u;*op++ = u); return o;}
 uint32_t bitzzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) { uint32_t o=0,*op = out,u,d,startd=0; BITZDE(uint32_t, in, n, mindelta, 32,o |= u;*op++ = u); return o;}
@@ -397,6 +413,7 @@ uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint6
 
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, x=0, *ip = in, u0 = in[0]-start-1;
+  
    #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vb0 = _mm_set1_epi32(u0),
           vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
@@ -415,6 +432,7 @@ uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
     #else
   ip = in; o = x = 0;
     #endif
+	
   for(;ip != in+n; ip++) {
     uint32_t u = ip[0] - start-1; start = *ip;
     o |= u;
@@ -457,6 +475,7 @@ unsigned bits128v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
 void bitd1dec8( uint8_t  *in, unsigned n, uint8_t  start) { BITDD(uint8_t,  in, n, 1); }
 void bitd1dec16(uint16_t *in, unsigned n, uint16_t start) { BITDD(uint16_t, in, n, 1); }
 void bitd1dec64(uint64_t *in, unsigned n, uint64_t start) { BITDD(uint64_t, in, n, 1); }
+
 void bitd1dec32(uint32_t *in, unsigned n, uint32_t start) {
     #if defined(__SSSE3__) || defined(__ARM_NEON)
   __m128i vs = _mm_set1_epi32(start), cv = _mm_set_epi32(4,3,2,1);
@@ -522,7 +541,7 @@ void bitdidec16( uint16_t *in, unsigned n, uint16_t start, uint16_t mindelta) { 
 void bitdidec32( uint32_t *in, unsigned n, uint32_t start, uint32_t mindelta) { BITDD(uint32_t, in, n, mindelta); }
 void bitdidec64( uint64_t *in, unsigned n, uint64_t start, uint64_t mindelta) { BITDD(uint64_t, in, n, mindelta); }
 
-//------------------- For ------------------------------
+//------------------- For ---------------------------------------------------------------------------------------------------
 uint8_t  bitf8(  uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { if(px) *px = 0; return n?in[n-1] - start    :0; }
 uint8_t  bitf18( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { if(px) *px = 0; return n?in[n-1] - start - n:0; }
 uint16_t bitf16( uint16_t *in, unsigned n, uint16_t *px, uint16_t start) { if(px) *px = 0; return n?in[n-1] - start    :0; }
@@ -532,7 +551,7 @@ uint32_t bitf132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) { if(px
 uint64_t bitf64( uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { if(px) *px = 0; return n?in[n-1] - start    :0; }
 uint64_t bitf164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { if(px) *px = 0; return n?in[n-1] - start - n:0; }
 
-//------------------- Zigzag ---------------------------
+//------------------- Zigzag -------------------------------------------------------------------------------------------------------------------------------------
 #define ZE(i,_it_,_usize_) u = T2(zigzagenc, _usize_)((_it_)_ip[i]-(_it_)start); start = _ip[i]
 #define BITZENC(_ut_, _it_, _usize_, _in_,_n_, _act_) { _ut_ *_ip; x = -1;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { ZE(0,_it_,_usize_);_act_; ZE(1,_it_,_usize_);_act_; ZE(2,_it_,_usize_);_act_; ZE(3,_it_,_usize_);_act_; }\
@@ -607,6 +626,7 @@ uint32_t bitz32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
 uint8_t  bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o,x,u,*op = out; BITZENC(uint8_t,  int8_t,  8,in, n, o |= u; *op++ = u); return o; }
 uint16_t bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t o,x,u,*op = out; BITZENC(uint16_t, int16_t,16,in, n, o |= u; *op++ = u); return o; }
 uint64_t bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o,x,u,*op = out; BITZENC(uint64_t, int64_t,64,in, n, o |= u; *op++ = u); return o; }
+
 uint32_t bitzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
   unsigned *ip = in,b,*op = out;
@@ -693,7 +713,7 @@ void bitzdec32(unsigned *in, unsigned n, unsigned start) {
     #endif
 }
 
-//----------------------- XOR : return max. bits ---------------------------------
+//----------------------- XOR ------------------------------------------------------------------------------------------------------
 #define XE(i) x = _ip[i] ^ start; start = _ip[i]
 #define BITXENC(_t_, _in_, _n_, _act_) { _t_ *_ip;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { XE(0);_act_; XE(1);_act_; XE(2);_act_; XE(3);_act_; }\
