@@ -109,9 +109,7 @@ TurboPFor: Fastest Integer Compression
 ##### - Data files:
  - gov2.sorted from [DocId data set](#DocId) Block size=128/Delta coding
 
-        ./icbench -fS -r gov2.sorted
-
-![Speed/Ratio](ext/gov2.png "Speed/Ratio: Decompression")
+ ![Speed/Ratio](ext/gov2.png "Speed/Ratio: Decompression")
 
 |Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function 2019.11|
 |-----------:|------:|-----:|-------:|-------:|---------------------|
@@ -330,12 +328,6 @@ q/s: queries/second, ms/q:milliseconds/query
         ./icapp -Fc data.txt         "text file, 32 bits integers (ex. 56789,3245,23,678 ) 
         ./icapp -Fcd data.txt        "text file, 64 bits floting-point numbers (ex. 34.7689,5.20,45.789 )
 
-  - Multiblocks of 32 bits binary file. (Example gov2 from [DocId data set](#DocId))<br />
-    Block format: [n1: #of Ids][Id1] [Id2]...[IdN] [n2: #of Ids][Id1][Id2]...[IdN]...
-
-        ./icbench -fS -r gov2.sorted
-
-
 ##### - Intersections:
   1 - Download Gov2 (or ClueWeb09) + query files (Ex. "1mq.txt") from [DocId data set](#DocId)<br />
    8GB RAM required (16GB recommended for benchmarking "clueweb09" files).
@@ -428,15 +420,8 @@ In general encoding/decoding functions are of the form:
    'dec' or 'unpack': decode or bitunpack<br />
    'NN'             : integer size (8/16/32/64)<br />
    
-header files to use with documentation:<br />
-
-| c/c++ header file|Integer Compression functions| examples |
-|------------|-----------------------------|-----------------|
-|vint.h|variable byte| vbenc32/vbdec32 vbdenc32/vbddec32 vbzenc32/vbzdec32 |
-|vsimple.h|variable simple| vsenc64/vsdec64 |
-|vp4.h|TurboPFor|  p4enc32/p4dec32 p4denc32/p4ddec32 p4zenc32/p4zdec32 |
-|bitpack.h|Bit Packing, For, +Direct Access| bitpack256v32/bitunpack256v32 bitforenc64/bitfordec64|
-|eliasfano.h|Elias Fano| efanoenc256v32/efanoc256v32 |
+public header file to use with documentation:<br />
+        include/ic.h
 
 Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) integers per call.
 
@@ -493,110 +478,4 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 
 Last update:  16 Mar 2023
 
-## APPENDIX: icbench Integer Compression Benchmark
-
-##### TurboPFor + external libraries
-<pre>
-TurboPFor               	https://github.com/powturbo/TurboPFor-Integer-Compression
-FastPFor (FP)              	https://github.com/lemire/FastPFor
-lz4				https://github.com/Cyan4973/lz4
-LittleIntPacker (LI)       	https://github.com/lemire/LittleIntPacker
-MaskedVbyte             	http://maskedvbyte.org
-Polycom (PC)               	https://github.com/encode84/bcm
-simdcomp (SC)              	https://github.com/lemire/simdcomp
-Simple-8b optimized     	https://github.com/powturbo/TurboPFor-Integer-Compression
-Streamvbyte             	https://github.com/lemire/streamvbyte
-VarintG8IU              	https://github.com/lemire/FastPFor
-</pre>
-
-##### Functions integrated into 'icbench' for benchmarking
-<pre>
-Codec group:
-TURBOPFOR        TurboPFor library TurboPFor256V/TurboPack256V/TurboPFor256N/TurboPFor/TurboPackV/TurboVByte/TurboPack/TurboForDA/EliasFano/VSimple/TurboPForN/TurboPackN/TurboPForDI
-DEFAULT          Default TurboPFor/TurboPackV/TurboVByte/TurboPack/TurboFor/TurboPForN/TurboPackN/TurboPForDI/TurboPFor256V/TurboPack256V/TurboPFor256N
-BENCH            Benchmark TurboPFor/TurboPackV/TurboVByte/TurboPack/QMX/FP.SimdFastPfor/FP.SimdOptPFor/MaskedVbyte/StreamVbyte
-EFFICIENT        Efficient TurboPFor/vsimple/turbovbyte
-TRANSFORM        transpose/shufle,delta,zigzag tpbyte4s/tpbyte,4/tpnibble,4/ZigZag_32/Delta_32/BitShuffle,4
-BITPACK          Bit Packing TurboPack256V/TurboPackV/TurboPackH/TurboPack/SC.SimdPack128/SC.SimdPack256
-VBYTE            Variable byte TurboVByte/FP.VByte/PC.Vbyte/VarintG8IU/MaskedVbyte/StreamVbyte
-SIMPLE           Simple Family simple8b/simple16/vsimple/qmx
-LZ4              lz4+bitshufle/transpose 4,8 lz4_bitshufle/lz4_tp4/lz4_tp8
-LI               Little Integer LI_Pack/LI_TurboPack/LI_SuperPack/LI_HorPack
-
-
-Function         Description                                      level
-
---------         -----------                                      -----
-TurboPFor        PFor (SSE2)
-TurboPForN       PFor (SSE2) large blocks
-TurboPFor256     PFor (AVX2)
-TurboPFor256N    PFor (AVX2) large blocks
-TurboPForDA      PFor direct access
-TurboPForDI      PFord min
-TurboPForZZ      PFor zigzag of delta
-TurboFor         FOR
-TurboForV        FOR (SIMD)
-TurboFor256V     FOR (AVX2)
-TurboForDA       FOR direct access
-TurboPackDA      Bit packing direct access
-TurboPack        Bit packing (scalar)
-TurboPackN       Bit packing (scalar) large blocks
-TurboPackV       Bit packing (SSE2 Vertical)
-TurboPackH       Bit packing (SSE2 Horizontal)
-TurboPackVN      Bit packing (SSE2 large block)
-TurboPack256V    Bit packing (AVX2 Vertical)
-TurboPack256N    Bit packing (AVX2 large block)
-TurboVByte       Variable byte (scalar)
-VSimple          Variable simple (scalar)
-EliasFano        Elias fano (scalar)
-EliasFanoV       Eliasfano  (SSE2)
-EliasFano256V    Elias fano (AVX2)
-memcpy           memcpy
-copy             Integer copy
-tpbyte4s         Byte Transpose (scalar)
-tpbyte           Byte transpose (simd)  2,4,8
-tpnibble         Nibble transpose (simd)  2,4,8
-ZigZag32         ZigZag encoding (sse2)
-Delta32          Delta encoding (sse2)
-DDelta32         Delta of delta encoding (sse2)
-Xor32            Xor encoding (sse2)
-FP_PREV64        Floating point PFOR
-FP_FCM64         Floating point PFOR (FCM)
-FP_DFCM64        Floating point PFOR (DFCM)
-TurboPFor64      PFOR 64
-TurboPFor64V     PFOR 64
-Simple8b         64 bits Simple family (instable)
-PC_Simple16      Simple 16. limited to 28 bits
-PC_OptPFD        OptPFD. limited to 28 bits
-PC_Vbyte         Variable byte
-PC_Rice          Rice coding (instable)
-VarintG8IU       Variable byte SIMD
-MaskedVbyte      Variable byte SIMD
-StreamVbyte      Variable byte SIMD
-FP_FastPFor      PFor scalar (inefficient for small blocks)
-FP_SimdFastPFor  PFor SIMD (inefficient for small blocks)
-FP_OptPFor       OptPFor scalar 
-FP_SIMDOptPFor   OptPFor SIMD
-FP_VByte         Variable byte
-FP_Simple8bRLE   Simple-8b + rle
-FP_GROUPSIMPLE   Group Simple
-SC_SIMDPack128   Bit packing (SSE4.1)
-SC_SIMDPack256   Bit packing (SSE4.1)
-SC_For           For (SSE4.1)
-SC_ForDA         For direct access (SSE4.1)
-LibFor_For       For
-LibFor_ForDA     For direct access
-LI_Pack          Bit packing (scalar)
-LI_TurboPack     Bit packing (scalar)
-LI_SuperPack     Bit packing (scalar)
-LI_HorPack       Bit packing (sse4.1 horizontal) 
-LI_BMIPack256    Bit packing (avx2)
-lz4              lz4
-lz4_bit          Bitshuffle + [delta]+lz4 2,4,8
-lz4_nibble       TurboPFor's [delta]+nibble transpose + lz4 2,4,8
-lz4_bitxor       Bitshuffle + [xor]+lz4 2,4,8
-lz4_nibblexor    TurboPFor's [xor]+nibble transpose + lz4 2,4,8
-lz4_byte         TurboPFor's [delta]+byte transpose + lz4 2,4,8
-BitShuffle       Bit shuffle (simd) 2,4,8
-</pre>
 
