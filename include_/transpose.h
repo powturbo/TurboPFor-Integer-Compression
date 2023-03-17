@@ -12,48 +12,63 @@ extern "C" {
 //---------- High level functions with dynamic cpu detection and JIT scalar/sse/avx2 switching
 void tpenc(        unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // tranpose
 void tpdec(        unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // reverse transpose
+
 void tpzenc(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // zigzag integrated
 void tpzdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+
 void tpxenc(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // xor integrated
 void tpxdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
-void tp2denc(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize); //2D transpose
+//2D transpose
+void tp2denc(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize); 
 void tp2ddec(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize);
+
 void tp2denc2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
 void tp2ddec2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
+
 void tp2denc4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
 void tp2ddec4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
+
 void tp2denc8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
 void tp2ddec8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 
-
-void tp3denc(      unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize); //3D transpose
+//3D transpose
+void tp3denc(      unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize); 
 void tp3ddec(      unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize);
+
 void tp3denc2(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 void tp3ddec2(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
+
 void tp3denc4(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 void tp3ddec4(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
+
 void tp3denc8(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 void tp3ddec8(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 
-void tp4denc(      unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize); //4D transpose
+//4D transpose
+void tp4denc(      unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize); 
 void tp4ddec(      unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize);
+
 void tp4denc2(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 void tp4ddec2(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
+
 void tp4denc4(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 void tp4ddec4(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
+
 void tp4denc8(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 void tp4ddec8(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 
 // Nibble transpose SIMD (SSE2,AVX2, ARM Neon)
 void tp4enc(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 void tp4dec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+
 void tp4zenc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // zigzag delta integrated
 void tp4zdec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
+
 void tp4xenc(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize); // xor integrated
 void tp4xdec(      unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
-//---------- Low level functions ------------------------------------
+//---------- Low level functions --------------------------------------------------------------------------------------------
 void tpenc2(       unsigned char *in, unsigned n, unsigned char *out);  // scalar
 void tpdec2(       unsigned char *in, unsigned n, unsigned char *out);
 
@@ -83,8 +98,24 @@ void tpzdec8(      unsigned char *in, unsigned n, unsigned char *out);
 
 void tpzenc16(     unsigned char *in, unsigned n, unsigned char *out);
 void tpzdec16(     unsigned char *in, unsigned n, unsigned char *out);
+
+void tpxenc2(      unsigned char *in, unsigned n, unsigned char *out);  // scalar xor
+void tpxdec2(      unsigned char *in, unsigned n, unsigned char *out);
+
+void tpxenc3(      unsigned char *in, unsigned n, unsigned char *out);
+void tpxdec3(      unsigned char *in, unsigned n, unsigned char *out);
+
+void tpxenc4(      unsigned char *in, unsigned n, unsigned char *out);
+void tpxdec4(      unsigned char *in, unsigned n, unsigned char *out);
+
+void tpxenc8(      unsigned char *in, unsigned n, unsigned char *out);
+void tpxdec8(      unsigned char *in, unsigned n, unsigned char *out);
+
+void tpxenc16(     unsigned char *in, unsigned n, unsigned char *out);
+void tpxdec16(     unsigned char *in, unsigned n, unsigned char *out);
+
 //-- byte transpose - sse ---------
-void tpenc128v2(   unsigned char *in, unsigned n, unsigned char *out);   // 16 bits
+void tpenc128v2(   unsigned char *in, unsigned n, unsigned char *out); // 16 bits
 void tpdec128v2(   unsigned char *in, unsigned n, unsigned char *out);
 
 void tpzenc128v2(  unsigned char *in, unsigned n, unsigned char *out);
