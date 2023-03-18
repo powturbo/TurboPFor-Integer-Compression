@@ -435,7 +435,7 @@ enum { T_0, T_UINT8, T_UINT16, T_UINT24, T_UINT32, T_UINT40, T_UINT48, T_UINT56,
   ctou64(in+n*isize) = u; n++;\
 }
 
-int    mdelta, elog2[8];
+int    mdelta, elog2[8],nsd=3;
 char   *keysep;
 float  errlimf[] = { 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001 };
 double errlima[] = { 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001 };
@@ -501,7 +501,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
 		      int e = t - q - 1;   	//if(e < 0) e = 0; //{ printf("[%s,%d] ", p, e); die(" FATAL"); 			 }
 			  if(e >= 0) {
 		        float ed = errlimf[e], dd = d;
-		        d = _fppad32(d, ed, elog2[e]);    	  //if(fabs(d-dd) > DBL_EPSILON) { printf("[%s,%d:%f ", p, e, d); printf("%f] ", d-dd);}
+		        d = _fprazor32(d, ed, elog2[e]);    	  //if(fabs(d-dd) > DBL_EPSILON) { printf("[%s,%d:%f ", p, e, d); printf("%f] ", d-dd);}
 			  }
 		    }
             uint32_t u;
@@ -515,7 +515,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
 		      int e = t - q - 1;   				
 			  if(e >= 0) {
 		        double ed = errlima[e],dd=d;             //printf("[%f ", d);
-		        d = _fppad64(d, ed, elog2[e]);    	//printf("%f] ", d-dd);
+		        d = _fprazor64(d, ed, elog2[e]);    	//printf("%f] ", d-dd);
 			  }
 		    }
             uint64_t u;
@@ -606,7 +606,7 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
 }
 
 //---------------------------------------- IcApp: Benchmark --------------------------------------------------------------------------
-
+#include  "ext/gb.c"
 //----------- external libraries --------------
   #ifdef _STREAMVBYTE
 #include "streamvbyte/include/streamvbyte.h"
@@ -1035,11 +1035,11 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",	
     "%3d:blosc            shuffle+%s,%d       ",   	
     "%3d:blosc            shuffle delta+%s,%d ",   	
-    "%3d:blosc            shuffle trunc_prec  ",   	
-
-    "%3d:fpadd            speed test          ", //150
-    "%3d:libdroundfast    speed test          ",
-    "%3d:bitgrooming      speed test          ",
+    "%3d:fprazor          Turbo razor         ", 
+	
+    "%3d:gb               granular bitgroom   ",  //150
+    "%3d:bitgrooming      bit grooming        ",
+    "%3d:libdroundfast    float fast round    ",
     "%3d:tpzenc           transp+zzag integrat",   	
     "%3d:tpz0enc          transpose+zigzag    ",   	
     "%3d:tpxenc           tranp+xor integrated",   	
@@ -1080,7 +1080,7 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
                      eamin = DBL_MAX, eamax = DBL_MIN, easum = 0, easumsqr = 0, //absolute error                    : abs(input-output)
                      ermin = DBL_MAX, ermax = DBL_MIN, ersum = 0, ersumsqr = 0, //relative error                    : abs(input-output)/abs(input)
                      osum  = 0;                                                 //transformed lossy data (output)   : sum
-  unsigned long long xtb = 0, xlb = 0, zlb = 0, tb = 0, lb = 0, elb=0, mtb=0;
+  long long          xtb = 0, xlb = 0, zlb = 0, tb = 0, lb = 0, elb=0, mtb=0, itb = 0;
   size_t             idn = 0;
   unsigned char      *ip, *op;
   unsigned           esize = s<0?-s:s,t=0, dup=0,zero=0;
@@ -1108,8 +1108,8 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
   #define EXPO64(u) ((u>>52 & 0x7ff) - 0x3fe)
   #define MANT32(u) (u & 0x807fffffu)
   #define MANT64(u) (u & 0x800fffffffffffffull)
-  #define U(s) T3(uint, s, _t) u = T2(ctou,s)(op);\
-                                        tb +=      u?T2(ctz,s)(u):s;       lb += u?T2(clz,s)(u):s;          AC(t<=s,"Fatal t=%d ", t); \
+  #define U(s) T3(uint, s, _t) u = T2(ctou,s)(op), v = T2(ctou,s)(ip);\
+    itb +=  v?T2(ctz,s)(v):s;           tb +=      u?T2(ctz,s)(u):s;       lb += u?T2(clz,s)(u):s;          AC(t<=s,"Fatal t=%d ", t); \
     xstart ^= u;                       xtb += xstart?T2(ctz,s)(xstart):s; xlb += xstart?T2(clz,s)(xstart):0; xstart = u;\
     zstart  = T2(zigzagenc,s)(u - zstart);                       zlb += zstart?T2(clz,s)(zstart):s; zstart = u
 
@@ -1144,16 +1144,18 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
   else if(s == -8) fb = (double)elb*100/((double)n*11);
 
   double mse = easumsqr/n, irange = imax - imin;
-  printf("\n");
+  if(verbose > 1) printf("\n");
   //printf("Leading/Trailing bits [%.2f%%,%.2f%%=%.2f%%]. XOR[%.2f%%,%.2f%%=%.2f%%] Zigzag[%.2f%%]\n", BR(lb), BR(tb), BR(lb+tb), BR(xlb), BR(xtb), BR(xlb+xtb), BR(zlb)/*BR(elb), BR(mtb), BR(elb+mtb)*/ );
-  printf("Range: [min=%g / max=%g] = %g. zeros=%.2f%%, Duplicate=%.2f%%\n", imin, imax, irange, (double)zero*100.0/(double)(n/esize), (double)dup*100.0/(double)(n/esize));
+  if(verbose > 1) printf("Range: [min=%g / max=%g] = %g. zeros=%.2f%%, Duplicate=%.2f%%\n", imin, imax, irange, (double)zero*100.0/(double)(n/esize), (double)dup*100.0/(double)(n/esize));
   //printf("Min error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", eamin, eamin/irange, eamax/irange, ermax);
   //printf("Avg error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", easum/idn, (easum/idn)/irange, ersum/idn);
-  printf("Max error: Absolute = %g, Relative = %g, pointwise relative = %g\n", eamax, eamax/irange, ermax);
-  printf("Peak Signal-to-Noise Ratio: PSNR         = %f\n", 20*log10(irange)-10*log10(mse));
-  printf("Normalized Root Mean Square Error: NRMSE = %g\n", sqrt(mse)/irange);
+  if(verbose > 1) printf("Max error: Absolute = %g, Relative = %g, pointwise relative = %g\n", eamax, eamax/irange, ermax); else printf("e=%g ", ermax);
+  double psnr=20*log10(irange)-10*log10(mse); 
+  if(verbose > 1) printf("Peak Signal-to-Noise Ratio: PSNR         = %f\n", psnr);            else printf("PSNR=%g ", psnr);
+  if(verbose > 1) printf("Normalized Root Mean Square Error: NRMSE = %g\n", sqrt(mse)/irange);else printf("NRMSE=%g ", sqrt(mse)/irange);
   double std1 = sqrt(isumpavg/n), std2 = sqrt(osumpavg/n), ee = iosumpavg/n, acEff = (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n);
-  printf("Pearson Correlation Coefficient          = %f\n",    (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n));
+  if(verbose > 1) printf("Pearson Correlation Coefficient          = %f\n",    (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n));
+  if(verbose == 1) printf("ctz=%.2f%% ", (double)((tb-itb)/8)* 100.0/ (double)(n*esize));
 }
 
 //---------------------------------------------------------------------------------------
@@ -1750,18 +1752,15 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     //case 149: if(zerrlim>DBL_EPSILON) truncate_precision(6, 4, n, in, out);
 	//  codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_TRUNC_PREC, BLOSC_SHUFFLE, BLOSC_DELTA),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
 	  #endif
-	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------
-    case 150: if(verbose) { fppad32(  in, m, out,0.001); fpstat(in, m, out, -4); }
-	                 TMBENCH("", fppad32(  in, m, out,0.001),n); memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("150", fppad32(in, m, out,0.001),n); break;
-	  #ifdef _LIBROUNDFAST
-    case 151: if(verbose) { fround32( in, m, out, 3);    fpstat(in, m, out, -4); } // digirounding algo
-	                 TMBENCH("", fround32( in, m, out, 3),n);    memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("151", fround32(in, m, out,3),n); break;
-	  #endif
+	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------	
+    case 149:            TMBENCH("", fprazor32(  in, m, out,zerrlim),n);                                          l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -4); break;
 	  #ifdef _BITGROOMING	
-    case 152: if(verbose) {          BG_compress_args(BG_FLOAT, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out);  fpstat(in, m, out, -4);  // bigrooming algo
-	                 TMBENCH("",     BG_compress_args(BG_FLOAT, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); memcpy(cpy,in,n); l=n; pr(l,n);
-	                 TMBENCH2("152", BG_compress_args(BG_FLOAT, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); } break;
+    case 150: ptr_unn p; TMBENCH("", memcpy(out,in,n); ccr_gbr(nsd, NC_FLOAT, m, 0, p, out),n);                   l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -4); break;
+    case 151:            TMBENCH("", BG_compress_args(BG_FLOAT, in, NULL, BITGROOM, BG_NSD, nsd, nsd, m, out),n); l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -4); break;
  	  #endif
+	  #ifdef _LIBROUNDFAST // digirounding algo
+    case 152:            TMBENCH("", fround32( in, m, out, nsd),n);                                               l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -4); break;
+	  #endif
 	// ----- speed test transpose integrated -----------------------
     case 153: l = n; TMBENCH("", tpzenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec(  out, n,cpy, USIZE),n); break;
     case 154: l = n; TMBENCH("", tpz0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("154", tpz0dec( out, n,cpy, USIZE),n); break;
@@ -1925,18 +1924,15 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -8); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
 	  #endif
-	// ----- speed test -----------------------
-    case 150: if(verbose) { fppad64(  in, m, out,0.001); fpstat(in, m, out, -8); }
-	                 TMBENCH("", fppad64(  in, m, out,0.001),n); memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("141", fppad64(in, m, out,0.001),n);  break;
-	  #ifdef _LIBROUNDFAST
-    case 151: if(verbose) { fround64( in, m, out, 3);    fpstat(in, m, out, -8); } // digirounding algo
-	                 TMBENCH("", fround64( in, m, out, 3),n);    memcpy(cpy,in,n); l=n; pr(l,n); TMBENCH2("142", fround64(in, m, out,3),n); break;
+	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------	
+    case 149:            TMBENCH("", fprazor64(  in, m, out,zerrlim),n);                                           l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -8); break;
+	  #ifdef _BITGROOMING	
+    case 150: ptr_unn p; TMBENCH("", memcpy(out,in,n); ccr_gbr(nsd, NC_DOUBLE, m, 0, p, out),n);                   l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -8); break;
+    case 151:            TMBENCH("", BG_compress_args(BG_DOUBLE, in, NULL, BITGROOM, BG_NSD, nsd, nsd, m, out),n); l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -8); break;
+ 	  #endif 
+	  #ifdef _LIBROUNDFAST // digirounding algo
+    case 152:            TMBENCH("", fround64( in, m, out, nsd),n);                                                l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -8); break;
 	  #endif
-	  #ifdef _BITGROOMING
-    case 152: if(verbose) {          BG_compress_args(BG_DOUBLE, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out);  fpstat(in, m, out, -8);  // bigrooming algo
-	                 TMBENCH("",     BG_compress_args(BG_DOUBLE, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); memcpy(cpy,in,n); l=n; pr(l,n);
-	                 TMBENCH2("143", BG_compress_args(BG_DOUBLE, in, NULL, BITGROOM, BG_NSD, 3/*nsd*/, 3/*dsd*/, m, out),n); } break;
- 	  #endif
     case 153: l = n; TMBENCH("", tpzenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("153", tpzdec(  out, n,cpy, USIZE),n); break;
     case 154: l = n; TMBENCH("", tpz0enc( in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("154", tpz0dec( out, n,cpy, USIZE),n); break;
     case 155: l = n; TMBENCH("", tpxenc(  in, n, out, USIZE),n);             pr(l,n); TMBENCH2("155", tpxdec(  out, n,cpy, USIZE),n); break;
@@ -2012,9 +2008,15 @@ void usage(char *pgm) {
   exit(0);
 }
 
-int main(int argc, char* argv[]) {
+testrazor() {   
+  double d = M_PI; uint64_t u = ctou64(&d); printf("pi=%e - ctz=%u\n", M_PI, ctz64(u)); 
+  for(int i = 0; i < 8; i++) { double e = errlima[i], d; int lg2e = -log(e)/log(2.0);  d = _fprazor64(M_PI, e, lg2e); uint64_t u = ctou64(&d); printf("%e:%e - %.8f ctz=%u\n", e, d, M_PI - d, u?ctz64(u):64 ); } 
+  exit(0);
+}
+
+int main(int argc, char* argv[]) { //testrazor(); 
   unsigned      b = 1 << 30, lz=0, fno,m=1000000, bsize = (unsigned)-1;
-  int           isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,nsd=-1,dim0=0;
+  int           isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,dim0=0;
   uint64_t      be_mindelta=0;
   unsigned char *in = NULL, *out, *cpy, *scmd = NULL, *icmd = NULL;
   double        mdelta=-10, errlim=-1.0;
@@ -2174,19 +2176,19 @@ int main(int argc, char* argv[]) {
     //if(fno == optind)
     tm_init(tm_Rep, tm_verbose /* 2 print id */);
 
-    if(errlim > 0.0 || nsd >= 0) {  // convert input for lossy floating point compression
+    if(errlim > 0.0 /*|| nsd >= 0*/) {  // convert input for lossy floating point compression
       if(errlim < 0.0000009999) errlim = 0.000001;
       if(isize == -4) {
-                             fppad32(in,n/4,out,errlim); if(verbose>0) fpstat(in, n/4, out, -4); //if(nsd >= 0) fprnd32(in,n/4,out,nsd); else //
-                             fppad32(in,n/4, in,errlim);                                         /*if(nsd >= 0) fprnd32(in,n/4,in, nsd); else */
+                             fprazor32(in,n/4,out,errlim); if(verbose>0) fpstat(in, n/4, out, -4); //if(nsd >= 0) fprnd32(in,n/4,out,nsd); else //
+                             fprazor32(in,n/4, in,errlim);                                         /*if(nsd >= 0) fprnd32(in,n/4,in, nsd); else */
       } else if(isize == -8) {
-          fppad64(in,n/8,out,errlim); if(verbose>0) fpstat(in, n/8, out, -8);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
-          fppad64(in,n/8, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
+          fprazor64(in,n/8,out,errlim); if(verbose>0) fpstat(in, n/8, out, -8);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
+          fprazor64(in,n/8, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
       }
         #ifdef USE_FLOAT16
       else if(isize == -2) {
-          fppad16(in,n/2,out,errlim); if(verbose>0) fpstat(in, n/2, out, -2);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
-          fppad16(in,n/2, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
+          fprazor16(in,n/2,out,errlim); if(verbose>0) fpstat(in, n/2, out, -2);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
+          fprazor16(in,n/2, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
       }
         #endif
     }
