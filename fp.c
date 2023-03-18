@@ -157,7 +157,7 @@ size_t T2(p4nzzdec128v,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t s
 
 /*---------------- TurboFloat XOR: last value Predictor with TurboPFor ---------------------------------------------------------
  Compress significantly (115% - 160%) better and faster than facebook's Gorilla algorithm for values
- BEST results are obtained with LOSSY COMPRESSION (using fppad32/fppad64 in bitutil.c)
+ BEST results are obtained with LOSSY COMPRESSION (using fprazor32/fprazor64 in bitutil.c)
  Algorithm:
  1: XOR value with previous value. We have now leading (for common sign/exponent bits) + mantissa trailing zero bits
  2: Eliminate the common block leading zeros of sign/exponent by shifting all values in the block to left
