@@ -23,6 +23,7 @@ CXX ?= g++
 #CC=powerpc64le-linux-gnu-gcc
 CL = $(CC)
 #DEBUG=-DDEBUG -g
+DEBUG=-DNDEBUG
 JAVA_HOME ?= /usr/lib/jvm/java-8-openjdk-amd64
 PREFIX ?= /usr/local
 DIRBIN ?= $(PREFIX)/bin
