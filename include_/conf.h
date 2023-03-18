@@ -252,8 +252,11 @@ struct _PACKED doubleu   { double             d; };
 #endif
 
 //---------------------misc ---------------------------------------------------
-#define BZMASK32(_b_)                    (~(~0u   << (_b_)))
 #define BZMASK64(_b_)                    (~(~0ull << (_b_)))
+#define BZMASK32(_b_)                    (~(~0u   << (_b_)))
+#define BZMASK16(_b_)                    BZMASK32(_b_)
+#define BZMASK8( _b_)                    BZMASK32(_b_)
+
 #define BZHI64(_u_, _b_)                 ((_u_) & BZMASK64(_b_))  // b Constant
 #define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_)) 
 #define BZHI16(_u_, _b_)                 BZHI32(_u_, _b_)
