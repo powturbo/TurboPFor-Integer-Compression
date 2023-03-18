@@ -486,14 +486,14 @@ void bitzdec(unsigned char *in, unsigned n,                     unsigned esize);
 
 //------- Lossy floating point transform: pad the trailing mantissa bits with zeros according to the error e (ex. e=0.00001)
   #ifdef USE_FLOAT16
-_Float16 _fppad16(_Float16 d, float e, int lg2e);  
-void fppad16(_Float16 *in, unsigned n, _Float16  *out, float  e);
+_Float16 _fprazor16(_Float16 d, float e, int lg2e);  
+void fprazor16(_Float16 *in, unsigned n, _Float16  *out, float  e);
   #endif
 
-float  _fppad32(float  d, float  e, int lg2e);
-double _fppad64(double d, double e, int lg2e);
-void   fppad32( float  *in, unsigned n, float  *out, float  e);
-void   fppad64(double  *in, unsigned n, double *out, double e);
+float  _fprazor32(float  d, float  e, int lg2e);
+double _fprazor64(double d, double e, int lg2e);
+void   fprazor32( float  *in, unsigned n, float  *out, float  e);
+void   fprazor64(double  *in, unsigned n, double *out, double e);
 
 #ifdef __cplusplus
 }
