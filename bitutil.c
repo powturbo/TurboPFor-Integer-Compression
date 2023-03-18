@@ -880,94 +880,82 @@ void bitzdec(unsigned char *in, unsigned n, unsigned esize) {
 // https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point
 #define ctof16(_cp_) (*(_Float16 *)(_cp_))
 
-_Float16 _fppad16(_Float16 d, float e, int lg2e) {
-  uint16_t u, du = ctou16(&d);
-  int      b = (du>>10 & 0x1f)-15; // mantissa=10 bits, exponent=5bits, bias=15
-  
+_Float16 _fprazor16(_Float16 d, float e, int lg2e) {
+  uint16_t du = ctou16(&d), sign, u;
+  int      b  = (du>>10 & 0x1f) - 15; // mantissa=10 bits, exponent=5bits, bias=15
+  _Float16 ed;
   if ((b = 12 - b - lg2e) <= 0) 
 	return d;
-  b = (b > 10) ? 10 : b;
-  do 
-    u = du & (~((1u<<(--b))-1)); 
-  while (fabs((ctof16(&u) - d)/d) > e);
+  b    = b > 10?10:b;
+  sign = du & (1<<15);
+  du  &= 0x7fff;
+  for(d = ctof16(&du), ed = e * d;;) {
+    u = du & (~((1u<<(--b))-1)); if(d - ctof16(&u) <= ed) break;
+    u = du & (~((1u<<(--b))-1)); if(d - ctof16(&u) <= ed) break;
+  }
+  u |= sign;
   return ctof16(&u);
 }
 
-void fppad16(_Float16 *in, unsigned n, _Float16 *out, float e) { 
+void fprazor16(_Float16 *in, unsigned n, _Float16 *out, float e) { 
   int lg2e = -log(e)/log(2.0); _Float16 *ip; 
   
   for (ip = in; ip < in+n; ip++,out++)
-    *out = _fppad16(*ip, e, lg2e); 
+    *out = _fprazor16(*ip, e, lg2e); 
 }
   #endif
 
-//do u = du & (~((1u<<(--b))-1)); while(fabsf((ctof32(&u) - d)/d) > e);
-#define OP(t,s) sign = du & ((t)1<<(s-1)); du &= ~((t)1<<(s-1));  d = T2(ctof,s)(&du);\
-  do u = du & (~(((t)1<<(--b))-1)); while(d - T2(ctof,s)(&u) > e*d);\
-  u |= sign;\
-  return T2(ctof,s)(&u);
-
-float _fppad32(float d, float e, int lg2e) {
-  uint32_t u, du = ctou32(&d), sign;
-  int      b = (du>>23 & 0xff)-0x7e;
-  
+float _fprazor32(float d, float e, int lg2e) {
+  uint32_t du = ctou32(&d), sign, u;
+  int      b  = (du>>23 & 0xff) - 0x7e;
+  float    ed;
+ 
   if((b = 25 - b - lg2e) <= 0)
-    return d;
+    return d;                                         AS(!isnan(d), "_fprazor32: isnan");
   b    = b > 23?23:b;
   sign = du & (1<<31);
   du  &= 0x7fffffffu;
-  d    = ctof32(&du);
   
-  do 
-    u = du & (~((1u<<(--b))-1)); 
-  while(d - ctof32(&u) > e*d);
+  for(d = ctof32(&du), ed = e * d;;) {
+    u = du & (~((1u<<(--b))-1)); if(d - ctof32(&u) <= ed) break;
+    u = du & (~((1u<<(--b))-1)); if(d - ctof32(&u) <= ed) break;
+    u = du & (~((1u<<(--b))-1)); if(d - ctof32(&u) <= ed) break;
+  }
   u |= sign;
-  
   return ctof32(&u);
 }
 
-void fppad32(float *in, unsigned n, float *out, float e) { 
+void fprazor32(float *in, unsigned n, float *out, float e) { 
   int   lg2e = -log(e)/log(2.0); 
   float *ip; 
   for(ip = in; ip < in+n; ip++,out++) 
-	*out = _fppad32(*ip, e, lg2e); 
+	*out = _fprazor32(*ip, e, lg2e); 
 }
 
-double _fppad64(double d, double e, int lg2e) { 
-  if(isnan(d)) return d;
-  union    r { uint64_t u; double d; } u, du; 
-           du.d = d; //if((du.u>>52)==0xfff)
-  uint64_t sign;
-  int      b = (du.u>>52 & 0x7ff)-0x3fe;
+double _fprazor64(double d, double e, int lg2e) { //if(isnan(d)) return d;
+  uint64_t du = ctou64(&d), sign, u;
+  int      b  = (du>>52 & 0x7ff) - 0x3fe;
+  double   ed;
   
   if((b = 54 - b - lg2e) <= 0)
     return d;
-  b = b > 52?52:b;
-  sign  = du.u & (1ull<<63); 
-  du.u &= 0x7fffffffffffffffull;
-  int _b = b;
-  for(;;) { 
-    if((_b -= 8) <= 0) 
-	  break; 
-	u.u = du.u & (~((1ull<<_b)-1)); 
-	if(d - u.d <= e*d) 
-	  break; 
-	b = _b; 
+  b     = b > 52?52:b;
+  sign  = du & (1ull<<63); 
+  du   &= 0x7fffffffffffffffull;
+
+  for(d = ctof64(&du), ed = e * d;;) {
+    u = du & (~((1ull<<(--b))-1)); if(d - ctof64(&u) <= ed) break;
+    u = du & (~((1ull<<(--b))-1)); if(d - ctof64(&u) <= ed) break;
   }
-  
-  do 
-    u.u = du.u & (~((1ull<<(--b))-1)); 
-  while(d - u.d > e*d);
-  u.u |= sign;
-  
+  u |= sign; 
   return ctof64(&u);
 }
 
-void fppad64(double *in, unsigned n, double *out, double e) { 
+void fprazor64(double *in, unsigned n, double *out, double e) { 
   int    lg2e = -log(e)/log(2.0); 
   double *ip; 
   
   for(ip = in; ip < in+n; ip++,out++) 
-	*out = _fppad64(*ip, e, lg2e); 
+	*out = _fprazor64(*ip, e, lg2e); 
 }
 #endif
