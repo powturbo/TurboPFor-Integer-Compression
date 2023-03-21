@@ -276,7 +276,7 @@ size_t p4nsdec64(unsigned char *in, size_t n, uint64_t *out) { uint64_t  *op,sta
     #ifdef _P4BITS
 unsigned T2(_P4BITS, USIZE)(uint_t *__restrict in, unsigned n, unsigned *pbx) {
       #if HYBRID > 0 && USIZE >= 16
-  unsigned _vb[USIZE*2+64] = {0}, *vb=&_vb[USIZE];
+  unsigned _vb[USIZE*2+64+16] = {0}, *vb=&_vb[USIZE+16];
       #endif
   unsigned cnt[USIZE+8] = {0}, x, bx, bmp8=(n+7)/8;
   uint_t *ip, u=0, a = in[0];
