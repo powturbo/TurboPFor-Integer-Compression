@@ -105,12 +105,6 @@ bitpack_avx2.o: bitpack.c
 bitunpack_avx2.o: bitunpack.c
 	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitunpack.c -o bitunpack_avx2.o
 
-#transpose.o: transpose.c
-#	$(CC) -O3 -w $(OPT) -c transpose.c -o transpose.o
-
-#transpose_sse.o: transpose.c
-#	$(CC) -O3 -w $(_SSE) $(OPT) -c transpose.c -o transpose_sse.o
-
 transpose_avx2.o: transpose.c
 	$(CC) -O3 -w $(_AVX2) $(OPT) -c transpose.c -o transpose_avx2.o
 
