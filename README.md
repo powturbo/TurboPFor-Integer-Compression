@@ -11,7 +11,6 @@ TurboPFor: Fastest Integer Compression
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
   * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Delta of Delta/Zigzag for sorted/unsorted arrays
-  * **16 bits** + **64 bits** SIMD integrated functions
 * **For/PFor/PForDelta**
   * **Novel TurboPFor** (PFor/PForDelta) scheme w./ **direct access** + **SIMD/AVX2**. **+RLE**
   * Outstanding compression/speed. More efficient than **ANY** other fast "integer compression" scheme.
@@ -44,7 +43,7 @@ TurboPFor: Fastest Integer Compression
   * :new:(2023.03)**TurboFloat LzXor** novel floating point lempel-ziv compression
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
-  * can compress times series to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
+  * can compress timestamps to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
   * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
@@ -60,7 +59,7 @@ TurboPFor: Fastest Integer Compression
 - Download [IcApp](https://github.com/powturbo/TurboPFor-Integer-Compression/releases/tag/2023.03) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
   ( type: icapp ZIPF )
-- [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues/47)
+- [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues)
 - [Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz](https://github.com/powturbo/TurboPFor/issues/49)
 
 ##### - Synthetic data:
