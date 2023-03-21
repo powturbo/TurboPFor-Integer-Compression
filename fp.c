@@ -126,16 +126,19 @@ static unsigned char dcode[] = {0, 6,10, 14, 18, 20, 22, 24};
 //-------- TurboPFor Zigzag of zigzag for unsorted/sorted integer/floating point array ---------------------------------------
 size_t T2(p4nzzenc128v,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t        _p[VSIZE+32], *ip, *p, pd = 0;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
 
   #define FE(_i_,_usize_) { T3(uint, USIZE, _t) u = ip[_i_]; start = u-start; p[_i_] = ZZAGENC(start,pd,_usize_); pd = start; start = u; }
   for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
     for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
-    op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                    PREFETCH(ip+512,0);
+    op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                       PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
   if(n = (in+n)-ip) {
     for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
-    op = T2(P4ENC,USIZE)(_p, n, op);
+    op = T2(P4ENC,USIZE)(_p, n, op);                                            if(op >= out_) goto e;
+  }
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
   }
   return op - out;
   #undef FE
@@ -144,6 +147,7 @@ size_t T2(p4nzzenc128v,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t s
 size_t T2(p4nzzdec128v,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
   uint_t        _p[VSIZE+32],*p, *op, pd=0;
   unsigned char *ip = in;
+  if(*ip == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
 
   #define FD(_i_,_usize_) { T3(uint, USIZE, _t) u = ZZAGDEC(p[_i_],start+pd,_usize_); op[_i_] = u; pd = u - start; start = u; }
   for(op = out; op != out+(n&~(VSIZE-1)); ) {                           PREFETCH(ip+512,0);
@@ -165,7 +169,8 @@ size_t T2(p4nzzdec128v,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t s
 */
 size_t T2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t         _p[VSIZE+32], *ip, *p;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
+
     #if defined(__AVX2__) && USIZE >= 32
   #define _mm256_set1_epi64(a) _mm256_set1_epi64x(a)
   __m256i sv = T2(_mm256_set1_epi, USIZE)(start);
@@ -226,14 +231,17 @@ size_t T2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
       #else
     for(p = _p; p != &_p[VSIZE]; p+=4) { TR(0,USIZE); TR(1,USIZE); TR(2,USIZE); TR(3,USIZE); }
       #endif
-    op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                    PREFETCH(ip+512,0);
+    op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                    PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
   if(n = (in+n)-ip) { uint_t b = 0;
     for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
     b = T2(clz,USIZE)(b);
     *op++ = b;
     for(p = _p; p != &_p[n]; p++) TR(0,USIZE);
-    op = T2(P4ENC,USIZE)(_p, n, op);
+    op = T2(P4ENC,USIZE)(_p, n, op);                                                         if(op >= out_) goto e;
+  }
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
   }
   return op - out;
   #undef FE
@@ -242,6 +250,8 @@ size_t T2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
 size_t T2(fpxdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
   uint_t        *op, _p[VSIZE+32],*p;
   unsigned char *ip = in;
+  if(*ip == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
+
     #if defined(__AVX2__) && USIZE >= 32
   #define _mm256_set1_epi64(a) _mm256_set1_epi64x(a)
   __m256i sv = T2(_mm256_set1_epi, USIZE)(start);
@@ -302,7 +312,7 @@ size_t T2(fpxdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
 
 size_t T2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t        htab[1<<HBITS] = {0}, _p[VSIZE+32], *ip, h = 0, *p;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
 
     #if defined(__AVX2__) && USIZE >= 32
   #define _mm256_set1_epi64(a) _mm256_set1_epi64x(a)
@@ -342,14 +352,17 @@ size_t T2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start
     #define TR(_i_,_usize_) p[_i_] = T2(rbit,_usize_)(p[_i_]<<b)
     for(p = _p; p != &_p[VSIZE]; p+=4) { TR(0,USIZE); TR(1,USIZE); TR(2,USIZE); TR(3,USIZE); }
       #endif
-    op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                    PREFETCH(ip+512,0);
+    op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                       PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
   if(n = (in+n)-ip) { uint_t b = 0;
     for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
     b = T2(clz,USIZE)(b);
     *op++ = b;
     for(p = _p; p != &_p[n]; p++) TR(0,USIZE);
-    op = T2(P4ENC,USIZE)(_p, n, op);
+    op = T2(P4ENC,USIZE)(_p, n, op);                                            if(op >= out_) goto e;
+  }
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
   }
   return op - out;
   #undef FE
@@ -358,6 +371,7 @@ size_t T2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start
 size_t T2(fpfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
   uint_t *op, htab[1<<HBITS] = {0}, h = 0, _p[VSIZE+32],*p;
   unsigned char *ip = in;
+  if(*ip == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
 
   #define FD(_i_,_usize_) { T3(uint, _usize_, _t) u = p[_i_]; u = T2(rbit,_usize_)(u)>>b;\
     u = XORDEC(u, htab[h], _usize_); op[_i_] = u; htab[h] = u; h = T2(HASH,_usize_)(h,u);\
@@ -377,7 +391,7 @@ size_t T2(fpfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start
 //-------- TurboFloat DFCM: Differential Finite Context Method Predictor ----------------------------------------------------------
 size_t T2(fpdfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t *ip, _p[VSIZE+32], h = 0, *p, htab[1<<HBITS] = {0};
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
 
   #define FE(_i_,_usize_) { T3(uint, _usize_, _t) u = ip[_i_]; p[_i_] = XORENC(u, (htab[h]+start),_usize_); b |= p[_i_]; \
     htab[h] = start = u - start; h = T2(HASH,_usize_)(h,start); start = u;\
@@ -387,13 +401,16 @@ size_t T2(fpdfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t star
     #define TR(_i_,_usize_) p[_i_] = T2(rbit,_usize_)(p[_i_]<<b)
     b = T2(clz,USIZE)(b);
     for(p = _p; p != &_p[VSIZE]; p+=4) { TR(0,USIZE); TR(1,USIZE); TR(2,USIZE); TR(3,USIZE); }
-    *op++ = b; op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                     PREFETCH(ip+512,0);
+    *op++ = b; op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                            PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
   if(n = (in+n)-ip) { uint_t b;
     for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
     b = T2(clz,USIZE)(b);
     for(p = _p; p != &_p[n]; p++) TR(0,USIZE);
-    *op++ = b; op = T2(P4ENC,USIZE)(_p, n, op);
+    *op++ = b; op = T2(P4ENC,USIZE)(_p, n, op);                                 if(op >= out_) goto e;
+  }
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
   }
   return op - out;
   #undef FE
@@ -402,6 +419,7 @@ size_t T2(fpdfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t star
 size_t T2(fpdfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
   uint_t        _p[VSIZE+32], *op, h = 0, *p, htab[1<<HBITS] = {0};
   unsigned char *ip = in;
+  if(*ip == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
 
   #define FD(_i_,_usize_) { T3(uint, _usize_, _t) u = T2(rbit,_usize_)(p[_i_])>>b; u = XORDEC(u, (htab[h]+start),_usize_); \
     op[_i_] = u; htab[h] = start = u-start; h = T2(HASH,_usize_)(h,start); start = u;\
@@ -423,7 +441,7 @@ size_t T2(fpdfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t star
 //-------- TurboFloat Double delta DFCM: Differential Finite Context Method Predictor ----------------------------------------------------------
 size_t T2(fp2dfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t *ip, _p[VSIZE+32], h = 0, *p, htab[1<<HBITS] = {0},start0=start; start=0;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
 
   #define FE(_i_,_usize_) { T3(uint, _usize_, _t) u = ip[_i_]; p[_i_] = XORENC(u, (htab[h]+start),_usize_); b |= p[_i_]; \
     htab[h] = start = u - start; h = T2(HASH,_usize_)(h,start); start = start0; start0 = u;\
@@ -436,7 +454,7 @@ size_t T2(fp2dfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t sta
     b = T2(clz,USIZE)(b);
 
     for(p = _p; p != &_p[VSIZE]; p+=4) { TR(0,USIZE); TR(1,USIZE); TR(2,USIZE); TR(3,USIZE); }
-    *op++ = b; op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                     PREFETCH(ip+512,0);
+    *op++ = b; op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                            PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
   if(n = (in+n)-ip) {
     uint_t b = 0;
@@ -444,7 +462,10 @@ size_t T2(fp2dfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t sta
     b = T2(clz,USIZE)(b);
 
     for(p = _p; p != &_p[n]; p++) TR(0,USIZE);
-    *op++ = b; op = T2(P4ENC,USIZE)(_p, n, op);
+    *op++ = b; op = T2(P4ENC,USIZE)(_p, n, op);                                 if(op >= out_) goto e;
+  }
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
   }
   return op - out;
   #undef FE
@@ -453,7 +474,7 @@ size_t T2(fp2dfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t sta
 size_t T2(fp2dfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) {
   uint_t      _p[VSIZE+32], *op, h = 0, *p, htab[1<<HBITS] = {0},start0=start; start=0; ;
   unsigned char *ip = in;
-
+  if(*ip == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
   #define FD(_i_,_usize_) { T3(uint, _usize_, _t) u = T2(rbit,_usize_)(p[_i_])>>b; u = XORDEC(u, (htab[h]+start),_usize_);\
     op[_i_] = u; htab[h] = start = u-start; h = T2(HASH,_usize_)(h,start); start = start0; start0 = u;\
   }
@@ -489,10 +510,10 @@ size_t T2(fp2dfcmdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t sta
 size_t T2(fpgenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t        *ip = in;
   unsigned       ol = 0, ot = 0;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
   bitdef(bw,br);
   if(start) { ol = T2(clz,USIZE)(start); ot = T2(ctz,USIZE)(start); }
-
+  *op++ = 0;
   #define FE(_i_,_usize_) { T3(uint, _usize_, _t) z = XORENC(ip[_i_], start,_usize_); start = ip[_i_];\
     if(unlikely(!z))                         bitput( bw,br, 2, 2); /*01*/\
     else {\
@@ -501,11 +522,14 @@ size_t T2(fpgenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
       if(l >= ol && t >= ot && os < 6+5+s) { bitput( bw,br, 1, 1); /*1*/                                                             T2(bitput,_usize_)(bw,br, os, z>>ot,op); }\
       else {                                                       /*00*/ /*bitput( bw,br, 2, 0); bitput(bw,br, 3, lz2c(l));*/\
 	                                         bitput( bw,br, 2+BSIZE(_usize_), l<<2); bitput2(bw,br, N_0, N_1, t); bitenorm(bw,br,op);T2(bitput,_usize_)(bw,br,  s, z>>t,op); ol = l; ot = t; }\
-    } bitenorm(bw,br,op);\
+    } bitenorm(bw,br,op); if(op >= out_) goto e;\
   }
   for(; ip != in + (n&~(4-1)); ip+=4) { PREFETCH(ip+512,0); FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
   for(; ip != in +  n        ; ip++) FE(0,USIZE);
   bitflush(bw,br,op);
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
+  }
   return op - out;
   #undef FE
 }
@@ -515,6 +539,7 @@ size_t T2(fpgdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
   int       ol = 0,ot = 0,x;
   unsigned char *ip = in;
   bitdef(bw,br);
+  if(*ip++ == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
   if(start) { ol = T2(clz,USIZE)(start); ot = T2(ctz,USIZE)(start); }
 
   #define FD(_i_,_usize_) { T3(uint, _usize_, _t) z=0; unsigned _x,_y; BITGET32(bw,br,1,_x); \
@@ -536,7 +561,8 @@ size_t T2(fpgdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
 size_t T2(fphenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) {
   uint_t        *ip = in;
   int            ol = USIZE+1,s;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
+  *op++ = 0;
   bitdef(bw,br);
   if(start) ol = T2(clz,USIZE)(start); 
   #define FE(_i_,_usize_) { T3(uint, _usize_, _t) z = XORENC(ip[_i_], start,_usize_); start = ip[_i_];\
@@ -548,11 +574,14 @@ size_t T2(fphenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
 	    bitenorm(bw,br,op); T2(bitput,_usize_)(bw,br, s, z, op);\
 	  } else              { s = _usize_ - l;     ol = l;            bitput(bw,br, 2, 3); bitput(bw,br, CCODEL, l2c(l));\
 	    bitenorm(bw,br,op); T2(bitput,_usize_)(bw,br, s, z, op); }\
-    } bitenorm(bw,br,op);\
+    } bitenorm(bw,br,op); if(op >= out_) goto e;\
   }
   for(; ip != in + (n&~(4-1)); ip+=4) { PREFETCH(ip+512,0); FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
   for(; ip != in +  n        ; ip++) FE(0,USIZE);
   bitflush(bw,br,op);
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
+  }
   return op - out;
   #undef FE
 }
@@ -562,6 +591,7 @@ size_t T2(fphdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
   int       ol = 0,s;
   unsigned char *ip = in; 
   bitdef(bw,br); 
+  if(*ip++ == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
   if(start) ol = T2(clz,USIZE)(start);
 
   #define FD(_i_,_usize_) { T3(uint, _usize_, _t) z=0; unsigned _x; bitdnorm(bw,br,ip); BITGET32(bw,br,2,_x);\
@@ -597,19 +627,22 @@ size_t T2(fphdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
 #define FX_BITS         10
   #endif
 
-#define FX_MSK          ((1<<FX_BITS)-1)
 #define CTZMIN(_usize_) (VA_BITS+BSIZE(_usize_))
-#define HASH(_x_)       (_x_ & FX_MSK)  
+#define HASH(_x_)       (_x_ & ((1<<FX_BITS)-1))  
+
+#define HASH16(_h_,_u_) HASH(_u_)
+#define HASH32(_h_,_u_) HASH(_u_) //(((_h_) ^ (_u_)>>23) & ((1<<FX_BITS)-1))
+#define HASH64(_h_,_u_) HASH(_u_) //(((_h_) ^ (_u_)>>50) & ((1<<FX_BITS)-1))
 
 size_t T2(fpc0enc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) { // simple hash table
   uint_t        *ip = in;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*USIZE/8;
   unsigned      htab[1<<FX_BITS] = {0}, ol = USIZE+1; 
   bitdef(bw,br);    							//if(start) ol = T2(clz,USIZE)(start);
   
-  for(*(uint_t *)op = *ip++, op += sizeof(uint_t); ip != in + n; ip++) {
+  for(*op++ = 0,*(uint_t *)op = *ip++, op += sizeof(uint_t); ip != in + n; ip++) {
 	uint_t   u = *ip, z;
-	unsigned hu = HASH(u), h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz; 
+	unsigned hu = T2(HASH,USIZE)(u,u), h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz; 
 	                           htab[hu] = ip - in;
     if(ofs < (1<<VA_BITS)) {
 	  ctz = T2(ctz,USIZE)(z = u ^ in[h]);
@@ -629,21 +662,24 @@ size_t T2(fpc0enc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start)
         bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, USIZE - l, z, op);         
       }
     } else {                 bitput(bw,br,VA_BITS+2,    ofs<<2|3  ); ol = USIZE+1; }
-	bitenorm(bw,br,op); 										       
+	bitenorm(bw,br,op); if(op >= out_) goto e;									       
   }
   bitflush(bw,br,op);
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
+  }
   return op - out;
 }
 
 size_t T2(fpcenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) { // double entry hashtable
   uint_t        *ip = in;
-  unsigned char *op = out;
+  unsigned char *op = out, out_ = out+n*(USIZE/8);
   unsigned      htab[1<<(FX_BITS+1)] = {0}, ol = USIZE+1; 
   bitdef(bw,br);                                                  //if(start) ol = T2(clz,USIZE)(start);
   
-  for(*(uint_t *)op = *ip++, op += sizeof(uint_t); ip != in + n; ip++) {
+  for(*op++ = 0,*(uint_t *)op = *ip++, op += sizeof(uint_t); ip != in + n; ip++) {
 	uint_t   u = *ip, z;
-	unsigned hu = HASH(u)<<1, h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz = 0;
+	unsigned hu = T2(HASH,USIZE)(u,u)<<1, h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz = 0;
 	htab[hu+1] = h, htab[hu] = ip - in;
     if(ofs < (1<<VA_BITS)) { 
 	  ctz = T2(ctz,USIZE)(z = u ^ in[h]);	  
@@ -669,9 +705,12 @@ size_t T2(fpcenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
         bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, USIZE - l, z, op);         
       }
     } else {                 bitput(bw,br,VA_BITS+2,    ofs<<2|3 ); ol = USIZE+1; }
-	bitenorm(bw,br,op); 										       
+	bitenorm(bw,br,op); if(op >= out_) goto e;										       
   }
   bitflush(bw,br,op);
+  if(op >= out_) {
+    e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
+  }
   return op - out;
 }
 
@@ -680,6 +719,7 @@ size_t T2(fpcdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
   unsigned char *ip = in; 
   unsigned      ol = USIZE+1, t;
   bitdef(bw,br); 									//if(start) ol = T2(clz,USIZE)(start);  
+  if(*ip++ == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
 
   for(v = *op++ = *(uint_t *)ip, ip += sizeof(uint_t); op != out+n; op++) {
     bitdnorm(bw,br,ip);	BITGET32(bw,br, 2, t); 
