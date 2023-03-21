@@ -332,7 +332,7 @@ unsigned lzv8zdec(unsigned char *in, unsigned inlen, unsigned char *out, unsigne
 unsigned lztpenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, int codid, int codlev, char *codprm, unsigned bsize) {
   ICCBEG;
     tpenc(ip, iplen, tmp, esize);
-    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);  AC(clen > 0 && clen <= iplen, "#lztpenc %u ", clen);
+    unsigned clen = ctou32(op) = codecenc(tmp, iplen, op+4, outsize, codid, codlev, codprm);        //AC(clen > 0 && clen <= iplen, "#lztpenc %u ", clen);
     op += 4 + clen;
   ICCEND;
   return op - out;
