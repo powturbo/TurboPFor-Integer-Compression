@@ -2011,6 +2011,7 @@ void usage(char *pgm) {
   exit(0);
 }
 
+#if 0
 testrazor() {  
   static double errlima[] = { 5e-1,5e-2, 5e-3, 5e-4,5e-5,5e-6,5e-7,5e-8,5e-9  };
  
@@ -2026,7 +2027,7 @@ testrazor() {
   } 
   exit(0);
 }
-
+#endif
 int main(int argc, char* argv[]) { //testrazor(); 
   unsigned      b = 1 << 30, lz=0, fno,m=1000000, bsize = (unsigned)-1;
   int           isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,dim0=0;
