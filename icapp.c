@@ -435,9 +435,11 @@ enum { T_0, T_UINT8, T_UINT16, T_UINT24, T_UINT32, T_UINT40, T_UINT48, T_UINT56,
   ctou64(in+n*isize) = u; n++;\
 }
 
-int    mdelta, elog2[8],nsd=3;
+int    mdelta, elog2[16],nsd = 3, autoraz;
 char   *keysep;
-float  errlimf[] = { 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001 };
+
+//float  errlimf[] = { 0,   1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12, 1e-13, 1e-14, 1e-15, 1e-16 };
+float  errlimf[] = { 0,   5e-1, 5e-2, 5e-3, 5e-4, 5e-5, 5e-6, 5e-7, 5e-8, 5e-9, 5e-10, 5e-11, 5e-12, 5e-13, 5e-14, 5e-15, 5e-16 };
 double errlima[] = { 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001 };
 double zerrlim;
 unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, int kid, int skiph, int decs, int divs, int mdelta, double errlim) {
@@ -447,7 +449,7 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
   char          s[LSIZE+1];
   double        pre;
 
-  for(int i = 0; i < 8; i++)
+  for(int i = 0; i < 16; i++)
 	elog2[i] = -log(errlima[i])/log(2.0);
 
   n = 0;
@@ -493,34 +495,35 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
                                        if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; printf("\'%s\'->%lld ", p, u); *q = c; }
         } else {
           while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++; p++; }
+		  char sbuf[65]; strcpy(sbuf, s);
 		  if(isize == -4) {
             float d = strtof(p, &q) - mdelta;
-		    if(errlim >= 0 && errlim < DBL_EPSILON) {
+		    if(autoraz) {
 		      *q = 0; while(q[-1] == '0') *q-- = 0;
 			  char *t = q; for(;q > p; q--) if(*q == '.') break;
-		      int e = t - q - 1;   	//if(e < 0) e = 0; //{ printf("[%s,%d] ", p, e); die(" FATAL"); 			 }
+		      int e = t - q - 1;   	                                      //if(e < 0) e = 0; //{ printf("[%s,%d] ", p, e); die(" FATAL"); 			 }
 			  if(e >= 0) {
-		        float ed = errlimf[e], dd = d;
-		        d = _fprazor32(d, ed, elog2[e]);    	  //if(fabs(d-dd) > DBL_EPSILON) { printf("[%s,%d:%f ", p, e, d); printf("%f] ", d-dd);}
+		        float ed = errlimf[e], dd = d;                             
+		        d = _fprazor32(d, ed, elog2[e]);    	                  //printf("[%s,%d,%g->%g] ", p, e, ed, d);//if(verbose > 3 && fabs(d-dd) > DBL_EPSILON) { printf("[%s,%d:%f ", p, e, d); printf("%f] ", d-dd);}
 			  }
 		    }
             uint32_t u;
             memcpy(&u,&d,sizeof(u));
-            IPUSH(in,n,4,nmax,u);                                          if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; float d; memcpy(&d,&u,sizeof(d)); printf("\'%s\'->%f  ", p, d+mdelta); *q = c; }
+            IPUSH(in,n,4,nmax,u);                                          if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; float d; memcpy(&d,&u,sizeof(d)); printf("\'%s\'->%f  ", sbuf, d+mdelta); *q = c; }
 		  } else {
             double d = strtod(p, &q) - mdelta;
-		    if(errlim >= 0 && errlim < DBL_EPSILON) {
+		    if(autoraz) {
 		      *q = 0; while(q[-1] == '0') *q-- = 0;
 			  char *t = q; for(;q > p; q--) if(*q == '.') break;
 		      int e = t - q - 1;   				
 			  if(e >= 0) {
 		        double ed = errlima[e],dd=d;             //printf("[%f ", d);
-		        d = _fprazor64(d, ed, elog2[e]);    	//printf("%f] ", d-dd);
+		        d = _fprazor64(d, ed, elog2[e]);    	 //if(verbose > 3 && fabs(d-dd) > DBL_EPSILON) { printf("[%s,%d:%f ", p, e, d); printf("%f] ", d-dd);}
 			  }
 		    }
             uint64_t u;
             memcpy(&u,&d,sizeof(u));
-            IPUSH(in,n,-isize,nmax,u);                                          if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; double d; memcpy(&d,&u,sizeof(d)); printf("\'%s\'->%f  ", p, d+mdelta); *q = c; }
+            IPUSH(in,n,-isize,nmax,u);                                          if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; double d; memcpy(&d,&u,sizeof(d)); printf("\'%s\'->%f  ", sbuf, d+mdelta); *q = c; }
 		  }
 		}
       }
@@ -1151,11 +1154,11 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
   //printf("Avg error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", easum/idn, (easum/idn)/irange, ersum/idn);
   if(verbose > 1) printf("Max error: Absolute = %g, Relative = %g, pointwise relative = %g\n", eamax, eamax/irange, ermax); else printf("e=%g ", ermax);
   double psnr=20*log10(irange)-10*log10(mse); 
-  if(verbose > 1) printf("Peak Signal-to-Noise Ratio: PSNR         = %f\n", psnr);            else printf("PSNR=%g ", psnr);
+  if(verbose > 1) printf("Peak Signal-to-Noise Ratio: PSNR         = %.1f\n", psnr);            else printf("PSNR=%.0f ", psnr);
   if(verbose > 1) printf("Normalized Root Mean Square Error: NRMSE = %g\n", sqrt(mse)/irange);else printf("NRMSE=%g ", sqrt(mse)/irange);
   double std1 = sqrt(isumpavg/n), std2 = sqrt(osumpavg/n), ee = iosumpavg/n, acEff = (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n);
   if(verbose > 1) printf("Pearson Correlation Coefficient          = %f\n",    (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n));
-  if(verbose == 1) printf("ctz=%.2f%% ", (double)((tb-itb)/8)* 100.0/ (double)(n*esize));
+  if(verbose == 1) printf("ctz=%.1f%% ", (double)((tb-itb)/8)* 100.0/ (double)(n*esize));
 }
 
 //---------------------------------------------------------------------------------------
@@ -2008,9 +2011,19 @@ void usage(char *pgm) {
   exit(0);
 }
 
-testrazor() {   
-  double d = M_PI; uint64_t u = ctou64(&d); printf("pi=%e - ctz=%u\n", M_PI, ctz64(u)); 
-  for(int i = 0; i < 8; i++) { double e = errlima[i], d; int lg2e = -log(e)/log(2.0);  d = _fprazor64(M_PI, e, lg2e); uint64_t u = ctou64(&d); printf("%e:%e - %.8f ctz=%u\n", e, d, M_PI - d, u?ctz64(u):64 ); } 
+testrazor() {  
+  static double errlima[] = { 5e-1,5e-2, 5e-3, 5e-4,5e-5,5e-6,5e-7,5e-8,5e-9  };
+ 
+  double pi = M_PI; uint64_t u = ctou64(&pi); printf("pi=%.20g - ctz=%u\n", M_PI, ctz64(u)); 
+  for(int i = 0; i < 9; i++) { 
+    double e = errlima[i], d = pi; 
+	int lg2e = -log(e)/log(2.0), tz;  
+	uint64_t u;
+	d = _fprazor64(M_PI, e, lg2e);                                                   u = ctou64(&d); tz = u?ctz64(u):64; printf("TR:%u %0e:%.10g - %.10g ctz=%u\n", i, e, d, M_PI - d, tz );
+	ptr_unn p; 
+	d = M_PI; ccr_gbr(i+1, NC_DOUBLE, 1, 0, p, &d);                                  u = ctou64(&d); tz = u?ctz64(u):64; printf("BR:%u %0e:%.10g - %.10g ctz=%u\n", i+1, e, d, M_PI - d, tz );
+	          BG_compress_args(BG_DOUBLE, &pi, NULL, BITGROOM, BG_NSD, i, i, 1, &d); u = ctou64(&d); tz = u?ctz64(u):64; printf("BG:%u %0e:%.10g - %.10g ctz=%u\n", i, e, d, M_PI - d, tz );
+  } 
   exit(0);
 }
 
@@ -2052,9 +2065,10 @@ int main(int argc, char* argv[]) { //testrazor();
         else if(*s=='l') isize =  8, s++; // 8 bytes
         else if(*s=='t') isize =  4, s++, dfmt = T_TIM32; // 4 bytes, timestamp
         else if(*s=='T') isize =  8, s++, dfmt = T_TIM64; // 8 bytes, timestamp
-        if(*s == '.') { if(*++s >= '0' && *s <= '9') { decs = s[0] - '0'; s++; } } // number of decimals after .
+        if(*s == '.') { if(*++s >= '0' && *s <= '9') { decs = s[0] - '0'; if(*++s >= '0' && *s <= '9') decs = decs * 10 + s[0] - '0'; } } // number of decimals after .
+		else if(*s == 'A') autoraz++;
         if(*s == 'v') { divs = strtod(++s, &s); }
-        if(*s == 'H') { skiph++; s++; } // skip first line(s). ex.  HHH : skip 3 first lines
+        //if(*s == 'H') { skiph++; s++; } // skip first line(s). ex.  HHH : skip 3 first lines
         //switch(*s) { case 's': be_mindelta = 0; break; case 'S': be_mindelta = 1; break; case 'z': be_mindelta = 2; break; }
       } break;
 
@@ -2176,7 +2190,7 @@ int main(int argc, char* argv[]) { //testrazor();
     //if(fno == optind)
     tm_init(tm_Rep, tm_verbose /* 2 print id */);
 
-    if(errlim > 0.0 /*|| nsd >= 0*/) {  // convert input for lossy floating point compression
+    if(errlim > DBL_EPSILON /*|| nsd >= 0*/) {  // convert input for lossy floating point compression
       if(errlim < 0.0000009999) errlim = 0.000001;
       if(isize == -4) {
                              fprazor32(in,n/4,out,errlim); if(verbose>0) fpstat(in, n/4, out, -4); //if(nsd >= 0) fprnd32(in,n/4,out,nsd); else //
