@@ -166,15 +166,6 @@ unsigned char *bitunpack64( const unsigned char *__restrict in, unsigned n, uint
 
 // ---------------- Direct Access to a single packed integer array entry --------------------------------------------------------------
   #ifdef TURBOPFOR_DAC
-    #ifdef __BMI2__
-#include <immintrin.h>
-#define bzhi64(_u_, _b_) _bzhi_u64(_u_, _b_)
-#define bzhi32(_u_, _b_) _bzhi_u32(_u_, _b_)
-    #else
-#define bzhi64(_u_, _b_) ((_u_) & ((1ull<<(_b_))-1))
-#define bzhi32(_u_, _b_) ((_u_) & ((1u  <<(_b_))-1))
-    #endif
-
 #include "conf.h"
 
 static ALWAYS_INLINE unsigned  bitgetx32(const unsigned char *__restrict in, unsigned  idx, unsigned b) { unsigned bidx = b*idx; return bzhi64( ctou64((uint32_t *)in+(bidx>>5)) >> (bidx&0x1f), b ); }
