@@ -410,7 +410,7 @@ In general encoding/decoding functions are of the form:
    vs:  variable simple<br />
    v8:  TurboByte SIMD + Hybrid TurboByte + TurboPack<br />
    bit: bit packing<br />
-   fp:  Floating Point encoding. Turbo Razor: pointwise relative error rounding algorithm<br />
+   fp:  Floating Point + Turbo Razor: pointwise relative error rounding algorithm<br />
 
    n :  high level array functions for large arrays.
 	
