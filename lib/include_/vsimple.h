@@ -7,6 +7,11 @@
 extern "C" {
 #endif
 
+size_t vsbound8( size_t n);
+size_t vsbound16(size_t n);
+size_t vsbound32(size_t n);
+size_t vsbound64(size_t n);
+
 // vsencNN: compress array with n unsigned (NN bits in[n]) values to the buffer out. Return value = end of compressed output buffer out
 unsigned char *vsenc8( unsigned char  *__restrict in, size_t n, unsigned char  *__restrict out);
 unsigned char *vsenc16(unsigned short *__restrict in, size_t n, unsigned char  *__restrict out);
