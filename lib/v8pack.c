@@ -48,7 +48,7 @@
 
 #define _V8E(in, _n_, out, _csize_, _usize_, _bit_, _bitpackv_, _bitpack_) {   if(!_n_) return 0;\
   unsigned char *op = out, *op_ = out+_n_*(_usize_/8);\
-  for(ip = in; ip < in + _n_; ) {                                                             PREFETCH(ip+512,0);\
+  for(ip = in; ip < in + _n_; ) {                                               PREFETCH(ip+512,0);\
     unsigned _b, _bs, _o, iplen = (in+_n_) - ip; iplen = min(iplen,_csize_);\
 	_o = T2(_bit_, _usize_)(ip, iplen, &x); _b = T2(bsr,_usize_)(_o); \
 	_bs = (_b*iplen+7)/8+1;\
@@ -56,16 +56,16 @@
 	  if(op+1+V8BOUND_(iplen, _usize_) < op_) { /*overflow?*/\
 	    unsigned char *_sp = op;\
 	    *op++ = 0xfe; \
-		op = T2(v8enc, _usize_)(ip, iplen, op);                        /*AS(op < op_, "#_V8DE overflow %u:%u,%u,%u\n", op - op_, 1+V8BOUND_(iplen, _usize_), op-_sp, v8len16(ip, iplen));*/\
+		op = T2(v8enc, _usize_)(ip, iplen, op);                                 /*AS(op < op_, "#_V8DE overflow %u:%u,%u,%u\n", op - op_, 1+V8BOUND_(iplen, _usize_), op-_sp, v8len16(ip, iplen));*/\
 	    if(op - _sp < _bs) goto a;\
 	    op = _sp; /*restore*/\
 	  }\
 	}\
     if(op+_bs >= op_) {  op = out; *op++ = 0xff; memcpy(op, in, _n_*(_usize_/8)); op += _n_*(_usize_/8);  /*AS(op == op_+1, "#_V8DE overflow %u", op - op_);*/ goto e; }\
-	if(*op++ = _b) op = iplen == _csize_?T2(_bitpackv_, _usize_)(ip, _csize_, op, _b):\
+	*op++ = _b; if(_b) op = iplen == _csize_?T2(_bitpackv_, _usize_)(ip, _csize_, op, _b):\
                                          T2(_bitpack_,  _usize_)(ip, iplen,   op, _b);\
     a:ip += iplen; \
-  } 																            /*AS(op <= op_, "#_V8DE overflow %u", op - op_);*/\
+  } 															                /*AS(op <= op_, "#_V8DE overflow %u", op - op_);*/\
   e: return op - out;\
 } 
 
@@ -74,7 +74,7 @@
   unsigned char *op = out, *op_ = out+_n_*(_usize_/8);\
   start = *in++;\
   T2(vbput, _usize_)(op, start);\
-  for(_n_--,ip = in; ip < in + _n_; ) {                                       /*PREFETCH(ip+512,0);*/\
+  for(_n_--,ip = in; ip < in + _n_; ) {                                         /*PREFETCH(ip+512,0);*/\
     unsigned _b, _bs, _o, iplen = (in+_n_) - ip; iplen = min(iplen,_csize_);\
 	_o = T2(_bitd_, _usize_)(ip, iplen, &x, start); _b = T2(bsr,_usize_)(_o); \
 	_bs = (_b*iplen+7)/8+1;\
@@ -87,8 +87,8 @@
 	    op = _sp; /*restore*/\
 	  }\
 	}\
-    if(op+_bs >= op_) { op = out; *op++ = 0xff; memcpy(op, in-1, (_n_+1)*(_usize_/8)); op += (_n_+1)*(_usize_/8); /*AS(op == op_+1, "#_V8DE overflow %u", op - op_);*/ goto e; }\
-	  if(*op++ = _b) { op = iplen == _csize_?T2(_bitpackv_, _usize_)(ip, _csize_, op, start, _b):\
+    if(op+_bs >= op_) { op = out; *op++ = 0xff; memcpy(op, in-1, (_n_+1)*(_usize_/8)); op += (_n_+1)*(_usize_/8);/*AS(op == op_+1, "#_V8DE overflow %u", op - op_);*/ goto e; }\
+	  *op++ = _b; if(_b) { op = iplen == _csize_?T2(_bitpackv_, _usize_)(ip, _csize_, op, start, _b):\
 	                                         T2(_bitpack_,  _usize_)(ip, iplen,   op, start, _b);\
 	}\
     a: ip += iplen;\
