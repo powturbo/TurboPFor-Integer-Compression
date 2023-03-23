@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <limits.h>
 
@@ -35,7 +36,7 @@
 #include <malloc.h>
   #endif
   #ifdef _MSC_VER
-#include "vs/getopt.h"
+#include "../vs/getopt.h"
   #else
 #include <getopt.h>
 #endif
@@ -49,7 +50,7 @@
 #include <float.h>
 
 #include "../include/ic.h"
-#include "../include_/iccodec.h"
+#include "include_/iccodec.h"
 
 #include "include_/conf.h"
 #include "include_/time_.h"
@@ -61,7 +62,7 @@
 #endif
 
 int verbose = 1,isa;
-extern tpbsize;
+extern int tpbsize;
 
 //------------------------------ bits statistics --------------------------------------------------
 static unsigned xbits[65],tbits[65],zbits[65];
@@ -384,8 +385,8 @@ unsigned datagen(unsigned char *in, unsigned n, int isize, double be_mindelta) {
                                                                                 for(i = 1; i <= n; i++) xbits[bsr32(ctou8(in+i))]++;
       if(mindelta == 0 || mindelta == 1) {
         uint8_t *ip = (uint8_t *)in, v;                                         stprint("delta", xbits);
-        for(ip[0]=0,v = 1; v < n; v++) {
-          ip[v] += ip[v-1] + mindelta;                                          if(ip[v]>=(1u<<8)) die("overflow generating sorted array %d\n", ip[v]);
+        for(ip[0]=0,v = 1; v < n; v++) {                                        if((unsigned)ip[v] + (unsigned)ip[v-1] + mindelta>=(1u<<8)) die("overflow generating sorted array %d\n", ip[v]);
+          ip[v] += ip[v-1] + mindelta;                                          
         }
       } else stprint("", xbits);
       break;
@@ -393,8 +394,8 @@ unsigned datagen(unsigned char *in, unsigned n, int isize, double be_mindelta) {
                                                                                 for(i = 1; i <= n; i++) xbits[bsr32(ctou16(in+i*2))]++;
       if(mindelta == 0 || mindelta == 1) {
         unsigned short *ip = (unsigned short *)in, v;                           stprint("delta", xbits);
-        for(ip[0]=0,v = 1; v < n; v++) {
-          ip[v] += ip[v-1] + mindelta;                                          if(ip[v]>=(1u<<16)) die("overflow generating sorted array %d\n", ip[v]);
+        for(ip[0]=0,v = 1; v < n; v++) {                                        if((unsigned)ip[v] + (unsigned)ip[v-1] + mindelta >= (1u<<16)) die("overflow generating sorted array %d\n", ip[v]);
+          ip[v] += ip[v-1] + mindelta;                                          
         }
       } else stprint("", xbits);
       break;
@@ -402,8 +403,8 @@ unsigned datagen(unsigned char *in, unsigned n, int isize, double be_mindelta) {
                                                                                 for(i = 1; i <= n; i++) xbits[bsr32(ctou32(in+i*4))]++;
       if(mindelta == 0 || mindelta == 1) {
         unsigned *ip = (unsigned *)in, v;                                       stprint(mindelta?"delta=1":"delta=0", xbits);
-        for(ip[0]=0,v = 1; v < n; v++) {
-          ip[v] += ip[v-1] + mindelta;                                          if(ip[v]>=(1u<<31)) die("overflow generating sorted array %d\n", ip[v]);
+        for(ip[0]=0,v = 1; v < n; v++) {                                        if((uint64_t)ip[v] + (uint64_t)ip[v-1] + mindelta >= (1ull<<32)) die("overflow generating sorted array %d\n", ip[v]);  
+          ip[v] += ip[v-1] + mindelta;                                          
         }
       } else stprint("", xbits);
       break;
@@ -411,8 +412,8 @@ unsigned datagen(unsigned char *in, unsigned n, int isize, double be_mindelta) {
                                                                                 for(i = 1; i <= n; i++) xbits[bsr64(ctou64(in+i*8))]++;
       if(mindelta == 0 || mindelta == 1) {
         uint64_t *ip = (uint64_t *)in, v;                                       stprint("delta", xbits);
-        for(ip[0]=0,v = 1; v < n; v++) {
-          ip[v] += ip[v-1] + mindelta;                                          if(ip[v]>=(1u<<31)) die("overflow generating sorted array %lld\n", ip[v]);
+        for(ip[0]=0,v = 1; v < n; v++) {                                        if((uint64_t)ip[v] + (uint64_t)ip[v-1] + mindelta >= (1ull<<63)) die("overflow generating sorted array %lld\n", (int64_t)ip[v]); 
+          ip[v] += ip[v-1] + mindelta;                                          
         }
       } else stprint("", xbits);
       break;
@@ -612,8 +613,8 @@ void libmemcpy(unsigned char *dst, unsigned char *src, int len) {
 #include  "ext/gb.c"
 //----------- external libraries --------------
   #ifdef _STREAMVBYTE
-#include "streamvbyte/include/streamvbyte.h"
-#include "streamvbyte/include/streamvbytedelta.h"
+#include "ext/streamvbyte/include/streamvbyte.h"
+#include "ext/streamvbyte/include/streamvbytedelta.h"
 static size_t streamvbyte_zzag_encode(const uint32_t *in, uint32_t length, uint8_t *out, uint32_t prev, uint8_t *tmp) {
   zigzag_delta_encode(in, tmp, length, prev);
   return streamvbyte_encode(tmp, length, out);
@@ -628,15 +629,15 @@ static size_t streamvbyte_zzag_decode(const uint8_t *in, uint32_t *out, uint32_t
   #ifdef _MASKEDVBYTE
 #undef VARINTDECODE_H_
 #include "ext/fastpfor.h"
-#include "MaskedVByte/include/varintencode.h"
+#include "ext/MaskedVByte/include/varintencode.h"
     #undef VARINTDECODE_H_
-#include "MaskedVByte/include/varintdecode.h"
+#include "ext/MaskedVByte/include/varintdecode.h"
   #endif
 
   #ifdef _BITSHUFFLE
-#include "bitshuffle/src/bitshuffle.h"
+#include "ext/bitshuffle/src/bitshuffle.h"
     #ifndef LZ4
-#include "bitshuffle/lz4/lz4.h"
+#include "ext/bitshuffle/lz4/lz4.h"
     #endif
   #endif
 
@@ -647,15 +648,15 @@ static size_t streamvbyte_zzag_decode(const uint8_t *in, uint32_t *out, uint32_t
 
   #ifdef _VBZ
 #define bool int
-#include "vbz_compression/vbz/vbz.h"
+#include "ext/vbz_compression/vbz/vbz.h"
   #endif
 
   #ifdef _VTENC
-#include "VTEnc/vtenc.h"
+#include "ext/VTEnc/vtenc.h"
   #endif
 
   #ifdef _ZFP
-#include "zfp/include/zfp.h"
+#include "ext/zfp/include/zfp.h"
 
 unsigned zfpcompress(const void *in, int nx, int ny, int nz, int nw, uint8_t *out, unsigned outsize, int dtype, double errlim) { 
   zfp_field field = {0};                                                        if(verbose>2) printf("x=%d,y=%d,z=%d", nx, ny, nz);
@@ -1063,9 +1064,9 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:169              speed test          ",   	
 };
   if(id < 80)
-    sprintf(s,fmt[id], id, b, prms, prmi);  // print bitsize
+    sprintf((char *)s,fmt[id], id, b, prms, prmi);  // print bitsize
   else
-    sprintf(s,fmt[id], id, prms, prmi);     // no bitsize
+    sprintf((char *)s,fmt[id], id, prms, prmi);     // no bitsize
   return s;
 }
 
@@ -1190,9 +1191,9 @@ unsigned nx,ny,nz,nw;
 
 #define USIZE 1
 unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, int bsize) {
-  unsigned l = 0, m = n/(USIZE), rc = 0, ns = CBUF(n);
-  uint8_t  dmin = mindelta8(in,m), *p;
-  char     *tmp = NULL;
+  unsigned      l = 0, m = n/(USIZE), rc = 0, ns = CBUF(n);
+  uint8_t       dmin = mindelta8(in,m), *p=NULL;
+  unsigned char *tmp = NULL;
 
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
   memrcpy(cpy,in,n); l = 0;
@@ -1259,7 +1260,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case 91: TMBENCH("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 91",lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 92: TMBENCH("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 92",lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 93: TMBENCH("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 93",lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",v8lzxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
+    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 95: TMBENCH("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 95",lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
 
     case 100: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
@@ -1297,7 +1298,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     default: goto end;
   }
   if(l) {
-      char s[65] = { 0 }; printf("%-30s ", bestr(id, 8, s, codstr(codid), codlev));
+      unsigned char s[65] = { 0 }; printf("%-30s ", bestr(id, 8, s, codstr(codid), codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1311,10 +1312,10 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 #undef USIZE
 #define USIZE 2
 unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
-  unsigned l=0,m = n/(USIZE),rc = 0, d=0,ns = CBUF(n);
-  uint16_t dmin = mindelta16(in,m);
-  uint16_t *p;
-  char     *tmp = NULL;
+  unsigned      l = 0,m = n/(USIZE),rc = 0, d=0,ns = CBUF(n);
+  uint16_t      dmin = mindelta16(in,m);
+  uint16_t      *p=NULL;
+  unsigned char *tmp = NULL;
 
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
   memrcpy(cpy,in,n); l=0;
@@ -1425,7 +1426,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 91: TMBENCH("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 91",lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 92: TMBENCH("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 92",lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 93: TMBENCH("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 93",lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",v8lzxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
+    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 95: TMBENCH("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 95",lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
 
     case 100: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
@@ -1485,7 +1486,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
    default: goto end;
   }
   if(l) {
-      char s[65] = { 0 }; printf("%-30s ", bestr(id, 16, s, codstr(codid), codlev));
+    unsigned char s[65] = { 0 }; printf("%-30s ", bestr(id, 16, s, codstr(codid), codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1498,10 +1499,9 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 #undef USIZE
 #define USIZE 4
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
-  unsigned l = 0, m = n/(USIZE), rc = 0, d, ns = CBUF(n);
-  //uint32_t *p;
-  char     *tmp = NULL;
-  uint32_t dmin = mindelta32(in,m);
+  unsigned      l = 0, m = n/(USIZE), rc = 0, d=0, ns = CBUF(n);
+  unsigned char *tmp = NULL;
+  uint32_t      dmin = mindelta32(in,m);
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
   memrcpy(cpy,in,n);
 
@@ -1661,7 +1661,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 91: TMBENCH("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 91",lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 92: TMBENCH("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 92",lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 93: TMBENCH("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 93",lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",v8lzxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
+    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 95: TMBENCH("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 95",lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 96: TMBENCH("", l=vlccomp32(in, n, out, ns, tmp,codid,codlev,codprm),n);        pr(l,n); TMBENCH2("96", l==n?memcpy(cpy,in,n):(void *)vlcdecomp32(out, l, cpy, n, tmp,codid,codlev,codprm),n); break;
 
@@ -1776,7 +1776,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     default: goto end;
   }
   if(l) {
-      char s[128] = { 0 };                                                         AC(codstr(codid), "Fatal"); printf("%-40s ", bestr(id, 32, s, codstr(codid), codlev));
+    unsigned char s[128] = { 0 };                                                         AC(codstr(codid), "Fatal"); printf("%-40s ", bestr(id, 32, s, codstr(codid), codlev));
     if(cpy) rc = memcheck32(in,m,cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1788,10 +1788,10 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 #undef USIZE
 #define USIZE 8
 unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
-  unsigned l = 0,m = n/(USIZE), rc = 0, d=0, ns = CBUF(n);
-  uint64_t dmin = mindelta64(in,m);
-  uint64_t *p=NULL;
-  char     *tmp = NULL;
+  unsigned      l = 0,m = n/(USIZE), rc = 0, d = 0, ns = CBUF(n);
+  uint64_t      dmin = mindelta64(in,m);
+  uint64_t      *p = NULL;
+  unsigned char *tmp = NULL;
   if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
   memrcpy(cpy,in,n);
 
@@ -1879,7 +1879,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 91: TMBENCH("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 91",lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 92: TMBENCH("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 92",lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 93: TMBENCH("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 93",lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
-    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",v8lzxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
+    case 94: TMBENCH("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 94",lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
     case 95: TMBENCH("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm) ,n); pr(l,n); TMBENCH2(" 95",lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm) ,n); break;
 
     case 100: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
@@ -1947,7 +1947,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     default: goto end;
   }
   if(l) {
-    char s[65]; printf("%-30s ", bestr(id, 64,s, codstr(codid),codlev));
+    unsigned char s[65]; printf("%-30s ", bestr(id, 64,s, codstr(codid),codlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -2032,7 +2032,8 @@ int main(int argc, char* argv[]) { //testrazor();
   unsigned      b = 1 << 30, lz=0, fno,m=1000000, bsize = (unsigned)-1;
   int           isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,dim0=0;
   uint64_t      be_mindelta=0;
-  unsigned char *in = NULL, *out, *cpy, *scmd = NULL, *icmd = NULL;
+  unsigned char *in = NULL, *out, *cpy;
+  char          *scmd = NULL, *icmd = NULL;
   double        mdelta=-10, errlim=-1.0;
 
   tm_verbose = 1;
@@ -2117,7 +2118,7 @@ int main(int argc, char* argv[]) { //testrazor();
   }
   isa = cpuisa();
   cpuini(0); 																		if(verbose>1) printf("detected simd id=%x, %s\n\n", cpuini(0), cpustr(cpuini(0)));
-  unsigned char _scmd[33];
+  char _scmd[33];
     #ifdef _LZ4
   strcpy(_scmd, "lz4,1");
     #else
@@ -2127,15 +2128,15 @@ int main(int argc, char* argv[]) { //testrazor();
   while(isspace(*scmd)) scmd++;
   char *q;
   int   i;
-  if(q = strchr(scmd,',')) *q = '\0';
+  if((q = strchr(scmd,',')) != NULL) *q = '\0';
   codid = lzidget(scmd);
-  scmd = q?(q+1):(char*)"";
+  scmd = q?(q+1):"";
   codlev = strtoul(scmd, &scmd, 10);
 
-  if(scmd) strcpy(codprm,scmd);
+  if(scmd) strcpy((char *)codprm,scmd);
                                                                                     if(verbose>1) printf("dfmt=%d,size=%d\n", dfmt, isize);
   for(fno = optind; fno < argc; fno++) {
-    char      *inname = argv[fno];
+    char *inname = argv[fno];
     int       i=0,n;
     long long flen;
     FILE      *fi = NULL;
@@ -2152,7 +2153,7 @@ int main(int argc, char* argv[]) { //testrazor();
         n = flen;
         if(dim0) { 
 		  char *q,*p = &inname[strlen(inname)]; 
-		  if(q = strrchr(inname, '.')) p = q;
+		  if((q = strrchr(inname, '.')) != NULL) p = q;
           nx = ny = nz = nw = 0;
           while(p > &inname[0] && (isdigit(p[-1]) || p[-1]=='x') ) p--;         if(verbose>1) printf("fn='%s' ", p);
                           nx = strtoul(p,   &p, 10);
