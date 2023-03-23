@@ -11,40 +11,67 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\bitunpack.c">
+    <ClCompile Include="..\..\lib\bitpack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\bitpack.c">
+    <ClCompile Include="..\..\lib\bitunpack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vp4d.c">
+    <ClCompile Include="..\..\lib\bitutil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vp4c.c">
+    <ClCompile Include="..\..\lib\eliasfano.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\bitutil.c">
+    <ClCompile Include="..\..\lib\fp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\fp.c">
+    <ClCompile Include="..\..\lib\iccodec.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vint.c">
+    <ClCompile Include="..\..\lib\bic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vsimple.c">
+    <ClCompile Include="..\..\lib\transpose.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\trlec.c">
+    <ClCompile Include="..\..\lib\transpose_.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\trled.c">
+    <ClCompile Include="..\..\lib\trlec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\trled.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\v8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\v8pack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\vbit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\vint.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\vp4c.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\vp4d.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\vsimple.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\bitpack_avx2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\bitunpack_avx2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bitutil_avx2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\transpose_avx2.c">
@@ -56,105 +83,72 @@
     <ClCompile Include="..\vp4d_avx2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\v8.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\v8pack.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\bic.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\eliasfano.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vbit.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bitutil_avx2.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\transpose.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\iccodec.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\transpose_.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\bitpack.h">
+    <ClInclude Include="..\..\lib\include_\bic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\transpose.h">
+    <ClInclude Include="..\..\lib\include_\bitiobe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\vint.h">
+    <ClInclude Include="..\..\lib\include_\bitpack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\vp4.h">
+    <ClInclude Include="..\..\lib\include_\bitutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\vsimple.h">
+    <ClInclude Include="..\..\lib\include_\bitutil_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\trle.h">
+    <ClInclude Include="..\..\lib\include_\conf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bic.h">
+    <ClInclude Include="..\..\lib\include_\eliasfano.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitpack.h">
+    <ClInclude Include="..\..\lib\include_\fp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\bitutil.h">
+    <ClInclude Include="..\..\lib\include_\iccodec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\conf.h">
+    <ClInclude Include="..\..\lib\include_\sse_neon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\eliasfano.h">
+    <ClInclude Include="..\..\lib\include_\time_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\fp.h">
+    <ClInclude Include="..\..\lib\include_\transpose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ic.h">
+    <ClInclude Include="..\..\lib\include_\trle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\transpose.h">
+    <ClInclude Include="..\..\lib\include_\vbit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\trle.h">
+    <ClInclude Include="..\..\lib\include_\vint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\vint.h">
+    <ClInclude Include="..\..\lib\include_\vlcbit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\vlcbit.h">
+    <ClInclude Include="..\..\lib\include_\vlcbyte.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\vlcbyte.h">
+    <ClInclude Include="..\..\lib\include_\vp4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\vp4.h">
+    <ClInclude Include="..\..\lib\include_\vsimple.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\vsimple.h">
+    <ClInclude Include="..\..\lib\bitpack_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include_\bitutil_.h">
+    <ClInclude Include="..\..\lib\bitunpack_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\bitpack_.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\bitunpack_.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\trle_.h">
+    <ClInclude Include="..\..\lib\trle_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
