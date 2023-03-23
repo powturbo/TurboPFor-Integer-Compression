@@ -39,6 +39,7 @@
 #include "ext/bitshuffle/lz4/lz4.h"
     #endif
   #endif
+int bwtx, forcelzp;
 
 //------------------------------------------------------------------------------------------------------------------------------
 #define powof2(n) !((n)&((n)-1))
@@ -68,7 +69,6 @@ int lzidget(char *scmd) {
 
   #ifdef _TURBORC
 #include "ext/Turbo-Range-Coder/turborc.h"
-int bwtx, forcelzp;
   #endif
 
   #ifdef _ZSTD
