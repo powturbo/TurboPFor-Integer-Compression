@@ -1173,7 +1173,7 @@ void T2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
 #define O2D(_i_) (x + (y+_i_) * nx)
 void T2(tp2denc,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned char *out) {
   unsigned x,y; 
-  uint_t *op = out, *ip = in; 
+  uint_t *op = (uint_t *)out, *ip = (uint_t *)in; 
   
   for(  x = 0; x < nx; x++)
     for(y = 0; y < ny; y++)
@@ -1182,7 +1182,7 @@ void T2(tp2denc,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned cha
 
 void T2(tp2ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned char *out) {
   unsigned x, y; 
-  uint_t   *op = out, *ip = in; 
+  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in; 
   
   for(  x = 0; x < nx; x++) 
     for(y=0; y != ny; y++)
@@ -1193,7 +1193,7 @@ void T2(tp2ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned cha
 #define ODX3 (x + y * nx + z * ny * nx)
 void T2(tp3denc,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
   unsigned x, y, z; 
-  uint_t   *op = out, *ip = in;
+  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in;
   
   for(    x = 0; x < nx; x++)
     for(  y = 0; y < ny; y++) 
@@ -1203,7 +1203,7 @@ void T2(tp3denc,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz,
 
 void T2(tp3ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
   unsigned x,y,z;  
-  uint_t   *op = out, *ip = in; 
+  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in; 
   
   for(x = 0; x < nx; ++x)
     for(y = 0; y < ny; ++y)
@@ -1215,7 +1215,7 @@ void T2(tp3ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz,
 #define ODX4 (w + x * nw + y * nx * nw + z * nx * ny * nw)
 void T2(tp4denc,ESIZE)(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
   unsigned w,x,y,z; 
-  uint_t *op = out, *ip=in; 
+  uint_t *op = (uint_t *)out, *ip = (uint_t *)in; 
   
   for(      w = 0; w < nw; w++)
     for(    x = 0; x < nx; x++)
@@ -1226,7 +1226,7 @@ void T2(tp4denc,ESIZE)(unsigned char *in, unsigned nw, unsigned nx, unsigned ny,
 
 void T2(tp4ddec,ESIZE)(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
   unsigned w,x,y,z; 
-  uint_t *op = out, *ip = in; 
+  uint_t *op = (uint_t *)out, *ip = (uint_t *)in; 
   
   for(      w = 0; w < nw; ++w)
     for(    x = 0; x < nx; ++x)
