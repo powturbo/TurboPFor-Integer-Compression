@@ -4,17 +4,19 @@
 extern "C" {
 #endif
 //------ ORed array, used to determine the maximum bit length of the elements in an unsorted integer array ---------------------
-uint8_t  bit8( uint8_t  *in, unsigned n, uint8_t  *px);
-uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px);
-uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px);
-uint64_t bit64(uint64_t *in, unsigned n, uint64_t *px);
+uint8_t  bit8(     uint8_t  *in, unsigned n, uint8_t  *px);
+uint16_t bit16(    uint16_t *in, unsigned n, uint16_t *px);
+uint32_t bit32(    uint32_t *in, unsigned n, uint32_t *px);
+uint64_t bit64(    uint64_t *in, unsigned n, uint64_t *px);
+uint32_t bit256v32(uint32_t *in, unsigned n, uint32_t *px);
 
 //-------------- delta = 0: Sorted integer array w/ mindelta = 0 ----------------------------------------------
 //-- ORed array, maximum bit length of the non decreasing integer array. out[i] = in[i] - in[i-1]
-uint8_t  bitd8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
-uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
-uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
-uint64_t bitd64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint8_t  bitd8(     uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
+uint16_t bitd16(    uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
+uint32_t bitd32(    uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
+uint64_t bitd64(    uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitd256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 
 //-- in-place reverse delta 0
 void bitddec8(  uint8_t  *p,  unsigned n, uint8_t  start); // non decreasing (out[i] = in[i] - in[i-1])
@@ -32,6 +34,7 @@ uint8_t  bitd18( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
 uint16_t bitd116(uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitd1256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 
 //-- in-place reverse delta one
 void bitd1dec8(     uint8_t  *p,  unsigned n, uint8_t  start); // non strictly decreasing (out[i] = in[i] - in[i-1] - 1)
@@ -81,6 +84,7 @@ uint8_t  bitz8(    uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
 uint16_t bitz16(   uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
 uint32_t bitz32(   uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 uint64_t bitz64(   uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitz256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 //-- Zigzag transform
 uint8_t  bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta);
 uint16_t bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta);
@@ -112,10 +116,11 @@ void bitzzdec64(    uint64_t *in,  unsigned n, uint64_t start);
 
 //------------- XOR encoding for unsorted integer lists: out[i] = in[i] - in[i-1] -------------
 //-- ORed array, to get maximum zigzag bit length integer array
-uint8_t  bitx8(    uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
-uint16_t bitx16(   uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
-uint32_t bitx32(   uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
-uint64_t bitx64(   uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint8_t  bitx8(     uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
+uint16_t bitx16(    uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
+uint32_t bitx32(    uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
+uint64_t bitx64(    uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitx256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 
 //-- XOR transform
 uint8_t  bitxenc8(  uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start);
