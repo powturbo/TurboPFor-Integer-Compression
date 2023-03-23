@@ -43,6 +43,22 @@
 #define HYBRID 1 // Hybrid TurboPFor : 0=fixed bit packing, 1=fixed BP+Variable byte
 
   #ifndef __AVX2__
+#define VP4BOUND(_n_, _esize_, _csize_) ((_esize_*_n_) + ((_n_+_csize_-1)/_csize_))
+size_t p4nbound8(     size_t n) { return VP4BOUND(n, 1, 128); }
+size_t p4nbound16(    size_t n) { return VP4BOUND(n, 2, 128); }
+size_t p4nbound32(    size_t n) { return VP4BOUND(n, 4, 128); }
+size_t p4nbound64(    size_t n) { return VP4BOUND(n, 8, 128); }
+
+size_t p4nbound128v8( size_t n) { return VP4BOUND(n, 1, 128); }
+size_t p4nbound128v16(size_t n) { return VP4BOUND(n, 2, 128); }
+size_t p4nbound128v32(size_t n) { return VP4BOUND(n, 4, 128); }
+size_t p4nbound128v64(size_t n) { return VP4BOUND(n, 8, 128); }
+
+size_t p4nbound256v8( size_t n) { return VP4BOUND(n, 1, 256); }
+size_t p4nbound256v16(size_t n) { return VP4BOUND(n, 2, 256); }
+size_t p4nbound256v32(size_t n) { return VP4BOUND(n, 4, 256); }
+size_t p4nbound256v64(size_t n) { return VP4BOUND(n, 8, 128); }
+  
 #define _P4BITS _p4bits
 #define  P4BITS _p4bits
 #define _P4ENC   _p4enc
