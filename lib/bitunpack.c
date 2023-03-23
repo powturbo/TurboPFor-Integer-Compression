@@ -26,6 +26,7 @@
 #pragma warning( disable : 4090)
 #pragma warning( disable : 4068)
 
+#include <string.h>
 #include "include_/conf.h"
 #include "include_/bitpack.h"
 #include "include_/bitutil.h"
