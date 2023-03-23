@@ -108,7 +108,7 @@ TurboPFor: Fastest Integer Compression
 ##### - Data files:
  - gov2.sorted from [DocId data set](#DocId) Block size=128/Delta coding
 
- ![Speed/Ratio](ext/gov2.png "Speed/Ratio: Decompression")
+ ![Speed/Ratio](lib/ext/gov2.png "Speed/Ratio: Decompression")
 
 |Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function 2019.11|
 |-----------:|------:|-----:|-------:|-------:|---------------------|
