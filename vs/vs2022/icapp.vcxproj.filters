@@ -11,7 +11,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\icapp.c">
+    <ClCompile Include="..\..\lib\icapp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\getopt.c">
@@ -20,9 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include_\iccodec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
