@@ -3,9 +3,26 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+size_t p4nbound8( size_t n);
+size_t p4nbound16(size_t n);
+size_t p4nbound32(size_t n);
+size_t p4nbound64(size_t n);
+
+size_t p4nbound128v8( size_t n);
+size_t p4nbound128v16(size_t n);
+size_t p4nbound128v32(size_t n);
+size_t p4nbound128v64(size_t n);
+
+size_t p4nbound256v8( size_t n);
+size_t p4nbound256v16(size_t n);
+size_t p4nbound256v32(size_t n);
+size_t p4nbound256v64(size_t n);
+
 //************************************************ High level API - n unlimited *******
 // Compress integer array with n values to the buffer out.
 // Return value = number of bytes written to compressed buffer out
+// n:number of integers in the input in
 size_t p4nenc8(       uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nenc16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nenc32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -17,7 +34,7 @@ size_t p4nenc256w32(  uint32_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
 
-size_t p4ndenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4ndenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); // delta 0
 size_t p4ndenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -25,7 +42,7 @@ size_t p4ndenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc64(     uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t p4nd1enc8(     uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4nd1enc8(     uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); // delta 1
 size_t p4nd1enc16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -33,7 +50,7 @@ size_t p4nd1enc128v32(uint32_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc64(    uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t p4nzenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4nzenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); // zigzag
 size_t p4nzenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nzenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nzenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
