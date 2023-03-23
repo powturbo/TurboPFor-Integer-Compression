@@ -485,11 +485,11 @@ unsigned char *T2(p4decx, USIZE)(unsigned char *in, unsigned n, uint_t *__restri
 
   if(unlikely(p4.isx)) {
     #define ITX(k) out[i+k] = T2(p4getx, USIZE)(&p4, in, i+k, b);
-    for(i = 0; i != n&~3; i += 4) { ITX(0); ITX(1); ITX(2); ITX(3); }
+    for(i = 0; i != (n&(~3)); i += 4) { ITX(0); ITX(1); ITX(2); ITX(3); }
     for(     ; i != n;    i++   )   ITX(0);
   } else {
     #define ITY(k) out[i+k] = T2(bitgetx, USIZE)(in, i+k, b);
-    for(i = 0; i != n&~3; i += 4) { ITY(0); ITY(1); ITY(2); ITY(3); }
+    for(i = 0; i != (n&(~3)); i += 4) { ITY(0); ITY(1); ITY(2); ITY(3); }
     for(     ; i != n; i++) ITY(0);
   }
   return in + PAD8(n*b);
@@ -502,11 +502,11 @@ unsigned char *T2(p4f1decx, USIZE)(unsigned char *in, unsigned n, uint_t *__rest
   p4ini(&p4, &in, n, &b);
   if(unlikely(p4.isx)) {
     #define ITX(k) out[i+k] = T2(p4getx, USIZE)(&p4, in, (i+k), b)+start+i+k+1;
-    for(i = 0; i != n&~3; i+=4) { ITX(0); ITX(1); ITX(2); ITX(3); }
+    for(i = 0; i != (n&(~3)); i+=4) { ITX(0); ITX(1); ITX(2); ITX(3); }
     for(     ; i != n; i++) ITX(0);
   } else {
     #define ITY(k) out[i+k] = T2(bitgetx, USIZE)(in, (i+k), b)+start+i+k+1;
-    for(i = 0; i != n&~3; i += 4) { ITY(0); ITY(1); ITY(2); ITY(3); }
+    for(i = 0; i != (n&(~3)); i += 4) { ITY(0); ITY(1); ITY(2); ITY(3); }
     for(     ; i != n; i++) ITY(0);
   }
   return in + PAD8(n*b);
@@ -519,11 +519,11 @@ unsigned char *T2(p4fdecx, USIZE)(unsigned char *in, unsigned n, uint_t *__restr
 
   if(unlikely(p4.isx)) {
     #define ITX(k) out[i+k] = T2(p4getx, USIZE)(&p4, in, i+k, b)+start;
-    for(i = 0; i != n&~3; i+=4) { ITX(0); ITX(1); ITX(2); ITX(3); }
+    for(i = 0; i != (n&(~3)); i+=4) { ITX(0); ITX(1); ITX(2); ITX(3); }
     for(     ; i != n; i++) ITX(0);
   } else {
     #define ITY(k) out[i+k] = T2(bitgetx, USIZE)(in, (i+k), b)+start;
-    for(i = 0; i != n&~3; i+=4) { ITY(0); ITY(1); ITY(2); ITY(3); }
+    for(i = 0; i != (n&(~3)); i+=4) { ITY(0); ITY(1); ITY(2); ITY(3); }
     for(     ; i != n; i++) ITY(0);
   }
   return in + PAD8(n*b);
