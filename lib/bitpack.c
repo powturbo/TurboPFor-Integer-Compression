@@ -28,6 +28,7 @@
 #pragma warning( disable : 4068)
 
 #include <stdio.h>
+#include <string.h>
 #include "include_/conf.h"
 #include "include_/bitpack.h"
 #include "include_/bitutil.h"
@@ -47,6 +48,23 @@
 #pragma clang diagnostic ignored "-Wunsequenced"
 
 #ifndef __AVX2__ 
+#define BITNBOUND(_n_, _esize_, _csize_) ((_esize_*_n_) + ((_n_+_csize_-1)/_csize_))
+
+size_t bitnbound8(     size_t n){ return BITNBOUND(n, 1, 128); }
+size_t bitnbound16(    size_t n){ return BITNBOUND(n, 2, 128); }
+size_t bitnbound32(    size_t n){ return BITNBOUND(n, 4, 128); }
+size_t bitnbound64(    size_t n){ return BITNBOUND(n, 8, 128); }
+                                
+size_t bitnbound128v8( size_t n){ return BITNBOUND(n, 1, 128); }
+size_t bitnbound128v16(size_t n){ return BITNBOUND(n, 2, 128); }
+size_t bitnbound128v32(size_t n){ return BITNBOUND(n, 4, 128); }
+size_t bitnbound128v64(size_t n){ return BITNBOUND(n, 8, 128); }
+                                
+size_t bitnbound256v8( size_t n){ return BITNBOUND(n, 1, 256); }
+size_t bitnbound256v16(size_t n){ return BITNBOUND(n, 2, 256); }
+size_t bitnbound256v32(size_t n){ return BITNBOUND(n, 4, 256); }
+size_t bitnbound256v64(size_t n){ return BITNBOUND(n, 8, 128); }
+
 //---------------------------------------------- Plain -----------------------------------------------------------------------
 typedef unsigned char *(*BITPACK_F8)( uint8_t  *__restrict out, unsigned n, const unsigned char *__restrict in);
 typedef unsigned char *(*BITPACK_D8)( uint8_t  *__restrict out, unsigned n, const unsigned char *__restrict in, uint8_t start);
@@ -113,7 +131,7 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
 
 //----- bitpack FOR ---------------
 #define IP9(_ip_,_x_, _parm_)
-#define IPV(_ip_,_x_)           IP(_ip_,_x_) - start
+#define IPV(_ip_,_x_)           (IP(_ip_,_x_) - start)
 #define IPX(_ip_,_x_)           (V = IP(_ip_,_x_) - start)
 #define IP16(_ip_,_x_, _parm_)
 #define IP32(_ip_,_x_, _parm_)

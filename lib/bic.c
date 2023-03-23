@@ -33,6 +33,8 @@
 
 static ALWAYS_INLINE unsigned pow2next(unsigned x) { return x<2?1:(1ull << (__bsr32((x)-1)+1)); }
 
+size_t bicbound16(size_t n) { return n*2+4; }
+size_t bicbound32(size_t n) { return n*4+4; }
 //-- Simple binary ----------------------------------------------------------------------
 #define bicput(bw,br, _u_, _x_, _usize_) bitput(  bw,br, T2(__bsr,_usize_)(_u_) + 1, _x_)   /*AS(_u_ > 0, "Fatal bicput"); AS(_x_ <= _u_, "Fatal bicput2");*/
 #define bicget(bw,br, _u_, _x_, _usize_) bitget57(bw,br, T2(__bsr,_usize_)(_u_) + 1, _x_)
