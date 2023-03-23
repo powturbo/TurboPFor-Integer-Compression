@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\icapp.c" />
+    <ClCompile Include="..\..\lib\icapp.c" />
     <ClCompile Include="..\getopt.c" />
   </ItemGroup>
   <ItemGroup>
@@ -29,7 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ic.h" />
-    <ClInclude Include="..\..\include_\iccodec.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
