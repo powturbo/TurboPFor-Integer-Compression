@@ -38,10 +38,25 @@ typedef unsigned long long uint64_t;
 extern "C" {
 #endif
 
-unsigned bicsenc32(uint32_t      *in, unsigned n, unsigned char *out);
-unsigned bicsdec32(unsigned char *in, unsigned n, uint32_t      *out);
+//-- maximum output size for encoding
+size_t bicbound16(size_t n);
+size_t bicbound32(size_t n);
+
+//-- Simple binary
+unsigned bicbenc16(uint16_t      *in, unsigned n, unsigned char *out);
+unsigned bicbdec16(unsigned char *in, unsigned n, uint16_t      *out);
+unsigned bicbenc32(uint32_t      *in, unsigned n, unsigned char *out);
+unsigned bicbdec32(unsigned char *in, unsigned n, uint32_t      *out);
+
+//-- Leftmost minimal 
+unsigned bicenc16( uint16_t      *in, unsigned n, unsigned char *out);
+unsigned bicdec16( unsigned char *in, unsigned n, uint16_t      *out);
 unsigned bicenc32( uint32_t      *in, unsigned n, unsigned char *out);
 unsigned bicdec32( unsigned char *in, unsigned n, uint32_t      *out);
+
+//-- Center Minimal
+unsigned bicmenc16(uint16_t      *in, unsigned n, unsigned char *out);
+unsigned bicmdec16(unsigned char *in, unsigned n, uint16_t      *out);
 unsigned bicmenc32(uint32_t      *in, unsigned n, unsigned char *out);
 unsigned bicmdec32(unsigned char *in, unsigned n, uint32_t      *out);
 
@@ -53,6 +68,21 @@ unsigned bicmdec32(unsigned char *in, unsigned n, uint32_t      *out);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+size_t bitnbound8(     size_t n);
+size_t bitnbound16(    size_t n);
+size_t bitnbound32(    size_t n);
+size_t bitnbound64(    size_t n);
+
+size_t bitnbound128v8( size_t n);
+size_t bitnbound128v16(size_t n);
+size_t bitnbound128v32(size_t n);
+size_t bitnbound128v64(size_t n);
+
+size_t bitnbound256v8( size_t n);
+size_t bitnbound256v16(size_t n);
+size_t bitnbound256v32(size_t n);
+size_t bitnbound256v64(size_t n);
 
 //******************** Bit Packing High Level API - n unlimited ****************************
 size_t bitnpack8(         uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
@@ -87,6 +117,14 @@ size_t bitnzpack64(       uint64_t *__restrict in, size_t n, unsigned char *__re
 size_t bitnzpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnzpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnzpack256v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+
+size_t bitnxpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnxpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnxpack32(       uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnxpack64(       uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnxpack128v16(   uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnxpack128v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitnxpack256v32(   uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
 size_t bitnfpack8(        uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t bitnfpack16(       uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -129,6 +167,14 @@ size_t bitnzunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__re
 size_t bitnzunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t bitnzunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 
+size_t bitnxunpack8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
+size_t bitnxunpack16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
+size_t bitnxunpack32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t bitnxunpack64(     unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
+size_t bitnxunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
+size_t bitnxunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+size_t bitnxunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+
 size_t bitnfunpack8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);
 size_t bitnfunpack16(     unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t bitnfunpack32(     unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
@@ -136,6 +182,13 @@ size_t bitnfunpack64(     unsigned char *__restrict in, size_t n, uint64_t *__re
 size_t bitnfunpack128v16( unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
 size_t bitnfunpack128v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t bitnfunpack256v32( unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+
+size_t bitns1pack128v16(  uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitns1pack128v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
+size_t bitns1unpack128v16(unsigned char *__restrict in, size_t n, uint16_t *__restrict out);
+size_t bitns1unpack128v32(unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+
+
 //******** Bit Packing Low level API ****************************************************************
 // bipackNN: Pack array with n unsigned (NN bits in[n]) values to the buffer out using nbits per value. Return value = end of compressed buffer out
 unsigned char *bitpack8(    uint8_t  *__restrict in, unsigned n, const unsigned char *__restrict out , unsigned b);
@@ -206,6 +259,10 @@ unsigned char *bitf1pack256v32(unsigned          *__restrict in, unsigned n, uns
 unsigned char *bitzpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
 unsigned char *bitxpack256v32( unsigned          *__restrict in, unsigned n, unsigned char *__restrict out, unsigned       start, unsigned b);
 
+unsigned char *bits1pack128v16(unsigned short *__restrict in, unsigned n, unsigned char *__restrict out, unsigned short start, unsigned b);
+unsigned char *bits1pack128v32(unsigned       *__restrict in, unsigned n, unsigned char *__restrict out, unsigned start, unsigned b);
+unsigned char *bits1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b);
+unsigned char *bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b);
 //********************************** Bit Packing : Unpack ****************************************************************
 
 // ---------------- Unpack a b-bits packed integer array -------------------------------------------------------------------------------
@@ -324,7 +381,7 @@ unsigned char *_bitunpack128h32(  const unsigned char *__restrict in, unsigned n
 unsigned char *_bitdunpack128h32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 unsigned char *_bitd1unpack128h32(const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 
-//unsigned char *_bitunpack256w32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
+unsigned char *_bitunpack256w32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
 unsigned char *_bitunpack128v64(  const unsigned char *__restrict in, unsigned n, uint64_t *__restrict out, unsigned b, uint32_t *__restrict pex, unsigned char *bb);
 
 unsigned char *_bitunpack256v32(  const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb);
@@ -341,17 +398,19 @@ unsigned char *_bitzunpack256v32( const unsigned char *__restrict in, unsigned n
 extern "C" {
 #endif
 //------ ORed array, used to determine the maximum bit length of the elements in an unsorted integer array ---------------------
-uint8_t  bit8( uint8_t  *in, unsigned n, uint8_t  *px);
-uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px);
-uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px);
-uint64_t bit64(uint64_t *in, unsigned n, uint64_t *px);
+uint8_t  bit8(     uint8_t  *in, unsigned n, uint8_t  *px);
+uint16_t bit16(    uint16_t *in, unsigned n, uint16_t *px);
+uint32_t bit32(    uint32_t *in, unsigned n, uint32_t *px);
+uint64_t bit64(    uint64_t *in, unsigned n, uint64_t *px);
+uint32_t bit256v32(uint32_t *in, unsigned n, uint32_t *px);
 
 //-------------- delta = 0: Sorted integer array w/ mindelta = 0 ----------------------------------------------
 //-- ORed array, maximum bit length of the non decreasing integer array. out[i] = in[i] - in[i-1]
-uint8_t  bitd8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
-uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
-uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
-uint64_t bitd64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint8_t  bitd8(     uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
+uint16_t bitd16(    uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
+uint32_t bitd32(    uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
+uint64_t bitd64(    uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitd256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 
 //-- in-place reverse delta 0
 void bitddec8(  uint8_t  *p,  unsigned n, uint8_t  start); // non decreasing (out[i] = in[i] - in[i-1])
@@ -369,6 +428,7 @@ uint8_t  bitd18( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
 uint16_t bitd116(uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitd1256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 
 //-- in-place reverse delta one
 void bitd1dec8(     uint8_t  *p,  unsigned n, uint8_t  start); // non strictly decreasing (out[i] = in[i] - in[i-1] - 1)
@@ -418,6 +478,7 @@ uint8_t  bitz8(    uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
 uint16_t bitz16(   uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
 uint32_t bitz32(   uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 uint64_t bitz64(   uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitz256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 //-- Zigzag transform
 uint8_t  bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta);
 uint16_t bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta);
@@ -449,10 +510,11 @@ void bitzzdec64(    uint64_t *in,  unsigned n, uint64_t start);
 
 //------------- XOR encoding for unsorted integer lists: out[i] = in[i] - in[i-1] -------------
 //-- ORed array, to get maximum zigzag bit length integer array
-uint8_t  bitx8(    uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
-uint16_t bitx16(   uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
-uint32_t bitx32(   uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
-uint64_t bitx64(   uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint8_t  bitx8(     uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start);
+uint16_t bitx16(    uint16_t *in, unsigned n, uint16_t *px, uint16_t start);
+uint32_t bitx32(    uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
+uint64_t bitx64(    uint64_t *in, unsigned n, uint64_t *px, uint64_t start);
+uint32_t bitx256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start);
 
 //-- XOR transform
 uint8_t  bitxenc8(  uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start);
@@ -948,10 +1010,12 @@ size_t vlczdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 extern "C" {
 #endif
 
-size_t v8bound16(const uint16_t *in, size_t n);
-size_t v8bound32(const uint32_t *in, size_t n);
-
 //----------------------------- TurboVByte 'vb':Variable byte + SIMD TurboByte 'v8': array functions -----
+size_t vbbound8( size_t n);
+size_t vbbound16(size_t n);
+size_t vbbound32(size_t n);
+size_t vbbound64(size_t n);
+
 // Encoding/Decoding: Return value = end of compressed/decompressed output/input buffer out/in
 
 //----------------------- Encoding/Decoding unsorted array with n integer values --------------------------
@@ -1067,6 +1131,9 @@ unsigned vbzgeteq32( unsigned char **__restrict in, unsigned n, unsigned idx, un
 unsigned vbzgeteq64( unsigned char **__restrict in, unsigned n, unsigned idx, uint64_t       key, unsigned start);*/
 
 //-------------------------- TurboByte (SIMD Group varint) --------------------------------------------------------------
+size_t v8bound16(size_t n);
+size_t v8bound32(size_t n);
+
 size_t v8len32(const uint32_t *in, size_t n);
 size_t v8len16(const uint16_t *in, size_t n);
 
@@ -1191,9 +1258,26 @@ size_t v8nxdec256v32( unsigned char *__restrict in, size_t n, uint32_t      *__r
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+size_t p4nbound8( size_t n);
+size_t p4nbound16(size_t n);
+size_t p4nbound32(size_t n);
+size_t p4nbound64(size_t n);
+
+size_t p4nbound128v8( size_t n);
+size_t p4nbound128v16(size_t n);
+size_t p4nbound128v32(size_t n);
+size_t p4nbound128v64(size_t n);
+
+size_t p4nbound256v8( size_t n);
+size_t p4nbound256v16(size_t n);
+size_t p4nbound256v32(size_t n);
+size_t p4nbound256v64(size_t n);
+
 //************************************************ High level API - n unlimited *******
 // Compress integer array with n values to the buffer out.
 // Return value = number of bytes written to compressed buffer out
+// n:number of integers in the input in
 size_t p4nenc8(       uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nenc16(      uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nenc32(      uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -1205,7 +1289,7 @@ size_t p4nenc256w32(  uint32_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4nenc256v32(  uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 
 
-size_t p4ndenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4ndenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); // delta 0
 size_t p4ndenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -1213,7 +1297,7 @@ size_t p4ndenc128v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4ndenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4ndenc64(     uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t p4nd1enc8(     uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4nd1enc8(     uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); // delta 1
 size_t p4nd1enc16(    uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc32(    uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc128v16(uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -1221,7 +1305,7 @@ size_t p4nd1enc128v32(uint32_t *__restrict in, size_t n, unsigned char *__restri
 size_t p4nd1enc256v32(uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nd1enc64(    uint64_t *__restrict in, size_t n, unsigned char *__restrict out);
 
-size_t p4nzenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out);
+size_t p4nzenc8(      uint8_t  *__restrict in, size_t n, unsigned char *__restrict out); // zigzag
 size_t p4nzenc16(     uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nzenc32(     uint32_t *__restrict in, size_t n, unsigned char *__restrict out);
 size_t p4nzenc128v16( uint16_t *__restrict in, size_t n, unsigned char *__restrict out);
@@ -1520,6 +1604,11 @@ unsigned char *p4f1decx32( unsigned char *in, unsigned n, uint32_t *out, uint32_
 extern "C" {
 #endif
 
+size_t vsbound8( size_t n);
+size_t vsbound16(size_t n);
+size_t vsbound32(size_t n);
+size_t vsbound64(size_t n);
+
 // vsencNN: compress array with n unsigned (NN bits in[n]) values to the buffer out. Return value = end of compressed output buffer out
 unsigned char *vsenc8( unsigned char  *__restrict in, size_t n, unsigned char  *__restrict out);
 unsigned char *vsenc16(unsigned short *__restrict in, size_t n, unsigned char  *__restrict out);
@@ -1535,3 +1624,5 @@ unsigned char *vsdec64(unsigned char  *__restrict in, size_t n, uint64_t       *
 #ifdef __cplusplus
 }
 #endif
+
+
