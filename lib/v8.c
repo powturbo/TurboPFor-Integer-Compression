@@ -32,13 +32,10 @@
 #include "include_/bitutil_.h" 
 
 #define V8PAYLOAD(_n_, _usize_) (((_n_)*(_usize_/16)+7)/8)
-#define V8BOUND_(_n_, _usize_) (V8PAYLOAD(_n_, _usize_)+ (_n_)*(_usize_/8))
-#define V8BOUND16(_n_) V8BOUND_(_n_, 16)
-#define V8BOUND32(_n_) V8BOUND_(_n_, 32)
+#define V8BOUND(_n_, _usize_) (V8PAYLOAD(_n_, _usize_)+ (_n_)*(_usize_/8))
 
-size_t v8bound16(const uint16_t *in, size_t n) { return V8BOUND16(n); }
-size_t v8bound32(const uint32_t *in, size_t n) { return V8BOUND32(n); }
-
+size_t v8bound16(size_t n) { return V8BOUND(n, 16); }
+size_t v8bound32(size_t n) { return V8BOUND(n, 32); }
 
 size_t v8len16(const uint16_t *in, size_t n) {
   size_t   c = 0;
@@ -972,7 +969,7 @@ unsigned char *T2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *
   
     #ifdef __AVX2__ // slightly faster than SSE ----------------------------------------------------------------------------------------------
   VEINI256v32; const __m256i cv1_8 = _mm256_set1_epi8(1), cv7f00 = _mm256_set1_epi16(0x7F00), zv = _mm256_setzero_si256();
-  for(ip = in; ip != in+(n&~(32-1)); ip += 32) {                                //PREFETCH(ip+512,0);
+  for(ip = in; ip != in+(n&~(32-1)); ip += 32) {                                //PREFETCH(ip+384,0);
     __m256i iv0 = _mm256_loadu_si256(ip   ),
             iv1 = _mm256_loadu_si256(ip+ 8);                                    VE256v32(iv0,sv); VE256v32(iv1,sv);
     __m256i iv2 = _mm256_loadu_si256(ip+16),
@@ -1012,7 +1009,7 @@ unsigned char *T2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *
   }
     #elif defined(__SSSE3__) || defined(__ARM_NEON) // https://gist.github.com/aqrit/746d2f5e4ad1909230e2283272333dc1
   VEINI128v32; const __m128i cv1_8 = _mm_set1_epi8(1), cv7f00 = _mm_set1_epi16(0x7f00);
-  for(ip = in; ip != in+(n&~(32-1)); ip += 32, PNEXT(out,op,8) ) {
+  for(ip = in; ip != in+(n&~(32-1)); ip += 32, PNEXT(out,op,8) ) { 
     __m128i iv0 = _mm_loadu_si128(ip   ),
             iv1 = _mm_loadu_si128(ip+ 4);
     __m128i iv2 = _mm_loadu_si128(ip+ 8),
@@ -1024,7 +1021,7 @@ unsigned char *T2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *
     __m128i iv4 = _mm_loadu_si128(ip+16),
             iv5 = _mm_loadu_si128(ip+20);
     __m128i iv6 = _mm_loadu_si128(ip+24),
-            iv7 = _mm_loadu_si128(ip+28);                   VE128v32(iv4,sv); VE128v32(iv5,sv); VE128v32(iv6,sv); VE128v32(iv7,sv);
+            iv7 = _mm_loadu_si128(ip+28);                   VE128v32(iv4,sv); VE128v32(iv5,sv); VE128v32(iv6,sv); VE128v32(iv7,sv);   
     __m128i mv2 = _mm_packus_epi16(_mm_min_epu8(iv4,cv1_8), _mm_min_epu8(iv5,cv1_8)); mv2 = _mm_min_epi16( mv2, cv1_8); mv2 = _mm_adds_epu16(mv2, cv7f00);
     __m128i mv3 = _mm_packus_epi16(_mm_min_epu8(iv6,cv1_8), _mm_min_epu8(iv7,cv1_8)); mv3 = _mm_min_epi16( mv3, cv1_8); mv3 = _mm_adds_epu16(mv3, cv7f00);
     uint16_t m2 = _mm_movemask_epi8(mv2);
@@ -1050,12 +1047,12 @@ unsigned char *T2(V8ENC,32)(uint32_t *__restrict in, unsigned n, unsigned char *
       _mm_storeu_si128((__m128i *)op, ov1); op += LEN32(m2,1);
       _mm_storeu_si128((__m128i *)op, ov2); op += LEN32(m3,0);
       _mm_storeu_si128((__m128i *)op, ov3); op += LEN32(m3,1);
-    }                                              //PREFETCH(ip+512,0);
+    }                                                                           //PREFETCH(ip+384,0);    
   }
     #else  //------------------------------ scalar ----------------------------------------------
-  for(ip = in; ip != in+(n&~(32-1)); ip += 32) { PNEXTA(out,op,8); VLE4( 0); VLE4( 4); VLE4( 8); VLE4(12); VLE4(16); VLE4(20); VLE4(24); VLE4(28); PREFETCH(ip+512,0); }
+  for(ip = in; ip != in+(n&~(32-1)); ip += 32) { PNEXTA(out,op,8); VLE4( 0); VLE4( 4); VLE4( 8); VLE4(12); VLE4(16); VLE4(20); VLE4(24); VLE4(28); /*PREFETCH(ip+512,0);*/ }
     #endif
-                                      for(                       ; ip != in+(n&~(4-1)); ip += 4) { PNEXTA(out,op,1); VLE4(0); }
+                                      for(                      ; ip != in+(n&~(4-1)); ip += 4) { PNEXTA(out,op,1); VLE4(0); }
   if(ip != in+n) { uint32_t *sp = ip; for(*OP=0,PNEXTA(out,op,1); ip != in+n;          ip++   ) VLE1(out[0]); }
   return op;
 }
@@ -1075,7 +1072,7 @@ unsigned char *T2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t 
     #ifdef __AVX2__ //slightly faster than SSE ------------------------------------------------------------------------------------------
   VDINI256v32;
   uint64_t mx = ctou64(IP);
-  for(; op != out+(n&~(32-1)); op += 32) {                              //PREFETCH(ip+512,0);
+  for(; op != out+(n&~(32-1)); op += 32) {                                      PREFETCH(ip+384,0);
     uint64_t m = mx; mx = ctou64(IP+=8);                                     
     {__m256i ov0 = _mm256_castsi128_si256(      _mm_loadu_si128(ip));   ip += LEN32(m,0);
              ov0 = _mm256_inserti128_si256(ov0, _mm_loadu_si128(ip),1); ip += LEN32(m,1);
@@ -1136,7 +1133,7 @@ unsigned char *T2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t 
 	   __m128i sv0 = SVD32((uint8_t )m,0);
 	   __m128i sv1 = SVD32((uint16_t)m,1);   m>>=16;
        __m128i ov2 = _mm_loadu_si128(ip);    ip += LEN32((uint8_t )m,0);
-       __m128i ov3 = _mm_loadu_si128(ip);    ip += LEN32((uint16_t)m,1);       //PREFETCH(ip+256,0);
+       __m128i ov3 = _mm_loadu_si128(ip);    ip += LEN32((uint16_t)m,1);        
 	   __m128i sv2 = SVD32(m,0);
 	   __m128i sv3 = SVD32(m,1);             
 
@@ -1148,13 +1145,13 @@ unsigned char *T2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t 
        VD128v32(ov0,sv); _mm_storeu_si128(op+16, ov0);
        VD128v32(ov1,sv); _mm_storeu_si128(op+20, ov1);
        VD128v32(ov2,sv); _mm_storeu_si128(op+24, ov2);
-       VD128v32(ov3,sv); _mm_storeu_si128(op+28, ov3);    
+       VD128v32(ov3,sv); _mm_storeu_si128(op+28, ov3);                          PREFETCH(ip+384,0);
       }	
     }
   }
    #elif defined(__ARM_NEON) || defined(__SSSE3__) // optimzed for ARM ----------------------------------------------------------
   VDINI128v32;
-  for(; op != out+(n&~(32-1)); op += 32) {                              PREFETCH(ip+256,0);
+  for(; op != out+(n&~(32-1)); op += 32) {                                      //PREFETCH(ip+384,0);
     uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4);
     __m128i ov0 = _mm_loadu_si128(ip+IPINC); ip += LEN32(m0,0)+IPINC;
     __m128i fv0 = SVD32(m0,0);
@@ -1196,8 +1193,7 @@ unsigned char *T2(V8DEC,32)(unsigned char  *__restrict in, unsigned n, uint32_t 
   }
     #else //----------------------------- scalar -----------------------------------------------
   for(; op != out+(n&~(32-1)); op += 32) { in = ip; ip+=8;
-    VLD4( 0); VLD4( 4); VLD4( 8); VLD4(12); VLD4(16); VLD4(20); VLD4(24); VLD4(28);
-    PREFETCH(ip+512,0);
+    VLD4( 0); VLD4( 4); VLD4( 8); VLD4(12); VLD4(16); VLD4(20); VLD4(24); VLD4(28);  //PREFETCH(ip+512,0);
   }
     #endif
   uint32_t m;                          for(;          op != out+(n&~(4-1)); op += 4) { PNEXTA(in,ip,1); VLD4( 0); }
@@ -1297,7 +1293,7 @@ unsigned char *T2(V8DEC,16)(unsigned char  *__restrict in, unsigned n, uint16_t 
 
     #if defined(__SSSE3__) || defined(__ARM_NEON)//-----------------------
   VDINI128v16;
-  for(op = out; op != out+(n&~(64-1)); op += 64) {                  //PREFETCH(ip+512,0);
+  for(op = out; op != out+(n&~(64-1)); op += 64) {                              PREFETCH(ip+512,0);
     uint32_t m0 = ctou32(IP), m1 = ctou32(IP+4);
     __m128i ov0 = _mm_shuffle_epi8(_mm_loadu_si128(ip+IPINC), SVD16(m0,0)); ip += LEN16(m0,0)+IPINC;
     __m128i ov1 = _mm_shuffle_epi8(_mm_loadu_si128(ip), SVD16(m0,1)); ip += LEN16(m0,1);
@@ -1322,7 +1318,7 @@ unsigned char *T2(V8DEC,16)(unsigned char  *__restrict in, unsigned n, uint16_t 
   }
     #else //-------------- scalar --------------------------------------------------------
   for(op = out; op != out+(n&~(64-1)); op += 64) { ip += 8;
-    VLD8( 0); VLD8( 8); VLD8(16); VLD8(24);  VLD8(32); VLD8(40); VLD8(48); VLD8(56);    PREFETCH(ip+512,0);
+    VLD8( 0); VLD8( 8); VLD8(16); VLD8(24);  VLD8(32); VLD8(40); VLD8(48); VLD8(56); PREFETCH(ip+512,0);
     in = ip;
   }
     #endif
