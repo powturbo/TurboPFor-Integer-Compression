@@ -11,7 +11,6 @@
 # 2 - activate the repository in the makefile ext/libext.mak
 # 3 -       make: "make CODEC1=1 ICCODEC=1" 
 #           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
-# on arm make: "make CODEC1=1 ICCODEC=1"
 
 #ICCODEC=1
 #AVX2=1
@@ -29,11 +28,9 @@ PREFIX ?= /usr/local
 DIRBIN ?= $(PREFIX)/bin
 DIRINC ?= $(PREFIX)/include
 DIRLIB ?= $(PREFIX)/lib
+SRC ?= lib/
 
 OPT=-fstrict-aliasing -fPIC
-ifeq (,$(findstring clang, $(CC)))
-OPT+=-falign-loops 
-endif
 
 #------- OS/ARCH -------------------
 ifneq (,$(filter Windows%,$(OS)))
@@ -73,7 +70,13 @@ else ifeq ($(ARCH),$(filter $(ARCH),x86_64))
   _AVX2=-march=haswell
 endif
 
-CFLAGS+=$(DEBUG) $(OPT) -w 
+ifeq (,$(findstring clang, $(CC)))
+OPT+=-falign-loops 
+endif
+
+CFLAGS+=$(DEBUG) $(OPT) 
+#CFLAGS+=-Wno-macro-redefined -Wno-incompatible-pointer-types -Wno-tautological-constant-out-of-range-compare -Wno-discarded-qualifiers
+CFLAGS+=-w -Wall
 CXXFLAGS+=-w 
 #-Wall -Wincompatible-pointer-types
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
@@ -90,30 +93,29 @@ endif
 
 all: icapp 
 
-bitutil_avx2.o: bitutil.c
-	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitutil.c -o bitutil_avx2.o
+$(SRC)bitutil_avx2.o: $(SRC)bitutil.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)bitutil.c -o $(SRC)bitutil_avx2.o
 
-vp4c_avx2.o: vp4c.c
-	$(CC) -O3 -w $(_AVX2) $(OPT) -c vp4c.c -o vp4c_avx2.o
+$(SRC)vp4c_avx2.o: $(SRC)vp4c.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)vp4c.c -o $(SRC)vp4c_avx2.o
 
-vp4d_avx2.o: vp4d.c
-	$(CC) -O3 -w $(_AVX2) $(OPT) -c vp4d.c -o vp4d_avx2.o
+$(SRC)vp4d_avx2.o: $(SRC)vp4d.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)vp4d.c -o $(SRC)vp4d_avx2.o
 
-bitpack_avx2.o: bitpack.c
-	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitpack.c -o bitpack_avx2.o
+$(SRC)bitpack_avx2.o: $(SRC)bitpack.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)bitpack.c -o $(SRC)bitpack_avx2.o
 
-bitunpack_avx2.o: bitunpack.c
-	$(CC) -O3 -w $(_AVX2) $(OPT) -c bitunpack.c -o bitunpack_avx2.o
+$(SRC)bitunpack_avx2.o: $(SRC)bitunpack.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)bitunpack.c -o $(SRC)bitunpack_avx2.o
 
-transpose_avx2.o: transpose.c
-	$(CC) -O3 -w $(_AVX2) $(OPT) -c transpose.c -o transpose_avx2.o
+$(SRC)transpose_avx2.o: $(SRC)transpose.c
+	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)transpose.c -o $(SRC)transpose_avx2.o
 
--include ext/libext.mak
+-include lib/libext.mak
 
-LIB=bic.o bitpack.o bitunpack.o bitutil.o eliasfano.o fp.o transpose.o transpose_.o trlec.o trled.o vp4c.o vp4d.o v8.o v8pack.o vint.o vsimple.o vbit.o 
-#transpose_sse.o
+LIB=$(SRC)bic.o $(SRC)bitpack.o $(SRC)bitunpack.o $(SRC)bitutil.o $(SRC)eliasfano.o $(SRC)fp.o $(SRC)transpose.o $(SRC)transpose_.o $(SRC)trlec.o $(SRC)trled.o $(SRC)vp4c.o $(SRC)vp4d.o $(SRC)v8.o $(SRC)v8pack.o $(SRC)vint.o $(SRC)vsimple.o $(SRC)vbit.o 
 ifeq ($(ARCH),x86_64)
-LIB+=vp4c_avx2.o vp4d_avx2.o transpose_avx2.o bitpack_avx2.o bitunpack_avx2.o bitutil_avx2.o
+LIB+=$(SRC)vp4c_avx2.o $(SRC)vp4d_avx2.o $(SRC)transpose_avx2.o $(SRC)bitpack_avx2.o $(SRC)bitunpack_avx2.o $(SRC)bitutil_avx2.o
 endif
 
 ifeq ($(AVX2),1)
@@ -126,7 +128,7 @@ endif
 
 ifeq ($(ICCODEC),1) 
 CFLAGS+=-D_ICCODEC
-LIB+=iccodec.o
+LIB+=$(SRC)iccodec.o
 endif
 
 libic.a: $(LIB)
@@ -150,7 +152,7 @@ $(JAVA_SUBDIR)/libic.so : libic.a jic.h jic.c
 $(JAVA_SUBDIR)/jicbench : $(JAVA_SUBDIR)/jicbench.java $(JAVA_SUBDIR)/libic.so
 	cd $(JAVA_SUBDIR) && javac jicbench.java && java -Djava.library.path=. jicbench
 
-icapp: icapp.o libic.a $(OB)
+icapp: $(SRC)icapp.o libic.a $(OB)
 	$(CL) $^ $(LDFLAGS) -o icapp
 
 myapp: myapp.o libic.a
@@ -168,11 +170,11 @@ mycpp: mycpp.o libic.a
 .cpp.o:
 	$(CXX) -O2 $(CXXFLAGS) $< -c -o $@ 
 
-ifeq ($(OS),Windows_NT)
+ifeq ($(OS),Windows)
 clean:
-	del /S *.o
-	del /S *~
-	del libic.a
+	rm lib/*.o
+	rm libic.a
+	rm icapp.exe
 else
 clean:
 	@find . -type f -name "*\.o" -delete -or -name "*\~" -delete -or -name "core" -delete -or -name "icbench" -delete -or -name "libic.a" -delete
