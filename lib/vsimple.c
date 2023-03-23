@@ -46,6 +46,11 @@
 #define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
   #endif
 
+size_t vsbound8( size_t n) { return n*(1+1); }
+size_t vsbound16(size_t n) { return n*(2+1); }
+size_t vsbound32(size_t n) { return n*(4+1); }
+size_t vsbound64(size_t n) { return n*(8+1); }
+
   #ifndef SV_LIM32
 #define USE_RLE
 
