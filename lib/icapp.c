@@ -63,6 +63,7 @@
 
 int verbose = 1,isa;
 extern int tpbsize;
+extern int bwtx, forcelzp;
 
 //------------------------------ bits statistics --------------------------------------------------
 static unsigned xbits[65],tbits[65],zbits[65];
