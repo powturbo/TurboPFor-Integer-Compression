@@ -407,9 +407,9 @@ void bitzzdec64(uint64_t *in, unsigned n, uint64_t start) { BITZDD(uint64_t, in,
 void bitzzdec32(uint32_t *in, unsigned n, uint32_t start) { BITZDD(uint32_t, in, n, 1); }
 
 //-----Undelta: In-place prefix sum (min. Delta = 1) -------------------
-uint8_t  bitd18( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  o=0,x=0,u,*ip; BITDE(uint8_t,  in, n, 1, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
-uint16_t bitd116(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) { uint16_t o=0,x=0,u,*ip; BITDE(uint16_t, in, n, 1, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
-uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o=0,x=0,u,*ip; BITDE(uint64_t, in, n, 1, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
+uint8_t  bitd18( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  o=0,x=0,u; BITDE(uint8_t,  in, n, 1, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
+uint16_t bitd116(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) { uint16_t o=0,x=0,u; BITDE(uint16_t, in, n, 1, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
+uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o=0,x=0,u; BITDE(uint64_t, in, n, 1, o |= u; x |= u ^ in[0]); if(px) *px = x; return o; }
 
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, x=0, *ip = in, u0 = in[0]-start-1;
@@ -508,9 +508,9 @@ uint16_t bitdi16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) { uint1
 uint32_t bitdi32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) { uint32_t mindelta,u,*_ip; BITDIE(in, n); if(px) *px = 0; return mindelta; }
 uint64_t bitdi64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t mindelta,u,*_ip; BITDIE(in, n); if(px) *px = 0; return mindelta; }
 
-uint8_t  bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o=0,x=0,*op = out,u,*ip; BITDE(uint8_t,  in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
-uint16_t bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t o=0,x=0,*op = out,u,*ip; BITDE(uint16_t, in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
-uint64_t bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o=0,x=0,*op = out,u,*ip; BITDE(uint64_t, in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
+uint8_t  bitdienc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o=0,x=0,*op = out,u; BITDE(uint8_t,  in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
+uint16_t bitdienc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t o=0,x=0,*op = out,u; BITDE(uint16_t, in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
+uint64_t bitdienc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o=0,x=0,*op = out,u; BITDE(uint64_t, in, n, mindelta, o |= u; x |= u ^ in[0]; *op++ = u); return o; }
 uint32_t bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
   unsigned *ip = in,b,*op = out;
@@ -559,8 +559,8 @@ uint64_t bitf164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { if(px
 }
 
 // 'or' bits for zigzag encoding
-uint8_t  bitz8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  o, u,x; BITZENC(uint8_t,  int8_t, 8, in, n, o |= x); if(px) *px = 0; return o; }
-uint64_t bitz64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o, u,x; BITZENC(uint64_t, int64_t,64,in, n, o |= x); if(px) *px = 0; return o; }
+uint8_t  bitz8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  o=0, u,x; BITZENC(uint8_t,  int8_t, 8, in, n, o |= x); if(px) *px = 0; return o; }
+uint64_t bitz64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o=0, u,x; BITZENC(uint64_t, int64_t,64,in, n, o |= x); if(px) *px = 0; return o; }
 
 uint16_t bitz16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
   uint16_t o, x, *ip = in; 
@@ -623,9 +623,9 @@ uint32_t bitz32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   return o;
 }
 
-uint8_t  bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o,x,u,*op = out; BITZENC(uint8_t,  int8_t,  8,in, n, o |= u; *op++ = u); return o; }
-uint16_t bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t o,x,u,*op = out; BITZENC(uint16_t, int16_t,16,in, n, o |= u; *op++ = u); return o; }
-uint64_t bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o,x,u,*op = out; BITZENC(uint64_t, int64_t,64,in, n, o |= u; *op++ = u); return o; }
+uint8_t  bitzenc8( uint8_t  *in, unsigned n, uint8_t  *out, uint8_t  start, uint8_t  mindelta) { uint8_t  o=0,x,u,*op = out; BITZENC(uint8_t,  int8_t,  8,in, n, o |= u; *op++ = u); return o; }
+uint16_t bitzenc16(uint16_t *in, unsigned n, uint16_t *out, uint16_t start, uint16_t mindelta) { uint16_t o=0,x,u,*op = out; BITZENC(uint16_t, int16_t,16,in, n, o |= u; *op++ = u); return o; }
+uint64_t bitzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uint64_t mindelta) { uint64_t o=0,x,u,*op = out; BITZENC(uint64_t, int64_t,64,in, n, o |= u; *op++ = u); return o; }
 
 uint32_t bitzenc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uint32_t mindelta) {
     #if defined(__SSE2__) || defined(__ARM_NEON)
@@ -720,8 +720,8 @@ void bitzdec32(unsigned *in, unsigned n, unsigned start) {
   for(        ; _ip != _in_+ _n_;         _ip++   ) { XE(0);_act_; }\
 }
 
-uint8_t  bitx8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  o, u,x; BITXENC(uint8_t,  in, n, o |= x); if(px) *px = 0; return o; }
-uint64_t bitx64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o, u,x; BITXENC(uint64_t, in, n, o |= x); if(px) *px = 0; return o; }
+uint8_t  bitx8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  o=0, u=0,x; BITXENC(uint8_t,  in, n, o |= x); if(px) *px = 0; return o; }
+uint64_t bitx64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o=0, u=0,x; BITXENC(uint64_t, in, n, o |= x); if(px) *px = 0; return o; }
 
 uint16_t bitx16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
   uint16_t o = 0, *ip = in;
