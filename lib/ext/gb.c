@@ -48,7 +48,7 @@ void ccr_gbr 			/* [fnc] Granular BitRound buffer of float values */
   double mnt_log10_fabs; /* [frc] log10(fabs(mantissa))) */
   double val; /* [frc] Copy of input value to avoid indirection */
   
-  double prc_bnr_xct; /* [nbr] Binary digits of precision, exact */
+  double prc_bnr_xct=0.0; /* [nbr] Binary digits of precision, exact */
   double mss_val_cmp_dbl; /* Missing value for comparison to double precision values */
 
   float mss_val_cmp_flt; /* Missing value for comparison to single precision values */
@@ -70,8 +70,8 @@ void ccr_gbr 			/* [fnc] Granular BitRound buffer of float values */
   unsigned long long int msk_f64_u64_zro;
   unsigned long long int msk_f64_u64_one;
   unsigned long long int msk_f64_u64_hshv;
-  unsigned short prc_bnr_ceil; /* [nbr] Exact binary digits of precision rounded-up */
-  unsigned short prc_bnr_xpl_rqr; /* [nbr] Explicitly represented binary digits required to retain */
+  unsigned short prc_bnr_ceil=0; /* [nbr] Exact binary digits of precision rounded-up */
+  unsigned short prc_bnr_xpl_rqr=0; /* [nbr] Explicitly represented binary digits required to retain */
 
   /* Disallow unreasonable quantization */
   //assert(nsd > 0);
