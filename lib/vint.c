@@ -37,6 +37,11 @@
  
 #include "include_/bitutil_.h"
 
+size_t vbbound8( size_t n) { return n; }
+size_t vbbound16(size_t n) { return n*(2+1)+3; }
+size_t vbbound32(size_t n) { return n*(4+1)+5; }
+size_t vbbound64(size_t n) { return n*(8+1)+9; }
+
 //----------------------------------------------------------------
 #define OVERFLOWD(in,n,out)    if(*in == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return in+1+n*(USIZE/8); }
 #define OVERFLOWE(in,n,out,op, _goto_) if(op+32 > out + (uint64_t)n*(USIZE/8)) { *out = 0xff; memcpy(out+1, in, n*(USIZE/8)); op = out+1+n*(USIZE/8); _goto_; }
