@@ -143,19 +143,19 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\bic.c" />
-    <ClCompile Include="..\..\bitpack.c">
+    <ClCompile Include="..\..\lib\bitpack.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExceptionHandling>
     </ClCompile>
-    <ClCompile Include="..\..\bitunpack.c" />
-    <ClCompile Include="..\..\bitutil.c">
+    <ClCompile Include="..\..\lib\bitunpack.c" />
+    <ClCompile Include="..\..\lib\bitutil.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\eliasfano.c" />
-    <ClCompile Include="..\..\fp.c" />
-    <ClCompile Include="..\..\iccodec.c" />
-    <ClCompile Include="..\..\transpose.c">
+    <ClCompile Include="..\..\lib\eliasfano.c" />
+    <ClCompile Include="..\..\lib\fp.c" />
+    <ClCompile Include="..\..\lib\iccodec.c" />
+    <ClCompile Include="..\..\lib\bic.c" />
+    <ClCompile Include="..\..\lib\transpose.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotSet</EnableEnhancedInstructionSet>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -165,24 +165,24 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG</PreprocessorDefinitions>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="..\..\transpose_.c">
+    <ClCompile Include="..\..\lib\transpose_.c">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
-    <ClCompile Include="..\..\trlec.c" />
-    <ClCompile Include="..\..\trled.c" />
-    <ClCompile Include="..\..\v8.c">
+    <ClCompile Include="..\..\lib\trlec.c" />
+    <ClCompile Include="..\..\lib\trled.c" />
+    <ClCompile Include="..\..\lib\v8.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\v8pack.c">
+    <ClCompile Include="..\..\lib\v8pack.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">__SSE__;__SSE2__;__SSE3__;__SSSE3__;__SSE4_1__;__SSE4_2__;__AVX__;_CRT_SECURE_NO_WARNINGS=;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\vbit.c" />
-    <ClCompile Include="..\..\vint.c" />
-    <ClCompile Include="..\..\vp4c.c" />
-    <ClCompile Include="..\..\vp4d.c" />
-    <ClCompile Include="..\..\vsimple.c" />
+    <ClCompile Include="..\..\lib\vbit.c" />
+    <ClCompile Include="..\..\lib\vint.c" />
+    <ClCompile Include="..\..\lib\vp4c.c" />
+    <ClCompile Include="..\..\lib\vp4d.c" />
+    <ClCompile Include="..\..\lib\vsimple.c" />
     <ClCompile Include="..\bitpack_avx2.c">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">__AVX2__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -238,30 +238,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\bic.h" />
-    <ClInclude Include="..\..\..\include\bitpack.h" />
-    <ClInclude Include="..\..\..\include\bitutil.h" />
-    <ClInclude Include="..\..\..\include\conf.h" />
-    <ClInclude Include="..\..\..\include\eliasfano.h" />
-    <ClInclude Include="..\..\..\include\fp.h" />
-    <ClInclude Include="..\..\..\include\ic.h" />
-    <ClInclude Include="..\..\..\include\transpose.h" />
-    <ClInclude Include="..\..\..\include\trle.h" />
-    <ClInclude Include="..\..\..\include\vint.h" />
-    <ClInclude Include="..\..\..\include\vlcbit.h" />
-    <ClInclude Include="..\..\..\include\vlcbyte.h" />
-    <ClInclude Include="..\..\..\include\vp4.h" />
-    <ClInclude Include="..\..\..\include\vsimple.h" />
-    <ClInclude Include="..\..\..\include_\bitutil_.h" />
-    <ClInclude Include="..\..\bitpack.h" />
-    <ClInclude Include="..\..\bitpack_.h" />
-    <ClInclude Include="..\..\bitunpack_.h" />
-    <ClInclude Include="..\..\transpose.h" />
-    <ClInclude Include="..\..\trle.h" />
-    <ClInclude Include="..\..\trle_.h" />
-    <ClInclude Include="..\..\vint.h" />
-    <ClInclude Include="..\..\vp4.h" />
-    <ClInclude Include="..\..\vsimple.h" />
+    <ClInclude Include="..\..\lib\bitpack_.h" />
+    <ClInclude Include="..\..\lib\bitunpack_.h" />
+    <ClInclude Include="..\..\lib\include_\bic.h" />
+    <ClInclude Include="..\..\lib\include_\bitiobe.h" />
+    <ClInclude Include="..\..\lib\include_\bitpack.h" />
+    <ClInclude Include="..\..\lib\include_\bitutil.h" />
+    <ClInclude Include="..\..\lib\include_\bitutil_.h" />
+    <ClInclude Include="..\..\lib\include_\conf.h" />
+    <ClInclude Include="..\..\lib\include_\eliasfano.h" />
+    <ClInclude Include="..\..\lib\include_\fp.h" />
+    <ClInclude Include="..\..\lib\include_\iccodec.h" />
+    <ClInclude Include="..\..\lib\include_\sse_neon.h" />
+    <ClInclude Include="..\..\lib\include_\time_.h" />
+    <ClInclude Include="..\..\lib\include_\transpose.h" />
+    <ClInclude Include="..\..\lib\include_\trle.h" />
+    <ClInclude Include="..\..\lib\include_\vbit.h" />
+    <ClInclude Include="..\..\lib\include_\vint.h" />
+    <ClInclude Include="..\..\lib\include_\vlcbit.h" />
+    <ClInclude Include="..\..\lib\include_\vlcbyte.h" />
+    <ClInclude Include="..\..\lib\include_\vp4.h" />
+    <ClInclude Include="..\..\lib\include_\vsimple.h" />
+    <ClInclude Include="..\..\lib\trle_.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
