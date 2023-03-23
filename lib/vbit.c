@@ -177,7 +177,7 @@ size_t vlcenc32(unsigned char *_in, size_t _inlen, unsigned char *out) {
   biteinir(bw,br,bp);
 
   #define VE(_i_) { bitvcput(bw,br,op,bp,VLC_VN8,0/*VLC_VB8*/, ip[_i_]); }
-  for(; ip < in + inlen&~(4-1); ip += 4) { VE(0); VE(1); bitenormr(bw,br,bp); VE(2); VE(3); bitenormr(bw,br,bp); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
+  for(; ip < in + (inlen&(~(4-1))); ip += 4) { VE(0); VE(1); bitenormr(bw,br,bp); VE(2); VE(3); bitenormr(bw,br,bp); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
   for(; ip < in+inlen; ip++) { VE(0); bitenormr(bw,br,bp); if(bp <= op+5) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }}
 
   bitflushr(bw,br,bp);
@@ -195,7 +195,7 @@ size_t vlcdec32(unsigned char *in, size_t _outlen, unsigned char *_out) {
   OUTDEC;
   bitddef(bw, br); bitdinir(bw,br,bp);
   #define VD(_i_) { bitvcget(bw,br,ip,bp,VLC_VN8,0/*VLC_VB8*/, op[_i_]); }
-  for(; op != out+outlen&~(4-1); op+=4) { bitdnormr(bw,br,bp); VD(0); VD(1); bitdnormr(bw,br,bp); VD(2); VD(3); }
+  for(; op != out+(outlen&(~(4-1))); op+=4) { bitdnormr(bw,br,bp); VD(0); VD(1); bitdnormr(bw,br,bp); VD(2); VD(3); }
   for(; op != out+outlen; op++) { bitdnormr(bw,br,bp); VD(0); }
   return inlen+4;
 }
@@ -208,7 +208,7 @@ size_t vlcenc16(unsigned char *_in, size_t _inlen, unsigned char *out) {
   biteinir(bw,br,bp);
 
   #define VE(_i_) { bitvput(bw,br,VLC_VN6,VLC_VB6, ip[_i_]); }
-  for(; ip < in + inlen&~(4-1); ip += 4) { VE(0); VE(1); bitenormr(bw,br,bp); VE(2); VE(3); bitenormr(bw,br,bp); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
+  for(; ip < in + (inlen&(~(4-1))); ip += 4) { VE(0); VE(1); bitenormr(bw,br,bp); VE(2); VE(3); bitenormr(bw,br,bp); if(bp <= op+20) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; } }
   for(; ip < in+inlen; ip++) { VE(0); bitenormr(bw,br,bp); if(bp <= op+5) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }}
 
   bitflushr(bw,br,bp);
@@ -226,7 +226,7 @@ size_t vlcdec16(unsigned char *in, size_t _outlen, unsigned char *_out) {
   OUTDEC;
   bitddef(bw, br); bitdinir(bw,br,bp);
   #define VD(_i_) { bitvget(bw,br,VLC_VN6,VLC_VB6, op[_i_]); }
-  for(; op != out+outlen&~(4-1); op+=4) { bitdnormr(bw,br,bp); VD(0); VD(1); bitdnormr(bw,br,bp); VD(2); VD(3); }
+  for(; op != out+(outlen&(~(4-1))); op+=4) { bitdnormr(bw,br,bp); VD(0); VD(1); bitdnormr(bw,br,bp); VD(2); VD(3); }
   for(; op != out+outlen; op++) { bitdnormr(bw,br,bp); VD(0); }
   return inlen+4;
 }
