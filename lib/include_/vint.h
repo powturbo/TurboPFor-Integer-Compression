@@ -4,10 +4,12 @@
 extern "C" {
 #endif
 
-size_t v8bound16(const uint16_t *in, size_t n);
-size_t v8bound32(const uint32_t *in, size_t n);
-
 //----------------------------- TurboVByte 'vb':Variable byte + SIMD TurboByte 'v8': array functions -----
+size_t vbbound8( size_t n);
+size_t vbbound16(size_t n);
+size_t vbbound32(size_t n);
+size_t vbbound64(size_t n);
+
 // Encoding/Decoding: Return value = end of compressed/decompressed output/input buffer out/in
 
 //----------------------- Encoding/Decoding unsorted array with n integer values --------------------------
@@ -123,6 +125,9 @@ unsigned vbzgeteq32( unsigned char **__restrict in, unsigned n, unsigned idx, un
 unsigned vbzgeteq64( unsigned char **__restrict in, unsigned n, unsigned idx, uint64_t       key, unsigned start);*/
 
 //-------------------------- TurboByte (SIMD Group varint) --------------------------------------------------------------
+size_t v8bound16(size_t n);
+size_t v8bound32(size_t n);
+
 size_t v8len32(const uint32_t *in, size_t n);
 size_t v8len16(const uint16_t *in, size_t n);
 
