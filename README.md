@@ -404,7 +404,7 @@ In general encoding/decoding functions are of the form:
   compressed_size : number of bytes read from compressed input buffer in<br />
 
 ### Function syntax:
- - {vb | p4 | bit | vs}[n][d | d1 | f | fm | z ]{enc/dec | pack/unpack}[| 128V | 256V][8 | 16 | 32 | 64]:<br />
+ - {vb | p4 | bit | vs | v8 | bic }[n][d | d1 | f | fm | z ]{enc/dec | pack/unpack}[| 128v | 256v][8 | 16 | 32 | 64]:<br />
    vb:  variable byte<br />
    p4:  turbopfor<br />
    vs:  variable simple<br />
@@ -445,6 +445,18 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 ###### Multithreading:
 - All TurboPFor integer compression functions are thread safe
 
+#### Knowns issues
+- Actually (2023.04) there are no known issues or bugs
+- The TurboPFor functions can work with arbitrary inputs
+- TurboPFor does normally not read outside the input (encode/decode) buffers
+  and does not write outside the output buffer at decoding.
+- TurboPFor does not write above a properly sized output buffers at encoding.
+  Use the bound (ex. v8bound,p4bound) functions to allocate a max. memory output buffer.   
+
+##  LICENSE
+- GPL 2.0
+- A commercial license is available. Contact us at powturbo [AT] gmail.com for more information.
+
 ### References:
 
 *   [TurboPFor: an analysis](https://michael.stapelberg.ch/posts/2019-02-05-turbopfor-analysis/)
@@ -480,6 +492,6 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  21 Mar 2023
+Last update:  28 Mar 2023
 
 
