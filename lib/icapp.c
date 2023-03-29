@@ -497,11 +497,11 @@ unsigned befgen(unsigned char **_in, unsigned n, int fmt, int isize, FILE *fi, i
                                        if(verbose>=5 && n < 100 || verbose>=9) { c=*q; *q=0; printf("\'%s\'->%lld ", p, u); *q = c; }
         } else {
           while(*p && !isdigit(*p) && *p != '-' && *p != '.' && *p != '+') { if(keysep && strchr(keysep,*p)) keyid++; p++; }
-		  char sbuf[65]; strcpy(sbuf, s);
+		  char sbuf[65]; 
 		  if(isize == -4) {
-            float d = strtof(p, &q) - mdelta;
+            float d = strtof(p, &q) - mdelta;                             *q = 0; strcpy(sbuf, p);
 		    if(autoraz) {
-		      *q = 0; while(q[-1] == '0') *q-- = 0;
+		      *q = 0; while(q[-1] == '0') *q-- = 0;                       
 			  char *t = q; for(;q > p; q--) if(*q == '.') break;
 		      int e = t - q - 1;   	                                      //if(e < 0) e = 0; //{ printf("[%s,%d] ", p, e); die(" FATAL"); 			 }
 			  if(e >= 0) {
@@ -1149,18 +1149,18 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s) {
   else if(s == -8) fb = (double)elb*100/((double)n*11);
 
   double mse = easumsqr/n, irange = imax - imin;
-  if(verbose > 1) printf("\n");
+  if(verbose > 2) printf("\n");
   //printf("Leading/Trailing bits [%.2f%%,%.2f%%=%.2f%%]. XOR[%.2f%%,%.2f%%=%.2f%%] Zigzag[%.2f%%]\n", BR(lb), BR(tb), BR(lb+tb), BR(xlb), BR(xtb), BR(xlb+xtb), BR(zlb)/*BR(elb), BR(mtb), BR(elb+mtb)*/ );
-  if(verbose > 1) printf("Range: [min=%g / max=%g] = %g. zeros=%.2f%%, Duplicate=%.2f%%\n", imin, imax, irange, (double)zero*100.0/(double)(n/esize), (double)dup*100.0/(double)(n/esize));
+  if(verbose > 2) printf("Range: [min=%g / max=%g] = %g. zeros=%.2f%%, Duplicate=%.2f%%\n", imin, imax, irange, (double)zero*100.0/(double)(n/esize), (double)dup*100.0/(double)(n/esize));
   //printf("Min error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", eamin, eamin/irange, eamax/irange, ermax);
   //printf("Avg error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", easum/idn, (easum/idn)/irange, ersum/idn);
-  if(verbose > 1) printf("Max error: Absolute = %g, Relative = %g, pointwise relative = %g\n", eamax, eamax/irange, ermax); else printf("e=%g ", ermax);
+  if(verbose > 2) printf("Max error: Absolute = %g, Relative = %g, pointwise relative = %g\n", eamax, eamax/irange, ermax); else if(verbose==2) printf("e=%g ", ermax);
   double psnr=20*log10(irange)-10*log10(mse); 
-  if(verbose > 1) printf("Peak Signal-to-Noise Ratio: PSNR         = %.1f\n", psnr);            else printf("PSNR=%.0f ", psnr);
-  if(verbose > 1) printf("Normalized Root Mean Square Error: NRMSE = %g\n", sqrt(mse)/irange);else printf("NRMSE=%g ", sqrt(mse)/irange);
+  if(verbose > 2) printf("Peak Signal-to-Noise Ratio: PSNR         = %.1f\n", psnr);            else if(verbose==2) printf("PSNR=%.0f ", psnr);
+  if(verbose > 2) printf("Normalized Root Mean Square Error: NRMSE = %g\n", sqrt(mse)/irange);  else if(verbose==2) printf("NRMSE=%g ", sqrt(mse)/irange);
   double std1 = sqrt(isumpavg/n), std2 = sqrt(osumpavg/n), ee = iosumpavg/n, acEff = (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n);
-  if(verbose > 1) printf("Pearson Correlation Coefficient          = %f\n",    (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n));
-  if(verbose == 1) printf("ctz=%.1f%% ", (double)((tb-itb)/8)* 100.0/ (double)(n*esize));
+  if(verbose > 2) printf("Pearson Correlation Coefficient          = %f\n",    (iosumpavg/n)/sqrt(isumpavg/n)/sqrt(osumpavg/n));
+  if(verbose == 2) printf("ctz=%.1f%% ", (double)((tb-itb)/8)* 100.0/ (double)(n*esize));
 }
 
 //---------------------------------------------------------------------------------------
@@ -1751,8 +1751,8 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 	} break;
 	  #endif	
 	  #ifdef _BLOSC
-    case 147: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, 0, 0),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); break;
-    case 148: codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_SHUFFLE, BLOSC_DELTA, 0),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
+    case 147: { unsigned clev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(clev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, clev, 4, BLOSC_SHUFFLE, 0, 0),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); } break;
+    case 148: { unsigned clev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(clev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, clev, 4, BLOSC_SHUFFLE, BLOSC_DELTA, 0),n); pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); } break;
     //case 149: if(zerrlim>DBL_EPSILON) truncate_precision(6, 4, n, in, out);
 	//  codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_TRUNC_PREC, BLOSC_SHUFFLE, BLOSC_DELTA),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
 	  #endif
