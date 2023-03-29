@@ -39,7 +39,7 @@
 #include "ext/bitshuffle/lz4/lz4.h"
     #endif
   #endif
-int bwtx, forcelzp;
+extern int bwtx, forcelzp;
 
 //------------------------------------------------------------------------------------------------------------------------------
 #define powof2(n) !((n)&((n)-1))
@@ -68,7 +68,7 @@ int lzidget(char *scmd) {
   #endif
 
   #ifdef _TURBORC
-#include "ext/Turbo-Range-Coder/turborc.h"
+#include "ext/Turbo-Range-Coder/include/turborc.h"
   #endif
 
   #ifdef _ZSTD
@@ -125,7 +125,7 @@ size_t codecenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
         case 1 : return ec==2?rccssenc(in, inlen, out, 5,6):rccsenc(in, inlen, out);
         case 2 : return ec==2?rcssenc( in, inlen, out, 5,6):rcsenc( in, inlen, out);
 		//#define bwtflag(z) (z==2?BWT_BWT16:0) | (xprep8?BWT_PREP8:0) | forcelzp | (verbose?BWT_VERBOSE:0) | xsort <<14 | itmax <<10 | lenmin
-		case 20: return rcbwtsenc(in,inlen,out,bwtlev,0, 1);
+		case 20: return rcbwtenc(in,inlen,out,bwtlev,0, 1);
       }
     }
       #endif
@@ -210,7 +210,7 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
       switch(codlev) {
         case 1 : return ec==2?rccssdec(in, outlen, out, 5,6):rccsdec(in, outlen, out);
         case 2 : return ec==2?rcssdec( in, outlen, out, 5,6):rcsdec( in, outlen, out);
-		case 20: inlen==outlen?memcpy(out,in,outlen):rcbwtsdec(in,outlen,out,bwtlev, 0); return 0;
+		case 20: inlen==outlen?memcpy(out,in,outlen):rcbwtdec(in,outlen,out,bwtlev, 0); return 0;
 //        case 2 : return turborcndec( in, outlen, out);
       }
     }
