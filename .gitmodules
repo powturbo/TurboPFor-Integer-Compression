@@ -13,3 +13,6 @@
 [submodule "Turbo-Range-Coder"]
 	path = Turbo-Range-Coder
 	url = https://github.com/powturbo/Turbo-Range-Coder
+[submodule "zstd"]
+	path = zstd
+	url = https://github.com/facebook/zstd.git
