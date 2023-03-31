@@ -23,7 +23,7 @@
 
     TurboRLE - "Most efficient and fastest Run Length Encoding"
 **/
-//------------------------- Variable Byte ( see https://github.com/powturbo/TurboPFor )-----------------------------------------------------
+//-------------------------- Variable Byte ( see https://github.com/powturbo/TurboPFor )-----------------------------------------------------
 #include "include_/conf.h"
 #define TMIN 3
 
