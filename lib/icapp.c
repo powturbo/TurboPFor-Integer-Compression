@@ -717,23 +717,32 @@ void meshdec(const uint8_t *in, unsigned inlen, float *out, unsigned nx, unsigne
   #endif
 
   #ifdef _BLOSC
-unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned compcode, int codlev, unsigned esize, int filter0, int filter1, int filter2) {
+unsigned blosccomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned codid, int codlev, unsigned esize, int filter0, int filter1, int filter2) {
+  unsigned clevel   = codid==ICC_ZSTD?((codlev+1)/2):codlev; 
+  unsigned compcode = codid==ICC_LZ4?(clevel>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD;
+  blosc2_schunk schunk;
+  schunk.typesize   = esize;
   blosc2_cparams cp = BLOSC2_CPARAMS_DEFAULTS; 		   
 		cp.typesize = esize;
 	    cp.compcode = compcode;                                                        //BLOSC_LZ4HC, BLOSC_LZ4, BLOSC_ZSTD, BLOSC_LZ4, BLOSC_BLOSCLZ
-		cp.clevel   = codlev<1?1:(codlev<9?codlev:9);                                  //blocksize=[1,32768[2,65536][3,131072][4,262144][5,262144][6,524288][7,524288][8,524288][9,1048576]
+		cp.clevel   = clevel<1?1:(clevel<9?clevel:9);                                  //blocksize=[1,32768[2,65536][3,131072][4,262144][5,262144][6,524288][7,524288][8,524288][9,1048576]
 		cp.nthreads = 1;
+		cp.schunk   = &schunk;
 		cp.filters[BLOSC2_MAX_FILTERS - 1] = filter0; //BLOSC_NOFILTER, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE
 		cp.filters[BLOSC2_MAX_FILTERS - 2] = filter1; //BLOSC_DELTA, BLOSC_FILTER_BYTEDELTA
 		cp.filters[BLOSC2_MAX_FILTERS - 3] = filter2; //BLOSC_TRUNC_PREC
+		
   blosc2_context *ctx = blosc2_create_cctx(cp);
   int rc = blosc2_compress_ctx(ctx, in, (int)inlen, out, (int)outsize);
   blosc2_free_ctx(ctx);
   return rc;
 }
 
-unsigned bloscdecomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen) {
+unsigned bloscdecomp(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen, unsigned esize) {
+  blosc2_schunk schunk;
+  schunk.typesize     = esize;
   blosc2_dparams   dp = BLOSC2_DPARAMS_DEFAULTS;
+                   dp.schunk = &schunk;
   blosc2_context *ctx = blosc2_create_dctx(dp);
   int rc = blosc2_decompress_ctx(ctx, in, inlen, out, outlen);
   blosc2_free_ctx(ctx);
@@ -1020,27 +1029,27 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:128                                  ",
     "%3d:129                                  ",
 	
-    "%3d:streamvbyte      StreamVByte SIMD    ",    //130
+    "%3d:streamvbyte      StreamVByte SIMD    ",  //130
     "%3d:streamvbyte delt StreamVByte delta   ",
     "%3d:streamvbyte zzag StreamVByte zigzag  ",
     "%3d:maskeydvbyte     MasedVByte SIMD     ",
     "%3d:FastPFor         FastPFor            ",
     "%3d:SimdFastPFor     FastPFor SIMD       ",
     "%3d:SimdOptPFor      FastPFor SIMD       ",
-    "%3d:137                                  ",
+    "%3d:SPDP             SPDP Floating Point ",
     "%3d:138                                  ",
     "%3d:139                                  ",
 	
-    "%3d:SPDP             SPDP Floating Point ", //140
-    "%3d:zfp              zfp                 ",
+    "%3d:zfp              zfp                 ",  //140
     "%3d:zfp              zfp 2D              ",
     "%3d:zfp              zfp 3D              ",
-    "%3d:meshoptimizer    3D lz%s,%d          ",	
-    "%3d:meshoptimizer    3D lz%s,%d          ",	
-    "%3d:meshoptimizer    3D lz%s,%d          ",	
-    "%3d:blosc            shuffle+%s,%d       ",   	
-    "%3d:blosc            shuffle delta+%s,%d ",   	
-    "%3d:fprazor          Turbo razor         ", 
+    "%3d:blosc  bitshuffle+%s,%d              ",   	
+    "%3d:blosc  bitshuffle+delta+%s,%d        ",   	
+    "%3d:blosc  bitshuffle+bytedelta+%s,%d    ",   	
+    "%3d:blosc     shuffle+%s,%d              ",   	
+    "%3d:blosc     shuffle+delta+%s,%d        ",   	
+    "%3d:blosc     shuffle+bytedelta+%s,%d    ",   	
+    "%3d:fprazor          Turbo Razor         ", 
 	
     "%3d:gb               granular bitgroom   ",  //150
     "%3d:bitgrooming      bit grooming        ",
@@ -1053,7 +1062,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:tp4z0enc Nibble  transpose+zigzag    ",  	
     "%3d:tp4xenc  Nibble  tranp+xor integrated", 
   	
-    "%3d:tp4x0enc Nibble  transpose+xor       ",   	
+    "%3d:tp4x0enc Nibble  transpose+xor       ",  //160
     "%3d:161              speed test          ",   	
     "%3d:162              speed test          ",   	
     "%3d:163              speed test          ",   	
@@ -1063,6 +1072,18 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:167              speed test          ",   	
     "%3d:168              speed test          ",   	
     "%3d:169              speed test          ",   	
+	
+    "%3d:meshoptimizer    3D lz%s,%d          ", //170
+    "%3d:meshoptimizer    3D lz%s,%d          ",	
+    "%3d:meshoptimizer    3D lz%s,%d          ",	
+    "%3d:173              speed test          ",   	
+    "%3d:174              speed test          ",   	
+    "%3d:175              speed test          ",   	
+    "%3d:176              speed test          ",   	
+    "%3d:177              speed test          ",   	
+    "%3d:178              speed test          ",   	
+    "%3d:179              speed test          ",   	
+	
 };
   if(id < 80)
     sprintf((char *)s,fmt[id], id, b, prms, prmi);  // print bitsize
@@ -1294,7 +1315,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
                      TMBENCH( "", libmemcpy(out,in,n) ,n); l=n;     pr(l,n); pr(n,n); TMBENCH2("120", libmemcpy( cpy,out,n) ,n); break;
 
       #ifdef _SPDP
-    case 140: TMBENCH("",l=spdpenc(in,m*(USIZE),out,SPDPSIZE,codlev),n);pr(l,n); TMBENCH2("109",spdpdec(           out, m*(USIZE), cpy,SPDPSIZE,codlev); ,n); break;
+    case 137: TMBENCH("",l=spdpenc(in,m*(USIZE),out,SPDPSIZE,codlev),n);pr(l,n); TMBENCH2("137",spdpdec(           out, m*(USIZE), cpy,SPDPSIZE,codlev); ,n); break;
       #endif
     default: goto end;
   }
@@ -1724,37 +1745,33 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 135: TMBENCH("",l=FastPFore128v32(in, m, out,ns),n);               pr(l,n); TMBENCH2("135", FastPFord128v32(out, m, cpy),n); break;
     case 136: TMBENCH("",l=OptPFore128v32( in, m, out,ns),n);               pr(l,n); TMBENCH2("136", OptPFord128v32( out, m, cpy),n); break;
 	  #endif
+	  
 	  #ifdef _SPDP
-    case 140: TMBENCH("",l=spdpenc(in,m*(USIZE),out,SPDPSIZE,codlev),n);pr(l,n); TMBENCH2("140",spdpdec(           out, m*(USIZE), cpy,SPDPSIZE,codlev); ,n); break;
+    case 137: TMBENCH("",l=spdpenc(in,m*(USIZE),out,SPDPSIZE,codlev),n);pr(l,n); TMBENCH2("140",spdpdec(           out, m*(USIZE), cpy,SPDPSIZE,codlev); ,n); break;
       #endif
+	  
 	  #ifdef _ZFP
-    case 141: {
-      TMBENCH("",l = zfpcompress(in,m,0,0,0, out, ns, zfp_type_float, zerrlim),n);     pr(l,n); TMBENCH2("141",zfpdecompress(out, l, cpy,m,0,0,0, zfp_type_float, zerrlim),n);
+    case 140: {
+      TMBENCH("",l = zfpcompress(in,m,0,0,0, out, ns, zfp_type_float, zerrlim),n);     pr(l,n); TMBENCH2("140",zfpdecompress(out, l, cpy,m,0,0,0, zfp_type_float, zerrlim),n);
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -4); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
-    case 142: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
-      TMBENCH("",l = zfpcompress(in,nx,_ny,0,0, out, ns, zfp_type_float, zerrlim),n);  pr(l,n); TMBENCH2("142",zfpdecompress(out, l, cpy,nx,_ny,0,0, zfp_type_float, zerrlim),n);
+    case 141: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
+      TMBENCH("",l = zfpcompress(in,nx,_ny,0,0, out, ns, zfp_type_float, zerrlim),n);  pr(l,n); TMBENCH2("141",zfpdecompress(out, l, cpy,nx,_ny,0,0, zfp_type_float, zerrlim),n);
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -4); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
-    case 143: if(nz<=0) goto end; { unsigned _nz = nz*(nw?nw:1);
-      TMBENCH("",l = zfpcompress(in,nx,ny,_nz,0, out, ns, zfp_type_float, zerrlim),n); pr(l,n); TMBENCH2("143",zfpdecompress(out, l, cpy,nx,ny,_nz,0, zfp_type_float, zerrlim),n);
+    case 142: if(nz<=0) goto end; { unsigned _nz = nz*(nw?nw:1);
+      TMBENCH("",l = zfpcompress(in,nx,ny,_nz,0, out, ns, zfp_type_float, zerrlim),n); pr(l,n); TMBENCH2("142",zfpdecompress(out, l, cpy,nx,ny,_nz,0, zfp_type_float, zerrlim),n);
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -4); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
 	  #endif
-	  #ifdef _MESHOPT
-    case 144: TMBENCH("", l = meshenc(in, m,0,0, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("144", meshdec(out, l,cpy, m,0,0, tmp,codid,codlev,codprm),n); break;	
-    case 145: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
-	  TMBENCH("", l = meshenc(in, nx,_ny,0, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("145", meshdec(out, l,cpy, nx,_ny,0, tmp,codid,codlev,codprm),n);
-	} break;	
-    case 146: if(nz<=0) goto end; { unsigned _nz = nz*(nw?nw:1);
-	  TMBENCH("", l = meshenc(in, nx,ny,_nz, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("146", meshdec(out, l,cpy, nx,ny,_nz, tmp,codid,codlev,codprm),n);
-	} break;
-	  #endif	
+	  
 	  #ifdef _BLOSC
-    case 147: { unsigned clev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(clev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, clev, 4, BLOSC_SHUFFLE, 0, 0),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n),n); } break;
-    case 148: { unsigned clev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(clev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, clev, 4, BLOSC_SHUFFLE, BLOSC_DELTA, 0),n); pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); } break;
-    //case 149: if(zerrlim>DBL_EPSILON) truncate_precision(6, 4, n, in, out);
-	//  codlev = codid==ICC_ZSTD?((codlev+1)/2):codlev; TMBENCH("",l = blosccomp(in, n, out, ns, codid==ICC_LZ4?(codlev>9?BLOSC_LZ4HC:BLOSC_LZ4):BLOSC_ZSTD, codlev, 4, BLOSC_TRUNC_PREC, BLOSC_SHUFFLE, BLOSC_DELTA),n);    pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n),n); break;
+    case 143: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_BITSHUFFLE,           0,            0),n); pr(l,n); TMBENCH2("143", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 144: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_BITSHUFFLE, BLOSC_DELTA,            0),n); pr(l,n); TMBENCH2("144", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 145: { blosc2_init(); TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_BITSHUFFLE, BLOSC_FILTER_BYTEDELTA, 0),n); pr(l,n); TMBENCH2("145", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 146: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_SHUFFLE,              0,            0),n); pr(l,n); TMBENCH2("146", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 147: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_SHUFFLE,    BLOSC_DELTA,            0),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 148: { blosc2_init(); TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_SHUFFLE,    BLOSC_FILTER_BYTEDELTA, 0),n); pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
 	  #endif
 	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------	
     case 149:            TMBENCH("", fprazor32(  in, m, out,zerrlim),n);                                          l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -4); break;
@@ -1774,6 +1791,15 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 158: l = n; TMBENCH("", tp4z0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("158", tp4z0dec(out, n,cpy, USIZE),n); break;
     case 159: l = n; TMBENCH("", tp4xenc( in, n, out, USIZE),n);             pr(l,n); TMBENCH2("159", tp4xdec( out, n,cpy, USIZE),n); break;
     case 160: l = n; TMBENCH("", tp4x0enc(in, n, out, USIZE, tmp),n);        pr(l,n); TMBENCH2("160", tp4x0dec(out, n,cpy, USIZE),n); break;
+	  #ifdef _MESHOPT
+    case 170: TMBENCH("", l = meshenc(in, m,0,0, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("170", meshdec(out, l,cpy, m,0,0, tmp,codid,codlev,codprm),n); break;	
+    case 171: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
+	  TMBENCH("", l = meshenc(in, nx,_ny,0, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("171", meshdec(out, l,cpy, nx,_ny,0, tmp,codid,codlev,codprm),n);
+	} break;	
+    case 172: if(nz<=0) goto end; { unsigned _nz = nz*(nw?nw:1);
+	  TMBENCH("", l = meshenc(in, nx,ny,_nz, out, ns, tmp,codid,codlev,codprm),n); pr(l,n); TMBENCH2("172", meshdec(out, l,cpy, nx,ny,_nz, tmp,codid,codlev,codprm),n);
+	} break;
+	  #endif	
     default: goto end;
   }
   if(l) {
@@ -1912,21 +1938,31 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
                      TMBENCH( "", libmemcpy(out,in,n) ,n); l=n;     pr(l,n); TMBENCH2("110", libmemcpy( cpy,out,n) ,n); break;
 
       #ifdef _SPDP
-    case 140: TMBENCH("",l=spdpenc(in,m*(USIZE),out,SPDPSIZE,codlev),n);pr(l,n); TMBENCH2("109",spdpdec(           out, m*(USIZE), cpy,SPDPSIZE,codlev); ,n); break;
+    case 137: TMBENCH("",l=spdpenc(in,m*(USIZE),out,SPDPSIZE,codlev),n);pr(l,n); TMBENCH2("109",spdpdec(           out, m*(USIZE), cpy,SPDPSIZE,codlev); ,n); break;
       #endif
+	  
 	  #ifdef _ZFP
-    case 141: {
-      TMBENCH("",l = zfpcompress(in,m,0,0,0, out, ns, zfp_type_double, zerrlim),n);     pr(l,n); TMBENCH2("141",zfpdecompress(out, l, cpy,m,0,0,0, zfp_type_double, zerrlim),n);
+    case 140: {
+      TMBENCH("",l = zfpcompress(in,m,0,0,0, out, ns, zfp_type_double, zerrlim),n);     pr(l,n); TMBENCH2("140",zfpdecompress(out, l, cpy,m,0,0,0, zfp_type_double, zerrlim),n);
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -8); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
-    case 142: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
-      TMBENCH("",l = zfpcompress(in,nx,_ny,0,0, out, ns, zfp_type_double, zerrlim),n);  pr(l,n); TMBENCH2("142",zfpdecompress(out, l, cpy,nx,_ny,0,0, zfp_type_double, zerrlim),n);
+    case 141: if(ny<=0) goto end; { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
+      TMBENCH("",l = zfpcompress(in,nx,_ny,0,0, out, ns, zfp_type_double, zerrlim),n);  pr(l,n); TMBENCH2("141",zfpdecompress(out, l, cpy,nx,_ny,0,0, zfp_type_double, zerrlim),n);
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -8); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
-    case 143: if(nz<=0) goto end; { unsigned _nz = nz*(nw?nw:1);
-      TMBENCH("",l = zfpcompress(in,nx,ny,_nz,0, out, ns, zfp_type_double, zerrlim),n); pr(l,n); TMBENCH2("143",zfpdecompress(out, l, cpy,nx,ny,_nz,0, zfp_type_double, zerrlim),n);
+    case 142: if(nz<=0) goto end; { unsigned _nz = nz*(nw?nw:1);
+      TMBENCH("",l = zfpcompress(in,nx,ny,_nz,0, out, ns, zfp_type_double, zerrlim),n); pr(l,n); TMBENCH2("142",zfpdecompress(out, l, cpy,nx,ny,_nz,0, zfp_type_double, zerrlim),n);
 	  if(zerrlim > DBL_EPSILON) { if(verbose) fpstat(in, m, cpy, -8); memcpy(cpy,in,n); } //lossy compression irreversible
 	} break;
+	  #endif
+	  
+	  #ifdef _BLOSC
+    case 143: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_BITSHUFFLE,           0,            0),n); pr(l,n); TMBENCH2("143", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 144: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_BITSHUFFLE, BLOSC_DELTA,            0),n); pr(l,n); TMBENCH2("144", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 145: {  TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_BITSHUFFLE, BLOSC_FILTER_BYTEDELTA, 0),n); pr(l,n); TMBENCH2("145", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 146: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_SHUFFLE,              0,            0),n); pr(l,n); TMBENCH2("146", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 147: {                TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_SHUFFLE,    BLOSC_DELTA,            0),n); pr(l,n); TMBENCH2("147", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
+    case 148: {  TMBENCH("",l = blosccomp(in, n, out, ns, codid, codlev, USIZE, BLOSC_SHUFFLE,    BLOSC_FILTER_BYTEDELTA, 0),n); pr(l,n); TMBENCH2("148", bloscdecomp(out, l, cpy, n,USIZE),n); } break;
 	  #endif
 	// ----- speed test & lossy error bound analysis (with option -v1) -----------------------	
     case 149:            TMBENCH("", fprazor64(  in, m, out,zerrlim),n);                                           l=n; pr(l,n); memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -8); break;
