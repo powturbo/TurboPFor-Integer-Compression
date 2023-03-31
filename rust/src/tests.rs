@@ -1,4 +1,4 @@
-// test file based on https://github.com/paulll/rust-turbopfor
+// Test file based on https://github.com/paulll/rust-turbopfor
 extern crate rand;
 
 use std::convert::TryFrom;
