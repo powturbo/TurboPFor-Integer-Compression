@@ -21,7 +21,7 @@
     - homepage : https://sites.google.com/site/powturbo/
     - twitter  : https://twitter.com/powturbo
 
-    TurboRLE - "Most efficient and fastest Run Length Encoding"
+  TurboRLE - "Most efficient and fastest Run Length Encoding"
 **/      
 #include <string.h> 
 #include <stdio.h>
