@@ -1,4 +1,5 @@
 TurboPFor: Fastest Integer Compression 
+[![Build ubuntu](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yml/badge.svg)](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yml/actions/workflows/build.yml)
 
 [//]: # ([![Build Status][travisBadge]][travisLink])
 [//]: # ([travisBadge]: https://api.travis-ci.com/powturbo/TurboPFor-Integer-Compression.svg?branch=master)
@@ -493,6 +494,6 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  28 Mar 2023
+Last update:  2 APR 2023
 
 
