@@ -1,10 +1,6 @@
 ## TurboPFor: Fastest Integer Compression</br> 
 [![Build ubuntu](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml/badge.svg)](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml)
 
-[//]: # ([![Build Status][travisBadge]][travisLink])
-[//]: # ([travisBadge]: https://api.travis-ci.com/powturbo/TurboPFor-Integer-Compression.svg?branch=master)
-[//]: # ([travisLink]: https://app.travis-ci.com/powturbo/TurboPFor-Integer-Compression)
-======================================
 * **TurboPFor: The synonym for "integer compression"**
   * **ALL** functions available for **AMD/Intel**, **64 bits ARMv8 NEON** Linux+MacOS/M1 & **Power9 Altivec**
   * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs (Amd/intel + Apple M1),
