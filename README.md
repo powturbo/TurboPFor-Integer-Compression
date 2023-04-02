@@ -1,5 +1,5 @@
 TurboPFor: Fastest Integer Compression 
-[![Build ubuntu](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yml/badge.svg)](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yml/actions/workflows/build.yml)
+[![Build ubuntu](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml/badge.svg)](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml)
 
 [//]: # ([![Build Status][travisBadge]][travisLink])
 [//]: # ([travisBadge]: https://api.travis-ci.com/powturbo/TurboPFor-Integer-Compression.svg?branch=master)
