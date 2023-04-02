@@ -1,4 +1,4 @@
-name: TurboPFor-Integer-Compression
+name: linux
 on:
   push:
     branches:
