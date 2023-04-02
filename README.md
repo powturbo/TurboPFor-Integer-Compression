@@ -1,4 +1,4 @@
-TurboPFor: Fastest Integer Compression 
+#TurboPFor: Fastest Integer Compression</br> 
 [![Build ubuntu](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml/badge.svg)](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml)
 
 [//]: # ([![Build Status][travisBadge]][travisLink])
