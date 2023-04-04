@@ -36,5 +36,5 @@ jobs:
     - name: make
       run: |
         make
-        ./tb64app -v1
+        ./icapp ZIPF
  
