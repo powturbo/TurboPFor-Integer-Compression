@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2022
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -148,7 +148,7 @@ static int    tmiszero(tm_t t)              { return !(t.tv_sec|t.tv_nsec); }
 // The number of runs can be set with the program options  -I and -J (specify -I15 -J15 for more precision)
 
 // sleep after each 8 runs to avoid cpu throttling.
-#define TMSLEEP do { tm_T = tmtime(); if(tmiszero(tm_0)) tm_0 = tm_T; else if(tmdiff(tm_0, tm_T) > tm_TX) { if(tm_verbose) { printf("S \b\b");fflush(stdout); } sleep(tm_slp); tm_0=tmtime();} } while(0)
+#define TMSLEEP do { tm_T = tmtime(); if(tmiszero(tm_0)) tm_0 = tm_T; else if(tmdiff(tm_0, tm_T) > tm_TX) { if(tm_verbose>2) { printf("S \b\b");fflush(stdout); } sleep(tm_slp); tm_0=tmtime();} } while(0)
 
 // benchmark loop
 #define TMBEG(_tm_Reps_) { unsigned _tm_r,_tm_c = 0,_tm_R,_tm_Rx = _tm_Reps_,_tm_Rn = _tm_Reps_; double _tm_t;\
@@ -165,27 +165,29 @@ static int    tmiszero(tm_t t)              { return !(t.tv_sec|t.tv_nsec); }
     if(_tm_t < tm_tm) { if(tm_tm == DBL_MAX) { tm_rm = _tm_r; _tm_Rn = tm_TX/_tm_t; _tm_Rn = _tm_Rn<_tm_Rx?_tm_Rn:_tm_Rx; /*printf("repeats=%u,%u,%.4f ", _tm_Rn, _tm_Rx, _tm_t);*/ } \
 	  tm_tm = _tm_t; _tm_c++;\
     } else if(_tm_t > tm_tm*1.15) TMSLEEP;/*force sleep at 15% divergence*/\
-    if(tm_verbose) { printf("%8.*f %2d_%.2d\b\b\b\b\b\b\b\b\b\b\b\b\b\b",TM_PRE, TMBS(_len_, tm_tm/tm_rm),_tm_R+1,_tm_c),fflush(stdout); }\
+    if(tm_verbose>2) { printf("%8.*f %2d_%.2d\b\b\b\b\b\b\b\b\b\b\b\b\b\b",TM_PRE, TMBS(_len_, tm_tm/tm_rm),_tm_R+1,_tm_c),fflush(stdout); }\
     if((_tm_R & 7)==7) sleep(tm_slp); /*pause 20 secs after each 8 runs to avoid cpu throttling*/\
   }\
 }
 
-static unsigned tm_rep = 1u<<30, tm_Rep = 3, tm_Rep2 = 3, tm_rm, tm_RepMin = 1, tm_slp = 20, tm_verbose = 2;
+static unsigned tm_rep = 1u<<30, tm_Rep = 3, tm_Rep2 = 3, tm_rm, tm_RepMin = 1, tm_slp = 20, tm_verbose = 3;
 static tm_t tm_0, tm_T;
 static double tm_tm, tm_tx = 1.0*TM_M, tm_TX = 60.0*TM_M;
 
 static void tm_init(int _tm_Rep, int _tm_verbose) { tm_verbose = _tm_verbose; if(_tm_Rep) tm_Rep = _tm_Rep; }
 
-#define TMBENCH(_name_, _func_, _len_)  do { if(tm_verbose>1) printf("%s ", _name_?_name_:#_func_);\
+#define TMBENCH(_name_, _func_, _len_)  do { if(tm_verbose>=1) printf("%s ", _name_?_name_:#_func_);\
   TMBEG(tm_Rep) _func_; TMEND(_len_); \
-  double dm = tm_tm, dr = tm_rm; if(tm_verbose) printf("%8.*f      \b\b\b\b\b", TM_PRE, TMBS(_len_, dm/dr) );\
+  double dm = tm_tm, dr = tm_rm; \
+  if(tm_verbose>2) printf("%8.*f      \b\b\b\b\b", TM_PRE, TMBS(_len_, dm/dr) );\
+  else if(tm_verbose) printf("%8.*f      ", TM_PRE, TMBS(_len_, dm/dr) );\
 } while(0)
 
 // second TMBENCH. Example: use TMBENCH for encoding and TMBENCH2 for decoding
 #define TMBENCH2(_name_, _func_, _len_)  do { \
   TMBEG(tm_Rep2) _func_; TMEND(_len_);\
-  double dm = tm_tm, dr = tm_rm; if(tm_verbose) printf("%8.*f      \b\b\b\b\b", TM_PRE,TMBS(_len_, dm/dr) );\
-  if(tm_verbose>1) printf("%s ", _name_?_name_:#_func_);\
+  double dm = tm_tm, dr = tm_rm; if(tm_verbose>2) printf("%8.*f      \b\b\b\b\b", TM_PRE,TMBS(_len_, dm/dr) );else if(tm_verbose) printf("%8.*f      ", TM_PRE,TMBS(_len_, dm/dr) );\
+  if(tm_verbose>=1) printf("%s ", _name_?_name_:#_func_);\
 } while(0)
 
 // Check
@@ -193,8 +195,8 @@ static void tm_init(int _tm_Rep, int _tm_verbose) { tm_verbose = _tm_verbose; if
   TMBEG(tm_Rep) \
   if(_func_ != _res_) { printf("ERROR: %lld != %lld", (long long)_func_, (long long)_res_ ); exit(0); };\
   TMEND(_len_);\
-  if(tm_verbose) printf("%8.*f      \b\b\b\b\b", TM_PRE, TMBS(_len_,(double)tm_tm/(double)tm_rm) );\
-  if(tm_verbose) printf("%s ", _name_?_name_:#_func_ );\
+  if(tm_verbose>2) printf("%8.*f      \b\b\b\b\b", TM_PRE, TMBS(_len_,(double)tm_tm/(double)tm_rm) );\
+  if(tm_verbose>1) printf("%s ", _name_?_name_:#_func_ );\
 } while(0)
 
 static void pr(unsigned l, unsigned n) {
