@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: make
-      - run: ./tb64app -v1
+      - run: ./icapp ZIPF
       
   windows:
     runs-on: windows-latest
