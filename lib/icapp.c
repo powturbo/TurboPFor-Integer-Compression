@@ -941,16 +941,16 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:v8xenc%d         TurboByte xor       ",
     "%3d:v8zenc%d         TurboByte zigzag    ",
 
-    "%3d:v8nenc128v%d     TurboByte+TbPackV   ",        //50    //TurboByte Hybrid
-    "%3d:v8nzenc128v%d    TByte+TPackV zigzag ",
-    "%3d:v8ndenc128v%d    TByte+TPackV delta  ",
-    "%3d:v8nd1enc128v%d   TByte+TPackV delta1 ",
-    "%3d:v8nxenc128v%d    TByte+TPackV xor    ",
-    "%3d:v8nenc256v%d     TurboByte+TbPackV   ",
-    "%3d:v8nzenc256v%d    TByte+TPackV zigzag ",
-    "%3d:v8ndenc256v%d    TByte+TPackV delta  ",
-    "%3d:v8nd1enc256v%d   TByte+TPackV delta1 ",
-    "%3d:v8nxenc256v%d    TByte+TPackV xor    ",
+    "%3d:v8nenc128v%d     TurboBitByte        ",        //50    //TurboByte Hybrid
+    "%3d:v8nzenc128v%d    TurboBitByte zigzag ",
+    "%3d:v8ndenc128v%d    TurboBitByte delta  ",
+    "%3d:v8nd1enc128v%d   TurboBitByte delta1 ",
+    "%3d:v8nxenc128v%d    TurboBitByte xor    ",
+    "%3d:v8nenc256v%d     TurboBitByte        ",
+    "%3d:v8nzenc256v%d    TurboBitByte zigzag ",
+    "%3d:v8ndenc256v%d    TurboBitByte delta  ",
+    "%3d:v8nd1enc256v%d   TurboBitByte delta1 ",
+    "%3d:v8nxenc256v%d    TurboBitByte xor    ",
 
     "%3d:bvzzenc%d        Zigzag/delta   bitio",       //60
     "%3d:bvzenc%d         Zigzag         bitio",
