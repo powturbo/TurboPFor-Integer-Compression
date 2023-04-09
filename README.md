@@ -19,7 +19,7 @@
 * **Variable byte**
   * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
   * SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,xor,...
-  * :new:(2023.03)**TurboByte+TurboPackV** novel hybrid scheme combining the fastest SIMD codecs.
+  * :new:(2023.03)**TurboBitByte** novel hybrid scheme combining the fastest SIMD codecs TurboByte+TurboPack.
 * **Simple family**
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
@@ -490,6 +490,5 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  2 APR 2023
-
+Last update:  10 APR 2023
 
