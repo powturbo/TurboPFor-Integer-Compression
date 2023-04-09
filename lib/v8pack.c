@@ -21,7 +21,7 @@
     - twitter  : https://twitter.com/powturbo
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
-// v8pack.c - "Integer Compression" Hybrid TurboByte + TurboPack (use BitPack for small values, otherwise TurboByte)
+// v8pack.c - "Integer Compression" TurboBitByte = Hybrid TurboByte + TurboPack (use BitPack for small values, otherwise TurboByte)
 #pragma warning( disable : 4005)
 #pragma warning( disable : 4090)
 #pragma warning( disable : 4068)
