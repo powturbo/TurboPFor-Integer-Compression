@@ -2073,7 +2073,7 @@ int main(int argc, char* argv[]) { //testrazor();
   char          *scmd = NULL, *icmd = NULL;
   double        mdelta=-10, errlim=-1.0;
 
-  tm_verbose = 1;
+  tm_verbose = 3;
   len_t         lens[256] = { 0 };
   for(fno=0; fno < 255; fno++)
 	lens[fno].id = 0, lens[fno].len = (uint64_t)-1;
@@ -2081,7 +2081,7 @@ int main(int argc, char* argv[]) { //testrazor();
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
   static struct option long_options[] = { {"blocsize",  0, 0, 'b'}, {0, 0, 0}  };
   for(;;) {
-    if((c = getopt_long(argc, argv, "a:B:b:C:d:D:d:e:E:f:F:g:G:I:J:k:K:hH:l:m:M:n:p:R:s:v:V:w:yz:", long_options, &option_index)) == -1) break;
+    if((c = getopt_long(argc, argv, "a:B:b:C:d:D:d:e:E:f:F:g:G:I:J:k:K:hH:l:m:M:n:p:R:s:v:V:w:W:yz:", long_options, &option_index)) == -1) break;
     switch(c) {
       case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;
 	  case 'b': bsize = argtoi(optarg,1); break;
@@ -2139,7 +2139,8 @@ int main(int argc, char* argv[]) { //testrazor();
                 }   break;
       case 'w': tm_verbose = atoi(optarg); break;
       case 'v': verbose = atoi(optarg);    break;
-      case 'V': divs    = atoi(optarg);  break;
+      case 'V': tm_verbose = atoi(optarg);  break;
+      case 'W': divs    = atoi(optarg);  break;
       case 'z': zerrlim = strtod(optarg, NULL); break;
       default:
 	    fprintf(stderr, "type icapp -h for help\n");
