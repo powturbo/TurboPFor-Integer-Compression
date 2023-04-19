@@ -59,7 +59,7 @@ idx: idxcr idxqry idxseg
 
 icb: icbench 
 
-idxseg:   idxseg.o $(LIB)
+idxseg:   $(SRC)idxseg.o libic.a
 	$(CC) $^ $(LDFLAGS) -o idxseg
 
 ictest:   ictest.o $(LIB)
@@ -70,10 +70,10 @@ para: CFLAGS += -DTHREADMAX=32
 para: idxqry
 endif
 
-idxcr:   idxcr.o $(LIB)  
+idxcr:   $(SRC)idxcr.o libic.a  
 	$(CC) $^ $(LDFLAGS) -o idxcr $(LFLAGS)
 
-idxqry:  idxqry.o $(LIB)
+idxqry:  $(SRC)idxqry.o libic.a
 	$(CC) $^ $(LDFLAGS) $(LIBTHREAD) $(LIBRT) -o idxqry $(LFLAGS)
 
 $(LB)polycom/optpfd.o: $(LB)polycom/optpfd.c
