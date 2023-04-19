@@ -46,11 +46,9 @@
   #endif
 #include <getopt.h>
 
+#include "../include/ic.h"
 #include "include_/conf.h"
-#include "include_/bitpack.h"
-#include "include_/vp4.h"
-
-#include "include_/vint_.h"
+#include "include_/vlcbyte.h"
 #include "idx.h"
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
