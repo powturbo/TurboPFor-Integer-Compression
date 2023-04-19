@@ -41,6 +41,7 @@
 #include "include_/vint.h"
 #include "include_/bitpack.h"
 #include "include_/vp4.h"
+#include "include_/vlcbyte.h"
 #include "idx.h"
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
