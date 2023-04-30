@@ -40,7 +40,7 @@
     #endif
   #endif
 extern int bwtx, forcelzp;
-
+ 
 //------------------------------------------------------------------------------------------------------------------------------
 #define powof2(n) !((n)&((n)-1))
 
@@ -77,6 +77,11 @@ int lzidget(char *scmd) {
 #define USE_LZ
   #endif
 
+  #ifdef _FSE
+#include "ext/zstd/lib/common/fse.h"  
+#include "ext/fse/fse.h"  
+  #endif
+  
   #ifdef _ZLIB
 #include "ext/zlib/zlib.h" //#include <zlib.h>
   #endif
@@ -581,8 +586,9 @@ unsigned lztprlezdec(unsigned char *in, unsigned inlen, unsigned char *out, unsi
 //------------------------------------------------------- 2D -------------------------------------------------
 // transpose 2D -> transpose (byte/Nibble) -> codec
 unsigned lztpd2enc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm) { 
-  tp2denc(     in,  x, y,  out, esize);                            
-  TPENC(       out, inlen, tmp, esize);                            
+ printf("lztpd2zenc");
+  tp2denc(     in,  x, y,  out, esize);                             printf("A");
+  TPENC(       out, inlen, tmp, esize);                             printf("B");
   return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
 }
 
@@ -609,6 +615,7 @@ unsigned lztpd2xdec(unsigned char *in, unsigned inlen, unsigned char *out, unsig
 
 // transpose 2D -> zigzag -> transpose (byte/Nibble) -> codec
 unsigned lztpd2zenc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm) { 
+ 
   tp2denc(      in,  x, y, out, esize);
   tpzenc(       out, inlen, tmp, esize);
   return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
