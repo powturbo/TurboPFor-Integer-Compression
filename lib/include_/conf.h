@@ -140,26 +140,26 @@ static ALWAYS_INLINE int clz64(uint64_t x) { unsigned long z;   _BitScanReverse6
 #define popcnt64(x) (popcnt32(x) + popcnt32(x>>32))
   #endif
 
-#define sleep(x)    Sleep(x/1000)
-#define fseeko      _fseeki64
-#define ftello      _ftelli64
-#define strcasecmp  _stricmp
-#define strncasecmp _strnicmp
-#define strtoull    _strtoui64
+#define sleep(x)     Sleep(x/1000)
+#define fseeko       _fseeki64
+#define ftello       _ftelli64
+#define strcasecmp   _stricmp
+#define strncasecmp  _strnicmp
+#define strtoull     _strtoui64
 static ALWAYS_INLINE double round(double num) { return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5); }
   #endif
 
 #define __bsr8(_x_)  __bsr32(_x_)
 #define __bsr16(_x_) __bsr32(_x_)
-#define bsr8(_x_)  bsr32(_x_)
-#define bsr16(_x_) bsr32(_x_)
-#define ctz8(_x_)  ctz32(_x_)
-#define ctz16(_x_) ctz32(_x_)
-#define clz8(_x_)  (clz32(_x_)-24)
-#define clz16(_x_) (clz32(_x_)-16)
+#define bsr8(_x_)    bsr32(_x_)
+#define bsr16(_x_)   bsr32(_x_)
+#define ctz8(_x_)    ctz32((_x_)+(1<< 8))
+#define ctz16(_x_)   ctz32((_x_)+(1<<16))
+#define clz8(_x_)    (clz32(_x_)-24)
+#define clz16(_x_)   (clz32(_x_)-16)
 
-#define popcnt8(x)  popcnt32(x)
-#define popcnt16(x) popcnt32(x)
+#define popcnt8(x)   popcnt32(x)
+#define popcnt16(x)  popcnt32(x)
 
 //--------------- Unaligned memory access -------------------------------------
   #ifdef UA_MEMCPY
