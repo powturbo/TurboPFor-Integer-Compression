@@ -51,7 +51,7 @@
   #ifdef __ARM_NEON
 #define PREFETCH(_ip_,_rw_)
   #else
-#define PREFETCH(_ip_,_rw_) __builtin_prefetch(_ip_,_rw_)
+#define PREFETCH(_ip_,_rw_) //__builtin_prefetch(_ip_,_rw_)
   #endif
   
 //------------------------ zigzag encoding ----------------------------------------------
