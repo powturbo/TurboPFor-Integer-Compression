@@ -31,6 +31,7 @@ ZFP=1
 #ZLIB=1
 LIBROUNDFAST=1
 BITGROOMING=1
+#QCOMPRESS=1
 endif
 
 ifeq ($(CODEC2),1)
@@ -85,7 +86,7 @@ varintg8iu.o: $(LB)varintg8iu.c $(LB)varintg8iu.h
 #-------------------------------------------------------------------
 ifeq ($(BLOSC),1)
 LDFLAGS+=-lpthread
-CFLAGS+=-D_BLOSC -I$(LB)c-blosc2/include -I$(LB)c-blosc2/include/blosc2 -Iext/lz4/lib -DHAVE_ZSTD
+CFLAGS+=-D_BLOSC -I$(LB)c-blosc2/include -I$(LB)c-blosc2/include/blosc2 -I$(LB)c-blosc2/blosc -Iext/lz4/lib -DHAVE_ZSTD -DHAVE_PLUGINS
 
 $(LB)c-blosc2/blosc/shuffle-sse2.o: $(LB)c-blosc2/blosc/shuffle-sse2.c
 	$(CC) -O3 $(CFLAGS) -msse2 -c $(LB)c-blosc2/blosc/shuffle-sse2.c -o $(LB)c-blosc2/blosc/shuffle-sse2.o
@@ -103,8 +104,11 @@ $(LB)c-blosc2/blosc/bitshuffle-neon.o: $(LB)c-blosc2/blosc/bitshuffle-neon.c
 	$(CC) -O3 $(CFLAGS) -flax-vector-conversions -c $(LB)c-blosc2/blosc/bitshuffle-neon.c -o $(LB)c-blosc2/blosc/bitshuffle-neon.o
 
 OB+=$(LB)c-blosc2/blosc/blosc2.o $(LB)c-blosc2/blosc/blosclz.o $(LB)c-blosc2/blosc/shuffle.o $(LB)c-blosc2/blosc/shuffle-generic.o \
-$(LB)c-blosc2/blosc/bitshuffle-generic.o $(LB)c-blosc2/blosc/stune.o $(LB)c-blosc2/blosc/fastcopy.o $(LB)c-blosc2/blosc/delta.o $(LB)c-blosc2/blosc/blosc2-stdio.o $(LB)c-blosc2/blosc/timestamp.o $(LB)c-blosc2/blosc/trunc-prec.o
-
+$(LB)c-blosc2/blosc/bitshuffle-generic.o $(LB)c-blosc2/blosc/stune.o $(LB)c-blosc2/blosc/fastcopy.o $(LB)c-blosc2/blosc/delta.o $(LB)c-blosc2/blosc/blosc2-stdio.o \
+   $(LB)c-blosc2/blosc/timestamp.o $(LB)c-blosc2/blosc/trunc-prec.o $(LB)c-blosc2/plugins/filters/bytedelta/bytedelta.o $(LB)c-blosc2/plugins/filters/filters-registry.o \
+   $(LB)c-blosc2/plugins/filters/ndcell/ndcell.o $(LB)c-blosc2/plugins/plugin_utils.o $(LB)c-blosc2/plugins/filters/ndmean/ndmean.o $(LB)c-blosc2/plugins/codecs/codecs-registry.o \
+   $(LB)c-blosc2/plugins/codecs/zfp/blosc2-zfp.o $(LB)c-blosc2/plugins/codecs/ndlz/ndlz.o $(LB)c-blosc2/plugins/codecs/ndlz/ndlz8x8.o $(LB)c-blosc2/plugins/codecs/ndlz/ndlz4x4.o
+   
 ifeq ($(AVX2),1)
 CFLAGS+=-DSHUFFLE_AVX2_ENABLED
 OB+=$(LB)c-blosc2/blosc/shuffle-avx2.o $(LB)c-blosc2/blosc/bitshuffle-avx2.o
@@ -152,7 +156,6 @@ endif
 ifeq ($(LIBROUNDFAST),1)
 CFLAGS+=-D_LIBROUNDFAST
 endif
-
 
 ifeq ($(LIBFOR),1)
 CFLAGS+=-D_LIBFOR
@@ -203,6 +206,11 @@ ifeq ($(POLYCOM),1)
 OB+=$(LB)polycom/optpfd.o
 OB+=$(LB)polycom/polyvbyte.o
 endif
+
+ifeq ($(QCOMPRESS),1)
+CFLAGS+=-D_QCOMPRESS
+endif
+
 
 ifeq ($(QMX),1)
 CFLAGS+=-D_QMX
@@ -298,11 +306,12 @@ CFLAGS+=-D_ZSTD -I$(LB)zstd/lib -I$(LB)zstd/lib/common
 OB+=$(LB)zstd/lib/common/pool.o $(LB)zstd/lib/common/xxhash.o $(LB)zstd/lib/common/error_private.o \
     $(LB)zstd/lib/compress/hist.o $(LB)zstd/lib/compress/zstd_compress.o $(LB)zstd/lib/compress/zstd_compress_literals.o $(LB)zstd/lib/compress/zstd_compress_sequences.o $(LB)zstd/lib/compress/zstd_double_fast.o $(LB)zstd/lib/compress/zstd_fast.o $(LB)zstd/lib/compress/zstd_lazy.o $(LB)zstd/lib/compress/zstd_ldm.o $(LB)zstd/lib/compress/zstdmt_compress.o $(LB)zstd/lib/compress/zstd_opt.o \
     $(LB)zstd/lib/decompress/zstd_decompress.o $(LB)zstd/lib/decompress/zstd_decompress_block.o $(LB)zstd/lib/decompress/zstd_ddict.o $(LB)zstd/lib/compress/fse_compress.o $(LB)zstd/lib/common/fse_decompress.o $(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o $(LB)zstd/lib/common/zstd_common.o $(LB)zstd/lib/common/entropy_common.o $(LB)zstd/lib/compress/zstd_compress_superblock.o\
-    $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o $(LB)zstd/lib/dictBuilder/divsufsort.o
+    $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o $(LB)zstd/lib/dictBuilder/divsufsort.o 
 endif
 
 ifeq ($(FSE), 1)
 CFLAGS+=-D_FSE
+OB+=$(LB)fse/fse_compress_.o $(LB)fse/fse_decompress_.o 
 endif
 
 ifeq ($(FSEHUF), 1)
