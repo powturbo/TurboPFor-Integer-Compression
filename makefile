@@ -8,7 +8,7 @@
 # make ICCODEC=1
 # To benchmark external libraries:
 # 1 - clone/download the external repository into the TurboPFor directoty
-# 2 - activate the repository in the makefile ext/libext.mak
+# 2 - activate the repository in the makefile lib/libext.mak
 # 3 -       make: "make CODEC1=1 ICCODEC=1" 
 #           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
 
