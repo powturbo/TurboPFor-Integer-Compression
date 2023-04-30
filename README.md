@@ -57,6 +57,12 @@
 - Download [IcApp](https://github.com/powturbo/TurboPFor-Integer-Compression/releases/tag/2023.03) a new benchmark for TurboPFor<br>
   for testing allmost all integer and floating point file types.
   ( type: icapp ZIPF )
+- [Benchmark: TurboTranspose+iccodecs vs Quantile Compression](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/100)
+- [Benchmark: TurboByte+TurboBitByte vs streamvbtyte](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/96)
+- [Benchmark: Time Series - TurboPFor, TurboFloat, TurboFloat LzX, TurboGorilla,...](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/95)
+- [Benchmark: Lossy Floating Point Preprocessing Turbo Razor vs Granular bitround vs libroundfast](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/94)
+- [Benchmark: Lossless/Lossy Floating Point Compression. TurboPFor vs zfp & blosc](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/92)
+- [Benchmark: TurboPFor: IcApp 16 bits Integer Compression](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/50)
 - [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues)
 - [Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz](https://github.com/powturbo/TurboPFor/issues/49)
 
@@ -490,5 +496,5 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  10 APR 2023
+Last update:  1 MAY 2023
 
