@@ -146,7 +146,7 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i u, __m128i v) {
 #define _mm_srai_epi32(  _v_,_m_)               (__m128i)vshlq_s32((int32x4_t)(_v_), vdupq_n_s32(-(_m_)))
 #define _mm_srai_epi64(  _v_,_m_)               (__m128i)vshlq_s64((int64x2_t)(_v_), vdupq_n_s64(-(_m_)))
 
-#define _mm_sll_epi8(    _u_,_v_)               (__m128i)vshlq_s8(  (int8x16_t)(_u_), (int8x16_t)(_v_))    //_v_:all lanes equal
+#define _mm_sll_epi8(    _u_,_v_)               (__m128i)vshlq_s8(  (int8x16_t)(_u_), (int8x16_t)(_v_))    // _v_:all lanes equal
 #define _mm_sll_epi16(   _u_,_v_)               (__m128i)vshlq_s16( (int16x8_t)(_u_), (int16x8_t)(_v_))
 #define _mm_sll_epi32(   _u_,_v_)               (__m128i)vshlq_s32( (int32x4_t)(_u_), (int32x4_t)(_v_))
 #define _mm_sll_epi64(   _u_,_v_)               (__m128i)vshlq_s64( (int64x2_t)(_u_), (int64x2_t)(_v_))
