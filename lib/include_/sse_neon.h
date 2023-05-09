@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2013-2021
+    Copyright (C) powturbo 2013-2023
     GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -75,9 +75,12 @@ static ALWAYS_INLINE __m128i _mm_set_epi64x(    uint64_t u1, uint64_t u0) { uint
 #define _mm_add_epi8(   _u_,_v_)                (__m128i)vaddq_u8( (uint8x16_t)(_u_), (uint8x16_t)(_v_))
 #define _mm_add_epi16(  _u_,_v_)                (__m128i)vaddq_u16((uint16x8_t)(_u_), (uint16x8_t)(_v_))
 #define _mm_add_epi32(  _u_,_v_)                (__m128i)vaddq_u32((uint32x4_t)(_u_), (uint32x4_t)(_v_))
+#define _mm_add_epi64(  _u_,_v_)                (__m128i)vaddq_u64((uint64x2_t)(_u_), (uint64x2_t)(_v_))
+
 #define _mm_sub_epi8(   _u_,_v_)                (__m128i)vsubq_s8( ( int8x16_t)(_u_), ( int8x16_t)(_v_))
 #define _mm_sub_epi16(  _u_,_v_)                (__m128i)vsubq_u16((uint16x8_t)(_u_), (uint16x8_t)(_v_))
 #define _mm_sub_epi32(  _u_,_v_)                (__m128i)vsubq_u32((uint32x4_t)(_u_), (uint32x4_t)(_v_))
+#define _mm_sub_epi64(  _u_,_v_)                (__m128i)vsubq_u64((uint64x2_t)(_u_), (uint64x2_t)(_v_))
 #define _mm_subs_epu8(  _u_,_v_)                (__m128i)vqsubq_u8((uint8x16_t)(_u_), (uint8x16_t)(_v_))
 
 #define _mm_mullo_epi16(_u_,_v_)                (__m128i)vmulq_s16(( int16x8_t)(_u_), ( int16x8_t)(_v_))
@@ -111,22 +114,22 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i u, __m128i v) {
 #define _mm_and_si128(   _u_,_v_)               (__m128i)vandq_u32(  (uint32x4_t)(_u_), (uint32x4_t)(_v_))
 #define _mm_xor_si128(   _u_,_v_)               (__m128i)veorq_u32(  (uint32x4_t)(_u_), (uint32x4_t)(_v_))
 //---------------------------------------------- Shift ----------------------------------------------------------------------------
-#define  mm_slli_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)> 7?vdupq_n_u8( 0):vshlq_n_u8( (uint8x16_t)(_v_), (_c_))))  // parameter c MUST be a constant / vshlq_n_u8: __constrange(0-(N-1))
-#define  mm_slli_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>15?vdupq_n_u16(0):vshlq_n_u16((uint16x8_t)(_v_), (_c_))))
-#define  mm_slli_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>31?vdupq_n_u32(0):vshlq_n_u32((uint32x4_t)(_v_), (_c_))))           
-#define  mm_slli_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_v_), (_c_))))           
-#define _mm_slli_si128(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>15?vdupq_n_u8( 0):vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_v_), 16-(_c_) )) ) // vextq_u8: __constrange(0-15)
+#define  mm_slli_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)> 7?vdupq_n_u8( 0):vshlq_n_u8( (uint8x16_t)(_v_), (_c_))))  // parameter c MUST be a constant / vshlq_n_u8: __constrange(0-(N-1))
+#define  mm_slli_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>15?vdupq_n_u16(0):vshlq_n_u16((uint16x8_t)(_v_), (_c_))))
+#define  mm_slli_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>31?vdupq_n_u32(0):vshlq_n_u32((uint32x4_t)(_v_), (_c_))))           
+#define  mm_slli_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_v_), (_c_))))           
+#define _mm_slli_si128(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>15?vdupq_n_u8( 0):vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_v_), 16-(_c_) )) ) // vextq_u8: __constrange(0-15)
 
-#define  mm_srli_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)> 7?vdupq_n_u8( 0):vshrq_n_u8( (uint8x16_t)(_v_), (_c_)))) // vshrq_n: __constrange(1-N)
-#define  mm_srli_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>15?vdupq_n_u16(0):vshrq_n_u16((uint16x8_t)(_v_), (_c_))))
-#define  mm_srli_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>31?vdupq_n_u32(0):vshrq_n_u32((uint32x4_t)(_v_), (_c_))))
-#define  mm_srli_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_v_), (_c_))))
-#define _mm_srli_si128(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):((_c_)>15?vdupq_n_u8(0):vextq_u8((uint8x16_t)(_v_), vdupq_n_u8(0), (_c_) )) ) // vextq_u8: __constrange(0-15)
+#define  mm_srli_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)> 7?vdupq_n_u8( 0):vshrq_n_u8( (uint8x16_t)(_v_), (_c_)))) // vshrq_n: __constrange(1-N)
+#define  mm_srli_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>15?vdupq_n_u16(0):vshrq_n_u16((uint16x8_t)(_v_), (_c_))))
+#define  mm_srli_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>31?vdupq_n_u32(0):vshrq_n_u32((uint32x4_t)(_v_), (_c_))))
+#define  mm_srli_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_v_), (_c_))))
+#define _mm_srli_si128(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>15?vdupq_n_u8(0):vextq_u8((uint8x16_t)(_v_), vdupq_n_u8(0), (_c_) )) ) // vextq_u8: __constrange(0-15)
 
-#define  mm_srai_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):vshrq_n_s8( (int8x16_t)(_v_), (_c_))) // c <=  8 (vshrq_n:1-N)
-#define  mm_srai_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):vshrq_n_s16((int16x8_t)(_v_), (_c_))) // c <= 16
-#define  mm_srai_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):vshrq_n_s32((int32x4_t)(_v_), (_c_))) // c <= 32
-#define  mm_srai_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):vshrq_n_s64((int64x2_t)(_v_), (_c_))) // c <= 64
+#define  mm_srai_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)vshrq_n_s8( (int8x16_t)(_v_), (_c_))) // c <=  8 (vshrq_n:1-N)
+#define  mm_srai_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)vshrq_n_s16((int16x8_t)(_v_), (_c_))) // c <= 16
+#define  mm_srai_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)vshrq_n_s32((int32x4_t)(_v_), (_c_))) // c <= 32
+#define  mm_srai_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)vshrq_n_s64((int64x2_t)(_v_), (_c_))) // c <= 64
 
 #define _mm_slli_epi8(   _v_,_m_)               (__m128i)vshlq_u8( (uint8x16_t)(_v_), vdupq_n_s8(  (_m_))) // parameter c integer constant/variable
 #define _mm_slli_epi16(  _v_,_m_)               (__m128i)vshlq_u16((uint16x8_t)(_v_), vdupq_n_s16( (_m_)))
@@ -229,7 +232,7 @@ static ALWAYS_INLINE uint16_t  mm_movemask_epu16(__m128i v) { const uint16x8_t m
 static ALWAYS_INLINE uint32_t  mm_movemask_epu32(__m128i v) { const uint32x4_t m = { 1, 1<<1, 1<<2, 1<<3 };                           return vaddvq_u32(vandq_u32((uint32x4_t)v, m)); }
 static ALWAYS_INLINE uint64_t  mm_movemask_epu64(__m128i v) { const uint64x2_t m = { 1, 1<<1 };                                       return vaddvq_u64(vandq_u64((uint64x2_t)v, m)); }
 
-static ALWAYS_INLINE uint64_t  mm_movemask4_epu8(__m128i v) { return vgetq_lane_u64((uint64x2_t)vshrn_n_u16((uint8x16_t)v, 4), 0); } //uint8x16_t
+//static ALWAYS_INLINE uint64_t  mm_movemask4_epu8(__m128i v) { return vgetq_lane_u64((uint64x2_t)vshrn_n_u16((uint8x16_t)v, 4), 0); } //uint8x16_t
   #else
 static ALWAYS_INLINE uint32_t  mm_movemask_epu32(uint32x4_t v) { const uint32x4_t mask = {1,2,4,8}, av = vandq_u32(v, mask), xv = vextq_u32(av, av, 2), ov = vorrq_u32(av, xv); return vgetq_lane_u32(vorrq_u32(ov, vextq_u32(ov, ov, 3)), 0); }
   #endif
