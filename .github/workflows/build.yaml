@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: 'true'
-      - uses: msys2/setup-msys2@v2
+      - uses: msys2/setup-msys2@v3
         with:
           msystem: MINGW64
           install: git make mingw-w64-x86_64-gcc
