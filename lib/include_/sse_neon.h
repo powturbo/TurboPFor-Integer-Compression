@@ -87,7 +87,7 @@ static ALWAYS_INLINE __m128i _mm_set_epi64x(    uint64_t u1, uint64_t u0) { uint
 #define _mm_mullo_epi32(_u_,_v_)                (__m128i)vmulq_s32(( int32x4_t)(_u_), ( int32x4_t)(_v_))
 #define  mm_mullo_epu32(_u_,_v_)                         vmulq_u32((uint32x4_t)(_u_), (uint32x4_t)(_v_))
 
-#define _mm_mulhi_epi16s(_u_,_v_)               (__m128i)vqdmulhq_s16(( int16x8_t)(_u_), ( int16x8_t)(_v_)) // only for small values??
+#define _mm_mulhi_epi16s(_u_,_v_)               (__m128i)vqdmulhq_s16(( int16x8_t)(_u_), ( int16x8_t)(_v_)) // only for small values ??
 static ALWAYS_INLINE __m128i _mm_mulhi_epi16(__m128i u, __m128i v) {
   int32x4_t lo   = vmull_s16(vget_low_s16( (int16x8_t)(u)), vget_low_s16( (int16x8_t)(v)));
   int32x4_t hi   = vmull_s16(vget_high_s16((int16x8_t)(u)), vget_high_s16((int16x8_t)(v)));
