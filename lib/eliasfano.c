@@ -25,6 +25,12 @@
 //   eliasfano.c - "Integer Compression" Elias Fano
 #ifndef USIZE
 #include <string.h>
+#include <stdlib.h>
+  #ifdef __APPLE__
+#include <sys/malloc.h>
+  #else
+#include <malloc.h>
+  #endif
 #include "include_/conf.h"
 #include "include_/bitpack.h"
 #include "include_/bitutil.h"
