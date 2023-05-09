@@ -115,7 +115,7 @@ $(SRC)transpose_avx2.o: $(SRC)transpose.c
 
 -include lib/libext.mak
 
-LIB=$(SRC)bic.o $(SRC)bitpack.o $(SRC)bitunpack.o $(SRC)bitutil.o $(SRC)eliasfano.o $(SRC)fp.o $(SRC)transpose.o $(SRC)transpose_.o $(SRC)trlec.o $(SRC)trled.o $(SRC)vp4c.o $(SRC)vp4d.o $(SRC)v8.o $(SRC)v8pack.o $(SRC)vint.o $(SRC)vsimple.o $(SRC)vbit.o 
+LIB=$(SRC)bic.o $(SRC)bitunpack.o $(SRC)bitpack.o $(SRC)bitutil.o $(SRC)eliasfano.o $(SRC)fp.o $(SRC)transpose.o $(SRC)transpose_.o $(SRC)trlec.o $(SRC)trled.o $(SRC)vp4c.o $(SRC)vp4d.o $(SRC)v8.o $(SRC)v8pack.o $(SRC)vint.o $(SRC)vsimple.o $(SRC)vbit.o 
 ifeq ($(ARCH),x86_64)
 LIB+=$(SRC)vp4c_avx2.o $(SRC)vp4d_avx2.o $(SRC)transpose_avx2.o $(SRC)bitpack_avx2.o $(SRC)bitunpack_avx2.o $(SRC)bitutil_avx2.o
 else
