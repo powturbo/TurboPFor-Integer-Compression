@@ -11,6 +11,8 @@
 # 2 - activate the repository in the makefile lib/libext.mak
 # 3 -       make: "make CODEC1=1 ICCODEC=1" 
 #           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
+# aarch64
+# export CC=aarch64-linux-gnu-gcc
 
 #ICCODEC=1
 #AVX2=1
@@ -116,6 +118,8 @@ $(SRC)transpose_avx2.o: $(SRC)transpose.c
 LIB=$(SRC)bic.o $(SRC)bitpack.o $(SRC)bitunpack.o $(SRC)bitutil.o $(SRC)eliasfano.o $(SRC)fp.o $(SRC)transpose.o $(SRC)transpose_.o $(SRC)trlec.o $(SRC)trled.o $(SRC)vp4c.o $(SRC)vp4d.o $(SRC)v8.o $(SRC)v8pack.o $(SRC)vint.o $(SRC)vsimple.o $(SRC)vbit.o 
 ifeq ($(ARCH),x86_64)
 LIB+=$(SRC)vp4c_avx2.o $(SRC)vp4d_avx2.o $(SRC)transpose_avx2.o $(SRC)bitpack_avx2.o $(SRC)bitunpack_avx2.o $(SRC)bitutil_avx2.o
+else
+CFLAGS+=-D_NAVX2
 endif
 
 ifeq ($(AVX2),1)
