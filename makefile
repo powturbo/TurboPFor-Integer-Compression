@@ -11,7 +11,7 @@
 # 2 - activate the repository in the makefile lib/libext.mak
 # 3 -       make: "make CODEC1=1 ICCODEC=1" 
 #           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
-# aarch64 cross compile
+# aarch64 cross compile 
 # export CC=aarch64-linux-gnu-gcc
 
 #ICCODEC=1
