@@ -77,11 +77,17 @@ int lzidget(char *scmd) {
 #define USE_LZ
   #endif
 
+  #ifdef _FSEHUF
+#define HUF_PUBLIC_API 
+HUF_PUBLIC_API size_t HUF_compress(void* dst, size_t dstCapacity, const void* src, size_t srcSize);
+HUF_PUBLIC_API size_t HUF_decompress(void* dst,  size_t originalSize, const void* cSrc, size_t cSrcSize);
+  #endif
+
   #ifdef _FSE
 #include "ext/zstd/lib/common/fse.h"  
 #include "ext/fse/fse.h"  
   #endif
-  
+ 
   #ifdef _ZLIB
 #include "ext/zlib/zlib.h" //#include <zlib.h>
   #endif
@@ -131,6 +137,10 @@ size_t codecenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
         case 2 : return ec==2?rcssenc( in, inlen, out, 5,6):rcsenc( in, inlen, out);
 		//#define bwtflag(z) (z==2?BWT_BWT16:0) | (xprep8?BWT_PREP8:0) | forcelzp | (verbose?BWT_VERBOSE:0) | xsort <<14 | itmax <<10 | lenmin
 		case 20: return rcbwtenc(in,inlen,out,bwtlev,0, 1);
+		  #ifdef _ANS
+		case 56: return anscdfenc(in,inlen,out);
+		default: die("TurboRC codec level '%d' not included", codlev);
+		  #endif
       }
     }
       #endif
@@ -216,6 +226,9 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
         case 1 : return ec==2?rccssdec(in, outlen, out, 5,6):rccsdec(in, outlen, out);
         case 2 : return ec==2?rcssdec( in, outlen, out, 5,6):rcsdec( in, outlen, out);
 		case 20: inlen==outlen?memcpy(out,in,outlen):rcbwtdec(in,outlen,out,bwtlev, 0); return 0;
+		  #ifdef _ANS
+		case 56: anscdfdec(in, outlen, out); return outlen;
+		  #endif
 //        case 2 : return turborcndec( in, outlen, out);
       }
     }
@@ -808,6 +821,44 @@ size_t vlcdecomp32(unsigned char *in, size_t inlen, unsigned char *_out, size_t 
   for(; op != out+outlen; op++) { 
     bitdnormr(bw,br,bp);
     bitvcget(bw,br,tp,bp,VLC_VN8,VLC_VB8, op[0]);
+  }
+  return inlen;
+}
+
+size_t vhicomp32(unsigned char *_in, size_t _inlen, unsigned char *out, size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm) { //bitgput32(bw,br, x); bitenormr(bw,br,op_);//bitdnormr(bw,br,bp); bitgget32(bw,br, x);
+  unsigned char *op = out+4, *tp = tmp, *tmp_ = tmp+_inlen, *bp = tmp_;
+  uint32_t      *in = (uint32_t *)_in, *ip;
+  INDEC;
+  bitedef(bw,br); biteinir(bw,br,bp);
+  for(ip = in; ip < in+inlen; ip++) {
+	uint32_t x = ip[0];
+	bithcput(bw,br,tp,bp,VHI_K,VHI_I,VHI_J,x); bitenormr(bw,br,bp);              if(bp <= tp+8) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }
+  }
+  bitflushr(bw,br,bp);
+  unsigned l = tmp_ - bp;  
+  
+  int clen = codecenc(tmp, tp-tmp, op, _inlen-4, codid, codlev, codprm);        if(clen < 0 || op+clen+l >= out+_inlen) { memcpy(out,_in,_inlen); op = out+_inlen; goto e; }
+  ctou32(out) = clen; op += clen;                               
+  memmove(op, bp, l); op += l;
+  e:return op - out;
+}
+
+size_t vhidecomp32(unsigned char *in, size_t inlen, unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, unsigned char *codprm) {
+  unsigned char *ip = in+4, *bp = in+inlen, *tp = tmp;
+  uint32_t      *out = (uint32_t *)_out, *op = out, x=0;
+  if(inlen >= _outlen){ memcpy(_out, in, _outlen); return inlen; }
+  OUTDEC;
+  bitddef(bw, br); bitdinir(bw,br,bp);
+  unsigned clen = ctou32(ip-4); 
+  codecdec(ip, clen, tmp, outlen, codid, codlev, codprm);
+  for(; op != out+(outlen&~(2-1)); op+=2) { 
+    bitdnormr(bw,br,bp);
+    bithcget(bw,br,tp,bp,VHI_K,VHI_I,VHI_J, op[0]);
+    bithcget(bw,br,tp,bp,VHI_K,VHI_I,VHI_J, op[1]);
+  }
+  for(; op != out+outlen; op++) { 
+    bitdnormr(bw,br,bp);
+    bithcget(bw,br,tp,bp,VHI_K,VHI_I,VHI_J, op[0]);
   }
   return inlen;
 }
