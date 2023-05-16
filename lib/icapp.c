@@ -1069,7 +1069,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:lzv8xenc         TurboByteX+%s,%d",
     "%3d:lzv8zenc         TurboByteZ+%s,%d",
     "%3d:vlccomp          TurboVLC  +%s,%d",
-    "%3d:97                                   ",
+    "%3d:vhicomp          Hybrid Integer+%s,%d",
     "%3d:98                                   ",
     "%3d:99                                   ",
 
@@ -1715,6 +1715,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 94:               TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
     case 95:               TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
     case 96:               TM("",l=vlccomp32(  in,n,out,ns,      tmp,codid,codlev,codprm), n,l, l==n?memcpy(cpy,in,n):(void *)vlcdecomp32(out, l, cpy, n, tmp,codid,codlev,codprm)); break;
+    case 97:               TM("",l=vhicomp32(  in,n,out,ns,      tmp,codid,codlev,codprm), n,l, l==n?memcpy(cpy,in,n):(void *)vhidecomp32(out, l, cpy, n, tmp,codid,codlev,codprm)); break;
 
     case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);  if(verbose) printf("2D=%dx%d ", nx,_ny);
                            TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp,nx,_ny,codid,codlev,codprm),n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));
