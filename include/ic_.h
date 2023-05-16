@@ -35,6 +35,8 @@ typedef unsigned long long uint64_t;
 #else
 #include <stdint.h>
 #endif
+#include <stddef.h>
+
 //------------------------- Compiler ------------------------------------------
   #if defined(__GNUC__)
 #include <stdint.h>
@@ -138,45 +140,45 @@ static ALWAYS_INLINE int clz64(uint64_t x) { unsigned long z;   _BitScanReverse6
 #define popcnt64(x) (popcnt32(x) + popcnt32(x>>32))
   #endif
 
-#define sleep(x)    Sleep(x/1000)
-#define fseeko      _fseeki64
-#define ftello      _ftelli64
-#define strcasecmp  _stricmp
-#define strncasecmp _strnicmp
-#define strtoull    _strtoui64
+#define sleep(x)     Sleep(x/1000)
+#define fseeko       _fseeki64
+#define ftello       _ftelli64
+#define strcasecmp   _stricmp
+#define strncasecmp  _strnicmp
+#define strtoull     _strtoui64
 static ALWAYS_INLINE double round(double num) { return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5); }
   #endif
 
 #define __bsr8(_x_)  __bsr32(_x_)
 #define __bsr16(_x_) __bsr32(_x_)
-#define bsr8(_x_)  bsr32(_x_)
-#define bsr16(_x_) bsr32(_x_)
-#define ctz8(_x_)  ctz32(_x_)
-#define ctz16(_x_) ctz32(_x_)
-#define clz8(_x_)  (clz32(_x_)-24)
-#define clz16(_x_) (clz32(_x_)-16)
+#define bsr8(_x_)    bsr32(_x_)
+#define bsr16(_x_)   bsr32(_x_)
+#define ctz8(_x_)    ctz32((_x_)+(1<< 8))
+#define ctz16(_x_)   ctz32((_x_)+(1<<16))
+#define clz8(_x_)    (clz32(_x_)-24)
+#define clz16(_x_)   (clz32(_x_)-16)
 
-#define popcnt8(x)  popcnt32(x)
-#define popcnt16(x) popcnt32(x)
+#define popcnt8(x)   popcnt32(x)
+#define popcnt16(x)  popcnt32(x)
 
 //--------------- Unaligned memory access -------------------------------------
   #ifdef UA_MEMCPY
 #include <string.h>
-static ALWAYS_INLINE unsigned short     ctou16(const void *cp) { unsigned short     x; memcpy(&x, cp, sizeof(x)); return x; }
+static ALWAYS_INLINE unsigned short     ctou16(const void *cp) { unsigned short     x; memcpy(&x, cp, sizeof(x)); return x; } // ua read
 static ALWAYS_INLINE unsigned           ctou32(const void *cp) { unsigned           x; memcpy(&x, cp, sizeof(x)); return x; }
 static ALWAYS_INLINE unsigned long long ctou64(const void *cp) { unsigned long long x; memcpy(&x, cp, sizeof(x)); return x; }
 static ALWAYS_INLINE size_t             ctousz(const void *cp) { size_t             x; memcpy(&x, cp, sizeof(x)); return x; }
 static ALWAYS_INLINE float              ctof32(const void *cp) { float              x; memcpy(&x, cp, sizeof(x)); return x; }
 static ALWAYS_INLINE double             ctof64(const void *cp) { double             x; memcpy(&x, cp, sizeof(x)); return x; }
 
-static ALWAYS_INLINE void               stou16(      void *cp, unsigned short     x) { memcpy(cp, &x, sizeof(x)); }
+static ALWAYS_INLINE void               stou16(      void *cp, unsigned short     x) { memcpy(cp, &x, sizeof(x)); } // ua write
 static ALWAYS_INLINE void               stou32(      void *cp, unsigned           x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stou64(      void *cp, unsigned long long x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stousz(      void *cp, size_t             x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stof32(      void *cp, float              x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stof64(      void *cp, double             x) { memcpy(cp, &x, sizeof(x)); }
 
-static ALWAYS_INLINE void               ltou32(unsigned           *x, const void *cp) { memcpy(x, cp, sizeof(*x)); }
+static ALWAYS_INLINE void               ltou32(unsigned           *x, const void *cp) { memcpy(x, cp, sizeof(*x)); } // ua read into ptr 
 static ALWAYS_INLINE void               ltou64(unsigned long long *x, const void *cp) { memcpy(x, cp, sizeof(*x)); }
 
   #elif defined(__i386__) || defined(__x86_64__) || \
@@ -190,9 +192,11 @@ static ALWAYS_INLINE void               ltou64(unsigned long long *x, const void
 #define ctou32(_cp_) (*(unsigned       *)(_cp_))
 #define ctof32(_cp_) (*(float          *)(_cp_))
 
-#define stou16(_cp_, _x_) (*(unsigned short *)(_cp_) = _x_)
-#define stou32(_cp_, _x_) (*(unsigned       *)(_cp_) = _x_)
-#define stof32(_cp_, _x_) (*(float          *)(_cp_) = _x_)
+#define stou16(_cp_, _x_)  (*(unsigned short *)(_cp_) = _x_)
+#define stou32(_cp_, _x_)  (*(unsigned       *)(_cp_) = _x_)
+#define stof32(_cp_, _x_)  (*(float          *)(_cp_) = _x_)
+
+#define ltou32(_px_, _cp_) *(_px_) = *(unsigned *)(_cp_)
 
     #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(__s390__) || defined(_MSC_VER)
 #define ctou64(_cp_)       (*(uint64_t *)(_cp_))
@@ -200,6 +204,9 @@ static ALWAYS_INLINE void               ltou64(unsigned long long *x, const void
 
 #define stou64(_cp_, _x_)  (*(uint64_t *)(_cp_) = _x_)
 #define stof64(_cp_, _x_)  (*(double   *)(_cp_) = _x_)
+
+#define ltou64(_px_, _cp_) *(_px_) = *(uint64_t *)(_cp_)
+
     #elif defined(__ARM_FEATURE_UNALIGNED)
 struct _PACKED longu     { uint64_t l; };
 struct _PACKED doubleu   { double   d; };
@@ -208,6 +215,7 @@ struct _PACKED doubleu   { double   d; };
 
 #define stou64(_cp_) ((struct longu     *)(_cp_))->l = _x_
 #define stof64(_cp_) ((struct doubleu   *)(_cp_))->d = _x_
+#define ltou64(_px_, _cp_) *(_px_) = ((struct longu *)(_cp_))->l
     #endif
 
   #elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7S__)
@@ -228,6 +236,9 @@ struct _PACKED doubleu   { double             d; };
 #define stou64(_cp_, _x_) ((struct longu     *)(_cp_))->l = _x_
 #define stof32(_cp_, _x_) ((struct floatu    *)(_cp_))->f = _x_
 #define stof64(_cp_, _x_) ((struct doubleu   *)(_cp_))->d = _x_
+
+#define ltou32(_cp_) *(_px_) = ((struct unsignedu *)(_cp_))->u
+#define ltou64(_cp_) *(_px_) = ((struct longu *)(_cp_))->l
   #else
 #error "unknown cpu"
   #endif
@@ -250,10 +261,13 @@ struct _PACKED doubleu   { double             d; };
 #endif
 
 //---------------------misc ---------------------------------------------------
-#define BZMASK32(_b_)                    (~(~0u   << (_b_)))
 #define BZMASK64(_b_)                    (~(~0ull << (_b_)))
+#define BZMASK32(_b_)                    (~(~0u   << (_b_)))
+#define BZMASK16(_b_)                    BZMASK32(_b_)
+#define BZMASK8( _b_)                    BZMASK32(_b_)
+
 #define BZHI64(_u_, _b_)                 ((_u_) & BZMASK64(_b_))  // b Constant
-#define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_))
+#define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_)) 
 #define BZHI16(_u_, _b_)                 BZHI32(_u_, _b_)
 #define BZHI8( _u_, _b_)                 BZHI32(_u_, _b_)
 #define BEXTR32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
@@ -265,26 +279,21 @@ struct _PACKED doubleu   { double             d; };
 #include <x86intrin.h>
       #endif
 #define bzhi32(_u_, _b_)                 _bzhi_u32(_u_, _b_)  // b variable
-#define bzhi31(_u_, _b_)                 _bzhi_u32(_u_, _b_)
-#define bextr32(x,start,len)             _bextr_u32(x,start,len)
+#define bextr32(x,start,len)             _bextr_u32(x,start,len)  
 
       #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
 #define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
-#define bzhi63(_u_, _b_)                 ((_u_) & ((1ull<<(_b_))-1))
       #else
 #define bzhi64(_u_, _b_)                 _bzhi_u64(_u_, _b_)
-#define bzhi63(_u_, _b_)                 _bzhi_u64(_u_, _b_)
       #endif
     #else
-#define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
-#define bzhi63(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1))
-#define bzhi32(_u_, _b_)                 ((_u_) & ((1ull <<(_b_))-1))
-#define bzhi31(_u_, _b_)                 ((_u_) & ((1    <<(_b_))-1))
+#define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_) 
+#define bzhi32(_u_, _b_)                 BZHI32(_u_, _b_)
 #define bextr32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
     #endif
 
-#define bzhi16(_u_, _b_)                 bzhi31(_u_, _b_)
-#define bzhi8( _u_, _b_)                 bzhi31(_u_, _b_)
+#define bzhi16(_u_, _b_)                 bzhi32(_u_, _b_)
+#define bzhi8( _u_, _b_)                 bzhi32(_u_, _b_)
 
 #define SIZE_ROUNDUP(_n_, _a_) (((size_t)(_n_) + (size_t)((_a_) - 1)) & ~(size_t)((_a_) - 1))
 #define ALIGN_DOWN(__ptr, __a) ((void *)((uintptr_t)(__ptr) & ~(uintptr_t)((__a) - 1)))
@@ -323,8 +332,165 @@ struct _PACKED doubleu   { double             d; };
 #define die(fmt,args...) do { fprintf(stderr, "%s:%s:%d:", __FILE__, __FUNCTION__, __LINE__); fprintf(stderr, fmt, ## args ); fflush(stderr); exit(-1); } while(0)
     #endif
   #endif
+//-- Turbo VLC : Novel Variable Length Coding for large integers with exponent + mantissa
+#include "conf.h"
+
+// Exponent base for the bit size vlcbits: 1=63 2=123, 3=239 4=463 5=895 6=1727 7=3327
+#define VLC_VN6    ( 6-5)
+#define VLC_VN7    ( 7-5)
+#define VLC_VN8    ( 8-5)
+#define VLC_VN9    ( 9-5)
+#define VLC_VN10   (10-5)
+#define VLC_VN11   (11-5)
+#define VLC_VN12   (12-5)
+#define VLC_VN15   (15-5)
+#define VLC_VN16   (16-5)
+
+#define VLC_VB6    0
+#define VLC_VB7    4
+#define VLC_VB8   16
+#define VLC_VB9   48
+#define VLC_VB10 128
+#define VLC_VB11 296
+#define VLC_VB12 768
+#define VLC_VB16 768 //???
+
+#define vlcbits(_vn_)               (5+_vn_)
+#define vlcfirst(_vn_)              (1u<<(_vn_+1)) //1,0,4  2,4,8  3,16,16
+#define vlcmbits(_expo_, _vn_)      (((_expo_) >> _vn_)-1)
+#define _vlcexpo_(_x_, _vn_,_expo_) { unsigned _f = __bsr32(_x_)-_vn_; _expo_ = ((_f+1)<<_vn_) + bextr32((_x_),_f,_vn_); }
+#ifndef VLCBIT_H_
+#define VLCBIT_H_
+static inline int vlcexpo(unsigned x, unsigned vn) { unsigned expo; _vlcexpo_(x, vn, expo); return expo; }
+#endif
+
+// return exponent, mantissa + bits length for x the value
+#define vlcenc( _x_, _vn_,_expo_, _mb_, _ma_) { unsigned _x = _x_; _vlcexpo_(_x, _vn_, _expo_); _mb_ = vlcmbits(_expo_, _vn_); _ma_ = bzhi32(_x,_mb_); }
+
+// build value from exponent, mantissa + length
+#define vlcdec(_expo_, _mb_, _ma_, _vn_) ((((1u << _vn_) + bzhi32(_expo_,_vn_))<<(_mb_)) + (_ma_))
+
+// encode the mantissa in bitio (R->L) and return the exponent in u
+#define bitvrput(_bw_,_br_,_ep_, _vn_,_vb_, _u_) do { \
+  if((_u_) >= vlcfirst(_vn_)+_vb_) {\
+    unsigned _expo, _mb, _ma;\
+    vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
+    bitput(_bw_,_br_, _mb, _ma); bitenormr(_bw_,_br_,_ep_);\
+	_u_ = _expo+_vb_;\
+  }\
+} while(0)
+
+// get mantissa and bitio (R->L) decode value from x
+/*#define bitvrget( _bw_,_br_,_ip_, _vn_,_vb_,_x_) \
+  if(_x_ >= vlcfirst(_vn_)+_vb_) { \
+    _x_ -= _vb_; \
+	int _mb = vlcmbits(_x_, _vn_), _ma; \
+    bitdnormr(_bw_,_br_,_ip_);\
+	bitget(_bw_,_br_, _mb,_ma);\
+	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
+  }*/
+#define bitvrget(_bw_,_br_,_ip_,_vn_,_vb_,_x_) \
+  if(_x_ >= vlcfirst(_vn_)+_vb_) { \
+    bitdnormr(_bw_,_br_,_ip_); \
+    unsigned _mb = vlcmbits(_x_ -= _vb_, _vn_), _ma = bitpeek(_bw_,_br_, _mb); /*bitget(_bw_,_br_, _mb, _ma);*/\
+    _x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_; bitrmv(_bw_,_br_, _mb);\
+  }
+
+//--------- Expo & mantissa with bitio ------------------------------
+#define bitvput(_bw_,_br_,_vn_,_vb_, _u_) do { \
+  if((_u_) >= vlcfirst(_vn_)+_vb_) {\
+    unsigned _expo, _mb, _ma;\
+    vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
+	bitput(_bw_,_br_, vlcbits(_vn_), _expo+_vb_); \
+    bitput(_bw_,_br_, _mb, _ma); \
+  } else bitput(_bw_,_br_, vlcbits(_vn_), _u_);\
+} while(0)
+
+#define bitvget( _bw_,_br_, _vn_,_vb_,_x_) do {\
+  bitget(_bw_,_br_, vlcbits(_vn_),_x_);\
+  if(_x_ >= vlcfirst(_vn_)+_vb_) { \
+    _x_ -= _vb_; \
+	int _mb = vlcmbits(_x_, _vn_), _ma; \
+ 	bitget(_bw_,_br_, _mb,_ma);\
+	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
+  }\
+} while(0)
+
+//--------- Branchless, expo with byte io, mantissa with bitio ---------------
+#define bitvbput(_bw_,_br_,_cp_,_bp_,_vn_,_vb_, _u_) do { \
+  unsigned _expo, _mb, _ma;\
+  vlcenc((_u_)+vlcfirst(_vn_), _vn_, _expo, _mb, _ma); \
+  *_cp_++ = _expo; \
+  bitput(_bw_,_br_, _mb, _ma); \
+} while(0)
+
+#define bitvbget(_bw_,_br_,_cp_,_bp_,_vn_,_vb_,_x_) do { _x_ = *_cp_++; \
+  unsigned _mb = vlcmbits(_x_, _vn_), _ma;\
+  _ma = bitpeek(_bw_, _br_, _mb); bitrmv(_bw_, _br_, _mb);\
+  _x_ = vlcdec(_x_, _mb, _ma, _vn_)-vlcfirst(_vn_);\
+} while(0)
+
+//--
+#define bitvcput(_bw_,_br_,_cp_,_bp_,_vn_,_vb_, _u_) do { \
+  if((_u_) >= vlcfirst(_vn_)+_vb_) {\
+    unsigned _expo, _mb, _ma;\
+    vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
+	*_cp_++ = _expo+_vb_; \
+    bitput(_bw_,_br_, _mb, _ma); /*bitenormr(_bw_,_br_,_bp_);*/\
+  } else *_cp_++ = _u_; \
+} while(0)
+
+#define bitvcget(_bw_,_br_,_cp_,_bp_,_vn_,_vb_,_x_) do { /*bitdnormr(_bw_,_br_,_bp_);*/ _x_ = *_cp_++; \
+  if(likely(_x_ >= vlcfirst(_vn_)+_vb_)) {\
+    _x_ -= _vb_;\
+	int _mb = vlcmbits(_x_, _vn_), _ma; /*_ma = bitpeek(_bw_, _br_, _mb); bitrmv(_bw_,_br_, _mb);*/\
+	bitget(_bw_,_br_, _mb,_ma);\
+	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
+  }\
+} while(0)
+
+
+#define vhifirst(_k_) (1<<(_k_))
+
+#define vhimbits(_expo_,_k_,_i_,_j_) (_k_ - (_i_ + _j_) + ((_expo_ - (1<<_k_)) >> (_i_ + _j_)))
+// Hybrid integer https://www.lucaversari.it/phd/main.pdf
+#define VHI_K 4
+#define VHI_I 2
+#define VHI_J 1
+
+//#define _vlcexpo_(_x_, _k_,_i_,_j, _expo_) 
+#define vhienc(_x_, _k_, _i_, _j_, _expo_, _mb_, _ma_) {\
+  unsigned n = __bsr32(_x_), m = _x_ - (1 << n);\
+  _expo_ = (1<<_k_) + ((n - _k_) << (_i_ + _j_)) + ((m >> (n - _i_)) << _j_) + BZHI32(m,_j_);\
+  _mb_   = n - _i_ - _j_;\
+  _ma_   = bzhi32(_x_ >> _j_,_mb_);\
+}
+
+#define vhidec(_x_, _mb_, _ma_, _k_, _i_, _j_) {\
+  unsigned _mb_ = vhimbits(_x_,_k_,_i_,_j_), low_bits = _x_ & ((1 << _j_) - 1);\
+  _x_ >>= _j_;\
+  unsigned high_bits = (1 << _i_) | (_x_ & ((1 << _i_) - 1));\
+  _x_ = (((high_bits << _mb_) | _ma_) << _j_) | low_bits;\
+}
+
+#define bithcput(_bw_,_br_,_cp_,_bp_,_k_,_i_,_j_, _u_) do { \
+  if((_u_) >= vhifirst(_k_)) {\
+    unsigned _expo, _mb, _ma;\
+    vhienc(_u_, _k_, _i_, _j_, _expo, _mb, _ma); \
+	*_cp_++ = _expo; \
+    bitput(_bw_,_br_, _mb, _ma); /*bitenormr(_bw_,_br_,_bp_);*/\
+  } else *_cp_++ = _u_; \
+} while(0)
+
+#define bithcget(_bw_,_br_,_cp_,_bp_,_k_,_i_,_j_,_x_) do { /*bitdnormr(_bw_,_br_,_bp_);*/ _x_ = *_cp_++; \
+  if(likely(_x_ >= vhifirst(_k_))) {\
+    unsigned _mb = _k_ - (_i_ + _j_) + ((_x_ - (1<<_k_)) >> (_i_ + _j_)), _ma; bitget(_bw_,_br_, _mb,_ma);\
+    _x_ = (((((1 << _i_) | BZHI32(_x_ >> _j_,_i_)) << _mb) | _ma) << _j_) | BZHI32(_x_,_j_);\
+  }\
+} while(0)
 
 //---- "Integer Compression" scalar variable byte -------------------------------
+#include "conf.h"
 //----------------------------------- Variable byte: single value macros (low level) -----------------------------------------------
 //------------- 32 bits -------------
 extern unsigned char _vtab32_[];
@@ -493,123 +659,4 @@ static ALWAYS_INLINE void vbget32(unsigned char **_ip, unsigned *_x)  { unsigned
 static ALWAYS_INLINE unsigned vlget32(unsigned char **_ip)  { unsigned char *ip = *_ip; unsigned x; _vbget(ip, x, 32, VB_MAX, 4, 3, ;); *_ip = ip; return x; }
 static ALWAYS_INLINE unsigned vllen32(unsigned       x) { return _vblen(      x, 32, VB_MAX, 4, 3); }
   #endif
-
-  
-//-- Turbo VLC : Novel Variable Length Coding for large integers with exponent + mantissa
-
-// Exponent base for the bit size vlcbits: 1=63 2=123, 3=239 4=463 5=895 6=1727 7=3327
-#define VLC_VN6    ( 6-5)
-#define VLC_VN7    ( 7-5)
-#define VLC_VN8    ( 8-5)
-#define VLC_VN9    ( 9-5)
-#define VLC_VN10   (10-5)
-#define VLC_VN11   (11-5)
-#define VLC_VN12   (12-5)
-#define VLC_VN15   (15-5)
-#define VLC_VN16   (16-5)
-
-#define VLC_VB6    0  
-#define VLC_VB7    4 
-#define VLC_VB8   16
-#define VLC_VB9   48
-#define VLC_VB10 128
-#define VLC_VB11 296
-#define VLC_VB12 768
-#define VLC_VB16 768 //???
-
-#define vlcbits(_vn_)               (5+_vn_)
-#define vlcfirst(_vn_)              (1u<<(_vn_+1)) //1,0,4  2,4,8  3,16,16
-#define vlcmbits(_expo_, _vn_)      (((_expo_) >> _vn_)-1)
-#define _vlcexpo_(_x_, _vn_,_expo_) { unsigned _f = __bsr32(_x_)-_vn_; _expo_ = ((_f+1)<<_vn_) + bextr32((_x_),_f,_vn_); }
-#ifndef VLCBIT_H_
-#define VLCBIT_H_
-static inline int vlcexpo(unsigned x, unsigned vn) { unsigned expo; _vlcexpo_(x, vn, expo); return expo; }
-#endif
-
-// return exponent, mantissa + bits length for x the value 
-#define vlcenc( _x_, _vn_,_expo_, _mb_, _ma_) { unsigned _x = _x_; _vlcexpo_(_x, _vn_, _expo_); _mb_ = vlcmbits(_expo_, _vn_); _ma_ = bzhi32(_x,_mb_); }
-
-// build value from exponent, mantissa + length
-#define vlcdec(_expo_, _mb_, _ma_, _vn_) ((((1u << _vn_) + BZHI32(_expo_,_vn_))<<(_mb_)) + (_ma_)) 
-
-// encode the mantissa in bitio (R->L) and return the exponent in u 
-#define bitvrput(_bw_,_br_,_ep_, _vn_,_vb_, _u_) do { \
-  if((_u_) >= vlcfirst(_vn_)+_vb_) {\
-    unsigned _expo, _mb, _ma;\
-    vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
-    bitput(_bw_,_br_, _mb, _ma); bitenormr(_bw_,_br_,_ep_);\
-	_u_ = _expo+_vb_;\
-  }\
-} while(0)
-
-// get mantissa and bitio (R->L) decode value from x 
-/*#define bitvrget( _bw_,_br_,_ip_, _vn_,_vb_,_x_) \
-  if(_x_ >= vlcfirst(_vn_)+_vb_) { \
-    _x_ -= _vb_; \
-	int _mb = vlcmbits(_x_, _vn_), _ma; \
-    bitdnormr(_bw_,_br_,_ip_);\
-	bitget(_bw_,_br_, _mb,_ma);\
-	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
-  }*/
-#define bitvrget(_bw_,_br_,_ip_,_vn_,_vb_,_x_) \
-  if(_x_ >= vlcfirst(_vn_)+_vb_) { \
-    bitdnormr(_bw_,_br_,_ip_); \
-    unsigned _mb = vlcmbits(_x_ -= _vb_, _vn_), _ma = bitpeek(_bw_,_br_, _mb); /*bitget(_bw_,_br_, _mb, _ma);*/\
-    _x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_; bitrmv(_bw_,_br_, _mb);\
-  }
-
-//--------- Expo & mantissa with bitio ------------------------------
-#define bitvput(_bw_,_br_,_vn_,_vb_, _u_) do { \
-  if((_u_) >= vlcfirst(_vn_)+_vb_) {\
-    unsigned _expo, _mb, _ma;\
-    vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
-	bitput(_bw_,_br_, vlcbits(_vn_), _expo+_vb_); \
-    bitput(_bw_,_br_, _mb, _ma); \
-  } else bitput(_bw_,_br_, vlcbits(_vn_), _u_);\
-} while(0)
-
-#define bitvget( _bw_,_br_, _vn_,_vb_,_x_) do {\
-  bitget(_bw_,_br_, vlcbits(_vn_),_x_);\
-  if(_x_ >= vlcfirst(_vn_)+_vb_) { \
-    _x_ -= _vb_; \
-	int _mb = vlcmbits(_x_, _vn_), _ma; \
- 	bitget(_bw_,_br_, _mb,_ma);\
-	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
-  }\
-} while(0)
-
-//--------- Branchless, expo with byte io , mantissa with bitio ---------------
-#define bitvbput(_bw_,_br_,_cp_,_bp_,_vn_,_vb_, _u_) do { \
-  unsigned _expo, _mb, _ma;\
-  vlcenc((_u_)+vlcfirst(_vn_), _vn_, _expo, _mb, _ma); \
-  *_cp_++ = _expo; \
-  bitput(_bw_,_br_, _mb, _ma); \
-  bitenormr(_bw_,_br_,_bp_);\
-} while(0)
-
-#define bitvbget(_bw_,_br_,_cp_,_bp_,_vn_,_vb_,_x_) do { _x_ = *_cp_++; \
-  int _mb = vlcmbits(_x_, _vn_), _ma; bitdnormr(_bw_,_br_,_bp_); \
-  _ma = bitpeek(_bw_, _br_, _mb); _br_ += _mb; /*bitget(_bw_,_br_, _mb,_ma);*/\
-  _x_ = vlcdec(_x_, _mb, _ma, _vn_)-vlcfirst(_vn_);\
-} while(0)
-
-//--
-#define bitvcput(_bw_,_br_,_cp_,_bp_,_vn_,_vb_, _u_) do { \
-  if((_u_) >= vlcfirst(_vn_)+_vb_) {\
-    unsigned _expo, _mb, _ma;\
-    vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
-	*_cp_++ = _expo+_vb_; \
-    bitput(_bw_,_br_, _mb, _ma); \
-    bitenormr(_bw_,_br_,_bp_);\
-  } else *_cp_++ = _u_; \
-} while(0)
-
-#define bitvcget(_bw_,_br_,_cp_,_bp_,_vn_,_vb_,_x_) do { bitdnormr(_bw_,_br_,_bp_); _x_ = *_cp_++; \
-  if(likely(_x_ >= vlcfirst(_vn_)+_vb_)) {  \
-    _x_ -= _vb_; \
-	int _mb = vlcmbits(_x_, _vn_), _ma; \
-	_ma = bitpeek(_bw_, _br_, _mb); _br_ += _mb; /*bitget(_bw_,_br_, _mb,_ma);*/\
-	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
-  }\
-} while(0)
 
