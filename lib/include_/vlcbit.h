@@ -102,16 +102,56 @@ static inline int vlcexpo(unsigned x, unsigned vn) { unsigned expo; _vlcexpo_(x,
     unsigned _expo, _mb, _ma;\
     vlcenc((_u_)-_vb_, _vn_, _expo, _mb, _ma); \
 	*_cp_++ = _expo+_vb_; \
-    bitput(_bw_,_br_, _mb, _ma); \
-    /*bitenormr(_bw_,_br_,_bp_);*/\
+    bitput(_bw_,_br_, _mb, _ma); /*bitenormr(_bw_,_br_,_bp_);*/\
   } else *_cp_++ = _u_; \
 } while(0)
 
 #define bitvcget(_bw_,_br_,_cp_,_bp_,_vn_,_vb_,_x_) do { /*bitdnormr(_bw_,_br_,_bp_);*/ _x_ = *_cp_++; \
-  if(likely(_x_ >= vlcfirst(_vn_)+_vb_)) {  \
-    _x_ -= _vb_; \
-	int _mb = vlcmbits(_x_, _vn_), _ma; \
-	/*_ma = bitpeek(_bw_, _br_, _mb); bitrmv(_bw_,_br_, _mb);*/ bitget(_bw_,_br_, _mb,_ma);\
-	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_; \
+  if(likely(_x_ >= vlcfirst(_vn_)+_vb_)) {\
+    _x_ -= _vb_;\
+	int _mb = vlcmbits(_x_, _vn_), _ma; /*_ma = bitpeek(_bw_, _br_, _mb); bitrmv(_bw_,_br_, _mb);*/\
+	bitget(_bw_,_br_, _mb,_ma);\
+	_x_ = vlcdec(_x_, _mb, _ma, _vn_)+_vb_;\
   }\
 } while(0)
+
+
+#define vhifirst(_k_) (1<<(_k_))
+
+#define vhimbits(_expo_,_k_,_i_,_j_) (_k_ - (_i_ + _j_) + ((_expo_ - (1<<_k_)) >> (_i_ + _j_)))
+// Hybrid integer https://www.lucaversari.it/phd/main.pdf
+#define VHI_K 4
+#define VHI_I 2
+#define VHI_J 1
+
+//#define _vlcexpo_(_x_, _k_,_i_,_j, _expo_) 
+#define vhienc(_x_, _k_, _i_, _j_, _expo_, _mb_, _ma_) {\
+  unsigned n = __bsr32(_x_), m = _x_ - (1 << n);\
+  _expo_ = (1<<_k_) + ((n - _k_) << (_i_ + _j_)) + ((m >> (n - _i_)) << _j_) + BZHI32(m,_j_);\
+  _mb_   = n - _i_ - _j_;\
+  _ma_   = bzhi32(_x_ >> _j_,_mb_);\
+}
+
+#define vhidec(_x_, _mb_, _ma_, _k_, _i_, _j_) {\
+  unsigned _mb_ = vhimbits(_x_,_k_,_i_,_j_), low_bits = _x_ & ((1 << _j_) - 1);\
+  _x_ >>= _j_;\
+  unsigned high_bits = (1 << _i_) | (_x_ & ((1 << _i_) - 1));\
+  _x_ = (((high_bits << _mb_) | _ma_) << _j_) | low_bits;\
+}
+
+#define bithcput(_bw_,_br_,_cp_,_bp_,_k_,_i_,_j_, _u_) do { \
+  if((_u_) >= vhifirst(_k_)) {\
+    unsigned _expo, _mb, _ma;\
+    vhienc(_u_, _k_, _i_, _j_, _expo, _mb, _ma); \
+	*_cp_++ = _expo; \
+    bitput(_bw_,_br_, _mb, _ma); /*bitenormr(_bw_,_br_,_bp_);*/\
+  } else *_cp_++ = _u_; \
+} while(0)
+
+#define bithcget(_bw_,_br_,_cp_,_bp_,_k_,_i_,_j_,_x_) do { /*bitdnormr(_bw_,_br_,_bp_);*/ _x_ = *_cp_++; \
+  if(likely(_x_ >= vhifirst(_k_))) {\
+    unsigned _mb = _k_ - (_i_ + _j_) + ((_x_ - (1<<_k_)) >> (_i_ + _j_)), _ma; bitget(_bw_,_br_, _mb,_ma);\
+    _x_ = (((((1 << _i_) | BZHI32(_x_ >> _j_,_i_)) << _mb) | _ma) << _j_) | BZHI32(_x_,_j_);\
+  }\
+} while(0)
+
