@@ -98,6 +98,11 @@ unsigned lztpd4zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsi
 //-- TurboVLC : Novel Variable Length Coding for large integers with exponent + mantissa ------------------------
 size_t vlccomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm); 
 size_t vlcdecomp32(unsigned char *in,  size_t inlen,  unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
+//-- Hybrid integer ------
+size_t vhicomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm); 
+size_t vhidecomp32(unsigned char *in,  size_t inlen,  unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
+
+
 void tpmodeset(unsigned _tpmode);
 
 void tpsizeset(unsigned _tpsize);
