@@ -1559,9 +1559,9 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 #define USIZE 4
 unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
   unsigned      l = 0, m = n/(USIZE), rc = 0, d = 0, ns = CBUF(n);
-  unsigned char *tmp = NULL;
   uint32_t      dm = mindelta32(in,m);
-  if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) 
+  unsigned char *tmp = NULL;
+  if(/*NEEDTMP &&*/ !(tmp = (unsigned char*)malloc(ns))) 
 	die(stderr, "malloc error\n");
   memrcpy(cpy,in,n);
 
