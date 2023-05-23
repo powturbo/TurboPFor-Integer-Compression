@@ -69,6 +69,7 @@ int lzidget(char *scmd) {
 
   #ifdef _TURBORC
 #include "ext/Turbo-Range-Coder/include/turborc.h"
+#include "ext/Turbo-Range-Coder/include/anscdf.h"
   #endif
 
   #ifdef _ZSTD
@@ -139,6 +140,7 @@ size_t codecenc(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
 		case 20: return rcbwtenc(in,inlen,out,bwtlev,0, 1);
 		  #ifdef _ANS
 		case 56: return anscdfenc(in,inlen,out);
+		case 64: return anscdf1enc(in,inlen,out);
 		default: die("TurboRC codec level '%d' not included", codlev);
 		  #endif
       }
@@ -227,7 +229,8 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
         case 2 : return ec==2?rcssdec( in, outlen, out, 5,6):rcsdec( in, outlen, out);
 		case 20: inlen==outlen?memcpy(out,in,outlen):rcbwtdec(in,outlen,out,bwtlev, 0); return 0;
 		  #ifdef _ANS
-		case 56: anscdfdec(in, outlen, out); return outlen;
+		case 56: inlen==outlen?memcpy(out,in,outlen):anscdfdec( in, outlen, out); return outlen;
+		case 64: inlen==outlen?memcpy(out,in,outlen):anscdf1dec(in, outlen, out); return outlen;
 		  #endif
 //        case 2 : return turborcndec( in, outlen, out);
       }
@@ -472,7 +475,7 @@ unsigned lztp4zdec(unsigned char *in, unsigned inlen, unsigned char *out, unsign
 //-----------------------------------------------------------------------------------------------------------------------------------
 static int tpmode;
 void tpmodeset(unsigned _tpmode) {
-  tpmode = _tpmode;   printf("tpmode=%d ", tpmode);
+  tpmode = _tpmode;   //printf("tpmode=%d ", tpmode);
 }
 
 #define TPENC(in, n, out, esize) tpmode==4?tp4enc(in, n, out, esize):tpenc(in, n, out, esize)   // use nibble transpose
@@ -599,13 +602,12 @@ unsigned lztprlezdec(unsigned char *in, unsigned inlen, unsigned char *out, unsi
 //------------------------------------------------------- 2D -------------------------------------------------
 // transpose 2D -> transpose (byte/Nibble) -> codec
 unsigned lztpd2enc(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm) { 
- printf("lztpd2zenc");
-  tp2denc(     in,  x, y,  out, esize);                             printf("A");
-  TPENC(       out, inlen, tmp, esize);                             printf("B");
+  tp2denc(     in,  x, y,  out, esize);                            
+  TPENC(       out, inlen, tmp, esize);                           
   return codecenc(tmp, inlen, out, outsize, codid, codlev, codprm);
 }
 
-unsigned lztpd2dec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm) { //printf("#2D[%u,%u]", x, y);
+unsigned lztpd2dec(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm) {
   codecdec(  in,  inlen,  out, outlen, codid, codlev, codprm); 
   TPDEC(  out, outlen, tmp, esize); 
   tp2ddec(tmp, x, y,   out, esize); 
