@@ -833,7 +833,7 @@ void qcompini() {
 }
 
 unsigned qcomp32(unsigned char *in, unsigned inlen, unsigned char *out, int lev) { 
-  qcompini(); FfiVec v = auto_compress_i32_((int *)in, inlen, lev); memcpy(out, v.ptr, v.len); inlen = v.len; free_compressed_(v); 
+  qcompini(); FfiVec v = auto_compress_i32_((int *)in, inlen/4, lev); memcpy(out, v.ptr, v.len); inlen = v.len; free_compressed_(v); 
   return inlen;
 }	
 
@@ -843,7 +843,7 @@ unsigned qdecomp32(unsigned char *in, unsigned inlen, unsigned char *out, unsign
 }	
 
 unsigned qcomp64(unsigned char *in, unsigned inlen, unsigned char *out, int lev) { 
-  qcompini(); FfiVec v = auto_compress_i64_((int *)in, inlen, lev); memcpy(out, v.ptr, v.len); inlen = v.len; free_compressed_(v); 
+  qcompini(); FfiVec v = auto_compress_i64_((int *)in, inlen/8, lev); memcpy(out, v.ptr, v.len); inlen = v.len; free_compressed_(v); 
   return inlen;
 }	
 
@@ -851,6 +851,31 @@ unsigned qdecomp64(unsigned char *in, unsigned inlen, unsigned char *out, unsign
   qcompini(); FfiVec v = auto_decompress_i64_(in, inlen); memcpy(out, v.ptr, outlen); free_i64_(v);   
   return outlen;
 }	
+
+unsigned qzcomp32(unsigned char *in, unsigned inlen, unsigned char *out, int lev, unsigned char *tmp) { 
+  bitzenc(in, inlen, tmp, 4);                
+  qcompini(); FfiVec v = auto_compress_i32_((int *)tmp, inlen/4, lev); memcpy(out, v.ptr, v.len); inlen = v.len; free_compressed_(v); 
+  return inlen;
+}	
+
+unsigned qzdecomp32(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen) { 
+  qcompini(); FfiVec v = auto_decompress_i32_(in, inlen); memcpy(out, v.ptr, outlen); free_i32_(v);
+  bitzdec(out, outlen, 4);  
+  return outlen;
+}	
+
+unsigned qzcomp64(unsigned char *in, unsigned inlen, unsigned char *out, int lev, unsigned char *tmp) { 
+  bitzenc(in, inlen, tmp, 8);                
+  qcompini(); FfiVec v = auto_compress_i64_((int *)tmp, inlen/8, lev); memcpy(out, v.ptr, v.len); inlen = v.len; free_compressed_(v); 
+  return inlen;
+}	
+
+unsigned qzdecomp64(unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen) { 
+  qcompini(); FfiVec v = auto_decompress_i64_(in, inlen); memcpy(out, v.ptr, outlen); free_i64_(v);   
+  bitzdec(out, outlen, 8);  
+  return outlen;
+}	
+
   #endif
 //----------------------------------------------------------------------------------
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
@@ -1154,7 +1179,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",	
     "%3d:meshoptimizer    3D lz%s,%d          ",	
     "%3d:qcomp            quantile compress   ",   	
-    "%3d:174              speed test          ",   	
+    "%3d:qcomp zigzag     quantile compress   ",   	
     "%3d:175              speed test          ",   	
     "%3d:176              speed test          ",   	
     "%3d:177              speed test          ",   	
@@ -1816,7 +1841,8 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 172: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("", l = meshenc(in, nx,ny,_nz, out, ns, tmp,codid,codlev,codprm), n,l, meshdec(out, l,cpy, nx,ny,_nz, tmp,codid,codlev,codprm)); } break;
 	  #endif
       #ifdef _QCOMPRESS
-    case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp32(in, m, out, codlev), n,l, qdecomp32(out, l, cpy,n)); break;
+    case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp32( in, n, out, codlev), n,l, qdecomp32( out, l, cpy,n)); break;
+    case 174: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qzcomp32(in, n, out, codlev,tmp), n,l, qzdecomp32(out, l, cpy,n)); break;
       #endif	  
     default: goto end;
   }
@@ -1837,7 +1863,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
   uint64_t      dm = mindelta64(in,m);
   uint64_t      *p = NULL;
   unsigned char *tmp = NULL;
-  if(NEEDTMP && !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
+  if(/*NEEDTMP &&*/ !(tmp = (unsigned char*)malloc(ns))) die(stderr, "malloc error\n");
   memrcpy(cpy,in,n);
 
   switch(id) {
@@ -1986,7 +2012,8 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 159: TM("", tp4xenc( in, n, out, USIZE),      n,n, tp4xdec( out, n,cpy, USIZE)); l = n; break;
     case 160: TM("", tp4x0enc(in, n, out, USIZE, tmp), n,n, tp4x0dec(out, n,cpy, USIZE)); l = n; break;
       #ifdef _QCOMPRESS
-    case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp64(in, m, out, codlev), n,l, qdecomp64(out, l, cpy,n)); break;
+    case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp64( in, n, out, codlev),     n,l, qdecomp64( out, l, cpy,n)); break;
+    case 174: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qzcomp64(in, n, out, codlev,tmp), n,l, qzdecomp64(out, l, cpy,n)); break;
       #endif	  
     default: goto end;
   }
@@ -2109,8 +2136,8 @@ int main(int argc, char* argv[]) { //testrazor();
         else if(*s=='s') isize =  2, s++; // 2 bytes
         else if(*s=='u') isize =  4, s++; // 4 bytes
         else if(*s=='l') isize =  8, s++; // 8 bytes
-        else if(*s=='t') isize =  4, s++, dfmt = T_TIM32; // 4 bytes, timestamp
-        else if(*s=='T') isize =  8, s++, dfmt = T_TIM64; // 8 bytes, timestamp
+        else if(*s=='t') isize =  4, s++, dfmt = T_TIM32; // 4 bytes, timestamp text
+        else if(*s=='T') isize =  8, s++, dfmt = T_TIM64; // 8 bytes, timestamp text
         if(*s == '.') { if(*++s >= '0' && *s <= '9') { decs = s[0] - '0'; if(*++s >= '0' && *s <= '9') decs = decs * 10 + s[0] - '0'; } } // number of decimals after .
 		else if(*s == 'A') autoraz++;
         if(*s == 'v') { divs = strtod(++s, &s); }
