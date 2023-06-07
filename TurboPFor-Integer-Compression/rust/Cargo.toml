@@ -1,0 +1,11 @@
+[package]
+authors = ["powturbo <powturbo [AT] gmail [DOT] com>"]
+build = "build.rs"
+name = "ic"
+version = "0.60.0"
+
+[dependencies]
+rand = "0.8"
+
+[build-dependencies]
+bindgen = "*"
