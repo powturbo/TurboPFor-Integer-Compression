@@ -1568,8 +1568,9 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
               TM("", l = vbz_compress(in, n, out, ns, &opt), n,l, vbz_decompress(out, l, cpy, n, &opt));
       } break;
       #endif
-
+      #ifdef FLT16_MAX  
     case 149: l=n; TM0("", fprazor16(in, m, out,zerrlim), n, l);                                         memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -2, tmp); break;
+      #endif
     case 153: TM("", tpzenc(  in, n, out, USIZE),     n,n, tpzdec(  out, n,cpy, USIZE)); l=n; break;
     case 154: TM("", tpz0enc( in, n, out, USIZE, tmp),n,n, tpz0dec( out, n,cpy, USIZE)); l=n; break;
     case 155: TM("", tpxenc(  in, n, out, USIZE),     n,n, tpxdec(  out, n,cpy, USIZE)); l=n; break;
@@ -2288,7 +2289,7 @@ int main(int argc, char* argv[]) { //testrazor();
         fprazor64(in,n/8,out,errlim); if(verbose>0) fpstat(in, n/8, out, -8, NULL);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
         fprazor64(in,n/8, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
       }
-        #ifndef _NFLOAT16
+        #ifdef FLT16_MAX
       else if(isize == -2) {  																		printf("Lossy compression float16\n");
         fprazor16(in,n/2,out,errlim);  if(verbose>0) fpstat(in, n/2, out, -2, NULL);                   /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
         fprazor16(in,n/2, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
