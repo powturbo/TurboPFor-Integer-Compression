@@ -39,6 +39,7 @@
   * Point wise relative error bound **lossy** floating point compression
   * **TurboFloat** novel efficient floating point compression using TurboPFor
   * :new:(2023.03)**TurboFloat LzXor** novel floating point lempel-ziv compression
+  * :new:(2023.06)_Float16 16 bits floating point support
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress timestamps to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
