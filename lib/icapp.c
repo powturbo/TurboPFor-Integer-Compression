@@ -49,8 +49,9 @@
 #include <dlfcn.h> // dlopen
   #endif
 #include <math.h> // pow,fabs
-#include <float.h>
 
+#define __STDC_WANT_IEC_60559_TYPES_EXT__
+#include <float.h>
 #include "../include/ic.h"
 #include "include_/iccodec.h"
 
@@ -816,7 +817,7 @@ void qcompini() {
 	  if(!(free_i64_            =            (ffree_i64)GetProcAddress(hdll, "free_i64")))            die("free_i64 not found\n");
     } else fprintf(stderr,"q_compress_ffi.dll not found\n");
   } 
-    #else
+    #elif !defined(_STATIC)
   { char *qcomp = "./libq_compress_ffi.so";
     void *hdll = dlopen(qcomp, RTLD_LAZY);
     if(hdll) { 
@@ -2285,8 +2286,6 @@ int main(int argc, char* argv[]) { //testrazor();
       }
         #ifndef _NFLOAT16
       else if(isize == -2) {  																		printf("Lossy compression float16\n");
-	    //_Float16 *pf=in; for(i=0; i < 1000; i++) { float f = pf[i]; printf("%f,", f); }
-		//memcpy(out,in,n); fpstat(in, n/2, out, -2); exit(0);
         fprazor16(in,n/2,out,errlim);  if(verbose>0) fpstat(in, n/2, out, -2, NULL);                   /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
         fprazor16(in,n/2, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
       }
