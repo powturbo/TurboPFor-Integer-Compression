@@ -85,11 +85,8 @@ ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetB
 LDFLAGS+=-lrt -lm
 endif
 
-# compiler supports float16
-ifeq ($(FLOAT16),1)
-CFLAGS+=-DUSE_FLOAT16
-endif
 ifeq ($(STATIC),1)
+CFLAGS+=-D_STATIC
 LDFLAGS+=-static
 endif
 
