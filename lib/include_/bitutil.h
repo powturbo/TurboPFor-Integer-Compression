@@ -145,7 +145,7 @@ void bitzdec(unsigned char *in, unsigned n,                     unsigned esize);
 
 //------- Lossy floating point transform: pad the trailing mantissa bits with zeros according to the error e (ex. e=0.00001)
 // must include float.h to use _Float16 (see icapp.c)
- #ifdef FLT16_MAX 
+ #if defined(FLT16_MAX) 
 _Float16 _fprazor16(_Float16 d, float e, int lg2e);  
 void fprazor16(_Float16 *in, unsigned n, _Float16  *out, float  e);
   #endif
