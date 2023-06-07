@@ -878,7 +878,7 @@ void bitzdec(unsigned char *in, unsigned n, unsigned esize) {
 }
 
 //----------- Lossy floating point conversion: pad the trailing mantissa bits with zero bits according to the relative error e (ex. 0.00001)  ----------
-  #if defined(FLT16_MAX) 
+  #if defined(FLT16_BUILTIN) 
 // https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point
 _Float16 _fprazor16(_Float16 d, float e, int lg2e) {
   uint16_t du = ctou16(&d), sign, u;
