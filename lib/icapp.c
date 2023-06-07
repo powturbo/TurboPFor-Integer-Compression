@@ -1225,7 +1225,9 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
   if(!_tmp) free(tmp);
   for(ip = in, op = out; ip < in+n*esize; ip += esize, op += esize)
     switch(s) {
+        #ifdef FLT16_MAX
       case -2: isum += ctof16(ip); osum += ctof16(op); break;
+        #endif
       case -4: isum += ctof32(ip); osum += ctof32(op); break;
       case -8: isum += ctof64(ip); osum += ctof64(op); break;
       case  1: isum += ctou8( ip); osum += ctou8( op); break;
@@ -1249,9 +1251,11 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
     double id, od;
 	unsigned e;	uint64_t m;
     switch(s) {
+        #ifdef FLT16_MAX
       case -2: { unsigned e; uint16_t m;id = ctof16(ip); od = ctof16(op); U(16); e = EXPO16(u); expo = clz16(zigzagenc16(e-expo))/*-(16-(16-MANTF16-1))*/; elb+=expo; expo = e;
                                                           m = MANT16(u); mant = ctz16(            m^mant)                     ;     mtb+=mant; mant = m;//ctz16(zigzagenc16(m-mant))
                                                          } break;
+        #endif                                                          
       case -4: { unsigned e; uint32_t m;id = ctof32(ip); od = ctof32(op); U(32); e = EXPO32(u); expo = clz32(zigzagenc32(e-expo))/*-(32-(32-MANTF32-1))*/; elb+=expo; expo = e;
                                                           m = MANT32(u); mant = ctz32(            m^mant)                     ;     mtb+=mant; mant = m;//ctz32(zigzagenc32(m-mant))
                                                          } break;
