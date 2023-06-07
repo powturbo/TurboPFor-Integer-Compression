@@ -78,7 +78,7 @@ endif
 
 CFLAGS+=$(DEBUG) $(OPT) 
 #CFLAGS+=-Wno-macro-redefined -Wno-incompatible-pointer-types -Wno-tautological-constant-out-of-range-compare -Wno-discarded-qualifiers
-CFLAGS+=-w -Wall
+CFLAGS+=-w -Wall -pedantic
 CXXFLAGS+=-w 
 #-Wall -Wincompatible-pointer-types
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
