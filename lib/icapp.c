@@ -1225,7 +1225,7 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
   if(!_tmp) free(tmp);
   for(ip = in, op = out; ip < in+n*esize; ip += esize, op += esize)
     switch(s) {
-        #if defined(FLT16_MAX)
+        #if defined(FLT16_BUILTIN)
       case -2: isum += ctof16(ip); osum += ctof16(op); break;
         #endif
       case -4: isum += ctof32(ip); osum += ctof32(op); break;
@@ -1251,7 +1251,7 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
     double id, od;
 	unsigned e;	uint64_t m;
     switch(s) {
-        #if defined(FLT16_MAX)
+        #if defined(FLT16_BUILTIN)
       case -2: { unsigned e; uint16_t m;id = ctof16(ip); od = ctof16(op); U(16); e = EXPO16(u); expo = clz16(zigzagenc16(e-expo))/*-(16-(16-MANTF16-1))*/; elb+=expo; expo = e;
                                                           m = MANT16(u); mant = ctz16(            m^mant)                     ;     mtb+=mant; mant = m;//ctz16(zigzagenc16(m-mant))
                                                          } break;
@@ -1568,7 +1568,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
               TM("", l = vbz_compress(in, n, out, ns, &opt), n,l, vbz_decompress(out, l, cpy, n, &opt));
       } break;
       #endif
-      #if defined(FLT16_MAX)  
+      #if defined(FLT16_BUILTIN)  
     case 149: l=n; TM0("", fprazor16(in, m, out,zerrlim), n, l);                                         memcpy(cpy,in,n); if(verbose) fpstat(in, m, out, -2, tmp); break;
       #endif
     case 153: TM("", tpzenc(  in, n, out, USIZE),     n,n, tpzdec(  out, n,cpy, USIZE)); l=n; break;
@@ -2289,7 +2289,7 @@ int main(int argc, char* argv[]) { //testrazor();
         fprazor64(in,n/8,out,errlim); if(verbose>0) fpstat(in, n/8, out, -8, NULL);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
         fprazor64(in,n/8, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
       }
-        #if defined(FLT16_MAX) 
+        #if defined(FLT16_BUILTIN) 
       else if(isize == -2) {  																		printf("Lossy compression float16\n");
         fprazor16(in,n/2,out,errlim);  if(verbose>0) fpstat(in, n/2, out, -2, NULL);                   /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
         fprazor16(in,n/2, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
