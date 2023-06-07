@@ -1,0 +1,104 @@
+name: Build bitshuffle wheels and upload to PyPI
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+    - published
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }} and hdf5-${{ matrix.hdf5 }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        hdf5: ["1.10.7"]
+
+    steps:
+      # Checkout bitshuffle
+      - uses: actions/checkout@v3
+
+      # Build wheels for linux and x86 platforms
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.11.2
+        with:
+          output-dir: ./wheelhouse-hdf5-${{ matrix.hdf5}}
+        env:
+          CIBW_SKIP: "pp* *musllinux* cp311-macosx*"
+          CIBW_ARCHS: "x86_64"
+          CIBW_BEFORE_ALL: |
+            chmod +x .github/workflows/install_hdf5.sh
+            .github/workflows/install_hdf5.sh ${{ matrix.hdf5 }}
+            git submodule update --init
+          # Only build Haswell wheels on x86 for compatibility
+          CIBW_ENVIRONMENT: >
+            LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+            CPATH=/usr/local/include
+            ENABLE_ZSTD=1
+            BITSHUFFLE_ARCH=haswell
+          CIBW_TEST_REQUIRES: pytest
+          # Install different version of HDF5 for unit tests to ensure the
+          # wheels are independent of HDF5 installation
+          # CIBW_BEFORE_TEST: |
+          #   chmod +x .github/workflows/install_hdf5.sh
+          #   .github/workflows/install_hdf5.sh 1.8.11
+          # Run units tests but disable test_h5plugin.py
+          CIBW_TEST_COMMAND: pytest {package}/tests
+          # The Github runners for macOS don't support AVX2 instructions and so the tests will fail with SIGILL, so skip them
+          CIBW_TEST_SKIP: "*macosx*"
+
+      # Package wheels and host on CI
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse-hdf5-${{ matrix.hdf5 }}/*.whl
+
+  build_sdist:
+    name: Build source distribution
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install apt dependencies
+        run: |
+          sudo apt-get install -y libhdf5-serial-dev hdf5-tools pkg-config
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pip dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Build sdist
+        run: python setup.py sdist
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: dist/*.tar.gz
+
+  # Upload to PyPI
+  upload_pypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    # Upload to PyPI on every tag
+    # if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    # Alternatively, to publish when a GitHub Release is created, use the following rule:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@v1.5.1
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
+          # To test: repository_url: https://test.pypi.org/legacy/

@@ -1,0 +1,58 @@
+name: bitshuffle-ci-build
+on:
+  pull_request:
+    branches:
+    - master
+  push:
+    branches:
+    - master
+
+jobs:
+  run-tests:
+
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.10"]
+        os: [ubuntu-latest, macos-latest]
+        exclude:
+        - os: macos-latest
+          python-version: "3.6"
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install apt dependencies
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        sudo apt-get install -y libhdf5-serial-dev hdf5-tools pkg-config
+
+    - name: Install homebrew dependencies
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        brew install hdf5 pkg-config
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install h5py
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        pip install h5py
+
+    - name: Install pip dependencies
+      run: |
+        pip install Cython
+        pip install -r requirements.txt
+        pip install pytest
+
+        # Pull in ZSTD repo
+        git submodule update --init
+
+        # Installing the plugin to arbitrary directory to check the install script.
+        python setup.py install --h5plugin --h5plugin-dir ~/hdf5/lib --zstd
+
+    - name: Run tests
+      run: pytest -v .

@@ -1,0 +1,13 @@
+--- setup.py	2016-01-19 16:56:12.954563000 +0100
++++ xxx.py	2016-01-19 16:56:00.817087000 +0100
+@@ -40,8 +40,8 @@
+ 
+ # Copied from h5py.
+ # TODO, figure out what the canonacal way to do this should be.
+-INCLUDE_DIRS = []
+-LIBRARY_DIRS = []
++INCLUDE_DIRS = [os.environ['CONDA_HOME'] + '/include']
++LIBRARY_DIRS = [os.environ['CONDA_HOME'] + '/lib']
+ if sys.platform == 'darwin':
+     # putting here both macports and homebrew paths will generate
+     # "ld: warning: dir not found" at the linking phase 

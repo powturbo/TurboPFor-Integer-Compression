@@ -1,0 +1,10 @@
+recursive-include src *.h *.c
+recursive-include bitshuffle *.pyx
+recursive-include lz4 *.h *.c
+recursive-include lzf *.h *.c
+include setup.cfg.example
+include LICENSE
+include README.rst
+include requirements.txt
+exclude setup.cfg
+

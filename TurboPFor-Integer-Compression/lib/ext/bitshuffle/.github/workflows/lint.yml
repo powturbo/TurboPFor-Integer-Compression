@@ -1,0 +1,32 @@
+name: bitshuffle-ci-build
+on:
+  pull_request:
+    branches:
+    - master
+  push:
+    branches:
+    - master
+
+jobs:
+
+  lint-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install pip dependencies
+        run: |
+          pip install black flake8
+
+      - name: Run flake8
+        run: |
+          flake8 --config $GITHUB_WORKSPACE/.github/workflows/flake8_python.cfg bitshuffle tests
+          flake8 --config $GITHUB_WORKSPACE/.github/workflows/flake8_cython.cfg bitshuffle tests
+
+      - name: Check code with black
+        run: black --check .

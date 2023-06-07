@@ -1,0 +1,10 @@
+# Include dependencies when building wheels on cibuildwheel
+[build-system]
+requires = [
+    "setuptools>=0.7",
+    "Cython>=0.19",
+    "oldest-supported-numpy",
+    "h5py>=2.4.0",
+]
+
+build-backend = "setuptools.build_meta"

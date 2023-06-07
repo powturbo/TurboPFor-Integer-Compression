@@ -1,0 +1,10 @@
+[install]
+# These control the installation of the hdf5 dynamically loaded filter plugin.
+h5plugin = 0
+h5plugin-dir = /usr/local/hdf5/lib/plugin
+
+[build_ext]
+# Whether to compile with OpenMP multi-threading. Default is system dependent:
+# False on OSX (since the clang compiler does not yet support OpenMP) and True
+# otherwise.
+omp = 1

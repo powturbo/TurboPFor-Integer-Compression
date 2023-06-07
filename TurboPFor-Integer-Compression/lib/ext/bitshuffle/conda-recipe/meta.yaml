@@ -1,0 +1,27 @@
+package:
+    name: bitshuffle
+    version: 0.2.1
+source:
+    # git_url: https://github.com/kiyo-masui/bitshuffle.git
+    # git_rev: 0.2.1
+    path: ..
+    patches:
+      - setup.py.patch
+
+requirements:
+    build:
+        - python
+        - setuptools
+        - cython
+        - numpy
+        - h5py
+        - hdf5
+    run:
+        - python
+        - numpy
+        - h5py
+        - cython
+
+about:
+    home: https://github.com/kiyo-masui/bitshuffle/blob/master/setup.py
+    summary: "bitshuffle library."
