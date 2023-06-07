@@ -1,0 +1,63 @@
+name: build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  linux:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        compiler: ["gcc", "clang"]
+    env:      
+      CC: ${{ matrix.compiler }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'     
+      - run: git submodule update --init --recursive
+      - run: make
+      - run: lscpu
+      - run: ./icapp ZIPF
+
+#  windows:
+#    runs-on: windows-latest
+#    defaults:
+#      run:
+#        shell: msys2 {0}
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          submodules: 'true'
+#      - uses: msys2/setup-msys2@v2
+#        with:
+#          msystem: MINGW64
+#          install: git make mingw-w64-x86_64-gcc
+#          update: true
+#      - run: git submodule update --init --recursive
+#      - run: make
+#      - run: ./icapp ZIPF
+
+  macos:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        compiler: ["clang"]
+    env:      
+      CC: ${{ matrix.compiler }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - run: git submodule update --init --recursive
+      - run: make
+      - run: sysctl -n machdep.cpu.brand_string
+      - run: ./icapp ZIPF
+ 
