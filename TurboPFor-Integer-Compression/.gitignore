@@ -1,0 +1,7 @@
+.vs/
+msvc.build/
+*.vcxproj.user
+*.obj
+*.exe
+*.lib
+*.o
