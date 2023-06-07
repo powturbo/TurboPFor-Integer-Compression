@@ -876,19 +876,17 @@ void bitzdec(unsigned char *in, unsigned n, unsigned esize) {
 
 //----------- Lossy floating point conversion: pad the trailing mantissa bits with zero bits according to the relative error e (ex. 0.00001)  ----------
 
-  #ifdef USE_FLOAT16
+  #ifndef _NFLOAT16
 // https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point
-#define ctof16(_cp_) (*(_Float16 *)(_cp_))
-
 _Float16 _fprazor16(_Float16 d, float e, int lg2e) {
   uint16_t du = ctou16(&d), sign, u;
-  int      b  = (du>>10 & 0x1f) - 15; // mantissa=10 bits, exponent=5bits, bias=15
+  int      b  = (du>>10 & 0x1f) - 15; // exponent=[5 bits,bias=15], mantissa=10 bits SeeeeeMMMMMMMMMM
   _Float16 ed;
   if ((b = 12 - b - lg2e) <= 0) 
 	return d;
-  b    = b > 10?10:b;
-  sign = du & (1<<15);
-  du  &= 0x7fff;
+  b     = b > 10?10:b;
+  sign  = du & (1<<15); 
+  du   &= 0x7fff;       
   for(d = ctof16(&du), ed = e * d;;) {
     u = du & (~((1u<<(--b))-1)); if(d - ctof16(&u) <= ed) break;
     u = du & (~((1u<<(--b))-1)); if(d - ctof16(&u) <= ed) break;
