@@ -20,6 +20,7 @@
   * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
   * SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,xor,...
   * :new:(2023.03)**TurboBitByte** novel hybrid scheme combining the fastest SIMD codecs TurboByte+TurboPack.
+    Compress considerably better and can be 3 times faster than streamvbyte
 * **Simple family**
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
