@@ -171,7 +171,7 @@ static ALWAYS_INLINE unsigned short     ctou16(const void *cp) { unsigned short 
 static ALWAYS_INLINE unsigned           ctou32(const void *cp) { unsigned           x; memcpy(&x, cp, sizeof(x)); return x; }
 static ALWAYS_INLINE unsigned long long ctou64(const void *cp) { unsigned long long x; memcpy(&x, cp, sizeof(x)); return x; }
 static ALWAYS_INLINE size_t             ctousz(const void *cp) { size_t             x; memcpy(&x, cp, sizeof(x)); return x; }
-#ifdef FLT16_MAX
+#ifdef FLT16_BUILTIN
 static ALWAYS_INLINE _Float16           ctof16(const void *cp) { _Float16           x; memcpy(&x, cp, sizeof(x)); return x; }
 #endif
 static ALWAYS_INLINE float              ctof32(const void *cp) { float              x; memcpy(&x, cp, sizeof(x)); return x; }
@@ -181,7 +181,7 @@ static ALWAYS_INLINE void               stou16(      void *cp, unsigned short   
 static ALWAYS_INLINE void               stou32(      void *cp, unsigned           x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stou64(      void *cp, unsigned long long x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stousz(      void *cp, size_t             x) { memcpy(cp, &x, sizeof(x)); }
-#ifdef FLT16_MAX
+#ifdef FLT16_BUILTIN
 static ALWAYS_INLINE void               stof16(      void *cp, _Float16           x) { memcpy(cp, &x, sizeof(x)); }
 #endif
 static ALWAYS_INLINE void               stof32(      void *cp, float              x) { memcpy(cp, &x, sizeof(x)); }
@@ -233,7 +233,7 @@ struct _PACKED doubleu   { double   d; };
 struct _PACKED shortu    { unsigned short     s; };
 struct _PACKED unsignedu { unsigned           u; };
 struct _PACKED longu     { uint64_t           l; };
-#ifdef FLT16_MAX
+#ifdef FLT16_BUILTIN
 struct _PACKED float16u  { _Float16           g; };
 #endif
 struct _PACKED floatu    { float              f; };
