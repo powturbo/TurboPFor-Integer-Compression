@@ -1209,20 +1209,23 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
                 eamin = DBL_MAX, eamax = DBL_MIN, easum = 0, easumsqr = 0, //absolute error                    : abs(input-output)
                 ermin = DBL_MAX, ermax = DBL_MIN, ersum = 0, ersumsqr = 0, //relative error                    : abs(input-output)/abs(input)
                 osum  = 0;                                                 //transformed lossy data (output)   : sum
-  long long     xtb = 0, xlb = 0, zlb = 0, tb = 0, lb = 0, elb=0, mtb=0, itb = 0;
+  long long     xtb = 0, xlb = 0, zlb = 0, tb = 0, lb = 0, elb = 0, mtb = 0, itb = 0;
   size_t        idn = 0;
   unsigned char *ip, *op;
-  unsigned      esize = s<0?-s:s,t=0, dup=0,zero=0;
+  unsigned      esize = s<0?-s:s, t = 0, dup=0,zero=0;
   long long     mant = 0;
   int           expo = 0,e;
-  unsigned char *tmp = _tmp;
-  if(!tmp) { tmp = malloc(n*esize);  if(!tmp) die("malloc failed\n"); }  memcpy(tmp, out, n*esize);
-  switch(esize) {
-    case 2: { uint16_t *p,*t = tmp; qsort(tmp, n, 2, cmpua16); for(dup=0,p = t; p < t+n-1; p++) { if(p[0] == p[1]) dup++; if(!p[0]) zero++; } } break;
-	case 4: { uint32_t *p,*t = tmp; qsort(tmp, n, 4, cmpua32); for(dup=0,p = t; p < t+n-1; p++) { if(p[0] == p[1]) dup++; if(!p[0]) zero++; } } break;
-	case 8: { uint64_t *p,*t = tmp; qsort(tmp, n, 8, cmpua64); for(dup=0,p = t; p < t+n-1; p++) { if(p[0] == p[1]) dup++; if(!p[0]) zero++; } } break;
+  if(_tmp || verbose > 4) {
+    unsigned char *tmp = _tmp;
+    if(!tmp) { tmp = malloc(n*esize);  if(!tmp) die("malloc failed\n"); }  memcpy(tmp, out, n*esize);
+    switch(esize) {
+      case 2: { uint16_t *p,*t = tmp; qsort(tmp, n, 2, cmpua16); for(dup=0,p = t; p < t+n-1; p++) { if(p[0] != p[1]) dup++; if(!p[0]) zero++; } } break;
+	  case 4: { uint32_t *p,*t = tmp; qsort(tmp, n, 4, cmpua32); for(dup=0,p = t; p < t+n-1; p++) { if(p[0] != p[1]) dup++; if(!p[0]) zero++; } } break;
+	  case 8: { uint64_t *p,*t = tmp; qsort(tmp, n, 8, cmpua64); for(dup=0,p = t; p < t+n-1; p++) { if(p[0] != p[1]) dup++; if(!p[0]) zero++; } } break;
+	  default: die("#fpstat");
+    }
+    if(!_tmp) free(tmp);
   }
-  if(!_tmp) free(tmp);
   for(ip = in, op = out; ip < in+n*esize; ip += esize, op += esize)
     switch(s) {
         #if defined(FLT16_BUILTIN)
@@ -1287,8 +1290,8 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
   double mse = easumsqr/n, irange = imax - imin;
   if(verbose >= 2) printf("\n");
   //printf("Leading/Trailing bits [%.2f%%,%.2f%%=%.2f%%]. XOR[%.2f%%,%.2f%%=%.2f%%] Zigzag[%.2f%%]\n", BR(lb), BR(tb), BR(lb+tb), BR(xlb), BR(xtb), BR(xlb+xtb), BR(zlb)/*BR(elb), BR(mtb), BR(elb+mtb)*/ );
-  if(verbose >= 2) printf("Range: [min=%g / max=%g] = %g. zeros=%.2f%%, Duplicate=%.4f%% ctz=%.1f%%\n", imin, imax, irange, (double)zero*100.0/(double)n, 
-                             (double)dup*100.0/(double)n, (double)((tb-itb)/8)*100.0/(double)(n*esize));
+  if(verbose >= 2)         printf("Range: [min=%g / max=%g] = %g. zeros=[%u,%.2f%%], Distinct=[%u=%.4f%%] ctz=%.1f%%\n", imin, imax, irange);
+  if(verbose >  3 || _tmp) printf("zeros=[%u,%.2f%%], Distinct=[%u=%.4f%%] ctz=%.1f%%\n", zero,(double)zero*100.0/(double)n, dup, (double)dup*100.0/(double)n, (double)((tb-itb)/8)*100.0/(double)(n*esize));
   //printf("Min error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", eamin, eamin/irange, eamax/irange, ermax);
   //printf("Avg error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", easum/idn, (easum/idn)/irange, ersum/idn);
   if(verbose > 2) printf("Max error: Absolute = %g, Relative = %g, pointwise relative = %g\n", eamax, eamax/irange, ermax); else if(verbose==2) printf("e=%g ", ermax);
@@ -2115,7 +2118,7 @@ testrazor() {
 }
 #endif
 int main(int argc, char* argv[]) { //testrazor(); 
-  unsigned      b = 1 << 31, lz=0, fno,m=1000000, bsize = (unsigned)-1;
+  unsigned      b = 1 << 31, lz=0, fno,m=1000000, bsize = (unsigned)-1, quantb = 0;
   int           isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,dim0=0;
   uint64_t      be_mindelta=0;
   unsigned char *in = NULL, *out, *cpy;
@@ -2130,10 +2133,11 @@ int main(int argc, char* argv[]) { //testrazor();
   int c, digit_optind = 0, this_option_optind = optind ? optind : 1, option_index = 0;
   static struct option long_options[] = { {"blocsize",  0, 0, 'b'}, {0, 0, 0}  };
   for(;;) {
-    if((c = getopt_long(argc, argv, "a:B:b:C:d:D:d:e:E:f:F:g:G:I:J:k:K:hH:l:m:M:n:p:R:s:v:V:w:W:yz:", long_options, &option_index)) == -1) break;
+    if((c = getopt_long(argc, argv, "a:B:b:C:d:D:d:e:E:f:F:g:G:I:J:k:K:hH:l:m:M:n:p:q:R:s:v:V:w:W:yz:", long_options, &option_index)) == -1) break;
     switch(c) {
       case  0 : printf("Option %s", long_options[option_index].name); if(optarg) printf (" with arg %s", optarg);  printf ("\n"); break;
 	  case 'b': bsize = argtoi(optarg,1); break;
+      case 'B': b = argtoi(optarg,1);        break;
       case 'C': cmp    = atoi(optarg); break;
       case 'e': icmd   = optarg; break;
       case 'E': scmd   = optarg; break;
@@ -2170,7 +2174,6 @@ int main(int argc, char* argv[]) { //testrazor();
       case 'I': if((tm_Rep  = atoi(optarg))<=0) tm_rep=tm_Rep=1; break;
       case 'J': if((tm_Rep2 = atoi(optarg))<=0) tm_rep=tm_Rep2=1; break;
       case 's': isize = argtoi(optarg,1);    break;
-      case 'B': b = argtoi(optarg,1);        break;
       //case 'c': cmp++;                         break;
       case 'l': codlev = atoi(optarg);           break;
       case 'y': mcpy = 0;                    break;
@@ -2181,6 +2184,7 @@ int main(int argc, char* argv[]) { //testrazor();
       case 'm': rm      = argtoi(optarg,1);  break;
       case 'M': rx      = argtoi(optarg,1);  break;
       case 'p': { unsigned m = atoi(optarg); if(m==4 || m==8) tpmodeset(m);else die("transpose mode (option -p) must be 4 or 8\n"); } break;
+	  case 'q': quantb = atoi(optarg); if(quantb < 8) quantb = 8; break;
       case 'f': isize   = -argtoi(optarg,1); break;
       case 'R': { char *p;        nx = strtoul(optarg, &p, 10); if(!nx) dim0++;
                            if(*p) ny = strtoul(p+1,    &p, 10);
@@ -2279,24 +2283,36 @@ int main(int argc, char* argv[]) { //testrazor();
 
     //if(fno == optind)
     tm_init(tm_Rep, tm_verbose /* 2 print id */);
-
-    if(errlim > DBL_EPSILON /*|| nsd >= 0*/) {   // convert input for lossy floating point compression
-      if(errlim < 0.0000009999) errlim = 0.000001;
-      if(isize == -4) {      																		printf("Lossy compression float32\n");
-        fprazor32(in,n/4,out,errlim); if(verbose>0) fpstat(in, n/4, out, -4, NULL); //if(nsd >= 0) fprnd32(in,n/4,out,nsd); else //
-        fprazor32(in,n/4, in,errlim);                                         /*if(nsd >= 0) fprnd32(in,n/4,in, nsd); else */
-      } else if(isize == -8) {																		printf("Lossy compression float64\n");
-        fprazor64(in,n/8,out,errlim); if(verbose>0) fpstat(in, n/8, out, -8, NULL);                    /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
-        fprazor64(in,n/8, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
-      }
-        #if defined(FLT16_BUILTIN) 
-      else if(isize == -2) {  																		printf("Lossy compression float16\n");
-        fprazor16(in,n/2,out,errlim);  if(verbose>0) fpstat(in, n/2, out, -2, NULL);                   /*if(nsd>=0) fprnd64(in,n/8,out,nsd); else*/
-        fprazor16(in,n/2, in,errlim);                                                            /*if(nsd>=0) fprnd64(in,n/8, in,nsd); else*/
-      }
-        #endif
-    }
-    be_mindelta = mindelta(in, n/abs(isize), abs(isize));
+    
+    if(errlim > DBL_EPSILON/*|| nsd >= 0*/) {   // convert input for lossy floating point compression
+      if(errlim > DBL_EPSILON && errlim < 0.0000009999) errlim = 0.000001;	    if(verbose>0) printf("Lossy compression float\n");
+           if(isize == -4) fprazor32(in,n/4,out,errlim);  
+      else if(isize == -8) fprazor64(in,n/8,out,errlim);
+	    #if defined(FLT16_BUILTIN) 
+      else if(isize == -2) fprazor16(in,n/2,out,errlim);
+	    #endif
+	  if(verbose>0) fpstat(in, n/abs(isize), out, isize, cpy); memcpy(in,out,n);   
+    } else if(isize < 0 && quantb > 0) {                                        if(verbose>0) printf("Quantization=%d float\n", quantb);
+	  if(isize == -4) { 																		
+	    float fmin,fmax;
+	    if(quantb > 32) quantb = 32;
+	    fpquant32e32(in, n/4, out, quantb, &fmin, &fmax);                       if(verbose>0) fpquant32d32(out, n/4, cpy, quantb, fmin, fmax);   
+	  } else if(isize == -8) {																	
+	    double fmin,fmax;
+	    if(quantb > 32) quantb = 32;
+	    fpquant64e64(in, n/8, out, quantb, &fmin, &fmax);                       if(verbose>0) fpquant64d64(out,n/8,cpy, quantb, fmin, fmax); 
+	  }	  
+	    #if defined(FLT16_BUILTIN) 
+	  else if(isize == -2) { _Float16 fmin,fmax;												
+	    if(quantb > 16) quantb = 16;
+	    fpquant16e16(in,n/2,out, quantb, &fmin, &fmax);                         if(verbose>0) { printf("Range=[%g-%g]=%g ", (double)fmin, (double)fmax, (double)fmax - (double)fmin); 
+		                                                                          fpquant16d16(out,n/2,cpy, quantb, fmin, fmax); 
+														                        }
+	  }
+	    #endif
+	  if(verbose>0) fpstat(in, n/abs(isize), cpy, isize, NULL); memcpy(in, out, n);
+	}
+    be_mindelta = mindelta(in, n/abs(isize), abs(isize)); 
 
     if(fi && verbose>1) {
 	  unsigned l;                                                                                // Calculate bits distributions
