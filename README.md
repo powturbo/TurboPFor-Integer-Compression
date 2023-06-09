@@ -40,7 +40,8 @@
   * Point wise relative error bound **lossy** floating point compression
   * **TurboFloat** novel efficient floating point compression using TurboPFor
   * :new:(2023.03)**TurboFloat LzXor** novel floating point lempel-ziv compression
-  * :new:(2023.06)_Float16 16 bits floating point support
+  * :new:(2023.06) _Float16 16 bits floating point support
+  * :new:(2023.06) float 16/32/64 bits quantization with flexible quantization bit size. 
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress timestamps to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
@@ -498,5 +499,5 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  22 MAY 2023
+Last update:  10 JUN 2023
 
