@@ -41,7 +41,7 @@
   * **TurboFloat** novel efficient floating point compression using TurboPFor
   * :new:(2023.03)**TurboFloat LzXor** novel floating point lempel-ziv compression
   * :new:(2023.06) _Float16 16 bits floating point support
-  * :new:(2023.06) float 16/32/64 bits quantization with flexible quantization bit size. 
+  * :new:(2023.06) float 16/32/64 bits quantization with variable quantization bit size. 
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress timestamps to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
