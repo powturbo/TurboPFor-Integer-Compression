@@ -38,6 +38,13 @@ typedef unsigned long long uint64_t;
 #include <stddef.h>
 #define __STDC_WANT_IEC_60559_TYPES_EXT__
 #include <float.h>
+#if defined(__clang__) && defined(__is_identifier)
+  #if !__is_identifier(_Float16)
+    #undef FLT16_BUILTIN
+  #endif
+#elif defined(FLT16_MAX)
+#define FLT16_BUILTIN
+#endif
 
 //------------------------- Compiler ------------------------------------------
   #if defined(__GNUC__)
