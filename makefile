@@ -50,6 +50,11 @@ else
 
 ifneq (,$(findstring aarch64,$(CC)))
   ARCH = aarch64
+else ifneq (,$(findstring arm64,$(ARCH)))
+  ARCH = aarch64
+else ifneq (,$(findstring iPhone,$(ARCH)))
+  ARCH = aarch64
+  CFLAGS=-DHAVE_MALLOC_MALLOC
 else ifneq (,$(findstring powerpc64le,$(CC)))
   ARCH = ppc64le
 endif
