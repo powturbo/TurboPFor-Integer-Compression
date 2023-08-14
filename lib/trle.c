@@ -26,11 +26,15 @@
 #include <string.h> 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef __APPLE__
+  #ifdef __APPLE__
+    #ifdef HAVE_MALLOC_MALLOC
 #include <sys/malloc.h>
-#else
+    #else
+#include <malloc/malloc.h>
+    #endif
+  #else
 #include <malloc.h>
-#endif
+  #endif
   #ifdef _MSC_VER
 #include "vs/getopt.h"
   #else
