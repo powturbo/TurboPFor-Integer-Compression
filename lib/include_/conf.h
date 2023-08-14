@@ -112,7 +112,7 @@ static ALWAYS_INLINE unsigned ror64(unsigned x, int s) { return x >> s | x << (6
 #define ALIGNED(t,v,n)  __declspec(align(n)) t v
 #define ALWAYS_INLINE   __forceinline
 #define NOINLINE        __declspec(noinline)
-#define _PACKED         __attribute__ ((packed))
+#define _PACKED         //__attribute__ ((packed))
 #define THREADLOCAL     __declspec(thread)
 #define likely(x)       (x)
 #define unlikely(x)     (x)
