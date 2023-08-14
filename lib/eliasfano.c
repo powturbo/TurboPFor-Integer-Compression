@@ -27,7 +27,11 @@
 #include <string.h>
 #include <stdlib.h>
   #ifdef __APPLE__
+    #ifdef HAVE_MALLOC_MALLOC
 #include <sys/malloc.h>
+    #else
+#include <malloc/malloc.h>
+    #endif
   #else
 #include <malloc.h>
   #endif
