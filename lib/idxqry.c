@@ -33,11 +33,15 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifdef __APPLE__
+  #ifdef __APPLE__
+    #ifdef HAVE_MALLOC_MALLOC
 #include <sys/malloc.h>
-#else
+    #else
+#include <malloc/malloc.h>
+    #endif
+  #else
 #include <malloc.h>
-#endif
+  #endif
 
  #ifdef _WIN32
 #include <windows.h>
