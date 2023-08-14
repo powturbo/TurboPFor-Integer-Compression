@@ -31,7 +31,11 @@
 #include <limits.h>
 #include <time.h>       /* time_t, struct tm, time, mktime */
   #ifdef __APPLE__
+    #ifdef HAVE_MALLOC_MALLOC
 #include <sys/malloc.h>
+    #else
+#include <malloc/malloc.h>
+    #endif
   #else
 #include <malloc.h>
   #endif
