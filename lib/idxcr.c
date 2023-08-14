@@ -31,11 +31,15 @@
 #include <limits.h>
 #include <getopt.h>
 #include <sys/stat.h>
-#ifdef __APPLE__
+  #ifdef __APPLE__
+    #ifdef HAVE_MALLOC_MALLOC
 #include <sys/malloc.h>
-#else
+    #else
+#include <malloc/malloc.h>
+    #endif
+  #else
 #include <malloc.h>
-#endif
+  #endif
 
 #include "include_/conf.h"
 #include "include_/vint.h"
