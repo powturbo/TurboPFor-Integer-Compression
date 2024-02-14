@@ -1294,7 +1294,7 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
   double mse = easumsqr/n, irange = imax - imin;
   if(verbose >= 2) printf("\n");
   //printf("Leading/Trailing bits [%.2f%%,%.2f%%=%.2f%%]. XOR[%.2f%%,%.2f%%=%.2f%%] Zigzag[%.2f%%]\n", BR(lb), BR(tb), BR(lb+tb), BR(xlb), BR(xtb), BR(xlb+xtb), BR(zlb)/*BR(elb), BR(mtb), BR(elb+mtb)*/ );
-  if(verbose >= 2)         printf("Range: [min=%g / max=%g] = %g. zeros=[%u,%.2f%%], Distinct=[%u=%.4f%%] ctz=%.1f%%\n", imin, imax, irange);
+  if(verbose >= 2)         printf("Range: [min=%g / max=%g] = %g\n", imin, imax, irange);
   if(verbose >  3 || _tmp) printf("zeros=[%u,%.2f%%], Distinct=[%u=%.4f%%] ctz=%.1f%%\n", zero,(double)zero*100.0/(double)n, dup, (double)dup*100.0/(double)n, (double)((tb-itb)/8)*100.0/(double)(n*esize));
   //printf("Min error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", eamin, eamin/irange, eamax/irange, ermax);
   //printf("Avg error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", easum/idn, (easum/idn)/irange, ersum/idn);
