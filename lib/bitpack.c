@@ -223,7 +223,8 @@ typedef unsigned char *(*BITPACK_D64)(uint64_t *__restrict out, unsigned n, cons
   for(ip = in, in += n; ip < in;) { \
     T3(uint, _usize_, _t) o,x;\
     unsigned iplen = in - ip,b; \
-    if(iplen > _csize_) iplen = _csize_;                                        PREFETCH(ip+512,0);\
+    if(iplen > _csize_) iplen = _csize_; \
+    PREFETCH(ip+512,0);\
     o = T2(bit,_usize_)(ip, iplen, &x); b = T2(bsr,_usize_)(o);\
     *op++ = b; op = T2(bitpacka, _usize_)[b](ip, iplen, op);\
     ip += iplen;\

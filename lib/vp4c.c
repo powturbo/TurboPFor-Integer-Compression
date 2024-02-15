@@ -377,7 +377,8 @@ unsigned char *T2(_P4ENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned cha
     #if HYBRID > 0 && USIZE >= 16
   if(bx <= USIZE) {
     #endif
-    for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i];     out += PAD8(n);   //if(eqx == xn && bx) { out[-1] |=0x80; T2(ctou, USIZE)(out)=ax; out += (bx+7)/8; } else
+    for(i = 0; i < (n+63)/64; i++) ctou64(out+i*8) = xmap[i];            //if(eqx == xn && bx) { out[-1] |=0x80; T2(ctou, USIZE)(out)=ax; out += (bx+7)/8; } else
+    out += PAD8(n);
     out = T2(bitpack, USIZE)(inx, xn, out, bx);                          //if(eq == n && b) { out[-1]|= 0x80; T2(ctou, USIZE)(out)=a; out += (b+7)/8; } else
     out = T2(BITPACK, USIZE)(_in, n,  out, b);
     #if HYBRID > 0 && USIZE >= 16
