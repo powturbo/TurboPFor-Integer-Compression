@@ -2054,7 +2054,10 @@ typedef struct len_t { unsigned id,cnt; uint64_t len; } len_t;
 static int cmpsna(const void *a, const void *b) { return CMPSA(a, b, len_t, len); }
 
 void usage(char *pgm) {
-  fprintf(stderr, "\nIcApp Copyright (c) 2013-2023 Powturbo %s\n", __DATE__);
+  for (char* p = pgm; *p; ++p) // extract program name without full path
+    if (*p == '\\' || *p == '/')
+      pgm = p + 1;
+  fprintf(stderr, "IcApp Copyright (c) 2013-2024 Powturbo, %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   //fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
   fprintf(stderr, " -B#s     # = max. benchmark filesize (default 1GB) ex. -B4G\n");
