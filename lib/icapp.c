@@ -787,6 +787,7 @@ char *codstr(unsigned codecid) { return ""; }
 void tpsizeset(unsigned _tpbsize) {}
 void tpmodeset(unsigned _tpmode) {}
 int lzidget(char *scmd) { return 0; }
+unsigned* getAvailableLzs() { return NULL; }
   #endif
   
   #ifdef _QCOMPRESS  
@@ -2049,11 +2050,26 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
   return l;
 }
 
+const char* printLzs(char buf[256]) {
+  buf[0] = 0;
+  for (unsigned* lzs = getAvailableLzs(); lzs && *lzs != ICC_LAST; ++lzs){
+    strcat(buf, codstr(*lzs));
+    strcat(buf, " ");
+  }
+  return buf;
+}
+
 typedef struct len_t { unsigned id,cnt; uint64_t len; } len_t;
 #define CMPSA(_a_,_b_, _t_, _v_)  (((((_t_ *)_a_)->_v_) > (((_t_ *)_b_)->_v_)) - ((((_t_ *)_a_)->_v_) < (((_t_ *)_b_)->_v_)))
 static int cmpsna(const void *a, const void *b) { return CMPSA(a, b, len_t, len); }
+#ifdef _LZ4
+static const char zDefault[] = "lz4,1";
+#else
+static const char zDefault[] = "memcpy";
+#endif
 
 void usage(char *pgm) {
+  char lzs[256];
   fprintf(stderr, "\nIcApp Copyright (c) 2013-2023 Powturbo %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   //fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
@@ -2063,6 +2079,8 @@ void usage(char *pgm) {
   fprintf(stderr, " -i#/-j#  # = Minimum  de/compression iterations per run (default=auto)\n");
   fprintf(stderr, " -I#/-J#  # = Number of de/compression runs (default=3)\n");
   fprintf(stderr, " -e#      # = function ids separated by ',' or ranges '#-#' (default='1-%d')\n", ID_MEMCPY);
+  fprintf(stderr, " -Es      s = secondary compressor with level separated by ',' (default %s)\n", zDefault);
+  fprintf(stderr, "              available compressors: %s\n", printLzs(lzs));
   fprintf(stderr, "File format:\n");
   fprintf(stderr, " -F[Xx[k][H]][.d]\n");
   fprintf(stderr, "    X = file format:\n");
@@ -2214,13 +2232,7 @@ int main(int argc, char* argv[]) { //testrazor();
   }
   isa = cpuisa();
   cpuini(0); 																		if(verbose>1) printf("detected simd id=%x, %s\n\n", cpuini(0), cpustr(cpuini(0)));
-  char _scmd[33];
-    #ifdef _LZ4
-  strcpy(_scmd, "lz4,1");
-    #else
-  strcpy(_scmd, "memcpy");
-	#endif
-  if(!scmd) scmd = _scmd;
+  if(!scmd) scmd = zDefault;
   while(isspace(*scmd)) scmd++;
   char *q;
   int   i;
