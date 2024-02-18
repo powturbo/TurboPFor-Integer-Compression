@@ -2224,7 +2224,7 @@ int main(int argc, char* argv[]) { //testrazor();
     }
   }
     #ifdef _LZTURBO
-  beini(); 
+  beini();
     #endif
   if(argc - optind < 1) {
     usage(argv[0]);
@@ -2232,7 +2232,9 @@ int main(int argc, char* argv[]) { //testrazor();
   }
   isa = cpuisa();
   cpuini(0); 																		if(verbose>1) printf("detected simd id=%x, %s\n\n", cpuini(0), cpustr(cpuini(0)));
-  if(!scmd) scmd = zDefault;
+  char _scmd[33];
+  strcpy(_scmd, zDefault);
+  if(!scmd) scmd = _scmd;
   while(isspace(*scmd)) scmd++;
   char *q;
   int   i;
