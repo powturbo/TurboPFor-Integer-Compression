@@ -29,7 +29,7 @@
     #ifndef sleep
 #define sleep(n) Sleep((n) * 1000)
     #endif
-#define uint64_t unsigned __int64
+typedef unsigned long long uint64_t;
 
   #else
 #include <stdint.h>
