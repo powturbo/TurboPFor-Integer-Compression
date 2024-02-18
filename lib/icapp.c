@@ -1139,7 +1139,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:streamvbyte      StreamVByte SIMD    ",  //130
     "%3d:streamvbyte delt StreamVByte delta   ",
     "%3d:streamvbyte zzag StreamVByte zigzag  ",
-    "%3d:maskeydvbyte     MasedVByte SIMD     ",
+    "%3d:maskedvbyte      MaskedVByte SIMD    ",
     "%3d:FastPFor         FastPFor            ",
     "%3d:SimdFastPFor     FastPFor SIMD       ",
     "%3d:SimdOptPFor      FastPFor SIMD       ",
