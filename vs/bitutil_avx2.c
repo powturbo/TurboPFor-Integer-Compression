@@ -1,2 +1,2 @@
-#define __AVX2__
-#include "lib\bitutil.c"
+#define __AVX2__ 1
+#include "../lib/bitutil.c"
