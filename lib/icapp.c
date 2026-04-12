@@ -1033,7 +1033,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:bitnfpack256v%d  TurboPack256 FOR    ",
     "%3d:bitns1pack128v32 TurboPack256 delt4_1",
     "%3d:bitnxpack128v%d  TurboPack128 xor    ",
-    "%3d:bitnxpack256v%d  TurboPack128 xor    ",
+    "%3d:bitnxpack256v%d  TurboPack256 xor    ",
     "%3d:vsenc%d          TurboVSimple        ",
     "%3d:vszenc%d         TurboVSimple zigzag ",
 
