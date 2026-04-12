@@ -44,6 +44,35 @@ extern int bwtx, forcelzp;
 //------------------------------------------------------------------------------------------------------------------------------
 #define powof2(n) !((n)&((n)-1))
 
+static unsigned availableLzs[] = {
+#ifdef _LZTURBO
+  ICC_LZTURBO,
+#endif
+#ifdef _LZ4
+  ICC_LZ4,
+#endif
+#ifdef _ZLIB
+  ICC_ZLIB,
+#endif
+#ifdef _ZSTD
+  ICC_ZSTD,
+#endif
+#ifdef _FSE
+  ICC_FSE,
+#endif
+#ifdef _FSEHUF
+  ICC_FSEH,
+#endif
+#ifdef _LZTURBO // _TURBOANX is enabled by _LZTURBO
+  ICC_LZTANS,
+#endif
+#ifdef _TURBORC
+  ICC_TURBORC,
+#endif
+  ICC_MEMCPY,
+  ICC_LAST
+};
+
 char *_codstr[] = { "none", "lzturbo", "lz4", "zlib", "zstd", "fse", "fsehuf", "turboanx", "turborc", "memcpy", NULL };
 char *codstr(unsigned cid) { return (cid < ICC_LAST)?_codstr[cid]:""; }
 
@@ -54,6 +83,8 @@ int lzidget(char *scmd) {
   if(!_codstr[i]) die("compressor '%s' not implemented\n", scmd);
   return i;
 }
+unsigned* getAvailableLzs() { return availableLzs; }
+
   #ifdef _LZTURBO
 #define _TURBOANX
 #include "../lz/ans.h"

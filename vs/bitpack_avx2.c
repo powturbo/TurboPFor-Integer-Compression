@@ -1,1 +1,2 @@
-#include "lib\bitpack.c"
+#define __AVX2__ 1
+#include "../lib/bitpack.c"

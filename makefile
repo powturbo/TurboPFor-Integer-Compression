@@ -81,7 +81,7 @@ ifeq (,$(findstring clang, $(CC)))
 OPT+=-falign-loops 
 endif
 
-CFLAGS+=$(DEBUG) $(OPT) 
+CFLAGS+=$(DEBUG) $(OPT) -Wno-incompatible-pointer-types
 #CFLAGS+=-Wno-macro-redefined -Wno-incompatible-pointer-types -Wno-tautological-constant-out-of-range-compare -Wno-discarded-qualifiers
 CFLAGS+=-w -Wall -pedantic
 CXXFLAGS+=-w 

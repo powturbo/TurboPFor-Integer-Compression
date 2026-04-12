@@ -232,7 +232,7 @@ static ALWAYS_INLINE uint16_t  mm_movemask_epu16(__m128i v) { const uint16x8_t m
 static ALWAYS_INLINE uint32_t  mm_movemask_epu32(__m128i v) { const uint32x4_t m = { 1, 1<<1, 1<<2, 1<<3 };                           return vaddvq_u32(vandq_u32((uint32x4_t)v, m)); }
 static ALWAYS_INLINE uint64_t  mm_movemask_epu64(__m128i v) { const uint64x2_t m = { 1, 1<<1 };                                       return vaddvq_u64(vandq_u64((uint64x2_t)v, m)); }
 
-//static ALWAYS_INLINE uint64_t  mm_movemask4_epu8(__m128i v) { return vgetq_lane_u64((uint64x2_t)vshrn_n_u16((uint8x16_t)v, 4), 0); } //uint8x16_t
+static ALWAYS_INLINE uint64_t  mm_movemask4_epu8(__m128i v) { return vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(vreinterpretq_u16_u8(v), 4)), 0); }
   #else
 static ALWAYS_INLINE uint32_t  mm_movemask_epu32(uint32x4_t v) { const uint32x4_t mask = {1,2,4,8}, av = vandq_u32(v, mask), xv = vextq_u32(av, av, 2), ov = vorrq_u32(av, xv); return vgetq_lane_u32(vorrq_u32(ov, vextq_u32(ov, ov, 3)), 0); }
   #endif

@@ -787,6 +787,7 @@ char *codstr(unsigned codecid) { return ""; }
 void tpsizeset(unsigned _tpbsize) {}
 void tpmodeset(unsigned _tpmode) {}
 int lzidget(char *scmd) { return 0; }
+unsigned* getAvailableLzs() { return NULL; }
   #endif
   
   #ifdef _QCOMPRESS  
@@ -1139,7 +1140,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:streamvbyte      StreamVByte SIMD    ",  //130
     "%3d:streamvbyte delt StreamVByte delta   ",
     "%3d:streamvbyte zzag StreamVByte zigzag  ",
-    "%3d:maskeydvbyte     MasedVByte SIMD     ",
+    "%3d:maskedvbyte      MaskedVByte SIMD    ",
     "%3d:FastPFor         FastPFor            ",
     "%3d:SimdFastPFor     FastPFor SIMD       ",
     "%3d:SimdOptPFor      FastPFor SIMD       ",
@@ -1294,7 +1295,7 @@ void fpstat(unsigned char *in, size_t n, unsigned char *out, int s, unsigned cha
   double mse = easumsqr/n, irange = imax - imin;
   if(verbose >= 2) printf("\n");
   //printf("Leading/Trailing bits [%.2f%%,%.2f%%=%.2f%%]. XOR[%.2f%%,%.2f%%=%.2f%%] Zigzag[%.2f%%]\n", BR(lb), BR(tb), BR(lb+tb), BR(xlb), BR(xtb), BR(xlb+xtb), BR(zlb)/*BR(elb), BR(mtb), BR(elb+mtb)*/ );
-  if(verbose >= 2)         printf("Range: [min=%g / max=%g] = %g. zeros=[%u,%.2f%%], Distinct=[%u=%.4f%%] ctz=%.1f%%\n", imin, imax, irange);
+  if(verbose >= 2)         printf("Range: [min=%g / max=%g] = %g\n", imin, imax, irange);
   if(verbose >  3 || _tmp) printf("zeros=[%u,%.2f%%], Distinct=[%u=%.4f%%] ctz=%.1f%%\n", zero,(double)zero*100.0/(double)n, dup, (double)dup*100.0/(double)n, (double)((tb-itb)/8)*100.0/(double)(n*esize));
   //printf("Min error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", eamin, eamin/irange, eamax/irange, ermax);
   //printf("Avg error: Absolute = %.12f, Relative = %f, pointwise relative = %f\n", easum/idn, (easum/idn)/irange, ersum/idn);
@@ -2049,9 +2050,23 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
   return l;
 }
 
+const char* printLzs(char buf[256]) {
+  buf[0] = 0;
+  for (unsigned* lzs = getAvailableLzs(); lzs && *lzs != ICC_LAST; ++lzs){
+    strcat(buf, codstr(*lzs));
+    strcat(buf, " ");
+  }
+  return buf;
+}
+
 typedef struct len_t { unsigned id,cnt; uint64_t len; } len_t;
 #define CMPSA(_a_,_b_, _t_, _v_)  (((((_t_ *)_a_)->_v_) > (((_t_ *)_b_)->_v_)) - ((((_t_ *)_a_)->_v_) < (((_t_ *)_b_)->_v_)))
 static int cmpsna(const void *a, const void *b) { return CMPSA(a, b, len_t, len); }
+#ifdef _LZ4
+static const char zDefault[] = "lz4,1";
+#else
+static const char zDefault[] = "memcpy";
+#endif
 
 void usage(char *pgm) {
   for (char* p = pgm; *p; ++p) // extract program name without full path
@@ -2066,6 +2081,8 @@ void usage(char *pgm) {
   fprintf(stderr, " -i#/-j#  # = Minimum  de/compression iterations per run (default=auto)\n");
   fprintf(stderr, " -I#/-J#  # = Number of de/compression runs (default=3)\n");
   fprintf(stderr, " -e#      # = function ids separated by ',' or ranges '#-#' (default='1-%d')\n", ID_MEMCPY);
+  fprintf(stderr, " -Es      s = secondary compressor with level separated by ',' (default %s)\n", zDefault);
+  fprintf(stderr, "              available compressors: %s\n", printLzs(lzs));
   fprintf(stderr, "File format:\n");
   fprintf(stderr, " -F[Xx[k][H]][.d]\n");
   fprintf(stderr, "    X = file format:\n");
@@ -2209,7 +2226,7 @@ int main(int argc, char* argv[]) { //testrazor();
     }
   }
     #ifdef _LZTURBO
-  beini(); 
+  beini();
     #endif
   if(argc - optind < 1) {
     usage(argv[0]);
@@ -2218,11 +2235,7 @@ int main(int argc, char* argv[]) { //testrazor();
   isa = cpuisa();
   cpuini(0); 																		if(verbose>1) printf("detected simd id=%x, %s\n\n", cpuini(0), cpustr(cpuini(0)));
   char _scmd[33];
-    #ifdef _LZ4
-  strcpy(_scmd, "lz4,1");
-    #else
-  strcpy(_scmd, "memcpy");
-	#endif
+  strcpy(_scmd, zDefault);
   if(!scmd) scmd = _scmd;
   while(isspace(*scmd)) scmd++;
   char *q;
