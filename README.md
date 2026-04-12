@@ -4,7 +4,7 @@
 * **TurboPFor: The synonym for "integer compression"**
   * **ALL** functions available for **AMD/Intel**, **64 bits ARMv8 NEON** Linux+MacOS/M1 & **Power9 Altivec**
   * 100% C (C++ headers), as simple as memcpy. OS:Linux amd64, arm64, Power9, MacOs (Amd/intel + Apple M1),
-  * :new:(2023.04) **Rust** Bindings. Access TurboPFor **incl. SSE/AVX2/Neon!** from Rust
+  * **Rust** Bindings. Access TurboPFor **incl. SSE/AVX2/Neon!** from Rust
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SSE/AVX2/Neon!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
   * No other "Integer Compression" compress/decompress faster
@@ -19,29 +19,29 @@
 * **Variable byte**
   * Scalar **"Variable Byte"** faster and more efficient than **ANY** other implementation
   * SIMD **TurboByte** fastest group varint (16+32 bits) incl. integrated delta,zigzag,xor,...
-  * :new:(2023.03)**TurboBitByte** novel hybrid scheme combining the fastest SIMD codecs TurboByte+TurboPack.
+  * **TurboBitByte** novel hybrid scheme combining the fastest SIMD codecs TurboByte+TurboPack.
     Compress considerably better and can be 3 times faster than streamvbyte
 * **Simple family**
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
-* :new:(2023.03)**TurboVLC** novel variable length encoding for large integers 
+* **TurboVLC** novel variable length encoding for large integers 
   with exponent + variable bit mantissa 
-* :new:(2023.03)**Binary interpolative coding** : fastest implementation
+* **Binary interpolative coding** : fastest implementation
 + **Transform**
   * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, 
-  * :new:(2023.03) Transpose/Shuffle with integrated Xor and zigzag delta
-  * :new:(2023.03) 2D/3D/4D transpose
+  * Transpose/Shuffle with integrated Xor and zigzag delta
+  * 2D/3D/4D transpose
   * **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77/bwt
-+ :new:(2023.03)**IC Codecs** transpose/rle + general purpose compression with lz4,zstd,turborc (range coder),bwt...
++ **IC Codecs** transpose/rle + general purpose compression with lz4,zstd,turborc (range coder),bwt...
 * **Floating Point Compression**
   * Delta/Zigzag + improved gorilla style + (Differential) Finite Context Method FCM/DFCM floating point compression
   * Using **TurboPFor**, unsurpassed compression and more than 8 GB/s throughput
   * Point wise relative error bound **lossy** floating point compression
   * **TurboFloat** novel efficient floating point compression using TurboPFor
-  * :new:(2023.03)**TurboFloat LzXor** novel floating point lempel-ziv compression
-  * :new:(2023.06) _Float16 16 bits floating point support
-  * :new:(2023.06) float 16/32/64 bits quantization with variable quantization bit size. 
+  * **TurboFloat LzXor** novel floating point lempel-ziv compression
+  * _Float16 16 bits floating point support
+  * float 16/32/64 bits quantization with variable quantization bit size. 
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress timestamps to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
@@ -499,5 +499,5 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * :green_book:[SPDP is a compression/decompression algorithm for binary IEEE 754 32/64 bits floating-point data](http://cs.txstate.edu/~burtscher/research/SPDPcompressor/)<br />
     :green_book:[ SPDP - An Automatically Synthesized Lossless Compression Algorithm for Floating-Point Data](http://cs.txstate.edu/~mb92/papers/dcc18.pdf) + [DCC 2018](http://www.cs.brandeis.edu//~dcc/Programs/Program2018.pdf)
 
-Last update:  10 JUN 2023
+Last update:  12 APR 2026
 
