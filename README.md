@@ -66,7 +66,7 @@
 - [Benchmark: Lossy Floating Point Preprocessing Turbo Razor vs Granular bitround vs libroundfast](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/94)
 - [Benchmark: Lossless/Lossy Floating Point Compression. TurboPFor vs zfp & blosc](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/92)
 - [Benchmark: TurboPFor: IcApp 16 bits Integer Compression](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/50)
-- [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor/issues)
+- [Benchmark Intel CPU: Skylake i7-6700 3.4GHz gcc 9.2](https://github.com/powturbo/TurboPFor-Integer-Compression/issues/47)
 - [Benchmark ARM: ARMv8 A73-ODROID-N2 1.8GHz](https://github.com/powturbo/TurboPFor/issues/49)
 
 ##### - Synthetic data:
