@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2015-2023
+    Copyright (C) powturbo 2015-2026
     SPDX-License-Identifier: GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
