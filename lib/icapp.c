@@ -1,5 +1,5 @@
 /**
-    Copyright (C) powturbo 2015-2023
+    Copyright (C) powturbo 2015-2026
     SPDX-License-Identifier: GPL v2 License
 
     This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 **/
 //  TurboPFor - "IcApp: Benchmark application"
 
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +57,7 @@
 
 #define __STDC_WANT_IEC_60559_TYPES_EXT__
 #include <float.h>
+#include "include_/bitutil.h"
 #include "../include/ic.h"
 #include "include_/iccodec.h"
 
@@ -2069,10 +2071,11 @@ static const char zDefault[] = "memcpy";
 #endif
 
 void usage(char *pgm) {
+  char lzs[256];
   for (char* p = pgm; *p; ++p) // extract program name without full path
     if (*p == '\\' || *p == '/')
       pgm = p + 1;
-  fprintf(stderr, "IcApp Copyright (c) 2013-2024 Powturbo, %s\n", __DATE__);
+  fprintf(stderr, "IcApp Copyright (c) 2013-2026 Powturbo, %s\n", __DATE__);
   fprintf(stderr, "Usage: %s [options] [file]\n", pgm);
   //fprintf(stderr, " -b#s     # = blocksize (default filesize,). max=1GB\n");
   fprintf(stderr, " -B#s     # = max. benchmark filesize (default 1GB) ex. -B4G\n");
