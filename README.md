@@ -454,7 +454,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 
 #### Knowns issues
 - Actually (2023.04) there are no known issues or bugs
-- The TurboPFor functions can work with arbitrary inputs
+- The TurboPFor functions can work with arbitrary inputs 
 - TurboPFor does normally not read outside the input (encode/decode) buffers
   and does not write outside the output buffer at decoding.
 - TurboPFor does not write above a properly sized output buffers at encoding.
