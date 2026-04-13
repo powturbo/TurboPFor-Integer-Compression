@@ -330,7 +330,7 @@ OB+=$(LB)zstd/lib/common/pool.o $(LB)zstd/lib/common/xxhash.o $(LB)zstd/lib/comm
 endif
 
 ifeq ($(FSE), 1)
-CFLAGS+=-D_FSE
+CFLAGS+=-D_FSE -Wimplicit-function-declaration
 OB+=$(LB)fse/fse_compress_.o $(LB)fse/fse_decompress_.o 
 endif
 
