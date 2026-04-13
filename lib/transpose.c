@@ -585,8 +585,8 @@ void T2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
 
       #else //---------------------- Nibble Transpose ------------------------
     #define mm256_packus_epi16(a, b) _mm256_permute4x64_epi64(_mm256_packus_epi16(a, b), _MM_SHUFFLE(3, 1, 2, 0))
-    #define ST128(_p_,_v_,_i_) _mm_storeu_si128((__m256i *)SIE(_p_,_i_), _mm256_castsi256_si128(_v_))
-    #define ST1280(_p_,_v_)    _mm_storeu_si128((__m256i *)(_p_), _mm256_castsi256_si128(_v_))
+    #define ST128(_p_,_v_,_i_) _mm_storeu_si128((__m128i *)SIE(_p_,_i_), _mm256_castsi256_si128(_v_))
+    #define ST1280(_p_,_v_)    _mm_storeu_si128((__m128i *)(_p_), _mm256_castsi256_si128(_v_))
 
     ov[0] = _mm256_and_si256(iv[0], cl);                      ov[0] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[0],4), ov[0]),cb); ov[0] = mm256_packus_epi16(ov[0], _mm256_srli_si256( ov[0],2));
     ov[1] = _mm256_srli_epi16(_mm256_and_si256(iv[0], ch),4); ov[1] = _mm256_and_si256(_mm256_or_si256(_mm256_srli_epi16(ov[1],4), ov[1]),cb); ov[1] = mm256_packus_epi16(ov[1], _mm256_srli_si256( ov[1],2));
