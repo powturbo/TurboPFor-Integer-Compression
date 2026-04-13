@@ -1,5 +1,5 @@
 #ifdef __cplusplus
-extern "C"  {
+extern "C" {
 #endif
 unsigned char *rcenc32(unsigned* input, int size, unsigned* output);
 unsigned char *rcdec32(unsigned* input, int size, unsigned* output);
