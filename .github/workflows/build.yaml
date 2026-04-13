@@ -75,7 +75,7 @@ jobs:
         with:
           submodules: 'true'
       - run: git submodule update --init --recursive
-      - run: make ICCODEC=1
+      - run: make
       - run: sysctl -n machdep.cpu.brand_string
       - run: ./icapp ZIPF
  
