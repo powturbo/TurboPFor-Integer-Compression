@@ -39,7 +39,7 @@
 #define lz2l(_x_)  cquant[_x_] // quantize leading zeros
 #define l2c( _x_)  ccode[_x_]  // encode
 #define c2l( _x_)  dcode[_x_]  // decode
- 
+
 static unsigned char ccode[] = { // optimized for 32/64 bits
   0,  0,  0,  0,  0,  0,  1,  1,   1,  1,  2,  2,  2,  2,  3,  3,
   3,  3,  4,  4,  5,  5,  6,  6,   7,  7,  7,  7,  7,  7,  7,  7,
@@ -91,7 +91,7 @@ static unsigned char dcode[] = {0, 6,10, 14, 18, 20, 22, 24};
 #include "fp.c"
 #undef N_0
 #undef N_1
-#undef N2 
+#undef N2
 #undef N3
 
 #define N_0 4
@@ -323,7 +323,7 @@ size_t T2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start
   __m128i sv = T2(_mm_set1_epi, USIZE)(start);
     #endif
 
-  for(ip = in; ip != in + (n&~(VSIZE-1)); ) { 
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
     uint_t b = 0;
     #define FE(_i_,_usize_) { T3(uint, _usize_, _t) u = ip[_i_]; p[_i_] = XORENC(u, htab[h],_usize_); b |= p[_i_]; htab[h] = u; h = T2(HASH,_usize_)(h,u); }
     for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
@@ -356,7 +356,7 @@ size_t T2(fpfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start
       #endif
     op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                       PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
-  if((m = (in+n)-ip) != 0) { 
+  if((m = (in+n)-ip) != 0) {
     uint_t b = 0;
     for(p = _p; p != &_p[m]; p++,ip++) FE(0,USIZE);
     b = b?T2(clz,USIZE)(b):USIZE;
@@ -399,16 +399,16 @@ size_t T2(fpdfcmenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t star
   #define FE(_i_,_usize_) { T3(uint, _usize_, _t) u = ip[_i_]; p[_i_] = XORENC(u, (htab[h]+start),_usize_); b |= p[_i_]; \
     htab[h] = start = u - start; h = T2(HASH,_usize_)(h,start); start = u;\
   }
-  for(ip = in; ip != in + (n&~(VSIZE-1)); ) { 
+  for(ip = in; ip != in + (n&~(VSIZE-1)); ) {
     uint_t b = 0;
     for(p = _p; p != &_p[VSIZE]; p+=4,ip+=4) { FE(0,USIZE); FE(1,USIZE); FE(2,USIZE); FE(3,USIZE); }
     #define TR(_i_,_usize_) p[_i_] = T2(rbit,_usize_)(p[_i_]<<b)
     b = b?T2(clz,USIZE)(b):USIZE;
     for(p = _p; p != &_p[VSIZE]; p+=4) { TR(0,USIZE); TR(1,USIZE); TR(2,USIZE); TR(3,USIZE); }
-    *op++ = b; 
+    *op++ = b;
 	op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                            PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
-  if((m = (in+n)-ip) != 0) { 
+  if((m = (in+n)-ip) != 0) {
     uint_t b = 0;
     for(p = _p; p != &_p[m]; p++,ip++) FE(0,USIZE);
     b = b?T2(clz,USIZE)(b):USIZE;
@@ -569,7 +569,7 @@ size_t T2(fphenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
   unsigned char *op = out, *out_ = out+n*USIZE/8;
   *op++ = 0;
   bitdef(bw,br);
-  if(start) ol = T2(clz,USIZE)(start); 
+  if(start) ol = T2(clz,USIZE)(start);
   #define FE(_i_,_usize_) { T3(uint, _usize_, _t) z = XORENC(ip[_i_], start,_usize_); start = ip[_i_];\
     if(unlikely(!z)) { ol = _usize_+1;                              bitput(bw,br, 2, 0); }\
     else { int t = T2(ctz,_usize_)(z), l = lz2l(T2(clz,_usize_)(z));\
@@ -594,8 +594,8 @@ size_t T2(fphenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
 size_t T2(fphdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) { if(!n) return 0;
   uint_t        *op = out;
   int       ol = 0,s;
-  unsigned char *ip = in; 
-  bitdef(bw,br); 
+  unsigned char *ip = in;
+  bitdef(bw,br);
   if(*ip++ == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
   if(start) ol = T2(clz,USIZE)(start);
 
@@ -633,7 +633,7 @@ size_t T2(fphdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
   #endif
 
 #define CTZMIN(_usize_) (VA_BITS+BSIZE(_usize_))
-#define HASH(_x_)       (_x_ & ((1<<FX_BITS)-1))  
+#define HASH(_x_)       (_x_ & ((1<<FX_BITS)-1))
 
 #define HASH16(_h_,_u_) HASH(_u_)
 #define HASH32(_h_,_u_) HASH(_u_) //(((_h_) ^ (_u_)>>23) & ((1<<FX_BITS)-1))
@@ -642,12 +642,12 @@ size_t T2(fphdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) 
 size_t T2(fpc0enc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) { // simple hash table
   uint_t        *ip = in;
   unsigned char *op = out, *out_ = out+n*USIZE/8;
-  unsigned      htab[1<<FX_BITS] = {0}, ol = USIZE+1; 
+  unsigned      htab[1<<FX_BITS] = {0}, ol = USIZE+1;
   bitdef(bw,br);    							//if(start) ol = T2(clz,USIZE)(start);
-  
+
   for(*op++ = 0,*(uint_t *)op = *ip++, op += sizeof(uint_t); ip != in + n; ip++) {
 	uint_t   u = *ip, z;
-	unsigned hu = T2(HASH,USIZE)(u,u), h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz; 
+	unsigned hu = T2(HASH,USIZE)(u,u), h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz;
 	                           htab[hu] = ip - in;
     if(ofs < (1<<VA_BITS)) {
 	  ctz = T2(ctz,USIZE)(z = u ^ in[h]);
@@ -664,10 +664,10 @@ size_t T2(fpc0enc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start)
       } else {
         if(l == ol) {        bitput(bw,br,        2,           1);               }
 		else {               bitput(bw,br, CCODEL+2, l2c(l)<<2|2); ol = l;       }
-        bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, USIZE - l, z, op);         
+        bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, USIZE - l, z, op);
       }
     } else {                 bitput(bw,br,VA_BITS+2,    ofs<<2|3  ); ol = USIZE+1; }
-	bitenorm(bw,br,op); if(op >= out_) goto e;									       
+	bitenorm(bw,br,op); if(op >= out_) goto e;
   }
   bitflush(bw,br,op);
   if(op >= out_) {
@@ -679,38 +679,38 @@ size_t T2(fpc0enc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start)
 size_t T2(fpcenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) { // double entry hashtable
   uint_t        *ip = in;
   unsigned char *op = out, *out_ = out+n*(USIZE/8);
-  unsigned      htab[1<<(FX_BITS+1)] = {0}, ol = USIZE+1; 
+  unsigned      htab[1<<(FX_BITS+1)] = {0}, ol = USIZE+1;
   bitdef(bw,br);                                                  //if(start) ol = T2(clz,USIZE)(start);
-  
+
   for(*op++ = 0,*(uint_t *)op = *ip++, op += sizeof(uint_t); ip != in + n; ip++) {
 	uint_t   u = *ip, z;
 	unsigned hu = T2(HASH,USIZE)(u,u)<<1, h = htab[hu], ofs = (ip-in) - h - 1, c = 0, ctz = 0;
 	htab[hu+1] = h, htab[hu] = ip - in;
-    if(ofs < (1<<VA_BITS)) { 
-	  ctz = T2(ctz,USIZE)(z = u ^ in[h]);	  
-	  unsigned h1 = htab[hu+1], ofs1 = (ip-in) - h1 - 1;	  
+    if(ofs < (1<<VA_BITS)) {
+	  ctz = T2(ctz,USIZE)(z = u ^ in[h]);
+	  unsigned h1 = htab[hu+1], ofs1 = (ip-in) - h1 - 1;
       if(ofs1 < (1<<VA_BITS)) {
 	    uint_t   z1;
-	    unsigned ctz1 = T2(ctz,USIZE)(z1 = u ^ in[h1]), c1 = 0; 
+	    unsigned ctz1 = T2(ctz,USIZE)(z1 = u ^ in[h1]), c1 = 0;
 	    if(ctz1 > ctz) { ofs = ofs1; c = c1;  z = z1;  ctz = ctz1; }
-      }	
+      }
       ofs = (c = ctz > CTZMIN(USIZE))?ofs:0;
     }
 	z = c?z:u ^ ip[-1];
     if(z) {
-      unsigned l = lz2l(T2(clz,USIZE)(z)), t;	  
+      unsigned l = lz2l(T2(clz,USIZE)(z)), t;
       if(c) {
         t = USIZE - l - ctz;
 		bitput(bw,br, (VA_BITS+CCODEL+BSIZE(USIZE)+2), ofs << (CCODEL+BSIZE(USIZE)+2) | (unsigned)l2c(l) << (BSIZE(USIZE)+2) | t<<2);
-		bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, t, z >> ctz, op);  							
+		bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, t, z >> ctz, op);
         ol = USIZE+1;
       } else {
         if(l == ol) {        bitput(bw,br,        2,           1);               }
 		else {               bitput(bw,br, CCODEL+2, l2c(l)<<2|2); ol = l;       }
-        bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, USIZE - l, z, op);         
+        bitenorm(bw,br,op); T2(bitput,USIZE)(bw,br, USIZE - l, z, op);
       }
     } else {                 bitput(bw,br,VA_BITS+2,    ofs<<2|3 ); ol = USIZE+1; }
-	bitenorm(bw,br,op); if(op >= out_) goto e;										       
+	bitenorm(bw,br,op); if(op >= out_) goto e;
   }
   bitflush(bw,br,op);
   if(op >= out_) {
@@ -721,28 +721,28 @@ size_t T2(fpcenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
 
 size_t T2(fpcdec,USIZE)(unsigned char *in, size_t n, uint_t *out, uint_t start) { if(!n) return 0;
   uint_t        *op = out, v = 0, z;
-  unsigned char *ip = in; 
+  unsigned char *ip = in;
   unsigned      ol = USIZE+1, t;
-  bitdef(bw,br); 									//if(start) ol = T2(clz,USIZE)(start);  
+  bitdef(bw,br); 									//if(start) ol = T2(clz,USIZE)(start);
   if(*ip++ == 0xff) { memcpy(out, in+1, n*(USIZE/8)); return n*(USIZE/8); }
 
   for(v = *op++ = *(uint_t *)ip, ip += sizeof(uint_t); op != out+n; op++) {
-    bitdnorm(bw,br,ip);	BITGET32(bw,br, 2, t); 
+    bitdnorm(bw,br,ip);	BITGET32(bw,br, 2, t);
 	switch(t) {
-	  case 0: 	
+	  case 0:
 	    BITGET32(bw,br, VA_BITS+CCODEL+BSIZE(USIZE), t);
-        ol = c2l(bextr32(t, BSIZE(USIZE), CCODEL));        
+        ol = c2l(bextr32(t, BSIZE(USIZE), CCODEL));
 		v = *(op - bextr32(t, BSIZE(USIZE)+CCODEL, VA_BITS)-1);
-        t &= ((1<<BSIZE(USIZE))-1);        							
+        t &= ((1<<BSIZE(USIZE))-1);
         t  = t?t:USIZE;
         bitdnorm(bw,br,ip); T2(bitget,USIZE)(bw,br, t, z, ip);
         v ^= z << (USIZE - t - ol);
         break;
-      case 1: bitdnorm(bw,br,ip); T2(bitget,USIZE)(bw,br, USIZE - ol, z, ip); v ^= z; break; 
+      case 1: bitdnorm(bw,br,ip); T2(bitget,USIZE)(bw,br, USIZE - ol, z, ip); v ^= z; break;
       case 2: BITGET32(bw,br, CCODEL, ol); ol = c2l(ol); bitdnorm(bw,br,ip); T2(bitget,USIZE)(bw,br, USIZE - ol, z, ip); v ^= z; break;
 	  case 3: BITGET32(bw,br,VA_BITS,t); v = *(op-t-1); break;
     }
-	*op = v;	
+	*op = v;
   }
   bitalign(bw,br,ip);
   return ip - in;

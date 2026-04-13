@@ -42,7 +42,7 @@ double droundFast(double v, int nsd)
 	    i++;
 	  }
 	float log10m = TABLE[i][1];
-	
+
 	// --- low precision method ---
 	// float log10m = -LOG10_2;
 	// =============

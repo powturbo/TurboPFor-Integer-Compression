@@ -67,7 +67,7 @@
     a:ip += iplen; \
   } 															                /*AS(op <= op_, "#_V8DE overflow %u", op - op_);*/\
   e: return op - out;\
-} 
+}
 
 #define _V8DE(in, _n_, out, _csize_, _usize_, _v8enc_, _bitd_, _bitpackv_, _bitpack_,_delta_) {\
   if(!_n_) return 0;\
@@ -147,7 +147,7 @@ size_t v8nxenc256v32( uint32_t *__restrict in, size_t n, unsigned char *__restri
     }\
   }\
   return ip - in;\
-} 
+}
 
 #define _V8DD(in, n, out, _csize_, _usize_, _v8dec_, _bitunpackv_, _bitunpack_, _delta_) {      if(!n) return 0;\
   unsigned char *ip = in;\

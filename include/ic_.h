@@ -178,7 +178,7 @@ static ALWAYS_INLINE void               stousz(      void *cp, size_t           
 static ALWAYS_INLINE void               stof32(      void *cp, float              x) { memcpy(cp, &x, sizeof(x)); }
 static ALWAYS_INLINE void               stof64(      void *cp, double             x) { memcpy(cp, &x, sizeof(x)); }
 
-static ALWAYS_INLINE void               ltou32(unsigned           *x, const void *cp) { memcpy(x, cp, sizeof(*x)); } // ua read into ptr 
+static ALWAYS_INLINE void               ltou32(unsigned           *x, const void *cp) { memcpy(x, cp, sizeof(*x)); } // ua read into ptr
 static ALWAYS_INLINE void               ltou64(unsigned long long *x, const void *cp) { memcpy(x, cp, sizeof(*x)); }
 
   #elif defined(__i386__) || defined(__x86_64__) || \
@@ -267,7 +267,7 @@ struct _PACKED doubleu   { double             d; };
 #define BZMASK8( _b_)                    BZMASK32(_b_)
 
 #define BZHI64(_u_, _b_)                 ((_u_) & BZMASK64(_b_))  // b Constant
-#define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_)) 
+#define BZHI32(_u_, _b_)                 ((_u_) & BZMASK32(_b_))
 #define BZHI16(_u_, _b_)                 BZHI32(_u_, _b_)
 #define BZHI8( _u_, _b_)                 BZHI32(_u_, _b_)
 #define BEXTR32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
@@ -279,7 +279,7 @@ struct _PACKED doubleu   { double             d; };
 #include <x86intrin.h>
       #endif
 #define bzhi32(_u_, _b_)                 _bzhi_u32(_u_, _b_)  // b variable
-#define bextr32(x,start,len)             _bextr_u32(x,start,len)  
+#define bextr32(x,start,len)             _bextr_u32(x,start,len)
 
       #if !(defined(_M_X64) || defined(__amd64__)) && (defined(__i386__) || defined(_M_IX86))
 #define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
@@ -287,7 +287,7 @@ struct _PACKED doubleu   { double             d; };
 #define bzhi64(_u_, _b_)                 _bzhi_u64(_u_, _b_)
       #endif
     #else
-#define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_) 
+#define bzhi64(_u_, _b_)                 BZHI64(_u_, _b_)
 #define bzhi32(_u_, _b_)                 BZHI32(_u_, _b_)
 #define bextr32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
     #endif
@@ -458,7 +458,7 @@ static inline int vlcexpo(unsigned x, unsigned vn) { unsigned expo; _vlcexpo_(x,
 #define VHI_I 2
 #define VHI_J 1
 
-//#define _vlcexpo_(_x_, _k_,_i_,_j, _expo_) 
+//#define _vlcexpo_(_x_, _k_,_i_,_j, _expo_)
 #define vhienc(_x_, _k_, _i_, _j_, _expo_, _mb_, _ma_) {\
   unsigned n = __bsr32(_x_), m = _x_ - (1 << n);\
   _expo_ = (1<<_k_) + ((n - _k_) << (_i_ + _j_)) + ((m >> (n - _i_)) << _j_) + BZHI32(m,_j_);\
@@ -575,23 +575,23 @@ extern unsigned char _vtab32_[];
 #define VS22MAX            4276351
 #define vslen22(_x_)       _vslen(_x_,0xff,6)
 #define vsput22(_op_, _x_) _vsput(_op_, _x_, 0xff, 6, ;)
-#define vsget22(_ip_, _x_) _vsget(_ip_, _x_, 0xff, 6, ;) 
+#define vsget22(_ip_, _x_) _vsget(_ip_, _x_, 0xff, 6, ;)
 
 #define VS21MAX            2171071
 #define vslen21(_x_)       _vslen(_x_,       0xff, 5)
 #define vsput21(_op_, _x_) _vsput(_op_, _x_, 0xff, 5, ;)
-#define vsget21(_ip_, _x_) _vsget(_ip_, _x_, 0xff, 5, ;) 
+#define vsget21(_ip_, _x_) _vsget(_ip_, _x_, 0xff, 5, ;)
 
 #define VS20MAX            1118431
 #define vslen20(_x_)       _vslen(_x_,0xff,4)
 #define vsput20(_op_, _x_) _vsput(_op_, _x_, 0xff, 4, ;)
-#define vsget20(_ip_, _x_) _vsget(_ip_, _x_, 0xff, 4, ;) 
+#define vsget20(_ip_, _x_) _vsget(_ip_, _x_, 0xff, 4, ;)
  #else
  #endif
 
 //----------------------------------------------------- 32/64 integer 1,2,3,4,5 bytes----------------------------------------------------------------------------------------
 #define _vbba3(_vbsize_,_vbmax_)                    (_vbmax_ - (_vbsize_/8 - 3))
-#define _vbba2(_vbsize_,_vbmax_,_vbb3_)             (_vbba3(_vbsize_,_vbmax_) - (1<<_vbb3_))  
+#define _vbba2(_vbsize_,_vbmax_,_vbb3_)             (_vbba3(_vbsize_,_vbmax_) - (1<<_vbb3_))
 
 #define _vbo1(_vbsize_,_vbmax_,_vbb2_,_vbb3_)       (_vbba2( _vbsize_,_vbmax_,       _vbb3_) - (1<<_vbb2_))
 #define _vbo2(_vbsize_,_vbmax_,_vbb2_,_vbb3_)       (_vbo1(_vbsize_,_vbmax_,_vbb2_,_vbb3_) + (1 << ( 8+_vbb2_)))
@@ -600,7 +600,7 @@ extern unsigned char _vtab32_[];
 #define _vblen(_x_, _vbsize_,_vbmax_,_vbb2_,_vbb3_) ((_x_) < _vbo1(_vbsize_,_vbmax_,_vbb2_,_vbb3_)?1:\
                                                     ((_x_) < _vbo2(_vbsize_,_vbmax_,_vbb2_,_vbb3_)?2:\
 													((_x_) < _vbo3(_vbsize_,_vbmax_,_vbb2_,_vbb3_)?3:((T2(bsr,_vbsize_)(_x_)+7)/8+1))))
-													
+
 #define _vbvlen(_x_,_vbsize_,_vbmax_,_vbb2_,_vbb3_) ((_x_) < _vbo1(_vbsize_,_vbmax_,_vbb2_,_vbb3_)?1:((_x_) < _vbba2(_vbsize_,_vbmax_,_vbb3_)?2:((_x_) < _vbba3(_vbsize_,_vbmax_))?3:((_x_)-_vbba3(_vbsize_,_vbmax_))))
 
 #define _vbput(_op_, _x_, _vbsize_,_vbmax_,_vbb2_,_vbb3_, _act_) do {\
@@ -622,20 +622,20 @@ extern unsigned char _vtab32_[];
 #endif
 
   #ifndef NMACROS
-//-- 64 bits -----  
-#define vblen64(_x_)               _vblen( _x_,      64, VB_MAX, 6, 5) 
-#define vbvlen64(_x_)              _vbvlen(_x_,      64, VB_MAX, 6, 5) 
+//-- 64 bits -----
+#define vblen64(_x_)               _vblen( _x_,      64, VB_MAX, 6, 5)
+#define vbvlen64(_x_)              _vbvlen(_x_,      64, VB_MAX, 6, 5)
 #define _vbput64(_op_, _x_, _act_) _vbput(_op_, _x_, 64, VB_MAX, 6, 5, _act_)
-#define _vbget64(_ip_, _x_, _act_) _vbget(_ip_, _x_, 64, VB_MAX, 6, 5, _act_) 
+#define _vbget64(_ip_, _x_, _act_) _vbget(_ip_, _x_, 64, VB_MAX, 6, 5, _act_)
 #define vbput64(_op_, _x_)         do { unsigned long long _x = _x_; _vbput64(_op_, _x_, ;); } while(0)
 #define vbget64(_ip_, _x_)         _vbget64(_ip_, _x_, ;)
 //-- 32 bits -----
-#define vblen32(      _x_)         _vblen(      _x_, 32, VB_MAX, 6, 5) 
-#define vbvlen32(     _x_)         _vbvlen(     _x_, 32, VB_MAX, 6, 5) 
+#define vblen32(      _x_)         _vblen(      _x_, 32, VB_MAX, 6, 5)
+#define vbvlen32(     _x_)         _vbvlen(     _x_, 32, VB_MAX, 6, 5)
 #define _vbput32(_op_, _x_, _act_) _vbput(_op_, _x_, 32, VB_MAX, 6, 5, _act_)
-#define _vbget32(_ip_, _x_, _act_) _vbget(_ip_, _x_, 32, VB_MAX, 6, 5, _act_) 
+#define _vbget32(_ip_, _x_, _act_) _vbget(_ip_, _x_, 32, VB_MAX, 6, 5, _act_)
 #define vbput32(_op_, _x_)         do { unsigned _x = _x_; _vbput32(_op_, _x, ;); } while(0)
-#define vbget32(_ip_, _x_)         _vbget32(_ip_, _x_, ;) 
+#define vbget32(_ip_, _x_)         _vbget32(_ip_, _x_, ;)
 //-- 16 bits -----
 #define vblen16( _x_)              vblen32(_x_)
 #define vbvlen16(_x_)              vbvlen32(_x_)
@@ -649,9 +649,9 @@ extern unsigned char _vtab32_[];
 #define _vbget8(_ip_, _x_, _act_)  { _x_ = *_ip_++; _act_; }
 #define vbvlen8(_x_) 1
 
-#define vllen32(_x_)                                _vblen(       _x_, 32, VB_MAX, 4, 3) 
+#define vllen32(_x_)                                _vblen(       _x_, 32, VB_MAX, 4, 3)
 #define vlput32(_op_, _x_)  do { unsigned _x = _x_; _vbput(_op_, _x,  32, VB_MAX, 4, 3, ;); } while(0)
-#define vlget32(_ip_, _x_)                          _vbget(_ip_, _x_, 32, VB_MAX, 4, 3, ;) 
+#define vlget32(_ip_, _x_)                          _vbget(_ip_, _x_, 32, VB_MAX, 4, 3, ;)
   #else
 static ALWAYS_INLINE unsigned vblen32(unsigned       x) { return _vblen(      x, 32, VB_MAX, 6, 5); }
 #define vbput32(_op_, _x_) _vbput(_op_, _x_, 32, VB_MAX, 6, 5, ;)

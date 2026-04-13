@@ -48,7 +48,7 @@ unsigned bicbdec16(unsigned char *in, unsigned n, uint16_t      *out);
 unsigned bicbenc32(uint32_t      *in, unsigned n, unsigned char *out);
 unsigned bicbdec32(unsigned char *in, unsigned n, uint32_t      *out);
 
-//-- Leftmost minimal 
+//-- Leftmost minimal
 unsigned bicenc16( uint16_t      *in, unsigned n, unsigned char *out);
 unsigned bicdec16( unsigned char *in, unsigned n, uint16_t      *out);
 unsigned bicenc32( uint32_t      *in, unsigned n, unsigned char *out);
@@ -538,29 +538,29 @@ void bitzdec(unsigned char *in, unsigned n,                     unsigned esize);
 #define INT2FLOAT(ival, scalse, bias) ((ival - bias) / scale)
 
 //------- Quantization : b number of bits quantized in out ----------------
-  #if defined(FLT16_BUILTIN) 
+  #if defined(FLT16_BUILTIN)
 void fpquant8e16( _Float16 *in, size_t n, uint8_t  *out, unsigned b, _Float16 *pfmin, _Float16 *pfmax);
 void fpquant16e16(_Float16 *in, size_t n, uint16_t *out, unsigned b, _Float16 *pfmin, _Float16 *pfmax);
-  #endif                                                                                              
-																									  
+  #endif
+
 void fpquant8e32(    float *in, size_t n, uint8_t  *out, unsigned b, float    *pfmin,    float *pfmax);
 void fpquant16e32(   float *in, size_t n, uint16_t *out, unsigned b, float    *pfmin,    float *pfmax);
 void fpquant32e32(   float *in, size_t n, uint32_t *out, unsigned b, float    *pfmin,    float *pfmax);
-																									  
+
 void fpquant8e64(   double *in, size_t n, uint8_t  *out, unsigned b, double   *pfmin,   double *pfmax);
 void fpquant16e64(  double *in, size_t n, uint16_t *out, unsigned b, double   *pfmin,   double *pfmax);
 void fpquant32e64(  double *in, size_t n, uint32_t *out, unsigned b, double   *pfmin,   double *pfmax);
 void fpquant64e64(  double *in, size_t n, uint64_t *out, unsigned b, double   *pfmin,   double *pfmax);
-																									  
-  #if defined(FLT16_BUILTIN)                                                                          
+
+  #if defined(FLT16_BUILTIN)
 void fpquant8d16( uint8_t  *in, size_t n, _Float16 *out, unsigned b, _Float16   fmin, _Float16   fmax);
 void fpquant16d16(uint16_t *in, size_t n, _Float16 *out, unsigned b, _Float16   fmin, _Float16   fmax);
-  #endif                                                                                              
-																									  
+  #endif
+
 void fpquant8d32( uint8_t  *in, size_t n, float    *out, unsigned b, float      fmin,    float   fmax);
 void fpquant16d32(uint16_t *in, size_t n, float    *out, unsigned b, float      fmin,    float   fmax);
 void fpquant32d32(uint32_t *in, size_t n, float    *out, unsigned b, float      fmin,    float   fmax);
-																									  
+
 void fpquant8d64( uint8_t  *in, size_t n, double   *out, unsigned b, double     fmin,   double   fmax);
 void fpquant16d64(uint16_t *in, size_t n, double   *out, unsigned b, double     fmin,   double   fmax);
 void fpquant32d64(uint32_t *in, size_t n, double   *out, unsigned b, double     fmin,   double   fmax);
@@ -576,7 +576,7 @@ void fpquant64d64(uint64_t *in, size_t n, double   *out, unsigned b, double     
 #define FLT16_BUILTIN
 #endif
  #ifdef FLT16_BUILTIN
-_Float16 _fprazor16(_Float16 d, float e, int lg2e);  
+_Float16 _fprazor16(_Float16 d, float e, int lg2e);
 void fprazor16(_Float16 *in, unsigned n, _Float16  *out, float  e);
   #endif
 
@@ -759,20 +759,20 @@ void tpxenc(       unsigned char *in, unsigned n, unsigned char *out, unsigned e
 void tpxdec(       unsigned char *in, unsigned n, unsigned char *out, unsigned esize);
 
 //2D transpose
-void tp2denc(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize); 
+void tp2denc(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize);
 void tp2ddec(      unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out, unsigned esize);
 
-void tp2denc2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
+void tp2denc2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 void tp2ddec2(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 
-void tp2denc4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
+void tp2denc4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 void tp2ddec4(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 
-void tp2denc8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out); 
+void tp2denc8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 void tp2ddec8(     unsigned char *in,             unsigned nx, unsigned ny,             unsigned char *out);
 
 //3D transpose
-void tp3denc(      unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize); 
+void tp3denc(      unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize);
 void tp3ddec(      unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize);
 
 void tp3denc2(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
@@ -785,7 +785,7 @@ void tp3denc8(     unsigned char *in,             unsigned nx, unsigned ny, unsi
 void tp3ddec8(     unsigned char *in,             unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
 
 //4D transpose
-void tp4denc(      unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize); 
+void tp4denc(      unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize);
 void tp4ddec(      unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out, unsigned esize);
 
 void tp4denc2(     unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out);
@@ -909,7 +909,7 @@ void tp4zdec128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4xenc128v8( unsigned char *in, unsigned n, unsigned char *out);
 void tp4xdec128v8( unsigned char *in, unsigned n, unsigned char *out);
 
-//-- avx2 
+//-- avx2
 //-- byte transpose
 void tpenc256v2(   unsigned char *in, unsigned n, unsigned char *out); //-- 16 bits
 void tpdec256v2(   unsigned char *in, unsigned n, unsigned char *out);
@@ -1018,11 +1018,11 @@ unsigned  trled(  const unsigned char *__restrict in, unsigned inlen, unsigned c
 extern "C" {
 #endif
 //-- Gamma coding (length limited) : Full 32 bit range
-size_t bitgenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);  
+size_t bitgenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);
 size_t bitgdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
 //-- Rice Coding (adaptive length limited) : Full 32 bit range ---
-size_t bitrenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);   
+size_t bitrenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);
 size_t bitrdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
 size_t vlcenc32(   unsigned char *_in, size_t _inlen,  unsigned char  *out);   // TurboVLC 32 bits

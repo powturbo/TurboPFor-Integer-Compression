@@ -1,4 +1,4 @@
-// copy from https://github.com/ccr/ccr/tree/master/hdf5_plugins for benchmarking purpose 
+// copy from https://github.com/ccr/ccr/tree/master/hdf5_plugins for benchmarking purpose
 # define NC_FLOAT 5
 # define NC_DOUBLE 6
 # define NC_FILL_FLOAT   (9.9692099683868690e+36f) /* near 15 * 2^119 */
@@ -39,20 +39,20 @@ void ccr_gbr 			/* [fnc] Granular BitRound buffer of float values */
 #endif /* M_LN2 */
   const double bit_per_dgt=M_LN10/M_LN2; /* 3.32 [frc] Bits per decimal digit of precision = log2(10) */
   const double dgt_per_bit=M_LN2/M_LN10; /* 0.301 [frc] Decimal digits per bit of precision = log10(2) */
-  
+
   const int bit_xpl_nbr_sgn_flt=23; /* [nbr] Bits 0-22 of SP significands are explicit. Bit 23 is implicitly 1. */
   const int bit_xpl_nbr_sgn_dbl=52; /* [nbr] Bits 0-51 of DP significands are explicit. Bit 52 is implicitly 1. */
-  
+
   double mnt; /* [frc] Mantissa, 0.5 <= mnt < 1.0 */
   double mnt_fabs; /* [frc] fabs(mantissa) */
   double mnt_log10_fabs; /* [frc] log10(fabs(mantissa))) */
   double val; /* [frc] Copy of input value to avoid indirection */
-  
+
   double prc_bnr_xct=0.0; /* [nbr] Binary digits of precision, exact */
   double mss_val_cmp_dbl; /* Missing value for comparison to double precision values */
 
   float mss_val_cmp_flt; /* Missing value for comparison to single precision values */
-  
+
   int bit_xpl_nbr_sgn=-1; /* [nbr] Number of explicit bits in significand */
   int bit_xpl_nbr_zro; /* [nbr] Number of explicit bits to zero */
 
@@ -116,7 +116,7 @@ void ccr_gbr 			/* [fnc] Granular BitRound buffer of float values */
     /* Missing value for comparison is _FillValue (if any) otherwise default NC_FILL_FLOAT/DOUBLE */
     if(has_mss_val) mss_val_cmp_dbl=*mss_val.dp; else mss_val_cmp_dbl=NC_FILL_FLOAT;
     bit_xpl_nbr_sgn=bit_xpl_nbr_sgn_dbl;
-    u64_ptr=op1; 
+    u64_ptr=op1;
 	double *dp = op1;
 
     for(idx=0L;idx<sz;idx++){
@@ -143,9 +143,9 @@ void ccr_gbr 			/* [fnc] Granular BitRound buffer of float values */
       } /* !mss_val_cmp_dbl */
     } /* !idx */
     break; /* !NC_DOUBLE */
-  default: 
+  default:
     (void)fprintf(stderr,"ERROR: %s reports datum size = %d B is invalid for %s filter\n",fnc_nm,type,""/*CCR_FLT_NAME*/);
     break;
   } /* !type */
-  
+
 } /* ccr_gbr() */

@@ -104,7 +104,7 @@ static int    tmiszero(tm_t t)              { return !t; }
 #define TM_MBS "MB/s"
 static double TMBS(unsigned l, double t) { return (l/t)/1000000.0; }
 
-  #ifdef _WIN32 //-------- windows 
+  #ifdef _WIN32 //-------- windows
 static LARGE_INTEGER tps;
 
 typedef unsigned __int64 tm_t;
@@ -133,14 +133,14 @@ int clock_gettime(int /*clk_id*/, struct timespec* t) {
 }
       #endif
     #endif
-    
-typedef struct timespec tm_t;   
+
+typedef struct timespec tm_t;
 static tm_t   tmtime()                      { struct timespec tm; clock_gettime(CLOCK_MONOTONIC, &tm); return tm; }
 static double tmdiff(tm_t start, tm_t stop) { return (stop.tv_sec - start.tv_sec) + (double)(stop.tv_nsec - start.tv_nsec)/1e9f; }
 static tm_t   tminit()                      { tm_t t0 = tmtime(),t; while(!tmdiff(t = tmtime(),t0)) {}; return t; }
 static int    tmiszero(tm_t t)              { return !(t.tv_sec|t.tv_nsec); }
   #endif
-#endif 
+#endif
 
 //---------------------------------------- bench ----------------------------------------------------------------------
 // for each a function call is repeated until exceeding tm_tx seconds.
@@ -200,7 +200,7 @@ static void pr(unsigned l, unsigned n) {
   double r = (double)l*100.0/n;
   if(r>0.1)  printf("%10u %6.2f%%   ", l, r);
   else if(r>0.01) printf("%10u %7.3f%%  ", l, r);
-  else printf("%10u %8.4f%% ", l, r); fflush(stdout); 
+  else printf("%10u %8.4f%% ", l, r); fflush(stdout);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2023
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -22,7 +22,7 @@
     - email    : powturbo [_AT_] gmail [_DOT_] com
 **/
 //   ic - "Integer Compression" Java Critical Native Interface Class
- 
+
 public class jic {
   // variable byte
   public native static int vbenc32(            int[] in, int n, byte[] out);
@@ -30,13 +30,13 @@ public class jic {
 
   public native static int vbdenc32(           int[] in, int n, byte[] out, int start);
   public native static int vbddec32(          byte[] in, int n,  int[] out, int start);
-  
+
   public native static int vbd1enc32(          int[] in, int n, byte[] out, int start);
   public native static int vbd1dec32(         byte[] in, int n,  int[] out, int start);
 
   public native static int vbzenc32(           int[] in, int n, byte[] out, int start);
   public native static int vbzdec32(          byte[] in, int n,  int[] out, int start);
-  
+
   // variable simple
   public native static int vsenc32(            int[] in, int n, byte[] out);
   public native static int vsdec32(           byte[] in, int n,  int[] out);
@@ -56,7 +56,7 @@ public class jic {
   public native static int p4nddec128v32(     byte[] in, int n,  int[] out);
   public native static int p4ndenc256v32(      int[] in, int n, byte[] out);
   public native static int p4nddec256v32(     byte[] in, int n,  int[] out);
- 
+
   public native static int p4nd1enc32(         int[] in, int n, byte[] out); // delta 1: strictly increasing integer list (sorted)
   public native static int p4nd1dec32(        byte[] in, int n,  int[] out);
   public native static int p4nd1enc128v32(     int[] in, int n, byte[] out);
@@ -70,7 +70,7 @@ public class jic {
   public native static int p4nzdec128v32(     byte[] in, int n,  int[] out);
   public native static int p4nzenc256v32(      int[] in, int n, byte[] out);
   public native static int p4nzdec256v32(     byte[] in, int n,  int[] out);
- 
+
   // Single block: n limited to 128/256
   public native static int p4enc32(            int[] in, int n, byte[] out);
   public native static int p4dec32(           byte[] in, int n,  int[] out);
@@ -87,7 +87,7 @@ public class jic {
   public native static int p4d1dec32(         byte[] in, int n,  int[] out, int start);
   public native static int p4d1dec128v32(     byte[] in, int n,  int[] out, int start);
   public native static int p4d1dec256v32(     byte[] in, int n,  int[] out, int start);
-  
+
   //********** bitpack scalar
   // High level API
   public native static int bitnpack32(         int[] in, int n, byte[] out);
@@ -103,7 +103,7 @@ public class jic {
   public native static int bitndunpack128v32( byte[] in, int n,  int[] out);
   public native static int bitndpack256v32(    int[] in, int n, byte[] out);
   public native static int bitndunpack256v32( byte[] in, int n,  int[] out);
-  
+
   public native static int bitnd1pack32(       int[] in, int n, byte[] out);
   public native static int bitnd1unpack32(    byte[] in, int n,  int[] out);
   public native static int bitnd1pack128v32(   int[] in, int n, byte[] out);

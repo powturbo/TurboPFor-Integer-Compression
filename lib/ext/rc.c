@@ -11,7 +11,7 @@
 // copyright notice, this list of conditions and the following disclaimer
 // in the documentation and/or other materials provided with the
 // distribution.
-//     * Neither the name of WEST, Polytechnic Institute of NYU. nor the names 
+//     * Neither the name of WEST, Polytechnic Institute of NYU. nor the names
 // of its contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
@@ -28,11 +28,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Author: Torsten Suel, Jiangong Zhang, Jinru He
-// 
+//
 // If you have any questions or problems about our codes, please contact:
 // jhe@cis.poly.edu
-// 
-// 
+//
+//
 
 //#include "rice_coding2.h"
 //#include <stdio.h>
@@ -82,7 +82,7 @@ void rc_set_size(int size)
 #include "rc.h"
 
 	void setBit(unsigned char *buf, unsigned int *bp, unsigned int val)
-	{                                     
+	{
 	  unsigned int bPtr;
 	  unsigned int w;
 
@@ -112,7 +112,7 @@ unsigned char *rc_turbo_rice_encode(unsigned *w, unsigned int **buf, unsigned in
     for (i = 0; i < s; i++)  w[i] = 0;
     for (i = 0; i < block_size; i++)  out[i] = (*buf)[i] & ((1u<<bits)-1);// MASK[bits];
     //pack(out, bits, block_size, *w);
-	w = bitpack32(out, block_size, w, bits); 
+	w = bitpack32(out, block_size, w, bits);
     //*w += s;
   }
 

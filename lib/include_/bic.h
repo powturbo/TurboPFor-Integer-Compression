@@ -48,7 +48,7 @@ unsigned bicbdec16(unsigned char *in, unsigned n, uint16_t      *out);
 unsigned bicbenc32(uint32_t      *in, unsigned n, unsigned char *out);
 unsigned bicbdec32(unsigned char *in, unsigned n, uint32_t      *out);
 
-//-- Leftmost minimal 
+//-- Leftmost minimal
 unsigned bicenc16( uint16_t      *in, unsigned n, unsigned char *out);
 unsigned bicdec16( unsigned char *in, unsigned n, uint16_t      *out);
 unsigned bicenc32( uint32_t      *in, unsigned n, unsigned char *out);

@@ -4,11 +4,11 @@
 extern "C" {
 #endif
 //-- Gamma coding (length limited) : Full 32 bit range
-size_t bitgenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);  
+size_t bitgenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);
 size_t bitgdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
 //-- Rice Coding (adaptive length limited) : Full 32 bit range ---
-size_t bitrenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);   
+size_t bitrenc32(  unsigned char *_in, size_t _inlen,  unsigned char  *out);
 size_t bitrdec32(  unsigned char  *in, size_t _outlen, unsigned char *_out);
 
 size_t vlcenc32(   unsigned char *_in, size_t _inlen,  unsigned char  *out);   // TurboVLC 32 bits

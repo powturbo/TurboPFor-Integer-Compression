@@ -1,10 +1,10 @@
 #define FSE_STATIC_LINKING_ONLY
-#include "../zstd/lib/common/fse.h"  
-#include "fse.h"  
+#include "../zstd/lib/common/fse.h"
+#include "fse.h"
 
 #define FSE_TABLELOG_ABSOLUTE_MAX 15
 #define HIST_WKSP_SIZE_U32 1024
- 
+
 FSE_CTable* FSE_createCTable (unsigned maxSymbolValue, unsigned tableLog)
 {
     size_t size;

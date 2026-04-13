@@ -12,7 +12,7 @@ enum {
   ICC_LZTANS,
   ICC_TURBORC,
   ICC_MEMCPY,
-  ICC_LAST, 
+  ICC_LAST,
 };
 
 #ifdef __cplusplus
@@ -72,11 +72,11 @@ unsigned lztp1zenc(  unsigned char *in, unsigned inlen, unsigned char *out, unsi
 unsigned lztp1zdec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
 
 //----------------- 2 D + codec (Lz, entropy coding, bwt,... ---------------------------------------------------------------------------------------------------------------------------------
-unsigned lztpd2enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm); 
-unsigned lztpd2dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm); 
-unsigned lztpd2xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm); 
+unsigned lztpd2enc(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm);
+unsigned lztpd2dec(  unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm);
+unsigned lztpd2xenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm);
 unsigned lztpd2xdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm);
-unsigned lztpd2zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm); 
+unsigned lztpd2zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outsize, unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm);
 unsigned lztpd2zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned x, unsigned y, int codid, int codlev, unsigned char *codprm);
 
 //----------------- 3 D + codec (Lz, entropy coding, bwt,... ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,10 +96,10 @@ unsigned lztpd4zenc( unsigned char *in, unsigned inlen, unsigned char *out, unsi
 unsigned lztpd4zdec( unsigned char *in, unsigned inlen, unsigned char *out, unsigned outlen,  unsigned esize, unsigned char *tmp, unsigned w, unsigned x, unsigned y, unsigned z, int codid, int codlev, unsigned char *codprm);
 
 //-- TurboVLC : Novel Variable Length Coding for large integers with exponent + mantissa ------------------------
-size_t vlccomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm); 
+size_t vlccomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
 size_t vlcdecomp32(unsigned char *in,  size_t inlen,  unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
 //-- Hybrid integer ------
-size_t vhicomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm); 
+size_t vhicomp32(  unsigned char *_in, size_t _inlen, unsigned char *out,  size_t outsize, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
 size_t vhidecomp32(unsigned char *in,  size_t inlen,  unsigned char *_out, size_t _outlen, unsigned char *tmp, int codid, int codlev, unsigned char *codprm);
 
 

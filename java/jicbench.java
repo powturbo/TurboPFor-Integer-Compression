@@ -1,7 +1,7 @@
 /**
     Copyright (C) powturbo 2013-2023
     GPL v2 License
-  
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -24,7 +24,7 @@
 //     icbench - "Integer Compression" Java Critical Native Interface
 
 /* Usage: (make java/jicbench)
-1 - generate header jic.h 
+1 - generate header jic.h
 $ cd TurboPFor/java
 $ javah -jni jic
 $ cp jic.h ..
@@ -36,7 +36,7 @@ $ javac jicbench.java
 3 - compile & link a shared library
 $ cd ..
 $ gcc -O3 -w -march=native -fstrict-aliasing -m64 -shared -fPIC -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/default-java/include/linux bitpack.c bitunpack.c vp4c.c vp4d.c vsimple.c vint.c bitutil.c jic.c -o libic.so
-$ Search "/usr/lib/" for the file "jni.h" and replace the JDK name "default-java" if necessary (example by "java-8-openjdk-amd64").  
+$ Search "/usr/lib/" for the file "jni.h" and replace the JDK name "default-java" if necessary (example by "java-8-openjdk-amd64").
 
 4 - copy "libic.so" to java library directory
 
@@ -45,7 +45,7 @@ $java jicbench
 */
 
 class jicbench {
-  // Note: this is a simple interface test not a real benchmark 
+  // Note: this is a simple interface test not a real benchmark
 
   public static void main(String args[]) {
     int bnum = 12500;
@@ -64,7 +64,7 @@ class jicbench {
 
     long t0 = System.currentTimeMillis();
     ic.p4nenc32(in, bnum, out);
-    long t = System.currentTimeMillis() - t0;    
+    long t = System.currentTimeMillis() - t0;
     System.out.println("encode time'" + t + "'");
 
 

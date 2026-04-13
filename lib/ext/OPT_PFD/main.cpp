@@ -47,7 +47,7 @@ int get_list(char *term, unsigned int *doc_id, unsigned int *freq, unsigned int 
 
     /* take the gap for doc_id */
 	for (i = npos-1; i > 0; i--)
-	{	
+	{
 		doc_id[i] -= doc_id[i-1];
 		doc_id[i] --;
 	}
@@ -67,7 +67,7 @@ int main()	// just for testing
 	unsigned int *maxc = new unsigned int[MAX_NDOC/BS];
 	unsigned int *aux = new unsigned int[MAX_NDOC];
 	unsigned int * all_array = new unsigned int[2048];		// extra array for coding
-	
+
 
 	int listSize = get_list("information", docid, fre, maxc);
 	cout<<"list size is "<<listSize<<endl;

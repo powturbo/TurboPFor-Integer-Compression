@@ -128,10 +128,10 @@ pub type __mode_t = :: std :: os :: raw :: c_uint ;
 pub type __nlink_t = :: std :: os :: raw :: c_ulong ;
 pub type __off_t = :: std :: os :: raw :: c_long ;
 pub type __off64_t = :: std :: os :: raw :: c_long ;
-pub type __pid_t = :: std :: os :: raw :: c_int ; # [repr (C)] 
+pub type __pid_t = :: std :: os :: raw :: c_int ; # [repr (C)]
 # [derive (Debug , Copy , Clone)]
 pub struct __fsid_t {
-pub __val : [:: std :: os :: raw :: c_int ; 2usize] , } 
+pub __val : [:: std :: os :: raw :: c_int ; 2usize] , }
 # [test] fn bindgen_test_layout___fsid_t () { const UNINIT : :: std :: mem :: MaybeUninit < __fsid_t > = :: std :: mem :: MaybeUninit :: uninit () ; let ptr = UNINIT . as_ptr () ;
  assert_eq ! (:: std :: mem :: size_of :: < __fsid_t > () , 8usize , concat ! ("Size of: " , stringify ! (__fsid_t))) ;
  assert_eq ! (:: std :: mem :: align_of :: < __fsid_t > () , 4usize , concat ! ("Alignment of " , stringify ! (__fsid_t))) ;

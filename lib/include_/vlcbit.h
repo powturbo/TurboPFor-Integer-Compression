@@ -124,7 +124,7 @@ static inline int vlcexpo(unsigned x, unsigned vn) { unsigned expo; _vlcexpo_(x,
 #define VHI_I 2
 #define VHI_J 1
 
-//#define _vlcexpo_(_x_, _k_,_i_,_j, _expo_) 
+//#define _vlcexpo_(_x_, _k_,_i_,_j, _expo_)
 #define vhienc(_x_, _k_, _i_, _j_, _expo_, _mb_, _ma_) {\
   unsigned n = __bsr32(_x_), m = _x_ - (1 << n);\
   _expo_ = (1<<_k_) + ((n - _k_) << (_i_ + _j_)) + ((m >> (n - _i_)) << _j_) + BZHI32(m,_j_);\
