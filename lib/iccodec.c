@@ -260,8 +260,8 @@ size_t codecdec(unsigned char *in, size_t inlen, unsigned char *out, unsigned ou
         case 2 : return ec==2?rcssdec( in, outlen, out, 5,6):rcsdec( in, outlen, out);
 		case 20: inlen==outlen?memcpy(out,in,outlen):rcbwtdec(in,outlen,out,bwtlev, 0); return 0;
 		  #ifdef _ANS
-		case 56: inlen==outlen?memcpy(out,in,outlen):anscdfdec( in, outlen, out); return outlen;
-		case 64: inlen==outlen?memcpy(out,in,outlen):anscdf1dec(in, outlen, out); return outlen;
+		case 56: if(inlen==outlen) memcpy(out,in,outlen); else anscdfdec( in, outlen, out); return outlen;
+		case 64: if(inlen==outlen) memcpy(out,in,outlen); else anscdf1dec(in, outlen, out); return outlen;
 		  #endif
 //        case 2 : return turborcndec( in, outlen, out);
       }
