@@ -22,7 +22,6 @@
     - twitter  : https://twitter.com/powturbo
 **/
 //  TurboPFor - "IcApp: Benchmark application"
-
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
