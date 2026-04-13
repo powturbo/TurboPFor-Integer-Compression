@@ -21,7 +21,7 @@ jobs:
         with:
           submodules: 'true'     
       - run: git submodule update --init --recursive
-      - run: make
+      - run: make ICCODEC=1
       - run: lscpu
       - run: ./icapp ZIPF
 
