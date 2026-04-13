@@ -33,7 +33,7 @@
 // jhe@cis.poly.edu
 //
 //
-
+ 
 //#include "rice_coding2.h"
 //#include <stdio.h>
 #include <stddef.h>
