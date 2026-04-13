@@ -1,4 +1,4 @@
-
+ 
 void s16_encode(unsigned int **_w, unsigned int **_p, unsigned int m)
 {
 int cnum[16] = {28, 21, 21, 21, 14, 9, 8, 7, 6, 6, 5, 5, 4, 3, 2, 1};
