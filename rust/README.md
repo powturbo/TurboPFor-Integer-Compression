@@ -1,4 +1,4 @@
-# Rust bindings for TurboPFor-Integer-Compression
+#  Rust bindings for TurboPFor-Integer-Compression
 
 This is a wrapper for [TurboPFor Integer Compression](https://github.com/powturbo/TurboPFor-Integer-Compression).
 
