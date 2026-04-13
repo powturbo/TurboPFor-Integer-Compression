@@ -1,4 +1,4 @@
-# powturbo  (c) Copyright 2013-2019
+# powturbo  (c) Copyright 2013-2026
 # nmake /f makefile.vs
 
 .SUFFIXES: .c .obj .dllobj
