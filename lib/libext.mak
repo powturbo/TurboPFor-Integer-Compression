@@ -1,3 +1,5 @@
+#    Copyright (C) powturbo 2013-2026
+
 #cpp: $(CPPF)
 #	$(CC) -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
