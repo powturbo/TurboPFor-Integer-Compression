@@ -9,6 +9,7 @@
  * IMPLIED ARE HEREBY DISCLAIMED.  This includes but is not limited to
  * warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 #define __GETOPT_H__
 
 /* All the headers include this file. */
