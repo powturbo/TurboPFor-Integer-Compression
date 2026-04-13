@@ -1,6 +1,6 @@
-# powturbo (c) Copyright 2013-2023
+# powturbo (c) Copyright 2013-2026
 # 1 - Download or clone TurboPFor:
-# git clone git://github.com/powturbo/TurboPFor.git
+# git clone git://github.com/powturbo/TurboPFor-Integer-Compression.git
 # make
 #
 # 2 - include general purpose compression codecs
