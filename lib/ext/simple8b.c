@@ -14,7 +14,7 @@ static inline int bsr32(int x) {
   return x?32 - __builtin_clz(x):0;
 }
   #endif
-
+ 
 #define WPUT(__x,__bit) { __bw |= (unsigned long long)(__x)<<__br; __br += __bit; }
 #define WPUTZERO(__sel) { __bw = __br = 0; WPUT(__sel,4); }
 #define WPUTFLUSH(__out) { *(typeof(__bw) *)__out = __bw; __out += sizeof(__bw)/sizeof(__out[0]); }
