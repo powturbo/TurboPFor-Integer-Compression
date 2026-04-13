@@ -8,8 +8,8 @@ CXXFLAGS+=$(_SSE) -I$(LB)FastPFor/headers -std=gnu99 -DUSE_THREADS
 ifeq ($(ICCODEC),1)
 LZ4=1
 ZSTD=1
-#FSE=1
-#FSEHUF=1
+FSE=1
+FSEHUF=1
 #ZLIB=1
 BITSHUFFLE=1
 #LZTURBO=1
@@ -322,9 +322,11 @@ CFLAGS+=-D_ZSTD -I$(LB)zstd/lib -I$(LB)zstd/lib/common
 OB+=$(LB)zstd/lib/common/pool.o $(LB)zstd/lib/common/xxhash.o $(LB)zstd/lib/common/error_private.o \
     $(LB)zstd/lib/compress/hist.o $(LB)zstd/lib/compress/zstd_compress.o $(LB)zstd/lib/compress/zstd_compress_literals.o $(LB)zstd/lib/compress/zstd_compress_sequences.o \
     $(LB)zstd/lib/compress/zstd_double_fast.o $(LB)zstd/lib/compress/zstd_fast.o $(LB)zstd/lib/compress/zstd_lazy.o $(LB)zstd/lib/compress/zstd_ldm.o $(LB)zstd/lib/compress/zstdmt_compress.o $(LB)zstd/lib/compress/zstd_opt.o $(LB)zstd/lib/compress/zstd_preSplit.o\
-    $(LB)zstd/lib/decompress/zstd_decompress.o $(LB)zstd/lib/decompress/zstd_decompress_block.o $(LB)zstd/lib/decompress/zstd_ddict.o $(LB)zstd/lib/compress/fse_compress.o $(LB)zstd/lib/common/fse_decompress.o \
-	$(LB)zstd/lib/common/zstd_common.o $(LB)zstd/lib/common/entropy_common.o $(LB)zstd/lib/compress/zstd_compress_superblock.o\
-    $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o $(LB)zstd/lib/dictBuilder/divsufsort.o  
+    $(LB)zstd/lib/decompress/zstd_decompress.o $(LB)zstd/lib/decompress/zstd_decompress_block.o $(LB)zstd/lib/decompress/zstd_ddict.o $(LB)zstd/lib/compress/fse_compress.o \
+    $(LB)zstd/lib/common/fse_decompress.o \
+    $(LB)zstd/lib/common/zstd_common.o $(LB)zstd/lib/common/entropy_common.o $(LB)zstd/lib/compress/zstd_compress_superblock.o\
+    $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o \
+    $(LB)zstd/lib/dictBuilder/divsufsort.o   
 #$(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o 	
 endif
 
