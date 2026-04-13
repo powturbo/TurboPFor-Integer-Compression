@@ -280,7 +280,8 @@ $(T)anscdfs.o: $(T)anscdf.c $(T)anscdf_.h
 $(T)anscdfx.o: $(T)anscdf.c $(T)anscdf_.h
 	$(CC) -c -O3 $(CFLAGS) -march=haswell -falign-loops=32 $(T)anscdf.c -o $(T)anscdfx.o
 	
-OB+=$(T)anscdfx.o $(T)anscdfs.o $(T)anscdf0.o
+OB+=$(T)anscdfx.o $(T)anscdfs.o 
+#$(T)anscdf0.o
 endif
 
 OB+=$(T)rc_s.o $(T)rc_ss.o $(T)rcutil.o $(T)libsais/src/libsais.o $(T)rccm_s.o $(T)rccm_ss.o $(T)bec_b.o $(T)rcqlfc_s.o $(T)rcqlfc_ss.o $(T)rcbwt.o 
@@ -319,10 +320,11 @@ endif
 ifeq ($(ZSTD), 1)
 CFLAGS+=-D_ZSTD -I$(LB)zstd/lib -I$(LB)zstd/lib/common
 OB+=$(LB)zstd/lib/common/pool.o $(LB)zstd/lib/common/xxhash.o $(LB)zstd/lib/common/error_private.o \
-    $(LB)zstd/lib/compress/hist.o $(LB)zstd/lib/compress/zstd_compress.o $(LB)zstd/lib/compress/zstd_compress_literals.o $(LB)zstd/lib/compress/zstd_compress_sequences.o $(LB)zstd/lib/compress/zstd_double_fast.o $(LB)zstd/lib/compress/zstd_fast.o $(LB)zstd/lib/compress/zstd_lazy.o $(LB)zstd/lib/compress/zstd_ldm.o $(LB)zstd/lib/compress/zstdmt_compress.o $(LB)zstd/lib/compress/zstd_opt.o \
+    $(LB)zstd/lib/compress/hist.o $(LB)zstd/lib/compress/zstd_compress.o $(LB)zstd/lib/compress/zstd_compress_literals.o $(LB)zstd/lib/compress/zstd_compress_sequences.o \
+    $(LB)zstd/lib/compress/zstd_double_fast.o $(LB)zstd/lib/compress/zstd_fast.o $(LB)zstd/lib/compress/zstd_lazy.o $(LB)zstd/lib/compress/zstd_ldm.o $(LB)zstd/lib/compress/zstdmt_compress.o $(LB)zstd/lib/compress/zstd_opt.o $(LB)zstd/lib/compress/zstd_preSplit.o\
     $(LB)zstd/lib/decompress/zstd_decompress.o $(LB)zstd/lib/decompress/zstd_decompress_block.o $(LB)zstd/lib/decompress/zstd_ddict.o $(LB)zstd/lib/compress/fse_compress.o $(LB)zstd/lib/common/fse_decompress.o \
 	$(LB)zstd/lib/common/zstd_common.o $(LB)zstd/lib/common/entropy_common.o $(LB)zstd/lib/compress/zstd_compress_superblock.o\
-    $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o $(LB)zstd/lib/dictBuilder/divsufsort.o 
+    $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o $(LB)zstd/lib/dictBuilder/divsufsort.o  
 #$(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o 	
 endif
 
