@@ -1,4 +1,4 @@
-// optimized version from: http://jinruhe.com/
+// optimized version from:  http://jinruhe.com/
 static int s16_cnum[16] = {28, 21, 21, 21, 14, 9, 8, 7, 6, 6, 5, 5, 4, 3, 2, 1};
 static int s16_cbits[16][28] = {
    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
