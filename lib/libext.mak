@@ -9,7 +9,7 @@ ifeq ($(ICCODEC),1)
 LZ4=1
 ZSTD=1
 FSE=1
-FSEHUF=1
+#FSEHUF=1
 #ZLIB=1
 BITSHUFFLE=1
 #LZTURBO=1
@@ -326,8 +326,7 @@ OB+=$(LB)zstd/lib/common/pool.o $(LB)zstd/lib/common/xxhash.o $(LB)zstd/lib/comm
     $(LB)zstd/lib/common/fse_decompress.o \
     $(LB)zstd/lib/common/zstd_common.o $(LB)zstd/lib/common/entropy_common.o $(LB)zstd/lib/compress/zstd_compress_superblock.o\
     $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o \
-    $(LB)zstd/lib/dictBuilder/divsufsort.o   
-#$(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o 	
+    $(LB)zstd/lib/dictBuilder/divsufsort.o $(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o 	
 endif
 
 ifeq ($(FSE), 1)
