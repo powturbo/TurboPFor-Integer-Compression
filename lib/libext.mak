@@ -279,9 +279,12 @@ $(T)anscdfs.o: $(T)anscdf.c $(T)anscdf_.h
 
 $(T)anscdfx.o: $(T)anscdf.c $(T)anscdf_.h
 	$(CC) -c -O3 $(CFLAGS) -march=haswell -falign-loops=32 $(T)anscdf.c -o $(T)anscdfx.o
-	
+
+OB+=$(T)anscdf0.o
+ifeq ($(ARCH),aarch64)
+else
 OB+=$(T)anscdfx.o $(T)anscdfs.o 
-#$(T)anscdf0.o
+endif
 endif
 
 OB+=$(T)rc_s.o $(T)rc_ss.o $(T)rcutil.o $(T)libsais/src/libsais.o $(T)rccm_s.o $(T)rccm_ss.o $(T)bec_b.o $(T)rcqlfc_s.o $(T)rcqlfc_ss.o $(T)rcbwt.o 
