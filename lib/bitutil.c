@@ -41,7 +41,7 @@
 
 uint32_t bit256v32(uint32_t *in, unsigned n, uint32_t *px) {
   uint32_t o = 0,x,u0 = in[0], *ip = in;
-  __m256i vb0 = _mm256_set1_epi32(*in), 
+  __m256i vb0 = _mm256_set1_epi32(*in),
           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
           vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256();
   for(; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
@@ -60,7 +60,7 @@ uint32_t bit256v32(uint32_t *in, unsigned n, uint32_t *px) {
 }
 
 // delta ---------------------------------------------------------------------------------------------------------------
-uint32_t bitd256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) { 
+uint32_t bitd256v32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, x, *ip = in, u0 = in[0] - start;
   __m256i vb0 = _mm256_set1_epi32(u0),
           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
@@ -145,13 +145,13 @@ void bitd1dec256v32(uint32_t *in, unsigned n, uint32_t start) {
 uint32_t bitx256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   uint32_t o = 0, *ip = in;
   __m256i vo0 = _mm256_setzero_si256(),
-          vo1 = _mm256_setzero_si256(), 
+          vo1 = _mm256_setzero_si256(),
 		   vs = _mm256_set1_epi32(start);
-		   
+
   for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                //PREFETCH(ip+512,0);
     __m256i vi0 = _mm256_loadu_si256((__m256i *) ip);
-    __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = mm256_xore_epi32(vi0,vs); vs = vi0; 
-                                                                                __m256i v1 = mm256_xore_epi32(vi1,vs); vs = vi1; 
+    __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = mm256_xore_epi32(vi0,vs); vs = vi0;
+                                                                                __m256i v1 = mm256_xore_epi32(vi1,vs); vs = vi1;
     vo0 = _mm256_or_si256(vo0, v0);
     vo1 = _mm256_or_si256(vo1, v1);
   }                                                                             start = (unsigned)_mm256_extract_epi32(vs, 7);
@@ -160,17 +160,17 @@ uint32_t bitx256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
     o |= ip[0] ^ start; start = ip[0];
   }
   if(px) *px = o;
-  return o; 
+  return o;
 }
 
 //-- zigzag ------------------------------------------------------------------------------------------------------------------------------------------------
 uint32_t bitz256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
   uint32_t o, x, *ip; uint32_t u0 = zigzagenc32((int)in[0] - (int)start);
-  __m256i vb0 = _mm256_set1_epi32(u0), 
+  __m256i vb0 = _mm256_set1_epi32(u0),
           vo0 = _mm256_setzero_si256(), vx0 = _mm256_setzero_si256(),
           vo1 = _mm256_setzero_si256(), vx1 = _mm256_setzero_si256(),
 		   vs = _mm256_set1_epi32(start);
-		   
+
   for(ip = in; ip != in+(n&~(16-1)); ip += 16) {                                //PREFETCH(ip+512,0);
     __m256i vi0 = _mm256_loadu_si256((__m256i *) ip);
     __m256i vi1 = _mm256_loadu_si256((__m256i *)(ip+8));                        __m256i v0 = mm256_delta_epi32(vi0,vs); vs = vi0; v0 = mm256_zzage_epi32(v0);
@@ -189,7 +189,7 @@ uint32_t bitz256v32(unsigned *in, unsigned n, uint32_t *px, unsigned start) {
     x |= u ^ u0;
   }
   if(px) *px = x;
-  return o; 
+  return o;
 }
 
 /* slower than SSE
@@ -227,11 +227,11 @@ uint64_t bit64(uint64_t *in, unsigned n, uint64_t *px) { uint64_t o,x,u0,*ip; BI
 
 uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
   uint16_t o, x, u0 = in[0], *ip = in;
-  
+
     #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
           vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(), vb0 = _mm_set1_epi16(u0);
-									
+
   for(; ip != in+(n&~(16-1)); ip += 16) {                                PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
     __m128i v1 = _mm_loadu_si128((__m128i *)(ip+8));
@@ -245,7 +245,7 @@ uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
     #else
   ip = in; o = x = 0;
     #endif
-	
+
   for(; ip != in+n; ip++) BT(0);
   if(px) *px = x;
   return o;
@@ -253,11 +253,11 @@ uint16_t bit16(uint16_t *in, unsigned n, uint16_t *px) {
 
 uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
   uint32_t o,x,u0 = in[0], *ip = in;
-  
+
     #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
           vo1 = _mm_setzero_si128(), vx1 = _mm_setzero_si128(), vb0 = _mm_set1_epi32(u0);
-									
+
   for(; ip != in+(n&~(8-1)); ip += 8) {                                  PREFETCH(ip+512,0);
     __m128i v0 = _mm_loadu_si128((__m128i *) ip);
     __m128i v1 = _mm_loadu_si128((__m128i *)(ip+4));
@@ -271,7 +271,7 @@ uint32_t bit32(uint32_t *in, unsigned n, uint32_t *px) {
     #else
   ip = in; o = x = 0;
     #endif
-	
+
   for(; ip != in+n; ip++) BT(0);
   if(px) *px = x;
   return o;
@@ -308,7 +308,7 @@ uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
     #else
   ip = in; o = x = 0;
     #endif
-	
+
   for(;ip != in+n; ip++) {
     uint16_t u = *ip - start; start = *ip;
     o |= u;
@@ -320,7 +320,7 @@ uint16_t bitd16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
 
 uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, x=0, *ip = in, u0 = in[0] - start;
-  
+
     #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vb0 = _mm_set1_epi32(u0),
           vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
@@ -339,7 +339,7 @@ uint32_t bitd32(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
     #else
   ip = in; o = x = 0;
     #endif
-	
+
   for(;ip != in+n; ip++) {
     uint32_t u = *ip - start; start = *ip;
     o |= u;
@@ -416,7 +416,7 @@ uint64_t bitd164(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint6
 
 uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, x=0, *ip = in, u0 = in[0]-start-1;
-  
+
    #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vb0 = _mm_set1_epi32(u0),
           vo0 = _mm_setzero_si128(), vx0 = _mm_setzero_si128(),
@@ -435,7 +435,7 @@ uint32_t bitd132(uint32_t *in, unsigned n, uint32_t *px, uint32_t start) {
     #else
   ip = in; o = x = 0;
     #endif
-	
+
   for(;ip != in+n; ip++) {
     uint32_t u = ip[0] - start-1; start = *ip;
     o |= u;
@@ -566,7 +566,7 @@ uint8_t  bitz8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_
 uint64_t bitz64(uint64_t *in, unsigned n, uint64_t *px, uint64_t start) { uint64_t o=0, u,x; BITZENC(uint64_t, int64_t,64,in, n, o |= x); if(px) *px = 0; return o; }
 
 uint16_t bitz16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
-  uint16_t o, x, *ip = in; 
+  uint16_t o, x, *ip = in;
   uint32_t u0 = zigzagenc16((int)in[0] - (int)start);
 
     #if defined(__SSE2__) || defined(__ARM_NEON)
@@ -676,7 +676,7 @@ void bitzdec16(uint16_t *in, unsigned n, uint16_t start) {
   __m128i vs = _mm_set1_epi16(start); //, c1 = _mm_set1_epi32(1), cz = _mm_setzero_si128();
   uint16_t *ip = in;
   for(; ip != in+(n&~(8-1)); ip += 8) {
-    __m128i iv =  _mm_loadu_si128((__m128i *)ip);                   
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip);
 	iv = mm_zzagd_epi16(iv);
     vs = mm_scan_epi16(iv, vs);
     _mm_storeu_si128((__m128i *)ip, vs);
@@ -735,8 +735,8 @@ uint16_t bitx16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
            vs = _mm_set1_epi16(start);
   for(; ip != in+(n&~(16-1)); ip += 16) {            //PREFETCH(ip+512,0);
     __m128i vi0 = _mm_loadu_si128((__m128i *) ip);
-    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+8));                                      __m128i v0 = mm_xore_epi16(vi0,vs); vs = vi0; 
-                                                                                           __m128i v1 = mm_xore_epi16(vi1,vs); vs = vi1; 
+    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+8));                                      __m128i v0 = mm_xore_epi16(vi0,vs); vs = vi0;
+                                                                                           __m128i v1 = mm_xore_epi16(vi1,vs); vs = vi1;
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
   }                                                                                         start = mm_cvtsi128_si16(_mm_srli_si128(vs,14));
@@ -748,17 +748,17 @@ uint16_t bitx16(uint16_t *in, unsigned n, uint16_t *px, uint16_t start) {
   if(px) *px = o;
   return o;
 }
- 
+
 uint32_t bitx32(unsigned *in, unsigned n, uint32_t *px, uint32_t start) {
   uint32_t o = 0, *ip = in;
-  
+
     #if defined(__SSE2__) || defined(__ARM_NEON)
   __m128i vo0 = _mm_setzero_si128(),
-          vo1 = _mm_setzero_si128(),                                          
+          vo1 = _mm_setzero_si128(),
 		   vs = _mm_set1_epi32(start);
   for(; ip != in+(n&~(8-1)); ip += 8) {                                  //PREFETCH(ip+512,0);
     __m128i vi0 = _mm_loadu_si128((__m128i *) ip);
-    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+4));                           __m128i v0 = mm_xore_epi32(vi0,vs); vs = vi0; 
+    __m128i vi1 = _mm_loadu_si128((__m128i *)(ip+4));                           __m128i v0 = mm_xore_epi32(vi0,vs); vs = vi0;
                                                                                 __m128i v1 = mm_xore_epi32(vi1,vs); vs = vi1;
     vo0 = _mm_or_si128(vo0, v0);
     vo1 = _mm_or_si128(vo1, v1);
@@ -791,7 +791,7 @@ void bitxdec16(uint16_t *in, unsigned n, uint16_t start) {
   __m128i vs = _mm_set1_epi16(start);
   uint16_t *ip = in;
   for(; ip != in+(n&~(8-1)); ip += 8) {
-    __m128i iv =  _mm_loadu_si128((__m128i *)ip);                   
+    __m128i iv =  _mm_loadu_si128((__m128i *)ip);
 	vs = mm_xord_epi16(iv, vs);
     _mm_storeu_si128((__m128i *)ip, vs);
   }
@@ -897,7 +897,7 @@ void bitzdec(unsigned char *in, unsigned n, unsigned esize) {
    printf("RANGE=[%g-%g]=%g ", (double)fmin, (double)fmax, (double)fmax - (double)fmin);\
 }
 
-  #if defined(FLT16_BUILTIN) 
+  #if defined(FLT16_BUILTIN)
 void fpquant8e16( _Float16 *in, size_t n, uint8_t  *out, unsigned b, _Float16 *pfmin, _Float16 *pfmax) { FPQUANTE(_Float16, in, n, out, b, 16, pfmin, pfmax); }
 void fpquant16e16(_Float16 *in, size_t n, uint16_t *out, unsigned b, _Float16 *pfmin, _Float16 *pfmax) { FPQUANTE(_Float16, in, n, out, b, 16, pfmin, pfmax); }
   #endif
@@ -911,7 +911,7 @@ void fpquant16e64(  double *in, size_t n, uint16_t *out, unsigned b, double   *p
 void fpquant32e64(  double *in, size_t n, uint32_t *out, unsigned b, double   *pfmin,   double *pfmax) { FPQUANTE(  double, in, n, out, b, 64, pfmin, pfmax); }
 void fpquant64e64(  double *in, size_t n, uint64_t *out, unsigned b, double   *pfmin,   double *pfmax) { FPQUANTE(  double, in, n, out, b, 64, pfmin, pfmax); }
 
-  #if defined(FLT16_BUILTIN) 
+  #if defined(FLT16_BUILTIN)
 void fpquant8d16( uint8_t  *in, size_t n, _Float16 *out, unsigned b, _Float16   fmin, _Float16   fmax) { FPQUANTD(_Float16, in, n, out, b,  fmin,  fmax); }
 void fpquant16d16(uint16_t *in, size_t n, _Float16 *out, unsigned b, _Float16   fmin, _Float16   fmax) { FPQUANTD(_Float16, in, n, out, b,  fmin,  fmax); }
   #endif
@@ -926,17 +926,17 @@ void fpquant32d64(uint32_t *in, size_t n, double   *out, unsigned b, double     
 void fpquant64d64(uint64_t *in, size_t n, double   *out, unsigned b, double     fmin,   double   fmax) { FPQUANTD(  double, in, n, out, b,  fmin,  fmax); }
 
 //----------- Lossy floating point conversion: pad the trailing mantissa bits with zero bits according to the relative error e (ex. 0.00001)  ----------
-  #if defined(FLT16_BUILTIN) 
+  #if defined(FLT16_BUILTIN)
 // https://clang.llvm.org/docs/LanguageExtensions.html#half-precision-floating-point
 _Float16 _fprazor16(_Float16 d, float e, int lg2e) {
   uint16_t du = ctou16(&d), sign, u;
   int      b  = (du>>10 & 0x1f) - 15; // exponent=[5 bits,bias=15], mantissa=10 bits SeeeeeMMMMMMMMMM
   _Float16 ed;
-  if ((b = 12 - b - lg2e) <= 0) 
+  if ((b = 12 - b - lg2e) <= 0)
 	return d;
   b     = b > 10?10:b;
-  sign  = du & (1<<15); 
-  du   &= 0x7fff;       
+  sign  = du & (1<<15);
+  du   &= 0x7fff;
   for(d = ctof16(&du), ed = e * d;;) {
     u = du & (~((1u<<(--b))-1)); if(d - ctof16(&u) <= ed) break;
     u = du & (~((1u<<(--b))-1)); if(d - ctof16(&u) <= ed) break;
@@ -945,11 +945,11 @@ _Float16 _fprazor16(_Float16 d, float e, int lg2e) {
   return ctof16(&u);
 }
 
-void fprazor16(_Float16 *in, unsigned n, _Float16 *out, float e) { 
-  int lg2e = -log(e)/log(2.0); _Float16 *ip; 
-  
+void fprazor16(_Float16 *in, unsigned n, _Float16 *out, float e) {
+  int lg2e = -log(e)/log(2.0); _Float16 *ip;
+
   for (ip = in; ip < in+n; ip++,out++)
-    *out = _fprazor16(*ip, e, lg2e); 
+    *out = _fprazor16(*ip, e, lg2e);
 }
   #endif
 
@@ -957,13 +957,13 @@ float _fprazor32(float d, float e, int lg2e) {
   uint32_t du = ctou32(&d), sign, u;
   int      b  = (du>>23 & 0xff) - 0x7e;
   float    ed;
- 
+
   if((b = 25 - b - lg2e) <= 0)
     return d;                                         AS(!isnan(d), "_fprazor32: isnan");
   b    = b > 23?23:b;
   sign = du & (1<<31);
   du  &= 0x7fffffffu;
-  
+
   for(d = ctof32(&du), ed = e * d;;) {
     u = du & (~((1u<<(--b))-1)); if(d - ctof32(&u) <= ed) break;
     u = du & (~((1u<<(--b))-1)); if(d - ctof32(&u) <= ed) break;
@@ -973,37 +973,37 @@ float _fprazor32(float d, float e, int lg2e) {
   return ctof32(&u);
 }
 
-void fprazor32(float *in, unsigned n, float *out, float e) { 
-  int   lg2e = -log(e)/log(2.0); 
-  float *ip; 
-  for(ip = in; ip < in+n; ip++,out++) 
-	*out = _fprazor32(*ip, e, lg2e); 
+void fprazor32(float *in, unsigned n, float *out, float e) {
+  int   lg2e = -log(e)/log(2.0);
+  float *ip;
+  for(ip = in; ip < in+n; ip++,out++)
+	*out = _fprazor32(*ip, e, lg2e);
 }
 
 double _fprazor64(double d, double e, int lg2e) { //if(isnan(d)) return d;
   uint64_t du = ctou64(&d), sign, u;
   int      b  = (du>>52 & 0x7ff) - 0x3fe;
   double   ed;
-  
+
   if((b = 54 - b - lg2e) <= 0)
     return d;
   b     = b > 52?52:b;
-  sign  = du & (1ull<<63); 
+  sign  = du & (1ull<<63);
   du   &= 0x7fffffffffffffffull;
 
   for(d = ctof64(&du), ed = e * d;;) {
     u = du & (~((1ull<<(--b))-1)); if(d - ctof64(&u) <= ed) break;
     u = du & (~((1ull<<(--b))-1)); if(d - ctof64(&u) <= ed) break;
   }
-  u |= sign; 
+  u |= sign;
   return ctof64(&u);
 }
 
-void fprazor64(double *in, unsigned n, double *out, double e) { 
-  int    lg2e = -log(e)/log(2.0); 
-  double *ip; 
-  
-  for(ip = in; ip < in+n; ip++,out++) 
-	*out = _fprazor64(*ip, e, lg2e); 
+void fprazor64(double *in, unsigned n, double *out, double e) {
+  int    lg2e = -log(e)/log(2.0);
+  double *ip;
+
+  for(ip = in; ip < in+n; ip++,out++)
+	*out = _fprazor64(*ip, e, lg2e);
 }
 #endif

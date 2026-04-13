@@ -43,7 +43,7 @@ HUF_PUBLIC_API size_t HUF_compress(void* dst, size_t dstCapacity,
  */
 HUF_PUBLIC_API size_t HUF_decompress(void* dst,  size_t originalSize,
                                const void* cSrc, size_t cSrcSize);
-							   
+
 #define HUF_BLOCKSIZE_MAX (128 * 1024)                  /**< maximum input size for a single block compressed with HUF_compress */
 HUF_PUBLIC_API size_t HUF_compressBound(size_t size);   /**< maximum compressed size (worst case) */
 HUF_PUBLIC_API unsigned    HUF_isError(size_t code);       /**< tells if a return value is an error code */

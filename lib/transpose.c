@@ -28,7 +28,7 @@
 #include "include_/transpose.h"
 
   #ifdef __AVX2__
-#include <immintrin.h> 
+#include <immintrin.h>
   #elif defined(__AVX__)
 #include <immintrin.h>
   #elif defined(__SSE4_1__)
@@ -120,11 +120,11 @@
 #define VD128(_ov_,_sv_)
 #define VD256(_ov_,_sv_)
 #include "transpose.c"
-#undef  TPENC256V          
-#undef  TPDEC256V   
+#undef  TPENC256V
+#undef  TPDEC256V
 //--------------
 #define ISDELTA
-//-- zigzag 
+//-- zigzag
 #define TPENC            tpzenc
 #define TPDEC            tpzdec
 #define TPENC128V        tpzenc128v
@@ -135,7 +135,7 @@
 #define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _v_ = mm_zzagd_epi16( _v_); _sv_ = mm_scan_epi16(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
-//-- xor 
+//-- xor
 #define TPENC            tpxenc
 #define TPDEC            tpxdec
 #define TPENC128V        tpxenc128v
@@ -167,8 +167,8 @@
 #define VD256(_ov_,_sv_)
 
 #include "transpose.c"
-#undef  TPENC256V        
-#undef  TPDEC256V        
+#undef  TPENC256V
+#undef  TPDEC256V
 
 #define ISDELTA
 //-- zigzag
@@ -193,7 +193,7 @@
 #define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _sv_ = _v_ = mm_xord_epi16(_v_,_sv_)
 #include "transpose.c"
-//-- 
+//--
 #undef ISDELTA
 //------------------------------------------------ 32 bits ----------------------------------------------------------
 #define ESIZE 4
@@ -219,7 +219,7 @@
 #include "transpose.c"
 //---------------------------------
 #define ISDELTA
-//-- zigzag 
+//-- zigzag
 #define TPENC            tpzenc
 #define TPDEC            tpzdec
 #define TPENC128V        tpzenc128v
@@ -236,7 +236,7 @@
 #define VDINI256         __m256i sv = _mm256_setzero_si256()
 #define VD256(_v_,_sv_)  _v_ = mm256_zzagd_epi32(_v_); _sv_ = mm256_scan_epi32(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
-//-- xor 
+//-- xor
 #define TPENC            tpxenc
 #define TPDEC            tpxdec
 #define TPENC128V        tpxenc128v
@@ -276,7 +276,7 @@
 #include "transpose.c"
 //-------------
 #define ISDELTA
-//-- zigzag 
+//-- zigzag
 #define TPENC            tp4zenc
 #define TPDEC            tp4zdec
 #define TPENC128V        tp4zenc128v
@@ -284,16 +284,16 @@
 #define TPENC256V        tp4zenc256v
 #define TPDEC256V        tp4zdec256v
 
-#define VEINI128         __m128i sv = _mm_setzero_si128() 
+#define VEINI128         __m128i sv = _mm_setzero_si128()
 #define VE128(_iv_,_sv_) { __m128i _tv = mm_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm_zzage_epi32(_tv); }
 #define VEINI256         __m256i sv = _mm256_setzero_si256()
 #define VE256(_iv_,_sv_) { __m256i _tv = mm256_delta_epi32(_iv_,_sv_); _sv_ = _iv_; _iv_ = mm256_zzage_epi32(_tv); }
 #define VDINI128         __m128i sv = _mm_setzero_si128()
 #define VD128(_v_,_sv_)  _v_ = mm_zzagd_epi32( _v_); _sv_ = mm_scan_epi32(_v_,_sv_); _v_ = _sv_
-#define VDINI256         __m256i sv = _mm256_setzero_si256() 
+#define VDINI256         __m256i sv = _mm256_setzero_si256()
 #define VD256(_v_,_sv_)  _v_ = mm256_zzagd_epi32(_v_); _sv_ = mm256_scan_epi32(_v_,_sv_); _v_ = _sv_
 #include "transpose.c"
-//-- xor 
+//-- xor
 #define TPENC            tp4xenc
 #define TPDEC            tp4xdec
 #define TPENC128V        tp4xenc128v
@@ -381,7 +381,7 @@
 #define TPDEC128V        tp4dec128v
 #define TPENC256V        tp4enc256v
 #define TPDEC256V        tp4dec256v
- 
+
 #define VEINI128
 #define VEINI256
 #define VE128(_v_,_sv_)
@@ -440,7 +440,7 @@ void T2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
   unsigned      v = n&~(ESIZE*32-1);
   unsigned      stride = v/STRIDE;
   unsigned char *op,*ip;
-  VEINI256; 
+  VEINI256;
     #if ESIZE == 2
   __m256i sf = _mm256_set_epi8( 15, 13, 11, 9, 7, 5, 3, 1,
                                 14, 12, 10, 8, 6, 4, 2, 0,
@@ -509,7 +509,7 @@ void T2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
           ch = _mm256_set1_epi8( 0xf0),
           cb = _mm256_set1_epi16(0xff);
     #endif
-  
+
   for(ip = in,op = out; ip != in+v; ip += ESIZE*32, op += ESIZE*32/STRIDE) {
     unsigned char *p = op;                                                      PREFETCH(ip+ESIZE*192,0);
     __m256i iv[ESIZE], ov[ESIZE == 2 ? ESIZE + 2 : ESIZE];
@@ -618,7 +618,7 @@ void T2(TPENC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
   T2(tpenc,ESIZE)(in+v, n-v, out+v);
 }
     #endif // TPENC256V
-	
+
     #ifdef TPDEC256V
 #define NBL0(x,y) ov[x] = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_loadu_si128((__m128i *)(p       ))),_MM_SHUFFLE(3, 1, 2, 0));\
                   ov[y] = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_loadu_si128((__m128i *)(p+=stride))),_MM_SHUFFLE(3, 1, 2, 0));
@@ -727,7 +727,7 @@ void T2(TPDEC256V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
 }
     #endif //TPDEC256V
   #else //__AVX2__
-	  
+
 	#if (defined(__SSE3__) || defined(__ARM_NEON)) && (ESIZE == 2 || ESIZE == 4 || ESIZE == 8)
 #define ST(_p_,_v_,_i_)  _mm_storeu_si128((__m128i *)SIE(_p_,_i_), _v_)
 #define ST0(_p_,_v_)  _mm_storeu_si128((__m128i *)(_p_), _v_)
@@ -757,7 +757,7 @@ void T2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
                              8,  0  );
       #endif
     #endif
-  VEINI128; 
+  VEINI128;
       #if STRIDE > ESIZE
   __m128i cl = _mm_set1_epi8(0x0f), ch=_mm_set1_epi8(0xf0), cb = _mm_set1_epi16(0xff);
       #endif
@@ -925,8 +925,8 @@ void T2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
 
       #elif defined(__SSE3__)
         #if ESIZE == 2
-    iv[0] = LD128(ip   );  VE128(iv[0],sv); 
-	iv[1] = LD128(ip+16)); VE128(iv[1],sv); 
+    iv[0] = LD128(ip   );  VE128(iv[0],sv);
+	iv[1] = LD128(ip+16)); VE128(iv[1],sv);
 
     ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);
     iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
@@ -935,10 +935,10 @@ void T2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
     iv[0] = _mm_unpacklo_epi8(ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8(ov[0], ov[1]);
     ST0(p,iv[0]); ST(p,iv[1],1);
         #elif ESIZE == 4
-    iv[0] = LD128(ip   ); VE128(iv[0],sv); 
-	iv[1] = LD128(ip+16); VE128(iv[1],sv); 
-	iv[2] = LD128(ip+32); VE128(iv[2],sv); 
-	iv[3] = LD128(ip+48); VE128(iv[3],sv); 
+    iv[0] = LD128(ip   ); VE128(iv[0],sv);
+	iv[1] = LD128(ip+16); VE128(iv[1],sv);
+	iv[2] = LD128(ip+32); VE128(iv[2],sv);
+	iv[3] = LD128(ip+48); VE128(iv[3],sv);
 
     ov[0] = _mm_unpacklo_epi8( iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8( iv[0], iv[1]);
     iv[0] = _mm_unpacklo_epi8( ov[0], ov[1]); iv[1] = _mm_unpackhi_epi8( ov[0], ov[1]);
@@ -982,9 +982,9 @@ void T2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
     iv[2] = _mm_unpacklo_epi64(ov[1], ov[5]); iv[3] = _mm_unpackhi_epi64(ov[1], ov[5]);
     iv[4] = _mm_unpacklo_epi64(ov[2], ov[6]); iv[5] = _mm_unpackhi_epi64(ov[2], ov[6]);
     iv[6] = _mm_unpacklo_epi64(ov[3], ov[7]); iv[7] = _mm_unpackhi_epi64(ov[3], ov[7]);
-    ST(p,iv[4],4); 
-	ST(p,iv[5],5); 
-	ST(p,iv[6],6); 
+    ST(p,iv[4],4);
+	ST(p,iv[5],5);
+	ST(p,iv[6],6);
 	ST(p,iv[7],7);
         #endif
       #endif
@@ -1015,7 +1015,7 @@ void T2(TPENC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
     ov[5] = _mm_srli_epi16(_mm_and_si128(iv[6], ch),4); ov[5] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[5],4), ov[5]),cb); ov[5] = _mm_packus_epi16(ov[5], _mm_srli_si128(ov[5],2));
     ov[6] = _mm_and_si128(iv[7], cl);                   ov[6] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[6],4), ov[6]),cb); ov[6] = _mm_packus_epi16(ov[6], _mm_srli_si128(ov[6],2));
     ov[7] = _mm_srli_epi16(_mm_and_si128(iv[7], ch),4); ov[7] = _mm_and_si128(_mm_or_si128(_mm_srli_epi16(ov[7],4), ov[7]),cb); ov[7] = _mm_packus_epi16(ov[7], _mm_srli_si128(ov[7],2));
-    STL(p,ov[4],12); 
+    STL(p,ov[4],12);
 	STL(p,ov[5],13);
 	STL(p,ov[6],14);
 	STL(p,ov[7],15);
@@ -1114,7 +1114,7 @@ void T2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
                     w.val[1] = (uint8x16_t)iv[1]; vst2q_u8(op, w);
         #else
     ov[0] = _mm_unpacklo_epi8(iv[0], iv[1]); ov[1] = _mm_unpackhi_epi8(iv[0], iv[1]);//i(0,1)->o(0,1)
-    VD128(ov[0],sv); ST128(op,   ov[0]); 
+    VD128(ov[0],sv); ST128(op,   ov[0]);
 	VD128(ov[1],sv); ST128(op+16,ov[1]);
         #endif
       #elif ESIZE == 4
@@ -1129,9 +1129,9 @@ void T2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
 
     iv[0] = _mm_unpacklo_epi16(ov[0], ov[2]); iv[1] = _mm_unpackhi_epi16(ov[0], ov[2]);//o(0,2)->i(0,1)
     iv[2] = _mm_unpacklo_epi16(ov[1], ov[3]); iv[3] = _mm_unpackhi_epi16(ov[1], ov[3]);//o(1,3)->i(2,3)
-    VD128(iv[0],sv); ST128(op,   iv[0]); 
-	VD128(iv[1],sv); ST128(op+16,iv[1]); 
-	VD128(iv[2],sv); ST128(op+32,iv[2]); 
+    VD128(iv[0],sv); ST128(op,   iv[0]);
+	VD128(iv[1],sv); ST128(op+16,iv[1]);
+	VD128(iv[2],sv); ST128(op+32,iv[2]);
 	VD128(iv[3],sv); ST128(op+48,iv[3]);
         #endif
       #else
@@ -1150,13 +1150,13 @@ void T2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
     ov[4] = _mm_unpacklo_epi32(iv[2], iv[6]); ov[5] = _mm_unpackhi_epi32(iv[2], iv[6]);
     ov[6] = _mm_unpacklo_epi32(iv[3], iv[7]); ov[7] = _mm_unpackhi_epi32(iv[3], iv[7]);
 
-    VD128(ov[0],sv); ST128(op,    ov[0]); 
-	VD128(ov[1],sv); ST128(op+16, ov[1]); 
-	VD128(ov[2],sv); ST128(op+32, ov[2]); 
+    VD128(ov[0],sv); ST128(op,    ov[0]);
+	VD128(ov[1],sv); ST128(op+16, ov[1]);
+	VD128(ov[2],sv); ST128(op+32, ov[2]);
 	VD128(ov[3],sv); ST128(op+48, ov[3]);
-    VD128(ov[4],sv); ST128(op+64, ov[4]); 
-	VD128(ov[5],sv); ST128(op+80, ov[5]); 
-	VD128(ov[6],sv); ST128(op+96, ov[6]); 
+    VD128(ov[4],sv); ST128(op+64, ov[4]);
+	VD128(ov[5],sv); ST128(op+80, ov[5]);
+	VD128(ov[6],sv); ST128(op+96, ov[6]);
 	VD128(ov[7],sv); ST128(op+112,ov[7]);
       #endif
   }
@@ -1172,19 +1172,19 @@ void T2(TPDEC128V, ESIZE)(unsigned char *in, unsigned n, unsigned char *out) {
 #define ODX2 (x + y * nx)
 #define O2D(_i_) (x + (y+_i_) * nx)
 void T2(tp2denc,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned char *out) {
-  unsigned x,y; 
-  uint_t *op = (uint_t *)out, *ip = (uint_t *)in; 
-  
+  unsigned x,y;
+  uint_t *op = (uint_t *)out, *ip = (uint_t *)in;
+
   for(  x = 0; x < nx; x++)
     for(y = 0; y < ny; y++)
       op[ODX2] = *ip++;
 }
 
 void T2(tp2ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned char *out) {
-  unsigned x, y; 
-  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in; 
-  
-  for(  x = 0; x < nx; x++) 
+  unsigned x, y;
+  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in;
+
+  for(  x = 0; x < nx; x++)
     for(y=0; y != ny; y++)
       *op++ = ip[ODX2];
 }
@@ -1192,19 +1192,19 @@ void T2(tp2ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned cha
 
 #define ODX3 (x + y * nx + z * ny * nx)
 void T2(tp3denc,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
-  unsigned x, y, z; 
+  unsigned x, y, z;
   uint_t   *op = (uint_t *)out, *ip = (uint_t *)in;
-  
+
   for(    x = 0; x < nx; x++)
-    for(  y = 0; y < ny; y++) 
+    for(  y = 0; y < ny; y++)
       for(z = 0; z < nz; z++)
         op[ODX3] = *ip++;
 }
 
 void T2(tp3ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
-  unsigned x,y,z;  
-  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in; 
-  
+  unsigned x,y,z;
+  uint_t   *op = (uint_t *)out, *ip = (uint_t *)in;
+
   for(x = 0; x < nx; ++x)
     for(y = 0; y < ny; ++y)
       for(z = 0; z < nz; ++z)
@@ -1214,9 +1214,9 @@ void T2(tp3ddec,ESIZE)(unsigned char *in, unsigned nx, unsigned ny, unsigned nz,
 
 #define ODX4 (w + x * nw + y * nx * nw + z * nx * ny * nw)
 void T2(tp4denc,ESIZE)(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
-  unsigned w,x,y,z; 
-  uint_t *op = (uint_t *)out, *ip = (uint_t *)in; 
-  
+  unsigned w,x,y,z;
+  uint_t *op = (uint_t *)out, *ip = (uint_t *)in;
+
   for(      w = 0; w < nw; w++)
     for(    x = 0; x < nx; x++)
       for(  y = 0; y < ny; y++)
@@ -1225,9 +1225,9 @@ void T2(tp4denc,ESIZE)(unsigned char *in, unsigned nw, unsigned nx, unsigned ny,
 }
 
 void T2(tp4ddec,ESIZE)(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned nz, unsigned char *out) {
-  unsigned w,x,y,z; 
-  uint_t *op = (uint_t *)out, *ip = (uint_t *)in; 
-  
+  unsigned w,x,y,z;
+  uint_t *op = (uint_t *)out, *ip = (uint_t *)in;
+
   for(      w = 0; w < nw; ++w)
     for(    x = 0; x < nx; ++x)
       for(  y = 0; y < ny; ++y)

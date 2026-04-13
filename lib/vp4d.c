@@ -286,7 +286,7 @@ ALWAYS_INLINE unsigned char *T2(_P4DEC, USIZE)(unsigned char *__restrict in, uns
     uint_t ex[P4D_MAX+64];
     in = T2(bitunpack, USIZE)(in+32, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)) + popcnt64(ctou64(in+16)) + popcnt64(ctou64(in+24)), ex, bx);
       #endif
-    return T2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);  // unpack and merge the exceptions 
+    return T2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);  // unpack and merge the exceptions
   }
     #endif
     #if VSIZE < 128 || USIZE == 64     // bitunpack the rest number of elements < 128/256  or when 32 < bitsize <=64 is used

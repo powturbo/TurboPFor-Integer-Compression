@@ -48,7 +48,7 @@
 #include "include_/conf.h"
 #include "include_/trle.h"
 #include "trle_.h"
-  
+
   #ifdef __ARM_NEON
 #define PREFETCH(_ip_,_rw_)
   #else

@@ -172,7 +172,7 @@ static TPFUNC _tp4ze[] = { 0, 0, tpzenc2, tpzenc3, tpzenc4,  0, 0, 0, tpzenc8, 0
 static TPFUNC _tp4zd[] = { 0, 0, tpzdec2, tpzdec3, tpzdec4,  0, 0, 0, tpzdec8, 0, 0, 0, 0, 0, 0, 0, tpzdec16 };
   #endif
 
-//-- xor 
+//-- xor
   #ifndef NTP_XOR
 static TPFUNC _tpxe[]  = { 0, 0, tpxenc2, tpxenc3, tpxenc4,  0, 0, 0, tpxenc8, 0, 0, 0, 0, 0, 0, 0, tpxenc16 }; // byte
 static TPFUNC _tpxd[]  = { 0, 0, tpxdec2, tpxdec3, tpxdec4,  0, 0, 0, tpxdec8, 0, 0, 0, 0, 0, 0, 0, tpxdec16 };
@@ -191,18 +191,18 @@ void tpini(int id) {
     #if defined(__i386__) || defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86)
   if(i >= IS_AVX2) {
     _tpe[ 2] = tpenc256v2;  _tpd[ 2] = tpdec256v2;  _tp4e[ 2] = tp4enc256v2;  _tp4d[ 2] = tp4dec256v2;
-    _tpe[ 4] = tpenc256v4;  _tpd[ 4] = tpdec256v4;  _tp4e[ 4] = tp4enc256v4;  _tp4d[ 4] = tp4dec256v4; 
+    _tpe[ 4] = tpenc256v4;  _tpd[ 4] = tpdec256v4;  _tp4e[ 4] = tp4enc256v4;  _tp4d[ 4] = tp4dec256v4;
     _tpe[ 8] = tpenc256v8;  _tpd[ 8] = tpdec256v8;  _tp4e[ 8] = tp4enc256v8;  _tp4d[ 8] = tp4dec256v8;
 
       #ifndef NTP_ZZAG
-    _tpze[2] = tpzenc128v2; _tpzd[2] = tpzdec128v2; _tp4ze[2] = tp4zenc128v2; _tp4zd[2] = tp4zdec128v2; // 16 bits: only sse 
-    _tpze[4] = tpzenc256v4; _tpzd[4] = tpzdec256v4; _tp4ze[4] = tp4zenc256v4; _tp4zd[4] = tp4zdec256v4; 
+    _tpze[2] = tpzenc128v2; _tpzd[2] = tpzdec128v2; _tp4ze[2] = tp4zenc128v2; _tp4zd[2] = tp4zdec128v2; // 16 bits: only sse
+    _tpze[4] = tpzenc256v4; _tpzd[4] = tpzdec256v4; _tp4ze[4] = tp4zenc256v4; _tp4zd[4] = tp4zdec256v4;
     _tpze[8] = tpzenc256v8; _tpzd[8] = tpzdec256v8; _tp4ze[8] = tp4zenc256v8; _tp4zd[8] = tp4zdec256v8;
       #endif
 
       #ifndef NTP_XOR
-    _tpxe[2] = tpxenc128v2; _tpxd[2] = tpxdec128v2; _tp4xe[2] = tp4xenc128v2; _tp4xd[2] = tp4xdec128v2; // 16 bits: only sse 
-    _tpxe[4] = tpxenc256v4; _tpxd[4] = tpxdec256v4; _tp4xe[4] = tp4xenc256v4; _tp4xd[4] = tp4xdec256v4; 
+    _tpxe[2] = tpxenc128v2; _tpxd[2] = tpxdec128v2; _tp4xe[2] = tp4xenc128v2; _tp4xd[2] = tp4xdec128v2; // 16 bits: only sse
+    _tpxe[4] = tpxenc256v4; _tpxd[4] = tpxdec256v4; _tp4xe[4] = tp4xenc256v4; _tp4xd[4] = tp4xdec256v4;
     _tpxe[8] = tpxenc256v8; _tpxd[8] = tpxdec256v8; _tp4xe[8] = tp4xenc256v8; _tp4xd[8] = tp4xdec256v8;
       #endif
   } else
@@ -213,19 +213,19 @@ void tpini(int id) {
       _tpe[ 4] = tpenc128v4;  _tpd[ 4] = tpdec128v4;  _tp4e[ 4] = tp4enc128v4;  _tp4d[ 4] = tp4dec128v4;
       _tpe[ 8] = tpenc128v8;  _tpd[ 8] = tpdec128v8;  _tp4e[ 8] = tp4enc128v8;  _tp4d[ 8] = tp4dec128v8;
       if(i == 35) _tpd[8] = tpdec8; // ARM NEON scalar is faster!, TODO:retest on Apple M1
-	  
+
        #ifndef NTP_ZZAG
       _tpze[2] = tpzenc128v2; _tpzd[2] = tpzdec128v2; _tp4ze[2] = tp4zenc128v2; _tp4zd[2] = tp4zdec128v2;
       _tpze[4] = tpzenc128v4; _tpzd[4] = tpzdec128v4; _tp4ze[4] = tp4zenc128v4; _tp4zd[4] = tp4zdec128v4;
       _tpze[8] = tpzenc128v8; _tpzd[8] = tpzdec128v8; _tp4ze[8] = tp4zenc128v8; _tp4zd[8] = tp4zdec128v8;
-      if(i == 35) _tpzd[8] = tpzdec8; 
+      if(i == 35) _tpzd[8] = tpzdec8;
         #endif
 
         #ifndef NTP_XOR
       _tpxe[2] = tpxenc128v2; _tpxd[2] = tpxdec128v2; _tp4xe[2] = tp4xenc128v2; _tp4xd[2] = tp4xdec128v2;
       _tpxe[4] = tpxenc128v4; _tpxd[4] = tpxdec128v4; _tp4xe[4] = tp4xenc128v4; _tp4xd[4] = tp4xdec128v4;
       _tpxe[8] = tpxenc128v8; _tpxd[8] = tpxdec128v8; _tp4xe[8] = tp4xenc128v8; _tp4xd[8] = tp4xdec128v8;
-      if(i == 35) _tpxd[8] = tpxdec8; 
+      if(i == 35) _tpxd[8] = tpxdec8;
         #endif
 }
       #endif
@@ -276,7 +276,7 @@ void tp4dec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   else tpdec(in,n,out,esize);
 }
 
-//-- zigzag 
+//-- zigzag
 void tpzenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   TPFUNC f;
   if(!tpset) tpini(0);
@@ -290,7 +290,7 @@ void tpzenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
     for(op = out + esize*stride; ip < in+n;)
       *op++ = *ip++;          // TODO:zigzag
   }
-} 
+}
 
 void tpzdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   TPFUNC f;
@@ -301,9 +301,9 @@ void tpzdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
     unsigned char *op,*ip;
     for(op = out,ip = in; op < out+stride*esize; ip++)
       for(i = 0; i < esize; i++)
-        *op++ = ip[i*stride];  
+        *op++ = ip[i*stride];
     for(ip = in+esize*stride; op < out+n;)
-      *op++ = *ip++;           
+      *op++ = *ip++;
   }
 }
 
@@ -335,7 +335,7 @@ void tpxenc(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
     for(op = out + esize*stride; ip < in+n;)
       *op++ = *ip++;          // TODO:xor
   }
-} 
+}
 
 void tpxdec(unsigned char *in, unsigned n, unsigned char *out, unsigned esize) {
   TPFUNC f;
@@ -373,9 +373,9 @@ void tp2denc(unsigned char *in, unsigned nx, unsigned ny, unsigned char *out, un
 	case 2: tp2denc2(in,nx,ny,out); break;
 	case 4: tp2denc4(in,nx,ny,out); break;
 	case 8: tp2denc8(in,nx,ny,out); break;
-	default: {  
-	  unsigned x,y; 
-      uint8_t  *op = out, *ip = in; 
+	default: {
+	  unsigned x,y;
+      uint8_t  *op = out, *ip = in;
       int     e;
       for(  x = 0; x < nx; x++)
         for(y = 0; y < ny; y++) E
@@ -389,8 +389,8 @@ void tp2ddec(unsigned char *in, unsigned nx, unsigned ny, unsigned char *out, un
 	case 2: tp2ddec2(in,nx,ny,out); break;
 	case 4: tp2ddec4(in,nx,ny,out); break;
 	case 8: tp2ddec8(in,nx,ny,out); break;
-    default: { unsigned x,y; 
-      uint8_t *op = out, *ip = in; 
+    default: { unsigned x,y;
+      uint8_t *op = out, *ip = in;
       int     e;
       for(  x = 0; x < nx; x++)
         for(y = 0; y < ny; y++) E
@@ -406,8 +406,8 @@ void tp3denc(unsigned char *in, unsigned nx, unsigned ny, unsigned nz, unsigned 
 	case 2: tp3denc2(in,nx,ny,nz,out); break;
 	case 4: tp3denc4(in,nx,ny,nz,out); break;
 	case 8: tp3denc8(in,nx,ny,nz,out); break;
-	default: {  unsigned x,y,z; 
-      uint8_t *op = out, *ip = in; 
+	default: {  unsigned x,y,z;
+      uint8_t *op = out, *ip = in;
       int e;
       for(    x = 0; x < nx; x++)
         for(  y = 0; y < ny; y++)
@@ -422,8 +422,8 @@ void tp3ddec(unsigned char *in, unsigned nx, unsigned ny, unsigned nz, unsigned 
 	case 2: tp3ddec2(in,nx,ny,nz,out); break;
 	case 4: tp3ddec4(in,nx,ny,nz,out); break;
 	case 8: tp3ddec8(in,nx,ny,nz,out); break;
-    default: {  unsigned x,y,z;  
-      uint8_t *op = out, *ip = in; 
+    default: {  unsigned x,y,z;
+      uint8_t *op = out, *ip = in;
       int e;
       for(x = 0; x < nx; ++x)
         for(y = 0; y < ny; ++y)
@@ -440,9 +440,9 @@ void tp4denc(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned 
 	case 2: tp4denc2(in,nw,nx,ny,nz,out); break;
 	case 4: tp4denc4(in,nw,nx,ny,nz,out); break;
 	case 8: tp4denc8(in,nw,nx,ny,nz,out); break;
-	default: { 
-	  unsigned w, x, y, z; 
-      uint8_t  *op = out, *ip = in; 
+	default: {
+	  unsigned w, x, y, z;
+      uint8_t  *op = out, *ip = in;
       int      e;
       for(      w = 0; w < nw; w++)
         for(    x = 0; x < nx; x++)
@@ -458,9 +458,9 @@ void tp4ddec(unsigned char *in, unsigned nw, unsigned nx, unsigned ny, unsigned 
 	case 2: tp4ddec2(in,nw,nx,ny,nz,out); break;
 	case 4: tp4ddec4(in,nw,nx,ny,nz,out); break;
 	case 8: tp4ddec8(in,nw,nx,ny,nz,out); break;
-    default: {    
-	  unsigned w,x,y,z; 
-      uint8_t *op = out,*ip = in; 
+    default: {
+	  unsigned w,x,y,z;
+      uint8_t *op = out,*ip = in;
       int e;
       for(      w = 0; w < nw; w++)
         for(    x = 0; x < nx; ++x)

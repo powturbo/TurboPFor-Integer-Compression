@@ -75,7 +75,7 @@ size_t bitgenc32(unsigned char *_in, size_t _inlen, unsigned char *out) {
 
   for(ip = in; ip < in+inlen; ip++) {
 	uint32_t x = ip[0];
-	_bitgenc32(bw,br, bp, x, QMAX_G);                                        //bitgxput32(&bw, &br, QMAX_G, x, &bp); //  bitvcput(bw,br,op,bp,VLC_VN8,VLC_VB8, x); 	
+	_bitgenc32(bw,br, bp, x, QMAX_G);                                        //bitgxput32(&bw, &br, QMAX_G, x, &bp); //  bitvcput(bw,br,op,bp,VLC_VN8,VLC_VB8, x);
 	bitenormr(bw,br,bp);	                                                 OVERFLOWR(_in, _inlen, out, op,bp, goto e);
   }
 

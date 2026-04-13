@@ -3,7 +3,7 @@
 /* macros for fast unpacking of integers of fixed bit length */
 /*************************************************************/
 
-#define BS 128 
+#define BS 128
 
 /* supported bit lengths */
 int cnum[17] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,16,20,32};
@@ -104,8 +104,8 @@ void unpack3(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 3) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 3)
+  {
     p[0] = (w[0] >> 29);
     p[1] = (w[0] >> 26) & 7;
     p[2] = (w[0] >> 23) & 7;
@@ -148,8 +148,8 @@ void unpack4(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 4) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 4)
+  {
     p[0] = (w[0] >> 28);
     p[1] = (w[0] >> 24) & 15;
     p[2] = (w[0] >> 20) & 15;
@@ -190,8 +190,8 @@ void unpack5(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 5) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 5)
+  {
     p[0] = (w[0] >> 27);
     p[1] = (w[0] >> 22) & 31;
     p[2] = (w[0] >> 17) & 31;
@@ -236,8 +236,8 @@ void unpack6(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 6) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 6)
+  {
     p[0] = (w[0] >> 26);
     p[1] = (w[0] >> 20) & 63;
     p[2] = (w[0] >> 14) & 63;
@@ -282,8 +282,8 @@ void unpack7(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 7) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 7)
+  {
     p[0] = (w[0] >> 25);
     p[1] = (w[0] >> 18) & 127;
     p[2] = (w[0] >> 11) & 127;
@@ -330,8 +330,8 @@ void unpack8(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 8) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 8)
+  {
     p[0] = (w[0] >> 24);
     p[1] = (w[0] >> 16) & 255;
     p[2] = (w[0] >> 8) & 255;
@@ -422,8 +422,8 @@ void unpack10(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 10) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 10)
+  {
     p[0] = (w[0] >> 22);
     p[1] = (w[0] >> 12) & 1023;
     p[2] = (w[0] >> 2) & 1023;
@@ -472,8 +472,8 @@ void unpack11(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 11) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 11)
+  {
     p[0] = (w[0] >> 21);
     p[1] = (w[0] >> 10) & 2047;
     p[2] = (w[0] << 1) & 2047;
@@ -524,8 +524,8 @@ void unpack12(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 12) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 12)
+  {
     p[0] = (w[0] >> 20);
     p[1] = (w[0] >> 8) & 4095;
     p[2] = (w[0] << 4) & 4095;
@@ -574,8 +574,8 @@ void unpack13(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 13) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 13)
+  {
     p[0] = (w[0] >> 19);
     p[1] = (w[0] >> 6) & 8191;
     p[2] = (w[0] << 7) & 8191;
@@ -628,8 +628,8 @@ void unpack16(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 16) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 16)
+  {
     p[0] = (w[0] >> 16);
     p[1] = (w[0]) & 65535;
     p[2] = (w[1] >> 16);
@@ -670,8 +670,8 @@ void unpack20(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 20) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 20)
+  {
     p[0] = (w[0] >> 12);
     p[1] = (w[0] << 8) & ((1<<20)-1);
     p[1] |= (w[1] >> 24);
@@ -728,8 +728,8 @@ static void unpack32(unsigned int *p, unsigned int *w)
 {
   int i;
 
-  for (i = 0; i < BS; i += 32, p += 32, w += 32) 
-  { 
+  for (i = 0; i < BS; i += 32, p += 32, w += 32)
+  {
     p[0] = w[0];
     p[1] = w[1];
     p[2] = w[2];
@@ -767,7 +767,7 @@ static void unpack32(unsigned int *p, unsigned int *w)
 
 
 typedef void (*pf)(unsigned int *p, unsigned int *w);
-pf unpack[17] = {unpack0, unpack1, unpack2, unpack3, unpack4, unpack5, 
-                 unpack6, unpack7, unpack8, unpack9, unpack10, unpack11, 
+pf unpack[17] = {unpack0, unpack1, unpack2, unpack3, unpack4, unpack5,
+                 unpack6, unpack7, unpack8, unpack9, unpack10, unpack11,
                  unpack12, unpack13, unpack16, unpack20, unpack32};
 

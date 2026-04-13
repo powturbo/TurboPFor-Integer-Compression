@@ -437,7 +437,7 @@ static ALIGNED(unsigned char, permv[256][8], 32) = {
 };
 #define u2vmask(_m_,_tv_)                  _mm256_sllv_epi32(_mm256_set1_epi8(_m_), _tv_)
 #define mm256_maskz_expand_epi32(_m_, _v_) _mm256_permutevar8x32_epi32(_v_,  _mm256_cvtepu8_epi32(_mm_cvtsi64_si128(ctou64(permv[_m_]))) )
-#define mm256_maskz_loadu_epi32(_m_,_v_)   _mm256_blendv_epi8(zv, mm256_maskz_expand_epi32(xm, _mm256_loadu_si256((__m256i*)pex)), u2vmask(xm,tv)) // emulate AVX512 _mm256_maskz_loadu_epi32 on AVX2 
+#define mm256_maskz_loadu_epi32(_m_,_v_)   _mm256_blendv_epi8(zv, mm256_maskz_expand_epi32(xm, _mm256_loadu_si256((__m256i*)pex)), u2vmask(xm,tv)) // emulate AVX512 _mm256_maskz_loadu_epi32 on AVX2
   #endif
 
 //-----------------------------------------------------------------------------
@@ -496,8 +496,8 @@ unsigned char *bitunpack256v32( const unsigned char *__restrict in, unsigned n, 
 #define BITUNPACK0(_parm_)
 #include "bitunpack_.h"
 unsigned char *_bitunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(256*b); 
-             unsigned xm; 
+  const unsigned char *ip = in+PAD8(256*b);
+             unsigned xm;
               __m256i zv = _mm256_setzero_si256(), sv,
                       tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
   BITUNPACK256V32(in, b, out, sv);
@@ -523,7 +523,7 @@ unsigned char *bitzunpack256v32( const unsigned char *__restrict in, unsigned n,
 #define BITUNPACK0(_parm_)
 unsigned char *bitxunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
   const unsigned char *ip = in+PAD8(256*b);
-  __m256i sv = _mm256_set1_epi32(start);     
+  __m256i sv = _mm256_set1_epi32(start);
   BITUNPACK256V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
@@ -590,12 +590,12 @@ unsigned char *_bitdunpack256v32( const unsigned char *__restrict in, unsigned n
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *_bitzunpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(256*b); 
-        unsigned xm; 
-  const __m256i zv = _mm256_setzero_si256(), 
-                tv = _mm256_set_epi32(0,1,2,3,4,5,6,7); 
+  const unsigned char *ip = in+PAD8(256*b);
+        unsigned xm;
+  const __m256i zv = _mm256_setzero_si256(),
+                tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
         __m256i sv = _mm256_set1_epi32(start);
-  BITUNPACK256V32(in, b, out, sv); 
+  BITUNPACK256V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -607,7 +607,7 @@ unsigned char *_bitzunpack256v32( const unsigned char *__restrict in, unsigned n
 unsigned char *bitd1unpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
   const unsigned char *ip = in+PAD8(256*b);
   const __m256i zv = _mm256_setzero_si256();
-        __m256i sv = _mm256_set1_epi32(start), 
+        __m256i sv = _mm256_set1_epi32(start),
 		        cv = _mm256_set_epi32(8,7,6,5,4,3,2,1);
   BITUNPACK256V32(in, b, out, sv);
   return (unsigned char *)ip;
@@ -632,10 +632,10 @@ unsigned char *bitf1unpack256v32( const unsigned char *__restrict in, unsigned n
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) mv = _mm256_set1_epi32(0) //_parm_ = _mm_setzero_si128()
 unsigned char *_bitd1unpack256v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(256*b); 
+  const unsigned char *ip = in+PAD8(256*b);
   unsigned xm;
-  const __m256i cv = _mm256_set_epi32(8,7,6,5,4,3,2,1), 
-                zv = _mm256_setzero_si256(), 
+  const __m256i cv = _mm256_set_epi32(8,7,6,5,4,3,2,1),
+                zv = _mm256_setzero_si256(),
 				tv = _mm256_set_epi32(0,1,2,3,4,5,6,7);
         __m256i sv = _mm256_set1_epi32(start);
   BITUNPACK256V32(in, b, out, sv);
@@ -1053,27 +1053,27 @@ ALIGNED(char, _shuffle_16[256][16],16) = {
 
 //--- bitunpack for vp4d.c ------------------------------
 unsigned char *_bitunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-        unsigned m; 
-  __m128i sv; 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+        unsigned m;
+  __m128i sv;
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 unsigned char *_bitunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  unsigned m; 
-  __m128i sv; 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  unsigned m;
+  __m128i sv;
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 unsigned char *_bitunpack256w32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *_in=in; 
-  unsigned *_out=out, m; 
+  const unsigned char *_in=in;
+  unsigned *_out=out, m;
   __m128i sv;
-  BITUNPACK128V32(in, b, out, sv); 
-  out = _out+128; 
+  BITUNPACK128V32(in, b, out, sv);
+  out = _out+128;
   in  = _in+PAD8(128*b);
   BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)_in+PAD8(256*b);
@@ -1088,10 +1088,10 @@ unsigned char *_bitunpack256w32( const unsigned char *__restrict in, unsigned n,
 
 #include "bitunpack_.h"
 unsigned char *_bitunpack128v64( const unsigned char *__restrict in, unsigned n, uint64_t       *__restrict out, unsigned b, uint32_t *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  unsigned m; 
-  __m128i zv = _mm_setzero_si128(); 
-  BITUNPACK128V32(in, b, out, 0); 
+  const unsigned char *ip = in+PAD8(128*b);
+  unsigned m;
+  __m128i zv = _mm_setzero_si128();
+  BITUNPACK128V32(in, b, out, 0);
   return (unsigned char *)ip;
 }
 
@@ -1112,16 +1112,16 @@ unsigned char *_bitunpack128v64( const unsigned char *__restrict in, unsigned n,
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi16(start); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi16(start);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-              __m128i sv = _mm_set1_epi32(start); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+              __m128i sv = _mm_set1_epi32(start);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1130,16 +1130,16 @@ unsigned char *bitzunpack128v32( const unsigned char *__restrict in, unsigned n,
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitxunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi16(start); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi16(start);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 unsigned char *bitxunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-              __m128i sv = _mm_set1_epi32(start); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+              __m128i sv = _mm_set1_epi32(start);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1149,9 +1149,9 @@ unsigned char *bitxunpack128v32( const unsigned char *__restrict in, unsigned n,
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitdunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-              __m128i sv = _mm_set1_epi16(start); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+              __m128i sv = _mm_set1_epi16(start);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1165,16 +1165,16 @@ unsigned char *bitdunpack128v32( const unsigned char *__restrict in, unsigned n,
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitfunpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi16(start); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi16(start);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi32(start); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi32(start);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1195,17 +1195,17 @@ unsigned char *bitfunpack128v32( const unsigned char *__restrict in, unsigned n,
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *_bitdunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  unsigned m; 
-  __m128i sv = _mm_set1_epi16(start); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  unsigned m;
+  __m128i sv = _mm_set1_epi16(start);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 unsigned char *_bitdunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  unsigned m; __m128i sv = _mm_set1_epi32(start); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  unsigned m; __m128i sv = _mm_set1_epi32(start);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1230,15 +1230,15 @@ unsigned char *_bitdunpack128v64( const unsigned char *__restrict in, unsigned n
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *_bitzunpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  unsigned m; __m128i sv = _mm_set1_epi16(start); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  unsigned m; __m128i sv = _mm_set1_epi16(start);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b, unsigned *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  unsigned m; __m128i sv = _mm_set1_epi32(start); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  unsigned m; __m128i sv = _mm_set1_epi32(start);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 #define BITMAX16 16
@@ -1254,19 +1254,19 @@ unsigned char *_bitzunpack128v32( const unsigned char *__restrict in, unsigned n
 #define BITUNPACK0(_parm_) _parm_ = _mm_add_epi16(_parm_, cv); cv = _mm_set1_epi16(8)
 
 unsigned char *bitd1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi16(start), 
-          cv = _mm_set_epi16(8,7,6,5,4,3,2,1); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi16(start),
+          cv = _mm_set_epi16(8,7,6,5,4,3,2,1);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 #define BITUNPACK0(_parm_) _parm_ = _mm_add_epi32(_parm_, cv); cv = _mm_set1_epi32(4)
 unsigned char *bitd1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-              __m128i sv  = _mm_set1_epi32(start), 
-                      cv  = _mm_set_epi32(4,3,2,1); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+              __m128i sv  = _mm_set1_epi32(start),
+                      cv  = _mm_set_epi32(4,3,2,1);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1278,19 +1278,19 @@ unsigned char *bitd1unpack128v32( const unsigned char *__restrict in, unsigned n
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) _parm_ = _mm_add_epi16(_parm_, cv); cv = _mm_set1_epi16(8)
 unsigned char *bits1unpack128v16( const unsigned char *__restrict in, unsigned n, uint16_t *__restrict out, uint16_t start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi16(start), 
-          cv = _mm_set1_epi16(8); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi16(start),
+          cv = _mm_set1_epi16(8);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 #define BITUNPACK0(_parm_) _parm_ = _mm_add_epi32(_parm_, cv); cv = _mm_set1_epi32(4)
 unsigned char *bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set1_epi32(start), 
-          cv = _mm_set1_epi32(4); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set1_epi32(start),
+          cv = _mm_set1_epi32(4);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1301,17 +1301,17 @@ unsigned char *bits1unpack128v32( const unsigned char *__restrict in, unsigned n
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_)
 unsigned char *bitf1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set_epi16(start+8,start+7,start+6,start+5,start+4,start+3,start+2,start+1), 
-          cv = _mm_set1_epi16(8); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set_epi16(start+8,start+7,start+6,start+5,start+4,start+3,start+2,start+1),
+          cv = _mm_set1_epi16(8);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 unsigned char *bitf1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned *__restrict out, unsigned start, unsigned b) {
-  const unsigned char *ip = in+PAD8(128*b); 
-  __m128i sv = _mm_set_epi32(start+4,start+3,start+2,start+1),           
-          cv = _mm_set1_epi32(4); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+  __m128i sv = _mm_set_epi32(start+4,start+3,start+2,start+1),
+          cv = _mm_set1_epi32(4);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1333,11 +1333,11 @@ unsigned char *bitf1unpack128v32( const unsigned char *__restrict in, unsigned n
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
 unsigned char *_bitd1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-             unsigned m; 
-			 __m128i sv = _mm_set1_epi16(start), 
-			         cv = _mm_set_epi16(8,7,6,5,4,3,2,1); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+             unsigned m;
+			 __m128i sv = _mm_set1_epi16(start),
+			         cv = _mm_set_epi16(8,7,6,5,4,3,2,1);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
@@ -1355,21 +1355,21 @@ unsigned char *_bitd1unpack128v32( const unsigned char *__restrict in, unsigned 
 #include "bitunpack_.h"
 #define BITUNPACK0(_parm_) mv = _mm_setzero_si128() //_parm_ = _mm_setzero_si128()
 unsigned char *_bits1unpack128v16( const unsigned char *__restrict in, unsigned n, unsigned short *__restrict out, unsigned short start, unsigned b, unsigned short *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-             unsigned m; 
-			  __m128i sv = _mm_set1_epi16(start), 
-			          cv = _mm_set1_epi16(8); 
-  BITUNPACK128V16(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+             unsigned m;
+			  __m128i sv = _mm_set1_epi16(start),
+			          cv = _mm_set1_epi16(8);
+  BITUNPACK128V16(in, b, out, sv);
   return (unsigned char *)ip;
 }
 
 #define BITUNPACK0(_parm_) mv = _mm_setzero_si128()
 unsigned char *_bits1unpack128v32( const unsigned char *__restrict in, unsigned n, unsigned       *__restrict out, unsigned       start, unsigned b, unsigned       *__restrict pex, unsigned char *bb) {
-  const unsigned char *ip = in+PAD8(128*b); 
-             unsigned m; 
-			 __m128i  sv = _mm_set1_epi32(start), 
-			          cv = _mm_set1_epi32(4); 
-  BITUNPACK128V32(in, b, out, sv); 
+  const unsigned char *ip = in+PAD8(128*b);
+             unsigned m;
+			 __m128i  sv = _mm_set1_epi32(start),
+			          cv = _mm_set1_epi32(4);
+  BITUNPACK128V32(in, b, out, sv);
   return (unsigned char *)ip;
 }
 #define BITMAX16 16

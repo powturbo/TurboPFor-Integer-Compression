@@ -65,7 +65,7 @@ typedef struct bg_params
 	int errorControlMode;
 	int NSD;
 	int DSD;
-	
+
 	float fmin, fmax;
 	double dmin, dmax;
 
@@ -74,7 +74,7 @@ typedef struct bg_params
 
 typedef struct bg_exedata
 {
-	unsigned int BG_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
+	unsigned int BG_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t)
 } bg_exedata;
 
 

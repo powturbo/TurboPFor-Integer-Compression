@@ -58,8 +58,8 @@ static ALWAYS_INLINE __m128i _mm_set_epi32(     uint32_t u3, uint32_t u2, uint32
 static ALWAYS_INLINE __m128i _mm_set_epi64x(    uint64_t u1, uint64_t u0) { uint64_t __attribute__((aligned(16))) u[ 2] = { u0,u1 };                                             return (uint32x4_t)vld1q_u64(u); }
   #endif
 
-#define _mm_setr_epi16(u7,u6,u5,u4,u3,u2,u1,u0) _mm_set_epi16( u0,u1,u2,u3,u4,u5,u6,u7)   
-#define _mm_setr_epi32(u3,u2,u1,u0)             _mm_set_epi32( u0,u1,u2,u3)   
+#define _mm_setr_epi16(u7,u6,u5,u4,u3,u2,u1,u0) _mm_set_epi16( u0,u1,u2,u3,u4,u5,u6,u7)
+#define _mm_setr_epi32(u3,u2,u1,u0)             _mm_set_epi32( u0,u1,u2,u3)
 #define _mm_setr_epi64x(u1,u0)                  _mm_set_epi64x(u0,u0)
 
 #define _mm_set1_epi8(  _u8_ )                  (__m128i)vdupq_n_u8( _u8_ )
@@ -116,8 +116,8 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i u, __m128i v) {
 //---------------------------------------------- Shift ----------------------------------------------------------------------------
 #define  mm_slli_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)> 7?vdupq_n_u8( 0):vshlq_n_u8( (uint8x16_t)(_v_), (_c_))))  // parameter c MUST be a constant / vshlq_n_u8: __constrange(0-(N-1))
 #define  mm_slli_epi16(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>15?vdupq_n_u16(0):vshlq_n_u16((uint16x8_t)(_v_), (_c_))))
-#define  mm_slli_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>31?vdupq_n_u32(0):vshlq_n_u32((uint32x4_t)(_v_), (_c_))))           
-#define  mm_slli_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_v_), (_c_))))           
+#define  mm_slli_epi32(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>31?vdupq_n_u32(0):vshlq_n_u32((uint32x4_t)(_v_), (_c_))))
+#define  mm_slli_epi64(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>63?vdupq_n_u64(0):vshlq_n_u64((uint64x2_t)(_v_), (_c_))))
 #define _mm_slli_si128(  _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)>15?vdupq_n_u8( 0):vextq_u8(vdupq_n_u8(0), (uint8x16_t)(_v_), 16-(_c_) )) ) // vextq_u8: __constrange(0-15)
 
 #define  mm_srli_epi8(   _v_,_c_)               (__m128i)((_c_)<1?(_v_):(uint32x4_t)((_c_)> 7?vdupq_n_u8( 0):vshrq_n_u8( (uint8x16_t)(_v_), (_c_)))) // vshrq_n: __constrange(1-N)
@@ -151,12 +151,12 @@ static ALWAYS_INLINE __m128i _mm_madd_epi16(__m128i u, __m128i v) {
 #define _mm_sll_epi32(   _u_,_v_)               (__m128i)vshlq_s32( (int32x4_t)(_u_), (int32x4_t)(_v_))
 #define _mm_sll_epi64(   _u_,_v_)               (__m128i)vshlq_s64( (int64x2_t)(_u_), (int64x2_t)(_v_))
 
-#define _mm_srl_epi8(    _u_,_v_)               (__m128i)vshrq_s8(  (int8x16_t)(_u_), (int8x16_t)(_v_))   
+#define _mm_srl_epi8(    _u_,_v_)               (__m128i)vshrq_s8(  (int8x16_t)(_u_), (int8x16_t)(_v_))
 #define _mm_srl_epi16(   _u_,_v_)               (__m128i)vshrq_s16( (int16x8_t)(_u_), (int16x8_t)(_v_))
 #define _mm_srl_epi32(   _u_,_v_)               (__m128i)vshrq_s32( (int32x4_t)(_u_), (int32x4_t)(_v_))
 #define _mm_srl_epi64(   _u_,_v_)               (__m128i)vshrq_s64( (int64x2_t)(_u_), (int64x2_t)(_v_))
 
-#define _mm_sllv_epi32(  _u_,_v_)               (__m128i)vshlq_u32((uint32x4_t)(_u_), (uint32x4_t)(_v_))   //variable shift 
+#define _mm_sllv_epi32(  _u_,_v_)               (__m128i)vshlq_u32((uint32x4_t)(_u_), (uint32x4_t)(_v_))   //variable shift
 #define _mm_srlv_epi32(  _u_,_v_)               (__m128i)vshlq_u32((uint32x4_t)(_u_), vnegq_s32((int32x4_t)(_v_)))
 //---------------------------------------------- Compare --------- true/false->1/0 (all bits set) ---------------------------------
 #define _mm_cmpeq_epi8(  _u_,_v_)               (__m128i)vceqq_s8( ( int8x16_t)(_u_), ( int8x16_t)(_v_))
@@ -316,10 +316,10 @@ static ALWAYS_INLINE __m128i _mm_unpackhi_epi64(__m128i _u_, __m128i _v_) {     
 #define mm_cvtsi64_si128p(_u64p_,_v_)           _v_ = _mm_cvtsi64_si128(ctou64(_u64p_))
 
 #define  cv80000000_def                         _mm_set1_epi32((int)0x80000000)
-#define  mm_cmplt_epu32(  _u_, _v_)             _mm_cmplt_epi32(_mm_xor_si128(_u_, cv80000000), _mm_xor_si128(_v_, cv80000000)) //__m128i cv80000000 = _mm_set1_epi32(0x80000000); must be declared 
-#define  mm_cmpgt_epu32(  _u_, _v_)             _mm_cmpgt_epi32(_mm_xor_si128(_u_, cv80000000), _mm_xor_si128(_v_, cv80000000)) 
-#define _mm_cmplt_epu32(  _u_, _v_)             _mm_cmplt_epi32(_mm_xor_si128(_u_, _mm_set1_epi32(0x80000000)), _mm_xor_si128(_v_, _mm_set1_epi32(0x80000000))) 
-#define _mm_cmpgt_epu32(  _u_, _v_)             _mm_cmpgt_epi32(_mm_xor_si128(_u_, _mm_set1_epi32(0x80000000)), _mm_xor_si128(_v_, _mm_set1_epi32(0x80000000))) 
+#define  mm_cmplt_epu32(  _u_, _v_)             _mm_cmplt_epi32(_mm_xor_si128(_u_, cv80000000), _mm_xor_si128(_v_, cv80000000)) //__m128i cv80000000 = _mm_set1_epi32(0x80000000); must be declared
+#define  mm_cmpgt_epu32(  _u_, _v_)             _mm_cmpgt_epi32(_mm_xor_si128(_u_, cv80000000), _mm_xor_si128(_v_, cv80000000))
+#define _mm_cmplt_epu32(  _u_, _v_)             _mm_cmplt_epi32(_mm_xor_si128(_u_, _mm_set1_epi32(0x80000000)), _mm_xor_si128(_v_, _mm_set1_epi32(0x80000000)))
+#define _mm_cmpgt_epu32(  _u_, _v_)             _mm_cmpgt_epi32(_mm_xor_si128(_u_, _mm_set1_epi32(0x80000000)), _mm_xor_si128(_v_, _mm_set1_epi32(0x80000000)))
 
 #define mm_shuffle_nnnn_epi32(_v_, _n_)         _mm_shuffle_epi32(_v_, _MM_SHUFFLE(_n_,_n_,_n_,_n_))
 #define mm_shuffle_2031_epi32(_v_)              _mm_shuffle_epi32(_v_, _MM_SHUFFLE(2,0,3,1))
@@ -328,20 +328,20 @@ static ALWAYS_INLINE __m128i _mm_unpackhi_epi64(__m128i _u_, __m128i _v_) {     
 #define _mm_slli_epi8(_v_, _m_ )                _mm_and_si128(_mm_set1_epi8(0xff << _m_), _mm_slli_epi32(_v_, _m_ ))
 #define _mm_srli_epi8(_v_, _m_ )                _mm_and_si128(_mm_set1_epi8(0xff >> _m_), _mm_srli_epi32(_v_, _m_ ))
 
-#define  mm_slli_epi8(   _v_,_c_)               _mm_slli_epi8( _v_,_c_)  // parameter c MUST be a constant for compatibilty with the arm functions above 
-#define  mm_slli_epi16(  _v_,_c_)               _mm_slli_epi16(_v_,_c_)    
-#define  mm_slli_epi32(  _v_,_c_)               _mm_slli_epi32(_v_,_c_)  
-#define  mm_slli_epi64(  _v_,_c_)               _mm_slli_epi64(_v_,_c_)  
+#define  mm_slli_epi8(   _v_,_c_)               _mm_slli_epi8( _v_,_c_)  // parameter c MUST be a constant for compatibilty with the arm functions above
+#define  mm_slli_epi16(  _v_,_c_)               _mm_slli_epi16(_v_,_c_)
+#define  mm_slli_epi32(  _v_,_c_)               _mm_slli_epi32(_v_,_c_)
+#define  mm_slli_epi64(  _v_,_c_)               _mm_slli_epi64(_v_,_c_)
 
-#define  mm_srli_epi8(   _v_,_c_)               _mm_srli_epi8( _v_,_c_) 
-#define  mm_srli_epi16(  _v_,_c_)               _mm_srli_epi16(_v_,_c_) 
-#define  mm_srli_epi32(  _v_,_c_)               _mm_srli_epi32(_v_,_c_)  
-#define  mm_srli_epi64(  _v_,_c_)               _mm_srli_epi64(_v_,_c_)           
+#define  mm_srli_epi8(   _v_,_c_)               _mm_srli_epi8( _v_,_c_)
+#define  mm_srli_epi16(  _v_,_c_)               _mm_srli_epi16(_v_,_c_)
+#define  mm_srli_epi32(  _v_,_c_)               _mm_srli_epi32(_v_,_c_)
+#define  mm_srli_epi64(  _v_,_c_)               _mm_srli_epi64(_v_,_c_)
 
-#define  mm_srai_epi8(   _v_,_c_)               _mm_srai_epi8( _v_,_c_)              
-#define  mm_srai_epi16(  _v_,_c_)               _mm_srai_epi16(_v_,_c_) 
-#define  mm_srai_epi32(  _v_,_c_)               _mm_srai_epi32(_v_,_c_) 
-#define  mm_srai_epi64(  _v_,_c_)               _mm_srai_epi64(_v_,_c_) 
+#define  mm_srai_epi8(   _v_,_c_)               _mm_srai_epi8( _v_,_c_)
+#define  mm_srai_epi16(  _v_,_c_)               _mm_srai_epi16(_v_,_c_)
+#define  mm_srai_epi32(  _v_,_c_)               _mm_srai_epi32(_v_,_c_)
+#define  mm_srai_epi64(  _v_,_c_)               _mm_srai_epi64(_v_,_c_)
 
     #ifdef __SSSE3__
 static ALWAYS_INLINE __m128i mm_rbit_epi8(__m128i v) { // reverse bits in bytes

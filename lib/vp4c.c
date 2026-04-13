@@ -58,7 +58,7 @@ size_t p4nbound256v8( size_t n) { return VP4BOUND(n, 1, 256); }
 size_t p4nbound256v16(size_t n) { return VP4BOUND(n, 2, 256); }
 size_t p4nbound256v32(size_t n) { return VP4BOUND(n, 4, 256); }
 size_t p4nbound256v64(size_t n) { return VP4BOUND(n, 8, 128); }
-  
+
 #define _P4BITS _p4bits
 #define  P4BITS _p4bits
 #define _P4ENC   _p4enc

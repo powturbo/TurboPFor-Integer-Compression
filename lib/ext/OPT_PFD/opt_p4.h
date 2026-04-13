@@ -1,7 +1,7 @@
 #include "pf.h"
 #define BS 128
 //using namespace std;
-//file "OPT_PFD.zip" form: http://jinruhe.com/  
+//file "OPT_PFD.zip" form: http://jinruhe.com/
 //int dnum[17] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,16,20,32};
 
 void p4_encode(unsigned int *doc_id, int npos, int b,unsigned int *buf , int *size, int *ex_n)
@@ -24,8 +24,8 @@ int OPT4(unsigned int *doc_id,unsigned int list_size,unsigned int *aux)
 	int size = 0;
 	int ex_n = 0;
 	int csize = 0; 	// compressed size in bytes
-			
-	int chunk_size = 0;																					
+
+	int chunk_size = 0;
 	int b = -1, temp_en = 0;
 	int offset = 0;
 	for(j=0;j<list_size;j+=BS)				// for each chunk
@@ -41,14 +41,14 @@ int OPT4(unsigned int *doc_id,unsigned int list_size,unsigned int *aux)
 						chunk_size = size *4;
 						b = l;
 						temp_en = ex_n;
-					}		
-				}	
+					}
+				}
 
 				csize += chunk_size;
 				//printf("encode:%u\n", b);
 				p4_encode(doc_id + j, BS, b, aux + offset, &size, &ex_n);
 				offset += size;
 	}
-	
-	return csize;	
+
+	return csize;
 }

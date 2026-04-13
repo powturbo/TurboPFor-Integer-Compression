@@ -1,6 +1,6 @@
 #define FSE_STATIC_LINKING_ONLY
-#include "../zstd/lib/common/fse.h"  
-#include "fse.h"  
+#include "../zstd/lib/common/fse.h"
+#include "fse.h"
 
 /* Function templates */
 FSE_DTable* FSE_createDTable (unsigned tableLog)
@@ -76,7 +76,7 @@ FORCE_INLINE_TEMPLATE size_t FSE_decompress_usingDTable_generic(
     CHECK_F(BIT_initDStream(&bitD, cSrc, cSrcSize));
 
     FSE_initDState(&state1, &bitD, dt);
-    FSE_initDState(&state2, &bitD, dt); 
+    FSE_initDState(&state2, &bitD, dt);
 
 #define FSE_GETSYMBOL(statePtr) fast ? FSE_decodeSymbolFast(statePtr, &bitD) : FSE_decodeSymbol(statePtr, &bitD)
 

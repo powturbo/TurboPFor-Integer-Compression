@@ -1,4 +1,4 @@
-## TurboPFor: Fastest Integer Compression</br> 
+## TurboPFor: Fastest Integer Compression</br>
 [![Build ubuntu](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml/badge.svg)](https://github.com/powturbo/TurboPFor-Integer-Compression/actions/workflows/build.yaml)
 
 * **TurboPFor: The synonym for "integer compression"**
@@ -25,11 +25,11 @@
   * **Novel** **"Variable Simple"** (incl. **RLE**) faster and more efficient than simple16, simple-8b
 * **Elias fano**
   * Fastest **"Elias Fano"** implementation w/ or w/o SIMD/AVX2
-* **TurboVLC** novel variable length encoding for large integers 
-  with exponent + variable bit mantissa 
+* **TurboVLC** novel variable length encoding for large integers
+  with exponent + variable bit mantissa
 * **Binary interpolative coding** : fastest implementation
 + **Transform**
-  * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR, 
+  * Scalar & SIMD Transform: Delta, Zigzag, Zigzag of delta, XOR,
   * Transpose/Shuffle with integrated Xor and zigzag delta
   * 2D/3D/4D transpose
   * **lossy** floating point compression with *TurboPFor* or [TurboTranspose](https://github.com/powturbo/TurboTranspose)+lz77/bwt
@@ -41,13 +41,13 @@
   * **TurboFloat** novel efficient floating point compression using TurboPFor
   * **TurboFloat LzXor** novel floating point lempel-ziv compression
   * _Float16 16 bits floating point support
-  * float 16/32/64 bits quantization with variable quantization bit size. 
+  * float 16/32/64 bits quantization with variable quantization bit size.
 * **Time Series Compression**
   * **Fastest Gorilla** 16/32/64 bits style compression (**zigzag of delta** + **RLE**).
   * can compress timestamps to only 0.01%. Speed > 10 GB/s compression and > 13 GB/s decompress.
 * **Inverted Index ...do less, go fast!**
   * Direct Access to compressed *frequency* and *position* data w/ zero decompression
-  * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**. 
+  * **Novel** **"Intersection w/ skip intervals"**, decompress the minimum necessary blocks (**~10-15%)!**.
   * **Novel** Implicit skips with zero extra overhead
   * **Novel** Efficient **Bidirectional** Inverted Index Architecture (forward/backwards traversal) incl. "integer compression".
   * more than **2000! queries per second** on GOV2 dataset (25 millions documents) on a **SINGLE** core
@@ -106,7 +106,7 @@
 
 (*) codecs inefficient for small block sizes are tested with 64Ki integers/block.
 
-- MB/s: 1.000.000 bytes/second. **1000 MB/s = 1 GB/s**<br> 
+- MB/s: 1.000.000 bytes/second. **1000 MB/s = 1 GB/s**<br>
 - **#BOLD** = pareto frontier.<br>
 - FP=FastPFor SC:simdcomp PC:Polycom<br>
 - TurboPForDA,TurboForDA: Direct Access is normally used when accessing few individual values.<br>
@@ -119,9 +119,9 @@
 
 |Size |Ratio %|Bits/Integer|C Time MB/s|D Time MB/s|Function 2019.11|
 |-----------:|------:|-----:|-------:|-------:|---------------------|
-| 3,321,663,893| 13.9| 4.44|**1320**|**6088**|**TurboPFor**| 
+| 3,321,663,893| 13.9| 4.44|**1320**|**6088**|**TurboPFor**|
 | 3,339,730,557| 14.0| 4.47|  32| 2144|PC.OptPFD|
-| 3,350,717,959| 14.0| 4.48|**1536**|**7128**|**TurboPFor256**| 
+| 3,350,717,959| 14.0| 4.48|**1536**|**7128**|**TurboPFor256**|
 | 3,501,671,314| 14.6| 4.68|  56| 2840|**VSimple**|
 | 3,768,146,467| 15.8| 5.04|**3228**| 3652|**EliasFanoV**|
 | 3,822,161,885| 16.0| 5.11| 572| 2444|PC_Simple16|
@@ -148,8 +148,8 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 | 3,164,940,562| 13.2|**4.23**|**1344**|**6004**|**TurboPFor 64Ki**|
 | 3,273,213,464| 13.7| 4.38|**1496**|**7008**|**TurboPFor256 64Ki**|
 | 3,965,982,954| 16.6| 5.30|**1520**| 2452|[lz4](#lz4)+DT 64Ki|
-| 4,234,154,427| 17.7| 5.66| 436| 5672|qmx 64Ki| 
-| 6,074,995,117| 25.4| 8.13| 1976| 2916|[blosc_lz4](#blosc) 64Ki| 
+| 4,234,154,427| 17.7| 5.66| 436| 5672|qmx 64Ki|
+| 6,074,995,117| 25.4| 8.13| 1976| 2916|[blosc_lz4](#blosc) 64Ki|
 | 8,773,150,644| 36.7|11.74| 2548|5204|blosc_lz 64Ki|
 
 "lz4+DT 64Ki" = Delta+Transpose from TurboPFor + lz4<br>
@@ -166,12 +166,12 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |bvzzenc32       |**8914**|56,713|0.010|**13499**|ZigZag Delta of delta|
 |vsenc32         |**12294**|140,400| 0.024 |12877 |Variable Simple|
 |p4nzenc256v32   | 1932| 596,018|  0.10 |13326 |TurboPFor256 ZigZag|
-|p4ndenc256v32   | 1961| 596,018|  0.10 |13339 |TurboPFor256 Delta| 
+|p4ndenc256v32   | 1961| 596,018|  0.10 |13339 |TurboPFor256 Delta|
 |bitndpack256v32 |**12564**|909,189|  0.16 |13505 |TurboPackV256 Delta|
 |p4nzenc32       | 1810|  1,159,633|  0.20 | 8502 |TurboPFor ZigZag|
-|p4nzenc128v32   | 1795|  1,159,633|  0.20 |13338 |TurboPFor ZigZag| 
-|bitnzpack256v32 | 9651|  1,254,757|  0.22 |**13503**|TurboPackV256 ZigZag| 
-|bitnzpack128v32 |10155|  1,472,804|  0.26 |13380 |TurboPackV ZigZag| 
+|p4nzenc128v32   | 1795|  1,159,633|  0.20 |13338 |TurboPFor ZigZag|
+|bitnzpack256v32 | 9651|  1,254,757|  0.22 |**13503**|TurboPackV256 ZigZag|
+|bitnzpack128v32 |10155|  1,472,804|  0.26 |13380 |TurboPackV ZigZag|
 |vbddenc32       | 6198| 18,057,296|  3.13 |10982 |TurboVByte Delta of delta|
 |memcpy          |13397|577,141,992|100.00||
 
@@ -188,9 +188,9 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
 |100,000,000|3156|3372|Bitshuffle AVX2|
 |100,000,000|2100|2176|Bitshuffle SSE|
 
-##### - (Lossy) Floating point compression: 
-        ./icapp -Fd file          " 64 bits floating point raw file 
-        ./icapp -Ff file          " 32 bits floating point raw file 
+##### - (Lossy) Floating point compression:
+        ./icapp -Fd file          " 64 bits floating point raw file
+        ./icapp -Ff file          " 32 bits floating point raw file
         ./icapp -Fcf file         " text file with miltiple entries (ex.  8.657,56.8,4.5 ...)
         ./icapp -Ftf file         " text file (1 entry per line)
         ./icapp -Ftf file -v5     " + display the first entries read
@@ -208,7 +208,7 @@ Block size: 64Ki = 256k bytes. Ki=1024 Integers
      Ratio = 14.37% Decoded/Total Integers.
 
    + TREC Million Query Track (1MQT):<br />
-     **~1100** queries per second (Single core)<br /> 
+     **~1100** queries per second (Single core)<br />
      **~4500** queries per second (Quad core CPU)<br />
      Ratio = 11.59% Decoded/Total Integers.
 
@@ -230,7 +230,7 @@ q/s: queries/second, ms/q:milliseconds/query
 |ALL|3.57|5036.5|0.199|100|
 
 ###### Notes:
-- Search engines are spending 90% of the time in intersections when processing queries. 
+- Search engines are spending 90% of the time in intersections when processing queries.
 - Most search engines are using pruning strategies, caching popular queries,... to reduce the time for intersections and query processing.
 - "integer compression" GOV2 experiments [On Inverted Index Compression for Search Engine Efficiency](http://www.dcs.gla.ac.uk/~craigm/publications/catena14compression.pdf) using 8-core Xeon PC are reporting 1.2 seconds per query (for 1.000 Top-k docids).
 
@@ -239,15 +239,15 @@ q/s: queries/second, ms/q:milliseconds/query
 		git clone https://github.com/powturbo/TurboPFor-Integer-Compression.git
 		cd TurboPFor-Integer-Compression
 		make
-        
+
         To benchmark TurboPFor + general purpose compression codecs (zstd,lz4, Turbo-Range-Coder, bwt, bitshuffle):
         git clone --recursive https://github.com/powturbo/TurboPFor-Integer-Compression.git
 		cd TurboPFor-Integer-Compression
         make ICCODEC=1
 
-        To benchmark external libraries: 
+        To benchmark external libraries:
 		Download the external libraries from github into the current directory
-		Activate/deactivate the ext. libs in the makefile 
+		Activate/deactivate the ext. libs in the makefile
         make CODEC1=1 CODEC2=1 ICCODEC=1
 
 
@@ -256,18 +256,18 @@ q/s: queries/second, ms/q:milliseconds/query
 
 ###### Windows visual studio c++
         project files under vs/vs2022
-  
+
 ### Testing:
 ##### - Synthetic data (use ZIPF parameter):
   + benchmark groups of "integer compression" functions <br />
 
         ./icapp -a1.2 -m0 -M255 -n100M ZIPF
         ./icapp -a1.2 -m0 -M255 -n100M ZIPF -e20-50
-   
+
    >*-zipfian distribution alpha = 1.2 (Ex. -a1.0=uniform -a1.5=skewed distribution)<br />
      -number of integers = 100.000.000<br />
      -integer range from 0 to 255<br />*
-  
+
   + Unsorted lists: individual function test<br />
 
         ./icapp -a1.5 -m0 -M255 -e1,2,3 ZIPF
@@ -280,27 +280,27 @@ q/s: queries/second, ms/q:milliseconds/query
 
         ./icapp -e4,5,6 ZIPF
         ./icapp -e7,8,9 ZIPF
-        
+
   + Transpose/RLE/TurboVByte + General purpose compressor (lz,zstd,turborc,bwt...)<br />
 
         ./icapp file -e80-95
-        ./icapp file -e80-95 -Ezstd,15 
+        ./icapp file -e80-95 -Ezstd,15
         ./icapp file -e80-95 -Eturborc,1
         ./icapp file -e80-95 -Eturborc,20
-        
+
   + 2D/3D/4D Transpose + General purpose compressor (lz,zstd,turborc,...)<br />
-  
-        ./icapp file512x128.f32 R512x128 -Ff  
-        ./icapp file512x128.f32 -R512x128 -Ff -e100,101,102 
+
+        ./icapp file512x128.f32 R512x128 -Ff
+        ./icapp file512x128.f32 -R512x128 -Ff -e100,101,102
         ./icapp file1024x512x128.f32 -R1024x512x128 -Ff -e100,101,102
-        
+
     Automatic dimension determination from file name ( option -R0 )
-    
+
         ./icapp file1024x512x128.f32 -R0 -Ff -e103,104,105
         ./icapp file1024x512x128.f64 -R0 -Fl -e103,104,105
-        
+
   + Lossy floating point compression
-  
+
         ./icapp file512x128.f32 -R512x128 -Ff -g.0001
         ./icapp file.f32 -Ff -g.001
         ./icapp file.f64 -Fd -g.001
@@ -309,7 +309,7 @@ q/s: queries/second, ms/q:milliseconds/query
 ##### - Data files:
   - Raw 32 bits binary data file [Test data](https://github.com/ot/partitioned_elias_fano/tree/master/test/test_data)
 
-        ./icapp file           
+        ./icapp file
         ./icapp -Fs file         "16 bits raw binary file
         ./icapp -Fu file         "32 bits raw binary file
         ./icapp -Fl file         "64 bits raw binary file
@@ -333,7 +333,7 @@ q/s: queries/second, ms/q:milliseconds/query
 
   - Text file: multiple numbers separated by non-digits (0..9,-,.) characters (ex. 134534,-45678,98788,4345, )
 
-        ./icapp -Fc data.txt         "text file, 32 bits integers (ex. 56789,3245,23,678 ) 
+        ./icapp -Fc data.txt         "text file, 32 bits integers (ex. 56789,3245,23,678 )
         ./icapp -Fcd data.txt        "text file, 64 bits floting-point numbers (ex. 34.7689,5.20,45.789 )
 
 ##### - Intersections:
@@ -359,12 +359,12 @@ q/s: queries/second, ms/q:milliseconds/query
 ##### - Parallel Query Processing:
   1 - Create partitions
 
-  
+
         ./idxseg gov2.sorted . -26m -s8
 
-  
+
  >*create 8 (CPU hardware threads) partitions for a total of ~26 millions document ids*
-  
+
   2 - Create index file for each partition
 
 
@@ -374,7 +374,7 @@ q/s: queries/second, ms/q:milliseconds/query
   >*create inverted index file for all partitions "gov2.sorted.s00 - gov2.sorted.s07" in the current directory*
 
   3 - Intersections:
-  
+
   delete "idxqry.o" file and then type "make para" to compile "idxqry" w. multithreading
 
 
@@ -394,7 +394,7 @@ In general encoding/decoding functions are of the form:
   b      : number of bits. Only for bit packing functions<br />
   start  : previous value. Only for integrated delta encoding functions
 
-   
+
   >**char *endptr = decode( char *in, unsigned n, unsigned *out, [unsigned start], [int b])**<br />
   endptr : set by decode to the next character in "in" after the decoded buffer<br />
   in     : pointer to input buffer<br />
@@ -403,10 +403,10 @@ In general encoding/decoding functions are of the form:
   b      : number of bits. Only for bit unpacking functions<br />
   start  : previous value. Only for integrated delta decoding functions
 
-  **Simple high level functions:** 
+  **Simple high level functions:**
   >**size_t compressed_size = encode( unsigned *in, size_t n, char *out)**<br />
   compressed_size : number of bytes written into compressed output buffer out<br />
-   
+
   >**size_t compressed_size = decode( char *in, size_t n, unsigned *out)**<br />
   compressed_size : number of bytes read from compressed input buffer in<br />
 
@@ -420,17 +420,17 @@ In general encoding/decoding functions are of the form:
    fp:  Floating Point + Turbo Razor: pointwise relative error rounding algorithm<br />
 
    n :  high level array functions for large arrays.
-	
+
    ''  : encoding for unsorted integer lists<br />
    'd' : delta encoding for increasing integer lists (sorted w/ duplicate)<br />
    'd1': delta encoding for strictly increasing integer lists (sorted unique)<br />
    'f' : FOR encoding for sorted integer lists<br />
    'z' :  ZigZag encoding for unsorted integer lists<br />
-   
+
    'enc' or 'pack'  : encode or bitpack<br />
    'dec' or 'unpack': decode or bitunpack<br />
    'NN'             : integer size (8/16/32/64)<br />
-   
+
 public header file to use with documentation:<br />
         include/ic.h
 
@@ -442,7 +442,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 - Windows: Visual c++ (>=VS2008) - makefile.vs (for nmake)
 - Windows: Visual Studio project file - vs/vs2022
 - Linux amd64: GNU GCC (>=4.6)
-- Linux amd64: Clang (>=3.2) 
+- Linux amd64: Clang (>=3.2)
 - Linux arm64: 64 bits aarch64 ARMv8:  gcc (>=6.3)
 - Linux arm64: 64 bits aarch64 ARMv8:  clang
 - MaxOS: XCode (>=9)
@@ -458,7 +458,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
 - TurboPFor does normally not read outside the input (encode/decode) buffers
   and does not write outside the output buffer at decoding.
 - TurboPFor does not write above a properly sized output buffers at encoding.
-  Use the bound (ex. v8bound,p4bound) functions to allocate a max. memory output buffer.   
+  Use the bound (ex. v8bound,p4bound) functions to allocate a max. memory output buffer.
 
 ##  LICENSE
 - GPL 2.0
@@ -479,7 +479,7 @@ Note: Some low level functions (like p4enc32) are limited to 128/256 (SSE/AVX2) 
   * <a name="FastPFor"></a>[FastPFor](https://github.com/lemire/FastPFor) + [Simdcomp](https://github.com/lemire/simdcomp): SIMDPack FPF, Vbyte FPF, VarintG8IU, StreamVbyte, GroupSimple
   * <a name="OptPFD"></a><a name="Simple16"></a>[Optimized Pfor-delta compression code](http://jinruhe.com): OptPFD/OptP4, Simple16 (limited to 28 bits integers)
   * <a name="MaskedVByte"></a>[MaskedVByte](http://maskedvbyte.org/). See also: [Vectorized VByte Decoding](http://engineering.indeed.com/blog/2015/03/vectorized-vbyte-decoding-high-performance-vector-instructions/)
-  * <a name="Streamvbyte"></a>[Streamvbyte](https://github.com/lemire/streamvbyte). 
+  * <a name="Streamvbyte"></a>[Streamvbyte](https://github.com/lemire/streamvbyte).
   * <a name="Simple-8b"></a>[Index Compression Using 64-Bit Words](http://people.eng.unimelb.edu.au/ammoffat/abstracts/am10spe.html): Simple-8b (speed optimized version tested)
   * <a name="libfor"></a>[libfor](https://github.com/cruppstahl/for)
   * <a name="QMX"></a>[Compression, SIMD, and Postings Lists](http://www.cs.otago.ac.nz/homepages/andrew/papers/) QMX integer compression from the "simple family"

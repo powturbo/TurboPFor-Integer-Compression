@@ -1,6 +1,6 @@
 # powturbo (c) Copyright 2013-2023
 # 1 - Download or clone TurboPFor:
-# git clone git://github.com/powturbo/TurboPFor.git 
+# git clone git://github.com/powturbo/TurboPFor.git
 # make
 #
 # 2 - include general purpose compression codecs
@@ -9,9 +9,9 @@
 # To benchmark external libraries:
 # 1 - clone/download the external repository into the TurboPFor directoty
 # 2 - activate the repository in the makefile lib/libext.mak
-# 3 -       make: "make CODEC1=1 ICCODEC=1" 
+# 3 -       make: "make CODEC1=1 ICCODEC=1"
 #           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
-# aarch64 cross compile 
+# aarch64 cross compile
 # export CC=aarch64-linux-gnu-gcc
 
 #ICCODEC=1
@@ -41,7 +41,7 @@ ifneq (,$(filter Windows%,$(OS)))
   CXX=g++
 #  CC=clang
   ARCH=x86_64
-ifeq ($(ICCODEC),1) 
+ifeq ($(ICCODEC),1)
   LDFLAGS=-Wl,--stack,33554432
 endif
 else
@@ -64,27 +64,27 @@ ifeq ($(ARCH),ppc64le)
   _SSE=-D__SSSE3__
   CFLAGS=-mcpu=power9 -mtune=power9 $(_SSE)
 else ifeq ($(ARCH),aarch64)
-  CFLAGS=-march=armv8-a 
+  CFLAGS=-march=armv8-a
 ifneq (,$(findstring clang, $(CC)))
-  OPT+=-fomit-frame-pointer 
+  OPT+=-fomit-frame-pointer
 #-fmacro-backtrace-limit=0
 endif
   _SSE=-march=armv8-a
 else ifeq ($(ARCH),$(filter $(ARCH),x86_64))
 # set minimum arch sandy bridge SSE4.1 + AVX
-  _SSE=-march=corei7-avx -mtune=corei7-avx 
+  _SSE=-march=corei7-avx -mtune=corei7-avx
 # _SSE+=-mno-avx -mno-aes
   _AVX2=-march=haswell
 endif
 
 ifeq (,$(findstring clang, $(CC)))
-OPT+=-falign-loops 
+OPT+=-falign-loops
 endif
 
 CFLAGS+=$(DEBUG) $(OPT) -Wno-incompatible-pointer-types
 #CFLAGS+=-Wno-macro-redefined -Wno-incompatible-pointer-types -Wno-tautological-constant-out-of-range-compare -Wno-discarded-qualifiers
 CFLAGS+=-w -Wall -pedantic
-CXXFLAGS+=-w 
+CXXFLAGS+=-w
 #-Wall -Wincompatible-pointer-types
 ifeq ($(OS),$(filter $(OS),Linux GNU/kFreeBSD GNU OpenBSD FreeBSD DragonFly NetBSD MSYS_NT Haiku))
 LDFLAGS+=-lrt -lm
@@ -95,7 +95,7 @@ CFLAGS+=-D_STATIC
 LDFLAGS+=-static
 endif
 
-all: icapp 
+all: icapp
 
 $(SRC)bitutil_avx2.o: $(SRC)bitutil.c
 	$(CC) -O3 -w $(_AVX2) $(OPT) -c $(SRC)bitutil.c -o $(SRC)bitutil_avx2.o
@@ -117,7 +117,7 @@ $(SRC)transpose_avx2.o: $(SRC)transpose.c
 
 -include lib/libext.mak
 
-LIB=$(SRC)bic.o $(SRC)bitunpack.o $(SRC)bitpack.o $(SRC)bitutil.o $(SRC)eliasfano.o $(SRC)fp.o $(SRC)transpose.o $(SRC)transpose_.o $(SRC)trlec.o $(SRC)trled.o $(SRC)vp4c.o $(SRC)vp4d.o $(SRC)v8.o $(SRC)v8pack.o $(SRC)vint.o $(SRC)vsimple.o $(SRC)vbit.o 
+LIB=$(SRC)bic.o $(SRC)bitunpack.o $(SRC)bitpack.o $(SRC)bitutil.o $(SRC)eliasfano.o $(SRC)fp.o $(SRC)transpose.o $(SRC)transpose_.o $(SRC)trlec.o $(SRC)trled.o $(SRC)vp4c.o $(SRC)vp4d.o $(SRC)v8.o $(SRC)v8pack.o $(SRC)vint.o $(SRC)vsimple.o $(SRC)vbit.o
 ifeq ($(ARCH),x86_64)
 LIB+=$(SRC)vp4c_avx2.o $(SRC)vp4d_avx2.o $(SRC)transpose_avx2.o $(SRC)bitpack_avx2.o $(SRC)bitunpack_avx2.o $(SRC)bitutil_avx2.o
 else
@@ -127,12 +127,12 @@ endif
 ifeq ($(AVX2),1)
 CFLAGS+=$(_AVX2)
 else
-ifeq ($(SSE),1) 
+ifeq ($(SSE),1)
 CFLAGS+=$(_SSE)
 endif
 endif
 
-ifeq ($(ICCODEC),1) 
+ifeq ($(ICCODEC),1)
 CFLAGS+=-D_ICCODEC
 LIB+=$(SRC)iccodec.o
 endif
@@ -168,13 +168,13 @@ mycpp: mycpp.o libic.a
 	$(CXX) $^ $(LDFLAGS) -o mycpp
 
 %.o: %.c
-	$(CC) -O3 $(CFLAGS) $< -c -o $@  
+	$(CC) -O3 $(CFLAGS) $< -c -o $@
 
 .cc.o:
-	$(CXX) -O2 $(CXXFLAGS) $< -c -o $@ 
+	$(CXX) -O2 $(CXXFLAGS) $< -c -o $@
 
 .cpp.o:
-	$(CXX) -O2 $(CXXFLAGS) $< -c -o $@ 
+	$(CXX) -O2 $(CXXFLAGS) $< -c -o $@
 
 ifeq ($(OS),Windows)
 clean:

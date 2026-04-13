@@ -1,9 +1,9 @@
 #cpp: $(CPPF)
 #	$(CC) -msse3 $(MSSE) $(MARCH) -w -E -P $(CPPF)
 
-CFLAGS+=-Iext 
+CFLAGS+=-Iext
 CXXFLAGS+=$(DDEBUG) -w -fpermissive -Wall -fno-rtti
-CXXFLAGS+=$(_SSE) -I$(LB)FastPFor/headers -std=gnu99 -DUSE_THREADS 
+CXXFLAGS+=$(_SSE) -I$(LB)FastPFor/headers -std=gnu99 -DUSE_THREADS
 
 ifeq ($(ICCODEC),1)
 LZ4=1
@@ -54,12 +54,12 @@ endif
 #LIB+=bitunpack128h.o
 #endif
 #----------------------------------------
-icbench: $(OB) icbench.o plugins.o 
+icbench: $(OB) icbench.o plugins.o
 	$(CXX) $(XDEFS) $^ $(LDFLAGS) -o icbench
 
 idx: idxcr idxqry idxseg
 
-icb: icbench 
+icb: icbench
 
 idxseg:   $(SRC)idxseg.o libic.a
 	$(CC) $^ $(LDFLAGS) -o idxseg
@@ -68,20 +68,20 @@ ictest:   ictest.o $(LIB)
 	$(CC) $^ $(LDFLAGS) -o ictest
 
 ifeq ($(OS), Linux)
-para: CFLAGS += -DTHREADMAX=32	
+para: CFLAGS += -DTHREADMAX=32
 para: idxqry
 endif
 
-idxcr:   $(SRC)idxcr.o libic.a  
+idxcr:   $(SRC)idxcr.o libic.a
 	$(CC) $^ $(LDFLAGS) -o idxcr $(LFLAGS)
 
 idxqry:  $(SRC)idxqry.o libic.a
 	$(CC) $^ $(LDFLAGS) $(LIBTHREAD) $(LIBRT) -o idxqry $(LFLAGS)
 
 $(LB)polycom/optpfd.o: $(LB)polycom/optpfd.c
-	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@ 
+	$(CC) -O2 $(MARCH) $(CFLAGS) $< -c -o $@
 
-varintg8iu.o: $(LB)varintg8iu.c $(LB)varintg8iu.h 
+varintg8iu.o: $(LB)varintg8iu.c $(LB)varintg8iu.h
 	$(CC) -O2 $(CFLAGS) $(MARCH) -c -std=c99 $(LB)varintg8iu.c
 
 #-------------------------------------------------------------------
@@ -109,23 +109,23 @@ $(LB)c-blosc2/blosc/bitshuffle-generic.o $(LB)c-blosc2/blosc/stune.o $(LB)c-blos
    $(LB)c-blosc2/blosc/timestamp.o $(LB)c-blosc2/blosc/trunc-prec.o $(LB)c-blosc2/plugins/filters/bytedelta/bytedelta.o $(LB)c-blosc2/plugins/filters/filters-registry.o \
    $(LB)c-blosc2/plugins/filters/ndcell/ndcell.o $(LB)c-blosc2/plugins/plugin_utils.o $(LB)c-blosc2/plugins/filters/ndmean/ndmean.o $(LB)c-blosc2/plugins/codecs/codecs-registry.o \
    $(LB)c-blosc2/plugins/codecs/zfp/blosc2-zfp.o $(LB)c-blosc2/plugins/codecs/ndlz/ndlz.o $(LB)c-blosc2/plugins/codecs/ndlz/ndlz8x8.o $(LB)c-blosc2/plugins/codecs/ndlz/ndlz4x4.o
-   
+
 ifeq ($(AVX2),1)
 CFLAGS+=-DSHUFFLE_AVX2_ENABLED
 OB+=$(LB)c-blosc2/blosc/shuffle-avx2.o $(LB)c-blosc2/blosc/bitshuffle-avx2.o
 endif
 ifeq ($(ARCH),aarch64)
-CFLAGS+=-DSHUFFLE_NEON_ENABLED 
+CFLAGS+=-DSHUFFLE_NEON_ENABLED
 OB+=$(LB)c-blosc2/blosc/shuffle-neon.o $(LB)c-blosc2/blosc/bitshuffle-neon.o
 else
-CFLAGS+=-DSHUFFLE_SSE2_ENABLED 
+CFLAGS+=-DSHUFFLE_SSE2_ENABLED
 OB+=$(LB)c-blosc2/blosc/bitshuffle-sse2.o $(LB)c-blosc2/blosc/shuffle-sse2.o
 endif
 
 else
 
 ifeq ($(BITSHUFFLE),1)
-CFLAGS+=-D_BITSHUFFLE -I$(LB)bitshuffle/lz4 
+CFLAGS+=-D_BITSHUFFLE -I$(LB)bitshuffle/lz4
 #-DLZ4_ON
 ifeq ($(ARCH),aarch64)
 CFLAGS+=-DUSEARMNEON
@@ -146,7 +146,7 @@ CFLAGS+=-D_BITGROOMING
 endif
 
 ifeq ($(EFANO),1)
-OB+=eliasfano.o 
+OB+=eliasfano.o
 endif
 
 ifeq ($(FASTPFOR),1)
@@ -164,7 +164,7 @@ OB+=$(LB)libfor/for.o
 endif
 
 ifeq ($(LITTLEINTPACKER),1)
-CFLAGS+=-D_LITTLEINTPACKER -I$(LB)LittleIntPacker/include 
+CFLAGS+=-D_LITTLEINTPACKER -I$(LB)LittleIntPacker/include
 OB+=$(LB)LittleIntPacker/src/bitpacking32.o $(LB)LittleIntPacker/src/turbobitpacking32.o $(LB)LittleIntPacker/src/scpacking32.o
 OB+=$(LB)LittleIntPacker/src/horizontalpacking32.o
 ifeq ($(AVX2),1)
@@ -173,7 +173,7 @@ endif
 endif
 
 ifeq ($(LZ4),1)
-CFLAGS+=-D_LZ4 -I$(LB)lz4/lib 
+CFLAGS+=-D_LZ4 -I$(LB)lz4/lib
 OB+=$(LB)lz4/lib/lz4hc.o $(LB)lz4/lib/lz4.o $(LB)lz4/lib/lz4frame.o $(LB)lz4/lib/xxhash.o
 
 endif
@@ -224,16 +224,16 @@ OB+=$(LB)rc.o
 endif
 
 ifeq ($(SIMDCOMP),1)
-CFLAGS+=-D_SIMDCOMP -I$(LB)simdcomp/include 
-OB+=$(LB)simdcomp/src/simdintegratedbitpacking.o $(LB)simdcomp/src/simdcomputil.o $(LB)simdcomp/src/simdbitpacking.o $(LB)simdcomp/src/simdpackedselect.o 
+CFLAGS+=-D_SIMDCOMP -I$(LB)simdcomp/include
+OB+=$(LB)simdcomp/src/simdintegratedbitpacking.o $(LB)simdcomp/src/simdcomputil.o $(LB)simdcomp/src/simdbitpacking.o $(LB)simdcomp/src/simdpackedselect.o
 OB+=$(LB)simdcomp_/simdfor.o
 ifeq ($(AVX2),1)
-OB+=$(LB)simdcomp/src/avxbitpacking.o 
+OB+=$(LB)simdcomp/src/avxbitpacking.o
 endif
 endif
 
 ifeq ($(SIMPLE8B),1)
-OB+=$(LB)simple8b.o 
+OB+=$(LB)simple8b.o
 endif
 
 ifeq ($(SPDP),1)
@@ -241,7 +241,7 @@ XDEFS+=-D_SPDP
 endif
 
 ifeq ($(STREAMVBYTE),1)
-CFLAGS+=-D_STREAMVBYTE -I$(LB)streamvbyte/include 
+CFLAGS+=-D_STREAMVBYTE -I$(LB)streamvbyte/include
 ifeq ($(ARCH),aarch64)
 CFLAGS+=-D__ARM_NEON__
 endif
@@ -258,7 +258,7 @@ $(SV)streamvbytedelta_encode.o: $(SV)streamvbytedelta_encode.c
 
 $(SV)streamvbytedelta_decode.o: $(SV)streamvbytedelta_decode.c
 	$(CC) -O3 -w $(_SSE) $(CFLAGS) -c $(SV)streamvbytedelta_decode.c -o $(SV)streamvbytedelta_decode.o
-	
+
 $(SV)streamvbyte_zigzag.o: $(SV)streamvbyte_zigzag.c
 	$(CC) -O3 -w $(_SSE) $(CFLAGS) -c $(SV)streamvbyte_zigzag.c -o $(SV)streamvbyte_zigzag.o
 
@@ -270,13 +270,13 @@ ifeq ($(TURBORC), 1)
 CFLAGS+=-D_TURBORC -I$(T)libsais/include -D_NCPUISA -D_NQUANT
 T=$(LB)Turbo-Range-Coder/
 ifeq ($(ANS), 1)
-CFLAGS+=-D_ANS 
+CFLAGS+=-D_ANS
 $(T)anscdf0.o: $(T)anscdf.c $(T)anscdf_.h
-	$(CC) -c -O3 $(CFLAGS) -falign-loops=32 $(T)anscdf.c -o $(T)anscdf0.o  
+	$(CC) -c -O3 $(CFLAGS) -falign-loops=32 $(T)anscdf.c -o $(T)anscdf0.o
 #-mno-sse2
 
 $(T)anscdfs.o: $(T)anscdf.c $(T)anscdf_.h
-	$(CC) -c -O3 $(CFLAGS) -D_NDIVTDEF32 -march=corei7-avx -mtune=corei7-avx -mno-aes -falign-loops=32 $(T)anscdf.c -o $(T)anscdfs.o  
+	$(CC) -c -O3 $(CFLAGS) -D_NDIVTDEF32 -march=corei7-avx -mtune=corei7-avx -mno-aes -falign-loops=32 $(T)anscdf.c -o $(T)anscdfs.o
 
 $(T)anscdfx.o: $(T)anscdf.c $(T)anscdf_.h
 	$(CC) -c -O3 $(CFLAGS) -march=haswell -falign-loops=32 $(T)anscdf.c -o $(T)anscdfx.o
@@ -284,11 +284,11 @@ $(T)anscdfx.o: $(T)anscdf.c $(T)anscdf_.h
 ifeq ($(ARCH),aarch64)
 OB+=$(T)anscdf0.o
 else
-OB+=$(T)anscdfx.o $(T)anscdfs.o 
+OB+=$(T)anscdfx.o $(T)anscdfs.o
 endif
 endif
 
-OB+=$(T)rc_s.o $(T)rc_ss.o $(T)rcutil.o $(T)libsais/src/libsais.o $(T)rccm_s.o $(T)rccm_ss.o $(T)bec_b.o $(T)rcqlfc_s.o $(T)rcqlfc_ss.o $(T)rcbwt.o 
+OB+=$(T)rc_s.o $(T)rc_ss.o $(T)rcutil.o $(T)libsais/src/libsais.o $(T)rccm_s.o $(T)rccm_ss.o $(T)bec_b.o $(T)rcqlfc_s.o $(T)rcqlfc_ss.o $(T)rcbwt.o
 endif
 
 ifeq ($(VARINTG8IU),1)
@@ -297,7 +297,7 @@ OB+=$(LB)varintg8iu.o
 endif
 
 ifeq ($(VBZ),1)
-CFLAGS+=-D_VBZ 
+CFLAGS+=-D_VBZ
 CXXFLAGS+=-I$(LB)vbz_compression/third_party -I$(LB)vbz_compression/vbz -I$(LB)vbz_compression/third_party/stream_vbyte/include
 OB+=$(LB)vbz_compression/vbz/vbz.o $(LB)vbz_compression/vbz/v0/vbz_streamvbyte.o $(LB)vbz_compression/vbz/v1/vbz_streamvbyte.o
 endif
@@ -330,17 +330,17 @@ OB+=$(LB)zstd/lib/common/pool.o $(LB)zstd/lib/common/xxhash.o $(LB)zstd/lib/comm
     $(LB)zstd/lib/common/fse_decompress.o \
     $(LB)zstd/lib/common/zstd_common.o $(LB)zstd/lib/common/entropy_common.o $(LB)zstd/lib/compress/zstd_compress_superblock.o\
     $(LB)zstd/lib/decompress/huf_decompress_amd64.o $(LB)zstd/lib/dictBuilder/zdict.o $(LB)zstd/lib/dictBuilder/fastcover.o $(LB)zstd/lib/dictBuilder/cover.o \
-    $(LB)zstd/lib/dictBuilder/divsufsort.o $(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o 	
+    $(LB)zstd/lib/dictBuilder/divsufsort.o $(LB)zstd/lib/compress/huf_compress.o $(LB)zstd/lib/decompress/huf_decompress.o
 endif
 
 ifeq ($(FSE), 1)
 CFLAGS+=-D_FSE -Wimplicit-function-declaration
-OB+=$(LB)fse/fse_compress_.o $(LB)fse/fse_decompress_.o 
+OB+=$(LB)fse/fse_compress_.o $(LB)fse/fse_decompress_.o
 endif
 
 ifeq ($(FSEHUF), 1)
 CFLAGS+=-D_FSEHUF
-OB+=$(LB)fse/huf_compress_.o $(LB)fse/huf_decompress_.o 
+OB+=$(LB)fse/huf_compress_.o $(LB)fse/huf_decompress_.o
 endif
 
 ifeq ($(ZFP), 1)

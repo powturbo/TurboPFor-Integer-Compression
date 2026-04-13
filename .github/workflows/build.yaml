@@ -14,12 +14,12 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         compiler: ["gcc", "clang"]
-    env:      
+    env:
       CC: ${{ matrix.compiler }}
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: 'true'     
+          submodules: 'true'
       - run: git submodule update --init --recursive
       - run: make ICCODEC=1
       - run: lscpu
@@ -50,7 +50,7 @@ jobs:
       matrix:
         os: [macos-latest]
         compiler: ["clang"]
-    env:      
+    env:
       CC: ${{ matrix.compiler }}
     steps:
       - uses: actions/checkout@v3
@@ -60,4 +60,4 @@ jobs:
       - run: make ICCODEC=1
       - run: sysctl -n machdep.cpu.brand_string
       - run: ./icapp ZIPF
- 
+

@@ -53,7 +53,7 @@
   #else
 #define PREFETCH(_ip_,_rw_) //__builtin_prefetch(_ip_,_rw_)
   #endif
-  
+
 //------------------------ zigzag encoding ----------------------------------------------
 static inline unsigned char  zigzagenc8( signed char    x) { return x << 1 ^   x >> 7;  }
 static inline          char  zigzagdec8( unsigned char  x) { return x >> 1 ^ -(x &  1); }
@@ -111,10 +111,10 @@ static ALWAYS_INLINE uint64_t mm256_hor_epi64(__m256i v) {
   return _mm256_extract_epi64(v, 1) | _mm256_extract_epi64(v,0);
 }
   #endif
- 
+
   #if defined(__SSSE3__) || defined(__ARM_NEON)
 #define mm_srai_epi64_63(_v_, _s_) _mm_srai_epi32(_mm_shuffle_epi32(_v_, _MM_SHUFFLE(3, 3, 1, 1)), 31)
-  
+
 static ALWAYS_INLINE __m128i mm_zzage_epi16(__m128i v) { return _mm_xor_si128( mm_slli_epi16(v,1),  mm_srai_epi16(   v,15)); }
 static ALWAYS_INLINE __m128i mm_zzage_epi32(__m128i v) { return _mm_xor_si128( mm_slli_epi32(v,1),  mm_srai_epi32(   v,31)); }
 static ALWAYS_INLINE __m128i mm_zzage_epi64(__m128i v) { return _mm_xor_si128( mm_slli_epi64(v,1),  mm_srai_epi64_63(v,63)); }
@@ -181,7 +181,7 @@ static ALWAYS_INLINE __m128i mm_scani_epi32(__m128i v, __m128i sv, __m128i vi) {
 static ALWAYS_INLINE uint16_t mm_hor_epi16( __m128i v) { MM_HOZ_EPI16(v,_mm_or_si128);               return (unsigned short)_mm_cvtsi128_si32(v); }
 static ALWAYS_INLINE uint32_t mm_hor_epi32( __m128i v) { MM_HOZ_EPI32(v,_mm_or_si128);               return (unsigned      )_mm_cvtsi128_si32(v); }
 static ALWAYS_INLINE uint64_t mm_hor_epi64( __m128i v) { v = _mm_or_si128( v, _mm_srli_si128(v, 8)); return (uint64_t      )_mm_cvtsi128_si64(v); }
-  
+
 //----------------- sub / add ----------------------------------------------------------
 #define SUBI16x8(_v_, _sv_)       _mm_sub_epi16(_v_, _sv_)
 #define SUBI32x4(_v_, _sv_)       _mm_sub_epi32(_v_, _sv_)
@@ -259,10 +259,10 @@ static ALWAYS_INLINE __m128i mm_xore_epi32( __m128i v, __m128i sv) { return _mm_
 //----------------------------------------- bitreverse scalar + SIMD -------------------------------------------
   #if __clang__ && defined __has_builtin
     #if __has_builtin(__builtin_bitreverse64)
-#define BUILTIN_BITREVERSE      
+#define BUILTIN_BITREVERSE
     #else
-#define BUILTIN_BITREVERSE  
-    #endif 
+#define BUILTIN_BITREVERSE
+    #endif
   #endif
   #ifdef BUILTIN_BITREVERSE
 #define rbit8(x)  __builtin_bitreverse8( x)
@@ -380,7 +380,7 @@ static ALWAYS_INLINE __m256i mm256_rbit_si128(__m256i v) { return mm256_rbit_epi
 #define bitget8( _bw_,_br_,_b_,_x_,_ip_) bitget31(_bw_,_br_,_b_,_x_)
 #define bitget16(_bw_,_br_,_b_,_x_,_ip_) bitget31(_bw_,_br_,_b_,_x_)
 #define bitget32(_bw_,_br_,_b_,_x_,_ip_) bitget57(_bw_,_br_,_b_,_x_)
-#define bitget64(_bw_,_br_,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget57(_bw_,_br_,(_b_)-32,_x_); bitdnorm(_bw_,_br_,_ip_); BITGET64(_bw_,_br_,32,_v); _x_ = _x_<<32|_v; } else bitget57(_bw_,_br_,_b_,_x_)  
+#define bitget64(_bw_,_br_,_b_,_x_,_ip_) if((_b_)>45) { unsigned _v; bitget57(_bw_,_br_,(_b_)-32,_x_); bitdnorm(_bw_,_br_,_ip_); BITGET64(_bw_,_br_,32,_v); _x_ = _x_<<32|_v; } else bitget57(_bw_,_br_,_b_,_x_)
 
 //---- Floating point to Integer decomposition ---------------------------------
 // seeeeeeee21098765432109876543210 (s:sign, e:exponent, 0-9:mantissa)

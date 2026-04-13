@@ -1,4 +1,4 @@
-// 
+//
 #define VBYTE_ENC(_v, _n)	\
 {\
 	unsigned _num;				\

@@ -12,7 +12,7 @@ int sysEndianType; //*sysEndianType is actually set automatically.
 
 //the confparams should be separate between compression and decopmression, in case of mutual-affection when calling compression/decompression alternatively
 bg_params *confparams_cpr = NULL; //used for compression
-bg_params *confparams_dec = NULL; //used for decompression 
+bg_params *confparams_dec = NULL; //used for decompression
 
 bg_exedata *exe_params = NULL;
 
@@ -31,7 +31,7 @@ unsigned char *BG_compress(int dataType, void *data, size_t *outSize, size_t nbE
 unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int bgMode, int errorControlMode, int nsd, int dsd, size_t nbEle, unsigned char *data_)
 {
 
-	int dataTypeLen = dataType==BG_FLOAT?sizeof(float):sizeof(double);	
+	int dataTypeLen = dataType==BG_FLOAT?sizeof(float):sizeof(double);
 
 	size_t bufferSize = dataTypeLen*nbEle;
 
@@ -39,7 +39,7 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 	//const double dcm_per_bit_dgt_prc=M_LN2/M_LN10; /* 0.301 [frc] Bits per decimal digit of precision */
 	const int bit_xpl_nbr_sgn_flt=23; /* [nbr] Bits 0-22 of SP significands are explicit. Bit 23 is implicitly 1. */
 	const int bit_xpl_nbr_sgn_dbl=53; /* [nbr] Bits 0-52 of DP significands are explicit. Bit 53 is implicitly 1. */
-	//const int ieee_xpn_fst_flt=127; /* [nbr] IEEE "exponent bias" = actual exponent minus stored exponent */  	
+	//const int ieee_xpn_fst_flt=127; /* [nbr] IEEE "exponent bias" = actual exponent minus stored exponent */
 
 	double prc_bnr_xct; /* [nbr] Binary digits of precision, exact */
 
@@ -74,23 +74,23 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 	//prc_bnr_xpl_rqr=prc_bnr_ceil;
 	prc_bnr_xpl_rqr=prc_bnr_ceil+1;
 
-	//unsigned char* data_ = (unsigned char*)malloc(bufferSize);		
+	//unsigned char* data_ = (unsigned char*)malloc(bufferSize);
 	memcpy(data_, data, bufferSize);
 
-	if(dataType == BG_DOUBLE) prc_bnr_xpl_rqr++; /* Seems necessary for double-precision ppc=array(1.234567,1.0e-6,$dmn) */  
-	
-	if(!(dataType == BG_FLOAT  && prc_bnr_xpl_rqr >= bit_xpl_nbr_sgn_flt) || (dataType == BG_DOUBLE && prc_bnr_xpl_rqr >= bit_xpl_nbr_sgn_dbl)) //required # bits is greater than the full length of bits	
-	{	
+	if(dataType == BG_DOUBLE) prc_bnr_xpl_rqr++; /* Seems necessary for double-precision ppc=array(1.234567,1.0e-6,$dmn) */
+
+	if(!(dataType == BG_FLOAT  && prc_bnr_xpl_rqr >= bit_xpl_nbr_sgn_flt) || (dataType == BG_DOUBLE && prc_bnr_xpl_rqr >= bit_xpl_nbr_sgn_dbl)) //required # bits is greater than the full length of bits
+	{
 		if(dataType==BG_FLOAT)
 		{
 			bit_xpl_nbr_sgn=bit_xpl_nbr_sgn_flt;
-			bit_xpl_nbr_zro=bit_xpl_nbr_sgn-prc_bnr_xpl_rqr;		
+			bit_xpl_nbr_zro=bit_xpl_nbr_sgn-prc_bnr_xpl_rqr;
 			if(bit_xpl_nbr_zro > bit_xpl_nbr_sgn-NCO_PPC_BIT_XPL_NBR_MIN)
 			{
 				printf("Error: bit_xpl_nbr_zro > bit_xpl_nbr_sgn-NCO_PPC_BIT_XPL_NBR_MIN\n");
 				return NULL;
-			}	
-			
+			}
+
 			u32_ptr = (unsigned int*)data_;
 			/* Create mask */
 			msk_f32_u32_zro=0u; /* Zero all bits */
@@ -99,15 +99,15 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 			msk_f32_u32_zro <<= bit_xpl_nbr_zro;
 			/* Bit Set   mask for OR:  Put ones into bits to be set, zeros in untouched bits */
 			msk_f32_u32_one=~msk_f32_u32_zro;
-			//msk_f32_u32_hshv=msk_f32_u32_one & (msk_f32_u32_zro >> 1); /* Set one bit: the MSB of LSBs */	
+			//msk_f32_u32_hshv=msk_f32_u32_one & (msk_f32_u32_zro >> 1); /* Set one bit: the MSB of LSBs */
 			switch(bgMode)
 			{
 			case BITGROOM:
 				for(idx=0L;idx<nbEle;idx+=2L) u32_ptr[idx]&=msk_f32_u32_zro;
-				
+
 				for(idx=1L;idx<nbEle;idx+=2L)
 					if(u32_ptr[idx] != 0U) /* Never quantize upwards floating point values of zero */
-						u32_ptr[idx]|=msk_f32_u32_one;		
+						u32_ptr[idx]|=msk_f32_u32_one;
 				break;
 			case BITSHAVE:
 				for(idx=0L;idx<nbEle;idx++) u32_ptr[idx]&=msk_f32_u32_zro;
@@ -115,9 +115,9 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 			case BITSET:
 				for(idx=0L;idx<nbEle;idx++)
 					if(u32_ptr[idx] != 0U) /* Never quantize upwards floating point values of zero */
-						u32_ptr[idx]|=msk_f32_u32_one;		
+						u32_ptr[idx]|=msk_f32_u32_one;
 				break;
-			}	
+			}
 		}
 		else //BG_DOUBLE
 		{
@@ -127,8 +127,8 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 			{
 				printf("Error: bit_xpl_nbr_zro > bit_xpl_nbr_sgn-NCO_PPC_BIT_XPL_NBR_MIN\n");
 				return NULL;
-			}	
-			
+			}
+
 			u64_ptr=(unsigned long int*)data_;
 			/* Create mask */
 			msk_f64_u64_zro=0ul; /* Zero all bits */
@@ -137,14 +137,14 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 			msk_f64_u64_zro <<= bit_xpl_nbr_zro;
 			/* Bit Set   mask for OR:  Put ones into bits to be set, zeros in untouched bits */
 			msk_f64_u64_one=~msk_f64_u64_zro;
-			//msk_f64_u64_hshv=msk_f64_u64_one & (msk_f64_u64_zro >> 1); /* Set one bit: the MSB of LSBs */		
+			//msk_f64_u64_hshv=msk_f64_u64_one & (msk_f64_u64_zro >> 1); /* Set one bit: the MSB of LSBs */
 			switch(bgMode)
 			{
 			case BITGROOM:
 			for(idx=0L;idx<nbEle;idx+=2L) u64_ptr[idx]&=msk_f64_u64_zro;
 				for(idx=1L;idx<nbEle;idx+=2L)
 					if(u64_ptr[idx] != 0UL) /* Never quantize upwards floating point values of zero */
-						u64_ptr[idx]|=msk_f64_u64_one;			
+						u64_ptr[idx]|=msk_f64_u64_one;
 				break;
 			case BITSHAVE:
 				for(idx=0L;idx<nbEle;idx++) u64_ptr[idx]&=msk_f64_u64_zro;
@@ -152,23 +152,23 @@ unsigned char* BG_compress_args(int dataType, void *data, size_t *outSize, int b
 			case BITSET:
 				for(idx=0L;idx<nbEle;idx++)
 					if(u64_ptr[idx] != 0UL) /* Never quantize upwards floating point values of zero */
-						u64_ptr[idx]|=msk_f64_u64_one;				
+						u64_ptr[idx]|=msk_f64_u64_one;
 				break;
-			}	
-		}	
+			}
+		}
 	}
-	
+
 	//perform DEFLATE algorithm by Zlib
 	//unsigned char* outBytes = NULL;
 	//*outSize = zlib_compress5(data_, bufferSize, &outBytes, 1);
-	
+
 	//free(data_);
 	return data_; //outBytes;
 
 }
 #if 0
 void *BG_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_t nbEle)
-{	
+{
 	if(dataType==BG_FLOAT)
 	{
 		unsigned char* decompressedData;

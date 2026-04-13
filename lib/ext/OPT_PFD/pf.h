@@ -2,9 +2,9 @@
 #include "unpack.h"
 
 
-#define BS 128 
-#define FRAC 0.10 
-#define S 16 
+#define BS 128
+#define FRAC 0.10
+#define S 16
 #define PCHUNK 128
 
 void pack(unsigned int *v, unsigned int b, unsigned int n, unsigned int *w);
@@ -21,7 +21,7 @@ int detailed_p4_encode(unsigned int **w, unsigned int* p, int num , int *chunk_s
 	unsigned int e_n = 0;
 	int max_p = 0;
 	int max_e = 0;
- 
+
 	unsigned int* out = (unsigned*)malloc(sizeof(unsigned)*PCHUNK*2);
 	unsigned int* ex = (unsigned*)malloc(sizeof(unsigned)*PCHUNK*2);
 	unsigned int* po = (unsigned*)malloc(sizeof(unsigned)*PCHUNK*2);
@@ -32,7 +32,7 @@ int detailed_p4_encode(unsigned int **w, unsigned int* p, int num , int *chunk_s
 	if (b == 32)
 	{
 		(*w)[0] = ((b<<10)) + (0);
-		*w +=1;	
+		*w +=1;
 		for (i = 0; i < PCHUNK ; i++)  (*w)[i] = p[i];
 		*w += (PCHUNK);
 		(*chunk_size) = 1 + BS;
@@ -50,7 +50,7 @@ int detailed_p4_encode(unsigned int **w, unsigned int* p, int num , int *chunk_s
 			p_low = p[i] & ((1<<b)-1);
 			out[i] = p_low;
 			ex[e_n] = (p[i] >> b);
-			po[(e_n++)] = i;               //          
+			po[(e_n++)] = i;               //
 		}
 		else
 			out[i] = p[i];
@@ -61,20 +61,20 @@ int detailed_p4_encode(unsigned int **w, unsigned int* p, int num , int *chunk_s
 		/*get the gap of position*/
 		for(j = e_n-1;j>0;j--)
 		{
-			po[j] = po[j] - po[j-1] ; 
+			po[j] = po[j] - po[j-1] ;
 			po[j] --;
 		}
- 	
+
 		s = ((b * PCHUNK)>>5);
 		tp = (*w);
 		(*w)[0] = ((num<<10))+e_n;			// record b and number of exceptions into this value, in the other version we pick this value out and did not count it
-		(*w) += 1;		
+		(*w) += 1;
 		for (i = 0; i < s; i++)  (*w)[i] = 0;
 		pack(out, b, PCHUNK , *w);
 		*w += s;
 
 		unsigned int *all_array = (unsigned*)malloc(sizeof(unsigned)*PCHUNK*4) ;
-		for(j=0;j<e_n;j++)		
+		for(j=0;j<e_n;j++)
 		{
 			all_array[j] = po[j];
 			all_array[e_n+j] =ex[j];
@@ -85,7 +85,7 @@ int detailed_p4_encode(unsigned int **w, unsigned int* p, int num , int *chunk_s
 		(*chunk_size) = 1 + s + (_ww - (*w)) ;
 
 		(*w) += (_ww - (*w)) ;
-		
+
 		(*exception_n) = e_n;
 
 		free(out);
@@ -114,7 +114,7 @@ void pack(unsigned int *v, unsigned int b, unsigned int n, unsigned int *w)
       w[wp] |= (v[i]>>s);
       w[wp+1] = (v[i]<<(32-s));
     }
-  }   
+  }
 }
 
 /*modified p4decode */
@@ -125,7 +125,7 @@ unsigned int *detailed_p4_decode(unsigned int *_p, unsigned int *_w,  unsigned i
   unsigned int x;
   int flag = _w[0];
   (_w)++;
-  
+
   unsigned int *_ww,*_pp;
   unsigned int b = ((flag>>10) & 31);
   unsigned int e_n = (flag & 1023) ;
