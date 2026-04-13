@@ -272,7 +272,8 @@ T=$(LB)Turbo-Range-Coder/
 ifeq ($(ANS), 1)
 CFLAGS+=-D_ANS 
 $(T)anscdf0.o: $(T)anscdf.c $(T)anscdf_.h
-	$(CC) -c -O3 $(CFLAGS) -mno-sse2 -falign-loops=32 $(T)anscdf.c -o $(T)anscdf0.o  
+	$(CC) -c -O3 $(CFLAGS) -falign-loops=32 $(T)anscdf.c -o $(T)anscdf0.o  
+#-mno-sse2
 
 $(T)anscdfs.o: $(T)anscdf.c $(T)anscdf_.h
 	$(CC) -c -O3 $(CFLAGS) -D_NDIVTDEF32 -march=corei7-avx -mtune=corei7-avx -mno-aes -falign-loops=32 $(T)anscdf.c -o $(T)anscdfs.o  
@@ -280,8 +281,8 @@ $(T)anscdfs.o: $(T)anscdf.c $(T)anscdf_.h
 $(T)anscdfx.o: $(T)anscdf.c $(T)anscdf_.h
 	$(CC) -c -O3 $(CFLAGS) -march=haswell -falign-loops=32 $(T)anscdf.c -o $(T)anscdfx.o
 
-OB+=$(T)anscdf0.o
 ifeq ($(ARCH),aarch64)
+OB+=$(T)anscdf0.o
 else
 OB+=$(T)anscdfx.o $(T)anscdfs.o 
 endif
