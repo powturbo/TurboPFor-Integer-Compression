@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2019, CNES.
  *
  * This source code is licensed under MIT-style license (found in the
