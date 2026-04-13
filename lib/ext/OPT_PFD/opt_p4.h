@@ -3,7 +3,7 @@
 //using namespace std;
 //file "OPT_PFD.zip" form: http://jinruhe.com/
 //int dnum[17] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,16,20,32};
- 
+
 void p4_encode(unsigned int *doc_id, int npos, int b,unsigned int *buf , int *size, int *ex_n)
 {
 	int i = 0;
