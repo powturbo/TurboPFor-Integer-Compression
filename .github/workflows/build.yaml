@@ -43,24 +43,6 @@ jobs:
       - run: make ICCODEC=1
       - run: ./icapp ZIPF
 
-#  windows:
-#    runs-on: windows-latest
-#    defaults:
-#      run:
-#        shell: msys2 {0}
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          submodules: 'true'
-#      - uses: msys2/setup-msys2@v2
-#        with:
-#          msystem: MINGW64
-#          install: git make mingw-w64-x86_64-gcc
-#          update: true
-#      - run: git submodule update --init --recursive
-#      - run: make
-#      - run: ./icapp ZIPF
-
   macos:
     runs-on: '${{ matrix.os }}'
     strategy:
@@ -75,7 +57,7 @@ jobs:
         with:
           submodules: 'true'
       - run: git submodule update --init --recursive
-      - run: make
+      - run: make ICCODEC=1
       - run: sysctl -n machdep.cpu.brand_string
       - run: ./icapp ZIPF
  
