@@ -1,4 +1,4 @@
-// copy from https://github.com/ccr/ccr/tree/master/hdf5_plugins for benchmarking purpose
+ // copy from https://github.com/ccr/ccr/tree/master/hdf5_plugins for benchmarking purpose
 # define NC_FLOAT 5
 # define NC_DOUBLE 6
 # define NC_FILL_FLOAT   (9.9692099683868690e+36f) /* near 15 * 2^119 */
