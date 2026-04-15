@@ -17,6 +17,7 @@ BITSHUFFLE=1
 #LZTURBO=1
 TURBORC=1
 ANS=1
+PCODEC=1
 endif
 
 ifeq ($(CODEC1),1)
@@ -212,6 +213,10 @@ endif
 
 ifeq ($(QCOMPRESS),1)
 CFLAGS+=-D_QCOMPRESS
+endif
+
+ifeq ($(PCODEC),1)
+CFLAGS+=-D_PCODEC
 endif
 
 
