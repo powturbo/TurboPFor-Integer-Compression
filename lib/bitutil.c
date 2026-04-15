@@ -402,7 +402,7 @@ uint64_t bitzzenc64(uint64_t *in, unsigned n, uint64_t *out, uint64_t start, uin
 #define ZDD(i) u = _ip[i]; d = u - start; _ip[i] = zigzagdec64(u)+(int64_t)startd+_md; startd = d; start = u
 #define BITZDD(_t_, _in_, _n_, _md_) { _t_ *_ip, startd=0,d,u; const unsigned _md = _md_;\
   for(_ip = _in_; _ip != _in_+(_n_&~(4-1)); _ip += 4) { ZDD(0); ZDD(1); ZDD(2); ZDD(3); }\
-  for(;_ip != _in_+_n_; _ip++) ZDD(0);\
+  for(;_ip != _in_+_n_; _ip++) { ZDD(0); }\
 }
 void bitzzdec8( uint8_t  *in, unsigned n, uint8_t  start) { BITZDD(uint8_t,  in, n, 1); }
 void bitzzdec16(uint16_t *in, unsigned n, uint16_t start) { BITZDD(uint16_t, in, n, 1); }
@@ -503,7 +503,7 @@ void bitd1dec32(uint32_t *in, unsigned n, uint32_t start) {
 #define DI(_ip_,_i_) u = _ip_[_i_] - start; start = _ip_[_i_]; if(u < mindelta) mindelta = u
 #define BITDIE(_in_, _n_) {\
   for(_ip = _in_,mindelta = _ip[0]; _ip != _in_+(_n_&~(4-1)); _ip+=4) { DI(_ip,0); DI(_ip,1); DI(_ip,2); DI(_ip,3); }\
-  for(;_ip != _in_+_n_;_ip++) DI(_ip,0);\
+  for(;_ip != _in_+_n_;_ip++) { DI(_ip,0); }\
 }
 
 uint8_t  bitdi8( uint8_t  *in, unsigned n, uint8_t  *px, uint8_t  start) { uint8_t  mindelta,u,*_ip; BITDIE(in, n); if(px) *px = 0; return mindelta; }
@@ -832,7 +832,7 @@ void bitxdec32(unsigned *in, unsigned n, unsigned start) {
 #define FM(i) mi = _ip[i] < mi?_ip[i]:mi; mx = _ip[i] > mx?_ip[i]:mx
 #define BITFM(_t_, _in_,_n_) { _t_ *_ip; \
   for(_ip = _in_, mi = mx = *_ip; _ip != _in_+(_n_&~(4-1)); _ip += 4) { FM(0); FM(1); FM(2); FM(3); }\
-  for(;_ip != _in_+_n_; _ip++) FM(0);\
+  for(;_ip != _in_+_n_; _ip++) { FM(0); }\
 }
 
 uint8_t  bitfm8( uint8_t  *in, unsigned n, uint8_t   *px, uint8_t  *pmin) { uint8_t  mi,mx; BITFM(uint8_t,  in, n); *pmin = mi; if(px) *px = 0; return mx - mi; }
@@ -959,7 +959,8 @@ float _fprazor32(float d, float e, int lg2e) {
   float    ed;
 
   if((b = 25 - b - lg2e) <= 0)
-    return d;                                         AS(!isnan(d), "_fprazor32: isnan");
+    return d;
+                                           AS(!isnan(d), "_fprazor32: isnan");
   b    = b > 23?23:b;
   sign = du & (1<<31);
   du  &= 0x7fffffffu;

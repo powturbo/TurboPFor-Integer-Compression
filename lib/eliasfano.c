@@ -154,7 +154,8 @@ unsigned char *T2(EFANOENC, USIZE)(uint_t *__restrict in, unsigned n, unsigned c
   unsigned lb;
   uint_t _pa[1024+64],*pa=_pa;
   if(!n) return out;
-  if(n > 1024) pa = malloc(sizeof(pa[0])*(n+64));    if(!pa) die("efanoenc:malloc error size=%d ", n);
+  if(n > 1024) pa = malloc(sizeof(pa[0])*(n+64));
+  if(!pa) die("efanoenc:malloc error size=%d ", n);
   e = EFE(in,n-1,start);
   if(!e) { out[0] = 0; if(pa != _pa) free(pa);return out+1; }
 
@@ -204,12 +205,12 @@ unsigned char *T2(EFANODEC, USIZE)(unsigned char *__restrict in, unsigned n, uin
   }
 
   ip = T2(BITUNPACK,USIZE)(ip, n, out, --lb);
-  #define EFD(i) if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i;
+  #define EFD(i) if(!b) break; else { out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC; b = blsr64(b); ++i; }
 
   for(i=j=0;; j += sizeof(uint64_t)*8) {                                            //PREFETCH(ip+256,0);
     for(b = ctou64(ip+(j>>3)); ; ) {
       EFD(i); EFD(i); EFD(i); EFD(i);
-      if(!b) break; out[i] += ((uint_t)(j+ctz64(b)-i) << lb) + start+i*EF_INC;
+      if (!b) break; else { out[i] += ((uint_t)(j + ctz64(b) - i) << lb) + start + i * EF_INC; }
       if(unlikely(++i >= n))
         goto e;
       b = blsr64(b);
