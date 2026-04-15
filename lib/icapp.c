@@ -68,6 +68,7 @@
 #define min(x,y) (((x)<(y)) ? (x) : (y))
 #define max(x,y) (((x)>(y)) ? (x) : (y))
 #endif
+#define clamp(n, lower, upper) max(lower, min(upper, n))
 
 int verbose = 1,isa;
 extern int tpbsize;
@@ -882,8 +883,130 @@ unsigned qzdecomp64(unsigned char *in, unsigned inlen, unsigned char *out, unsig
   bitzdec(out, outlen, 8);
   return outlen;
 }
-
   #endif
+
+#ifdef _PCODEC 
+#include "ext/pcodec/cpcodec.h"
+
+typedef enum PcoError(*fpco_simpler_compress)(const void* nums, unsigned int len, unsigned char dtype, unsigned int level, struct PcoFfiVec* dst);
+typedef enum PcoError(*fpco_simple_decompress)(const void* compressed, unsigned int len, unsigned char dtype, struct PcoFfiVec* dst);
+typedef enum PcoError(*fpco_free_pcovec)(struct PcoFfiVec* ffi_vec);
+static fpco_simpler_compress pco_simpler_compress_;
+static fpco_simple_decompress pco_simple_decompress_;
+static fpco_free_pcovec pco_free_pcovec_;
+static int pco = 0;
+void pcocompini() {
+  if (pco)
+    return;
+  pco++;
+#if _WIN32
+  HINSTANCE hdll;
+  if (hdll = LoadLibrary("cpcodec.dll")) {
+    if (!(pco_simpler_compress_  =  (fpco_simpler_compress)GetProcAddress(hdll, "pco_simpler_compress")))  die("fpco_simpler_compress not found\n");
+    if (!(pco_simple_decompress_ = (fpco_simple_decompress)GetProcAddress(hdll, "pco_simple_decompress"))) die("pco_simple_decompress not found\n");
+    if (!(pco_free_pcovec_       =       (fpco_free_pcovec)GetProcAddress(hdll, "pco_free_pcovec")))       die("pco_free_pcovec not found\n");
+  }
+  else fprintf(stderr, "cpcodec.dll not found\n");
+#elif !defined(_STATIC)
+  void* hdll = dlopen("./cpcodec.so", RTLD_LAZY);
+  if (hdll) {
+    if (!(pco_simpler_compress_  =  (fpco_simpler_compress)dlsym(hdll, "pco_simpler_compress")))  die("fpco_simpler_compress not found\n");
+    if (!(pco_simple_decompress_ = (fpco_simple_decompress)dlsym(hdll, "pco_simple_decompress"))) die("pco_simple_decompress not found\n");
+    if (!(pco_free_pcovec_       =       (fpco_free_pcovec)dlsym(hdll, "pco_free_pcovec")))       die("pco_free_pcovec not found\n");
+  }
+  else fprintf(stderr, "cpcodec.so shared library not found. '%s'\n", dlerror());
+#endif
+}
+
+unsigned pcocomp32(unsigned char* in, unsigned inlen, unsigned char* out, int lev) {
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simpler_compress_(in, inlen / 4, PCO_TYPE_U32, lev, &v))
+    return 0;
+  memcpy(out, v.ptr, v.len);
+  inlen = v.len;
+  pco_free_pcovec_(&v);
+  return inlen;
+}
+
+unsigned pcodecomp32(unsigned char* in, unsigned inlen, unsigned char* out, unsigned outlen) {
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simple_decompress_(in, inlen, PCO_TYPE_U32, &v))
+    return 0;
+  memcpy(out, v.ptr, outlen);
+  pco_free_pcovec_(&v);
+  return outlen;
+}
+
+unsigned pcocomp64(unsigned char* in, unsigned inlen, unsigned char* out, int lev) {
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simpler_compress_(in, inlen / 8, PCO_TYPE_U64, lev, &v))
+    return 0;
+  memcpy(out, v.ptr, v.len);
+  inlen = v.len;
+  pco_free_pcovec_(&v);
+  return inlen;
+}
+
+unsigned pcodecomp64(unsigned char* in, unsigned inlen, unsigned char* out, unsigned outlen) {
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simple_decompress_(in, inlen, PCO_TYPE_U64, &v))
+    return 0;
+  memcpy(out, v.ptr, outlen);
+  pco_free_pcovec_(&v);
+  return outlen;
+}
+
+unsigned pcozcomp32(unsigned char* in, unsigned inlen, unsigned char* out, int lev, unsigned char* tmp) {
+  bitzenc(in, inlen, tmp, 4);
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simpler_compress_(tmp, inlen / 4, PCO_TYPE_U32, lev, &v))
+    return 0;
+  memcpy(out, v.ptr, v.len);
+  inlen = v.len;
+  pco_free_pcovec_(&v);
+  return inlen;
+}
+
+unsigned pcozdecomp32(unsigned char* in, unsigned inlen, unsigned char* out, unsigned outlen) {
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simple_decompress_(in, inlen, PCO_TYPE_U32, &v))
+    return 0;
+  memcpy(out, v.ptr, outlen);
+  pco_free_pcovec_(&v);
+  bitzdec(out, outlen, 4);
+  return outlen;
+}
+
+unsigned pcozcomp64(unsigned char* in, unsigned inlen, unsigned char* out, int lev, unsigned char* tmp) {
+  bitzenc(in, inlen, tmp, 8);
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simpler_compress_(tmp, inlen / 8, PCO_TYPE_U64, lev, &v))
+    return 0;
+  memcpy(out, v.ptr, v.len);
+  inlen = v.len;
+  pco_free_pcovec_(&v);
+  return inlen;
+}
+
+unsigned pcozdecomp64(unsigned char* in, unsigned inlen, unsigned char* out, unsigned outlen) {
+  pcocompini();
+  PcoFfiVec v = { 0 };
+  if (PcoSuccess != pco_simple_decompress_(in, inlen, PCO_TYPE_U64, &v))
+    return 0;
+  memcpy(out, v.ptr, outlen);
+  pco_free_pcovec_(&v);
+  bitzdec(out, outlen, 8);
+  return outlen;
+}
+#endif
+
 //----------------------------------------------------------------------------------
 #define CPYR(in,n,esize,out) memcpy(out+((n)&(~(esize-1))),in+((n)&(~(esize-1))),(n)&(esize-1))  //, out+((n)&(8*esize-1))
 
@@ -1187,8 +1310,8 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",
     "%3d:qcomp            quantile compress   ",
     "%3d:qcomp zigzag     quantile compress   ",
-    "%3d:175              speed test          ",
-    "%3d:176              speed test          ",
+    "%3d:pco              pco compress        ",
+    "%3d:pco zigzag       pco compress        ",
     "%3d:177              speed test          ",
     "%3d:178              speed test          ",
     "%3d:179              speed test          ",
@@ -1868,6 +1991,10 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp32( in, n, out, codlev), n,l, qdecomp32( out, l, cpy,n)); break;
     case 174: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qzcomp32(in, n, out, codlev,tmp), n,l, qzdecomp32(out, l, cpy,n)); break;
       #endif
+      #ifdef _PCODEC
+    case 175: TM("",l = pcocomp32( in, n, out, clamp(codlev, 0, 12)),     n,l,  pcodecomp32( out, l, cpy,n)); break;
+    case 176: TM("",l = pcozcomp32(in, n, out, clamp(codlev, 0, 12),tmp), n,l,  pcozdecomp32(out, l, cpy,n)); break;
+      #endif
     default: goto end;
   }
   if(l) {
@@ -2038,6 +2165,10 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
       #ifdef _QCOMPRESS
     case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp64( in, n, out, codlev),     n,l, qdecomp64( out, l, cpy,n)); break;
     case 174: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qzcomp64(in, n, out, codlev,tmp), n,l, qzdecomp64(out, l, cpy,n)); break;
+      #endif
+      #ifdef _PCODEC
+    case 175: TM("",l = pcocomp64( in, n, out, clamp(codlev, 0, 12)),      n,l, pcodecomp64( out, l, cpy,n)); break;
+    case 176: TM("",l = pcozcomp64(in, n, out, clamp(codlev, 0, 12),tmp), n,l,  pcozdecomp64(out, l, cpy,n)); break;
       #endif
     default: goto end;
   }
