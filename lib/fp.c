@@ -233,12 +233,13 @@ size_t T2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
       #endif
     op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                    PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
-  if((n = (in+n)-ip) != 0) { uint_t b = 0;
-    for(p = _p; p != &_p[n]; p++,ip++) FE(0,USIZE);
+  unsigned m;
+  if((m = (in+n)-ip) != 0) { uint_t b = 0;
+    for(p = _p; p != &_p[m]; p++,ip++) FE(0,USIZE);
     b = T2(clz,USIZE)(b);
     *op++ = b;
-    for(p = _p; p != &_p[n]; p++) TR(0,USIZE);
-    op = T2(P4ENC,USIZE)(_p, n, op);                                                         if(op >= out_) goto e;
+    for(p = _p; p != &_p[m]; p++) TR(0,USIZE);
+    op = T2(P4ENC,USIZE)(_p, m, op);                                                         if(op >= out_) goto e;
   }
   if(op >= out_) {
     e:op = out; *op++ = 0xff; memcpy(op, in, n*(USIZE/8)); op+=n*(USIZE/8);
