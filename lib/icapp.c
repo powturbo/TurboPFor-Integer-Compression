@@ -92,7 +92,6 @@ unsigned histt32(uint32_t *in, unsigned n) { unsigned i,l; uint64_t s=0; for(i =
 unsigned histt64(uint64_t *in, unsigned n) { unsigned i,l; uint64_t s=0; for(i = 0; i < 65; i++) tbits[i]=0; for(i = 0; i < n; i++) l=tbits[in[i]?ctz64(in[i]):64]++,s+=l; return (s+7)/8; }
 
 unsigned histx32(uint32_t *in, unsigned n) { unsigned i,l; uint64_t s=0; uint32_t x = 0; for(i = 0; i < 65; i++) zbits[i]=0; for(i = 0; i < n; i++) zbits[l=ctz32(in[i]^x)]++,s+=l,x=in[i]; return (s+7)/8; }
-
 //----------------------------- Convert iso-8601 and similar formats to timestamp -------------------------
 // Date separator : '.'. '/' or '-'
 // Hour separator : ':'
