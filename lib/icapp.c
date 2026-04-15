@@ -1309,8 +1309,8 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",
     "%3d:qcomp            quantile compress   ",
     "%3d:qcomp zigzag     quantile compress   ",
-    "%3d:pco              pco compress        ",
-    "%3d:pco zigzag       pco compress        ",
+    "%3d:pcoedec          pcodec compress     ",
+    "%3d:pcodec zigzag    pcodec compress     ",
     "%3d:177              speed test          ",
     "%3d:178              speed test          ",
     "%3d:179              speed test          ",
@@ -1989,10 +1989,14 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
       #ifdef _QCOMPRESS
     case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp32( in, n, out, codlev), n,l, qdecomp32( out, l, cpy,n)); break;
     case 174: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qzcomp32(in, n, out, codlev,tmp), n,l, qzdecomp32(out, l, cpy,n)); break;
+	  #else
+	case 173: case 174: printf("Quantile Compressor not included\n"); break;
       #endif
       #ifdef _PCODEC
     case 175: TM("",l = pcocomp32( in, n, out, clamp(codlev, 0, 12)),     n,l,  pcodecomp32( out, l, cpy,n)); break;
     case 176: TM("",l = pcozcomp32(in, n, out, clamp(codlev, 0, 12),tmp), n,l,  pcozdecomp32(out, l, cpy,n)); break;
+	  #else
+	case 175:case 176: printf("pcodec not included\n"); break;
       #endif
     default: goto end;
   }
@@ -2164,10 +2168,14 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
       #ifdef _QCOMPRESS
     case 173: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qcomp64( in, n, out, codlev),     n,l, qdecomp64( out, l, cpy,n)); break;
     case 174: if(codlev < 1) codlev = 1;if(codlev > 9) codlev = 9; TM("",l = qzcomp64(in, n, out, codlev,tmp), n,l, qzdecomp64(out, l, cpy,n)); break;
+	  #else
+	case 173:case 174: printf("Quantile Compressor not included\n"); break;
       #endif
       #ifdef _PCODEC
     case 175: TM("",l = pcocomp64( in, n, out, clamp(codlev, 0, 12)),      n,l, pcodecomp64( out, l, cpy,n)); break;
     case 176: TM("",l = pcozcomp64(in, n, out, clamp(codlev, 0, 12),tmp), n,l,  pcozdecomp64(out, l, cpy,n)); break;
+	  #else
+	case 175:case 176: printf("pcodec not included\n"); break;
       #endif
     default: goto end;
   }
@@ -2273,6 +2281,7 @@ testrazor() {
   exit(0);
 }
 #endif
+
 int main(int argc, char* argv[]) { //testrazor();
   unsigned      b = 1 << 31, lz=0, fno,m=1000000, bsize = (unsigned)-1, quantb = 0;
   int           isize=4,dfmt = 0,kid=1,skiph=0,decs=0,divs=1,dim0=0;
