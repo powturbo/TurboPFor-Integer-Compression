@@ -233,6 +233,7 @@ size_t T2(fpxenc,USIZE)(uint_t *in, size_t n, unsigned char *out, uint_t start) 
       #endif
     op = T2(P4ENCV,USIZE)(_p, VSIZE, op);                                                    PREFETCH(ip+512,0); if(op >= out_) goto e;
   }
+  
   unsigned m;
   if((m = (in+n)-ip) != 0) { uint_t b = 0;
     for(p = _p; p != &_p[m]; p++,ip++) FE(0,USIZE);
