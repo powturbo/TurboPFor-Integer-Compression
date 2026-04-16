@@ -10,13 +10,14 @@ CXXFLAGS+=$(_SSE) -I$(LB)FastPFor/headers -std=gnu99 -DUSE_THREADS
 ifeq ($(ICCODEC),1)
 LZ4=1
 ZSTD=1
-#FSE=1
+FSE=1
 #FSEHUF=1
 #ZLIB=1
 BITSHUFFLE=1
 TURBORC=1
 ANS=1
 #LZTURBO=1
+PCODEC=1
 endif
 
 ifeq ($(CODEC1),1)
