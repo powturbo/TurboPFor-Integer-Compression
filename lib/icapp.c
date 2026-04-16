@@ -1073,7 +1073,7 @@ static void bitunshuffle(uint8_t *in, unsigned n, uint8_t *out, unsigned esize) 
   #endif
 
 //-- lz --------------------------------------------------------
-unsigned codid = 0, codlev = 1;
+unsigned codid = 0, codlev = 1, icodlev=1;
 unsigned char codprm[256];
 
   #ifdef _SPDP
@@ -1309,7 +1309,7 @@ unsigned char *bestr(unsigned id, unsigned b, unsigned char *s, char *prms, int 
     "%3d:meshoptimizer    3D lz%s,%d          ",
     "%3d:qcomp            quantile compress   ",
     "%3d:qcomp zigzag     quantile compress   ",
-    "%3d:pcoedec          pcodec compress     ",
+    "%3d:pcodec           pcodec compress     ",
     "%3d:pcodec zigzag    pcodec compress     ",
     "%3d:177              speed test          ",
     "%3d:178              speed test          ",
@@ -1458,7 +1458,7 @@ uint64_t mindelta(  unsigned char *in, unsigned n, unsigned esize) {
 unsigned nx,ny,nz,nw;
 
 #define USIZE 1
-unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, int bsize) {
+unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, int bsize, int icodlev) {
   unsigned      l = 0, m = n/(USIZE), rc = 0, ns = CBUF(n);
   uint8_t       dm = mindelta8(in,m), *p = NULL;
   unsigned char *tmp = NULL;
@@ -1502,36 +1502,36 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     case  74: TM("",l=srlexc8(    in, n,out,tmp,RLE8), n,l, srlexd8(      out,l,cpy, n,RLE8)); break;
     case  75: TM("",l=srlezc8(    in, n,out,tmp,RLE8), n,l, srlezd8(      out,l,cpy, n,RLE8)); break;
       #ifdef _ICCODEC
-    case  80: TM("",l=codecenc(   in,n,out,ns,          codid,codlev,codprm),       n,l, codecdec(   out,l,cpy,n,          codid,codlev,codprm));       break; //iccodecs
-    case  81: TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case  82: TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case  83: TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case  84: TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case  85: TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case  86: TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
+    case  80: TM("",l=codecenc(   in,n,out,ns,          codid,icodlev,codprm),       n,l, codecdec(   out,l,cpy,n,          codid,icodlev,codprm));       break; //iccodecs
+    case  81: TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpdec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case  82: TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case  83: TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case  84: TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case  85: TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case  86: TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
       #ifdef _BITSHUFFLE
-    case  87: TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  88: TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  89: TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case  87: TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  88: TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  89: TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
       #endif
-    case  90: TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  91: TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  92: TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  93: TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  94: TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case  95: TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case  90: TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  91: TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  92: TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  93: TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  94: TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case  95: TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
 
-    case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm),n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm)); } break; //2D
-    case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm),n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm)); } break;
-    case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm),n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm)); } break;
+    case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm),n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm)); } break; //2D
+    case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm),n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm)); } break;
+    case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm),n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm)); } break;
 
-    case 103: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm),n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm)); } break; //3D
-    case 104: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm),n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm)); } break;
-    case 105: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm),n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm)); } break;
+    case 103: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm),n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm)); } break; //3D
+    case 104: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm),n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm)); } break;
+    case 105: if(nz>0) { unsigned _nz = nz*(nw?nw:1);           TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm),n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm)); } break;
 
-    case 106: if(nw>0) TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); break; //4D
-    case 107: if(nw>0) TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); break;
-    case 108: if(nw>0) TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); break;
+    case 106: if(nw>0) TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm),n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); break; //4D
+    case 107: if(nw>0) TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm),n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); break;
+    case 108: if(nw>0) TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm),n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); break;
       #endif
 
     case 117: TM("", tpenc( in, n, out,USIZE),      n,n, tpdec( out, n,cpy, USIZE)); l=n; break;
@@ -1547,7 +1547,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
     default: goto end;
   }
   if(l) {
-      unsigned char s[65] = { 0 }; printf("%-30s ", bestr(id, 8, s, codstr(codid), codlev));
+      unsigned char s[65] = { 0 }; printf("%-30s ", bestr(id, 8, s, codstr(codid), icodlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -1560,7 +1560,7 @@ unsigned bench8(unsigned char *in, unsigned n, unsigned char *out, unsigned char
 //--------------------------------------- 16 bits ------------------------------------------------------------------------------
 #undef USIZE
 #define USIZE 2
-unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
+unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize, int icodlev) {
   unsigned      l = 0,m = n/(USIZE),rc = 0, d = 0, ns = CBUF(n);
   uint16_t      dm = mindelta16(in,m);
   uint16_t      *p = NULL;
@@ -1654,35 +1654,35 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 75: TM("",l=srlezc16(        in, n,out,tmp,RLE16),n,l, srlezd16(          out,l,cpy, n,RLE16));break;
 
       #ifdef _ICCODEC
-    case 80: TM("",l=codecenc(   in,n,out,ns,codid,codlev,codprm),                 n,l, codecdec(out,l,cpy,n,codid,codlev,codprm));                    break; // iccodecs
-    case 81: TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 82: TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 83: TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 84: TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 85: TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 86: TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
+    case 80: TM("",l=codecenc(   in,n,out,ns,codid,icodlev,codprm),                 n,l, codecdec(out,l,cpy,n,codid,icodlev,codprm));                    break; // iccodecs
+    case 81: TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpdec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 82: TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 83: TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 84: TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 85: TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 86: TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
       #ifdef _BITSHUFFLE
-    case 87: TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 88: TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 89: TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case 87: TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 88: TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 89: TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
       #endif
-    case 90: TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 91: TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 92: TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 93: TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 94: TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 95: TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case 90: TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 91: TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 92: TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 93: TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 94: TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 95: TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
 
-    case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm), n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));	} break;
-    case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm), n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));	} break;
-    case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm), n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));	} break;
+    case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm), n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm));	} break;
+    case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm), n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm));	} break;
+    case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm), n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm));	} break;
 
-    case 103: if(nz>0) { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm), n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm));	} break;
-    case 104: if(nz>0) { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm), n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm));	} break;
-    case 105: if(nz>0) { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm), n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm));	} break;
-    case 106: if(nw>0) {                              TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm), n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); } break;
-    case 107: if(nw>0) { TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm), n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); } break;
-    case 108: if(nw>0) { TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm), n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); } break;
+    case 103: if(nz>0) { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm), n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm));	} break;
+    case 104: if(nz>0) { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm), n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm));	} break;
+    case 105: if(nz>0) { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm), n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm));	} break;
+    case 106: if(nw>0) {                              TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm), n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); } break;
+    case 107: if(nw>0) { TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm), n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); } break;
+    case 108: if(nw>0) { TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm), n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); } break;
       #endif
     case 110: TM("", l=vlcenc16(in,  n, out), n,l, l==n?memcpy(cpy,in,n):(void*)vlcdec16( out,n,cpy)); break;
     case 111: TM("", l=vlczenc16(in, n, out), n,l, l==n?memcpy(cpy,in,n):(void*)vlczdec16(out,n,cpy)); break;
@@ -1715,7 +1715,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
   }
   if(l) {
     unsigned char s[65] = { 0 };
-	printf("%-30s ", bestr(id, 16, s, codstr(codid), codlev));
+	printf("%-30s ", bestr(id, 16, s, codstr(codid), icodlev));
     if(cpy)
 	  rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
@@ -1728,7 +1728,7 @@ unsigned bench16(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 //---------------------------------------- 32 bits ----------------------------------------------------------------------------------------------------------------
 #undef USIZE
 #define USIZE 4
-unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
+unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize, int icodlev) {
   unsigned      l = 0, m = n/(USIZE), rc = 0, d = 0, ns = CBUF(n);
   uint32_t      dm = mindelta32(in,m);
   unsigned char *tmp = NULL;
@@ -1867,48 +1867,48 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 77:               TM("",l=tprlexenc(  in,n,out,ns,USIZE,tmp) ,n,l, tprlexdec(out,l,cpy,n,USIZE,tmp)); break;
     case 78:               TM("",l=tprlezenc(  in,n,out,ns,USIZE,tmp) ,n,l, tprlezdec(out,l,cpy,n,USIZE,tmp)); break;
 
-    case 80:               TM("",l=codecenc(   in,n,out,ns,          codid,codlev,codprm),       n,l, codecdec( out,l,cpy,n,          codid,codlev,codprm));       break;
-    case 81:               TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 82:               TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpxdec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 83:               TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpzdec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 84:               TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpd4ec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 85:               TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4xdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 86:               TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4zdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
+    case 80:               TM("",l=codecenc(   in,n,out,ns,          codid,icodlev,codprm),       n,l, codecdec( out,l,cpy,n,          codid,icodlev,codprm));       break;
+    case 81:               TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 82:               TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpxdec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 83:               TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpzdec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 84:               TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpd4ec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 85:               TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4xdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 86:               TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4zdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
         #ifdef _BITSHUFFLE
-    case 87:               TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 88:               TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 89:               TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case 87:               TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 88:               TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 89:               TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
         #endif
-    case 90:               TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 91:               TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 92:               TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 93:               TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 94:               TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 95:               TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm), n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 96:               TM("",l=vlccomp32(  in,n,out,ns,      tmp,codid,codlev,codprm), n,l, l==n?memcpy(cpy,in,n):(void *)vlcdecomp32(out, l, cpy, n, tmp,codid,codlev,codprm)); break;
-    case 97:               TM("",l=vhicomp32(  in,n,out,ns,      tmp,codid,codlev,codprm), n,l, l==n?memcpy(cpy,in,n):(void *)vhidecomp32(out, l, cpy, n, tmp,codid,codlev,codprm)); break;
+    case 90:               TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 91:               TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 92:               TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 93:               TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 94:               TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 95:               TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm), n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 96:               TM("",l=vlccomp32(  in,n,out,ns,      tmp,codid,icodlev,codprm), n,l, l==n?memcpy(cpy,in,n):(void *)vlcdecomp32(out, l, cpy, n, tmp,codid,icodlev,codprm)); break;
+    case 97:               TM("",l=vhicomp32(  in,n,out,ns,      tmp,codid,icodlev,codprm), n,l, l==n?memcpy(cpy,in,n):(void *)vhidecomp32(out, l, cpy, n, tmp,codid,icodlev,codprm)); break;
 
     case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);  if(verbose) printf("2D=%dx%d ", nx,_ny);
-                           TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp,nx,_ny,codid,codlev,codprm),n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));
+                           TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp,nx,_ny,codid,icodlev,codprm),n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm));
 	} break;
     case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
-                           TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp,nx,_ny,codid,codlev,codprm),n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));
+                           TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp,nx,_ny,codid,icodlev,codprm),n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm));
 	} break;
     case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1);
-                           TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm),n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm));
+                           TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm),n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm));
 	} break;
     case 103: if(nz>0) { unsigned _nz = nz*(nw?nw:1);
-                           TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm),n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm));
+                           TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm),n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm));
 	} break;
     case 104: if(nz>0) { unsigned _nz = nz*(nw?nw:1);
-                           TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm),n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm));
+                           TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm),n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm));
 	} break;
     case 105: if(nz>0) { unsigned _nz = nz*(nw?nw:1);
-                           TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm),n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm));
+                           TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm),n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm));
 	} break;
-    case 106: if(nw>0) {   TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm), n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm));} break;
-    case 107: if(nw>0) {   TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm), n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm));} break;
-    case 108: if(nw>0) {   TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm), n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm));} break;
+    case 106: if(nw>0) {   TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm), n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm));} break;
+    case 107: if(nw>0) {   TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm), n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm));} break;
+    case 108: if(nw>0) {   TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm), n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm));} break;
       #endif
     case 110:              TM("",l=vlcenc32( in, n, out), n,l, l==n?memcpy(cpy,in,n):(void*)vlcdec32( out, n,cpy)); break;
     case 111:              TM("",l=vlczenc32(in, n, out), n,l, l==n?memcpy(cpy,in,n):(void*)vlczdec32(out, n,cpy)); break;
@@ -2001,7 +2001,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     default: goto end;
   }
   if(l) {
-    unsigned char s[128] = { 0 };                                                         AC(codstr(codid), "Fatal"); printf("%-40s ", bestr(id, 32, s, codstr(codid), codlev));
+    unsigned char s[128] = { 0 };                                                         AC(codstr(codid), "Fatal"); printf("%-40s ", bestr(id, 32, s, codstr(codid), icodlev));
     if(cpy) rc = memcheck32(in,m,cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -2012,7 +2012,7 @@ unsigned bench32(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
 
 #undef USIZE
 #define USIZE 8
-unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize) {
+unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned char *cpy, int id, char *inname, int codlev, unsigned bsize, int icodlev) {
   unsigned      l = 0,m = n/(USIZE), rc = 0, d = 0, ns = CBUF(n);
   uint64_t      dm = mindelta64(in,m);
   uint64_t      *p = NULL;
@@ -2086,35 +2086,35 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     case 74: TM("",l=srlexc64(    in, n,out,tmp,RLE64),n,l, srlexd64(     out,l,cpy, n,RLE64)); break;
     case 75: TM("",l=srlezc64(    in, n,out,tmp,RLE64),n,l, srlezd64(     out,l,cpy, n,RLE64)); break;
       #ifdef _ICCODEC
-    case 80: TM("",l=codecenc(   in,n,out,ns,codid,codlev,codprm) ,n,l, codecdec(out,l,cpy,n,codid,codlev,codprm)); break;
-    case 81: TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpdec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 82: TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 83: TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 84: TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 85: TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
-    case 86: TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm,bsize), n,l, lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm,bsize)); break;
+    case 80: TM("",l=codecenc(   in,n,out,ns,codid,icodlev,codprm) ,n,l, codecdec(out,l,cpy,n,codid,icodlev,codprm)); break;
+    case 81: TM("",l=lztpenc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpdec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 82: TM("",l=lztpxenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpxdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 83: TM("",l=lztpzenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpzdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 84: TM("",l=lztp4enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztpd4ec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 85: TM("",l=lztp4xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
+    case 86: TM("",l=lztp4zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm,bsize), n,l, lztp4zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm,bsize)); break;
         #ifdef _BITSHUFFLE
-    case 87: TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 88: TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 89: TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case 87: TM("",l=lztp1enc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1dec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 88: TM("",l=lztp1xenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1xdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 89: TM("",l=lztp1zenc(  in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztp1zdec(  out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
         #endif
-    case 90: TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 91: TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 92: TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 93: TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 94: TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
-    case 95: TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,codlev,codprm),       n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,codlev,codprm)); break;
+    case 90: TM("",l=lztprleenc( in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprledec( out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 91: TM("",l=lztprlexenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprlexdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 92: TM("",l=lztprlezenc(in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lztprlezdec(out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 93: TM("",l=lzv8enc(    in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8dec(    out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 94: TM("",l=lzv8xenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8xdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
+    case 95: TM("",l=lzv8zenc(   in,n,out,ns,USIZE,tmp,codid,icodlev,codprm),       n,l, lzv8zdec(   out,l,cpy,n,USIZE,tmp,codid,icodlev,codprm)); break;
 
-    case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm), n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm)); } break;
-    case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm), n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm)); } break;
-    case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,codlev,codprm), n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,codlev,codprm)); } break;
+    case 100: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2enc( in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm), n,l, lztpd2dec( out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm)); } break;
+    case 101: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2xenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm), n,l, lztpd2xdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm)); } break;
+    case 102: if(ny>0) { unsigned _ny = ny*(nz?nz:1)*(nw?nw:1); TM("",l=lztpd2zenc(in,n,out,ns,USIZE,tmp, nx,_ny,codid,icodlev,codprm), n,l, lztpd2zdec(out,l,cpy,n,USIZE,tmp, nx,_ny,codid,icodlev,codprm)); } break;
 
-    case 103: if(nz>0)   { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp,nx,ny,_nz,codid,codlev,codprm),  n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm)); } break;
-    case 104: if(nz>0)   { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp,nx,ny,_nz,codid,codlev,codprm),  n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm)); } break;
-    case 105: if(nz>0)   { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp,nx,ny,_nz,codid,codlev,codprm),  n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,codlev,codprm)); } break;
-    case 106: if(nw>0)   {                              TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); } break;
-    case 107: if(nw>0)   {                              TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm));} break;
-    case 108: if(nw>0)   {                              TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,codlev,codprm),n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,codlev,codprm)); } break;
+    case 103: if(nz>0)   { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3enc( in,n,out,ns,USIZE,tmp,nx,ny,_nz,codid,icodlev,codprm),  n,l, lztpd3dec( out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm)); } break;
+    case 104: if(nz>0)   { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3xenc(in,n,out,ns,USIZE,tmp,nx,ny,_nz,codid,icodlev,codprm),  n,l, lztpd3xdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm)); } break;
+    case 105: if(nz>0)   { unsigned _nz = nz*(nw?nw:1); TM("",l=lztpd3zenc(in,n,out,ns,USIZE,tmp,nx,ny,_nz,codid,icodlev,codprm),  n,l, lztpd3zdec(out,l,cpy,n,USIZE,tmp, nx,ny,_nz,codid,icodlev,codprm)); } break;
+    case 106: if(nw>0)   {                              TM("",l=lztpd4enc( in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm),n,l, lztpd4dec( out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); } break;
+    case 107: if(nw>0)   {                              TM("",l=lztpd4xenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm),n,l, lztpd4xdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm));} break;
+    case 108: if(nw>0)   {                              TM("",l=lztpd4zenc(in,n,out,ns,USIZE,tmp,nx,ny,nz,nw,codid,icodlev,codprm),n,l, lztpd4zdec(out,l,cpy,n,USIZE,tmp, nx,ny,nz,nw,codid,icodlev,codprm)); } break;
       #endif
     case 117: l = n; TM("", tpenc( in, n, out,USIZE),n,l, tpdec( out, n,cpy, USIZE)); break;
     case 118: l = n; TM("", tp4enc(in, n, out,USIZE),n,l, tp4dec(out, n,cpy, USIZE)); break;
@@ -2180,7 +2180,7 @@ unsigned bench64(unsigned char *in, unsigned n, unsigned char *out, unsigned cha
     default: goto end;
   }
   if(l) {
-    unsigned char s[65]; printf("%-30s ", bestr(id, 64,s, codstr(codid),codlev));
+    unsigned char s[65]; printf("%-30s ", bestr(id, 64, s, codstr(codid), icodlev));
     if(cpy) rc = memcheck(in,m*(USIZE),cpy);
     if(!rc)
       printf("\t%s\n", inname?inname:"");
@@ -2384,7 +2384,7 @@ int main(int argc, char* argv[]) { //testrazor();
   if((q = strchr(scmd,',')) != NULL) *q = '\0';
   codid = lzidget(scmd);
   scmd = q?(q+1):"";
-  codlev = strtoul(scmd, &scmd, 10);
+  icodlev = strtoul(scmd, &scmd, 10);
 
   if(scmd) strcpy((char *)codprm,scmd);
   unsigned fcnt = 0;                                                                                  if(verbose>1) printf("dfmt=%d,size=%d\n", dfmt, isize);
@@ -2494,7 +2494,7 @@ int main(int argc, char* argv[]) { //testrazor();
 
     char *p = icmd?icmd:"1-120";
     if(verbose>1 || fno == optind) {
-      printf("      size   ratio     E MB/s   D MB/s   function %s size=%d bits (lz=%s,%d%s) ", isize>0?"integer":"floating point", abs(isize)*8, codstr(codid), codlev, codprm);
+      printf("      size   ratio     E MB/s   D MB/s   function %s size=%d bits (lz=%s,%d%s) ", isize>0?"integer":"floating point", abs(isize)*8, codstr(codid), icodlev, codprm);
       if(be_mindelta == (uint64_t)-1) printf("unsorted %lld ", be_mindelta);
       else printf("sorted(mindelta=%lld) ", be_mindelta);
       if(errlim > 0.0) printf("FP err=%f", errlim);
@@ -2514,10 +2514,10 @@ int main(int argc, char* argv[]) { //testrazor();
       for(i = id; i <= idx; i++) {
 	    unsigned l = 0;
         switch(abs(isize)) {
-          case 1: l = bench8( in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); break;
-          case 2: l = bench16(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); break;
-          case 4: l = bench32(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); break;
-          case 8: l = bench64(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize); /*double *d = in; for(int i=0; i < 100; i++) printf("%.3f ", d[i]);*/break;
+          case 1: l = bench8( in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize, icodlev); break;
+          case 2: l = bench16(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize, icodlev); break;
+          case 4: l = bench32(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize, icodlev); break;
+          case 8: l = bench64(in, n, out, cpy, i, /*optind+1 == argc?NULL:*/inname, codlev, bsize, icodlev); /*double *d = in; for(int i=0; i < 100; i++) printf("%.3f ", d[i]);*/break;
           default: die("integer size must be 1, 2, 4 or 8\n");
         }
 		if(l > 0) {
