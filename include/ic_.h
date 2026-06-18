@@ -37,6 +37,13 @@ typedef unsigned long long uint64_t;
 #endif
 #include <stddef.h>
 
+//------------------------- Target architecture --------------------------------
+  #if defined(__riscv)
+    #define IC_ARCH_RISCV 1
+  #elif defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_AMD64) || defined(_M_X64) || defined(__amd64__)
+    #define IC_ARCH_X86 1
+  #endif
+
 //------------------------- Compiler ------------------------------------------
   #if defined(__GNUC__)
 #include <stdint.h>
@@ -59,7 +66,7 @@ static ALWAYS_INLINE unsigned short bswap16(unsigned short x) { return __builtin
 #define popcnt32(_x_)   __builtin_popcount(_x_)
 #define popcnt64(_x_)   __builtin_popcountll(_x_)
 
-    #if defined(__i386__) || defined(__x86_64__)
+    #if defined(IC_ARCH_X86)
 //x,__bsr32:     1:0,2:1,3:1,4:2,5:2,6:2,7:2,8:3,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:5,...
 //x,  bsr32: 0:0,1:1,2:2,3:2,4:3,5:3,6:3,7:3,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4,16:5,17:5,18:5,19:5,20:5,21:5,22:5,23:5,24:5,25:5,26:5,27:5,28:5,29:5,30:5,31:5,32:6,...
 static ALWAYS_INLINE int    __bsr32(               int x) {             asm("bsr  %1,%0" : "=r" (x) : "rm" (x) ); return x; }
@@ -162,7 +169,7 @@ static ALWAYS_INLINE double round(double num) { return (num > 0.0) ? floor(num +
 #define popcnt16(x)  popcnt32(x)
 
 //--------------- Unaligned memory access -------------------------------------
-  #ifdef UA_MEMCPY
+  #if defined(UA_MEMCPY) || defined(IC_ARCH_RISCV)
 #include <string.h>
 static ALWAYS_INLINE unsigned short     ctou16(const void *cp) { unsigned short     x; memcpy(&x, cp, sizeof(x)); return x; } // ua read
 static ALWAYS_INLINE unsigned           ctou32(const void *cp) { unsigned           x; memcpy(&x, cp, sizeof(x)); return x; }
@@ -181,8 +188,7 @@ static ALWAYS_INLINE void               stof64(      void *cp, double           
 static ALWAYS_INLINE void               ltou32(unsigned           *x, const void *cp) { memcpy(x, cp, sizeof(*x)); } // ua read into ptr
 static ALWAYS_INLINE void               ltou64(unsigned long long *x, const void *cp) { memcpy(x, cp, sizeof(*x)); }
 
-  #elif defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_AMD64) || _MSC_VER ||\
+  #elif defined(IC_ARCH_X86) || defined(_MSC_VER) ||\
     defined(__powerpc__) || defined(__s390__) ||\
     defined(__ARM_FEATURE_UNALIGNED) || defined(__aarch64__) || defined(__arm__) ||\
     defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || \
@@ -198,7 +204,7 @@ static ALWAYS_INLINE void               ltou64(unsigned long long *x, const void
 
 #define ltou32(_px_, _cp_) *(_px_) = *(unsigned *)(_cp_)
 
-    #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || defined(__s390__) || defined(_MSC_VER)
+    #if defined(IC_ARCH_X86) || defined(__powerpc__) || defined(__s390__) || defined(_MSC_VER)
 #define ctou64(_cp_)       (*(uint64_t *)(_cp_))
 #define ctof64(_cp_)       (*(double   *)(_cp_))
 
@@ -248,6 +254,7 @@ struct _PACKED doubleu   { double             d; };
 #define ctou8(_cp_) (*(_cp_))
 //--------------------- wordsize ----------------------------------------------
   #if defined(__64BIT__) || defined(_LP64) || defined(__LP64__) || defined(_WIN64) ||\
+    (defined(__riscv_xlen) && __riscv_xlen == 64) ||\
     defined(__x86_64__) || defined(_M_X64) ||\
     defined(__ia64) || defined(_M_IA64) ||\
     defined(__aarch64__) ||\
@@ -272,7 +279,7 @@ struct _PACKED doubleu   { double             d; };
 #define BZHI8( _u_, _b_)                 BZHI32(_u_, _b_)
 #define BEXTR32(x,start,len)             (((x) >> (start)) & ((1u << (len)) - 1)) //Bit field extract (with register)
 
-    #ifdef __AVX2__
+    #if defined(IC_ARCH_X86) && defined(__AVX2__)
       #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #include <intrin.h>
       #else

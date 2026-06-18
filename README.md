@@ -7,6 +7,7 @@
   * **Rust** Bindings. Access TurboPFor **incl. SSE/AVX2/Neon!** from Rust
   * :+1: **Java** Critical Natives/JNI. Access TurboPFor **incl. SSE/AVX2/Neon!** from Java as fast as calling from C
   * :sparkles: **FULL** range 8/16/32/64 bits scalar + 16/32/64 bits SIMD functions
+  * `riscv64` currently uses the existing generic/scalar path and does not enable x86 SIMD or AVX2 code paths unless a dedicated RISC-V backend is added.
   * No other "Integer Compression" compress/decompress faster
   * :sparkles: Direct Access, **integrated** (SIMD/AVX2) FOR/delta/Delta of Delta/Zigzag for sorted/unsorted arrays
 * **For/PFor/PForDelta**

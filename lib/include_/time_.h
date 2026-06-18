@@ -37,7 +37,7 @@
 #define Sleep(ms) usleep((ms) * 1000)
   #endif
 
-#if defined (__i386__) || defined( __x86_64__ )  // ------------------ rdtsc --------------------------
+#if (defined (__i386__) || defined( __x86_64__ )) && !defined(__riscv)  // ------------------ rdtsc --------------------------
   #ifdef _MSC_VER
 #include <intrin.h> // __rdtsc
   #else

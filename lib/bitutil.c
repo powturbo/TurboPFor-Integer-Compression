@@ -533,8 +533,13 @@ uint32_t bitdienc32(uint32_t *in, unsigned n, uint32_t *out, uint32_t start, uin
     *op++ = x;
   }
     #else
-  uint32_t b = 0,*op = out, x, *_ip;
-  BITDE(uint32_t, in, n, mindelta, b |= x; *op++ = x);
+  uint32_t b = 0,*op = out, *_ip;
+  for(_ip = in; _ip != in+n; _ip++) {
+    uint32_t u = *_ip - start - mindelta;
+    start = *_ip;
+    b    |= u;
+    *op++ = u;
+  }
     #endif
   return b;
 }
@@ -824,7 +829,7 @@ void bitxdec32(unsigned *in, unsigned n, unsigned start) {
     *ip++ = (start ^= z);
   }
     #else
-  BITXDEC(uint32_t, 32, in, n);
+  BITXDEC(uint32_t, in, n);
     #endif
 }
 
