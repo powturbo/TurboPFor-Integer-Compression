@@ -13,6 +13,8 @@
 #           or    "make CODEC1=1 CODEC2=1 ICCODEC=1"
 # aarch64 cross compile
 # export CC=aarch64-linux-gnu-gcc
+# riscv64 cross compile
+# export CC=riscv64-linux-gnu-gcc
 
 #ICCODEC=1
 #AVX2=1
@@ -50,8 +52,12 @@ else
 
 ifneq (,$(findstring aarch64,$(CC)))
   ARCH = aarch64
+else ifneq (,$(findstring riscv64,$(CC)))
+  ARCH = riscv64
 else ifneq (,$(findstring arm64,$(ARCH)))
   ARCH = aarch64
+else ifneq (,$(findstring riscv64,$(ARCH)))
+  ARCH = riscv64
 else ifneq (,$(findstring iPhone,$(ARCH)))
   ARCH = aarch64
   CFLAGS=-DHAVE_MALLOC_MALLOC
@@ -63,6 +69,8 @@ endif
 ifeq ($(ARCH),ppc64le)
   _SSE=-D__SSSE3__
   CFLAGS=-mcpu=power9 -mtune=power9 $(_SSE)
+else ifeq ($(ARCH),riscv64)
+  CFLAGS=-D__riscv=1 -D__riscv_xlen=64
 else ifeq ($(ARCH),aarch64)
   CFLAGS=-march=armv8-a
 ifneq (,$(findstring clang, $(CC)))
