@@ -275,7 +275,8 @@ endif
 
 
 ifeq ($(TURBORC), 1)
-CFLAGS+=-D_TURBORC -I$(T)libsais/include -D_NCPUISA -D_NQUANT
+BUILD_DATE := $(shell date +%Y%m%d)
+CFLAGS+=-D_TURBORC -I$(T)libsais/include -D_NCPUISA -D_NQUANT -DBUILD_VERSION="\"v$(BUILD_DATE)\"" 
 T=$(LB)Turbo-Range-Coder/
 ifeq ($(ANS), 1)
 CFLAGS+=-D_ANS
