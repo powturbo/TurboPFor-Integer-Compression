@@ -38,6 +38,13 @@
 
 #define PAD8(__x) ( (((__x)+8-1)/8) )
 
+/* A corrupt stream can encode a bit width larger than the element type.
+   The bitunpack dispatch tables are indexed with it, so an unchecked width
+   reads outside the table and can select an unpacker of the wrong element
+   size. Clamp every stream-derived width before it is used. */
+#define P4DBW(__b)  ((__b) > USIZE ? USIZE : (__b))          /* plain unpack   */
+#define P4DBWX(__b) ((__b) >= USIZE ? USIZE - 1 : (__b))     /* width also shifted by */
+
 #define P4DELTA(a)
 #define P4DELTA_(a)
   #if defined(__SSSE3__) || defined(__ARM_NEON)
@@ -266,9 +273,9 @@ ALWAYS_INLINE unsigned char *T2(_P4DEC, USIZE)(unsigned char *__restrict in, uns
       #if USIZE == 64
     b = (b == 63)?64:b;  // 63,64 are both encoded w. same bitsize 64 (permits using only 6 bits for b)
       #endif
-    return T2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b);  // bitunpack only
+    return T2(BITUNPACKD, USIZE)(in, n, out P4DELTA(start), P4DBW(b));  // bitunpack only
   }
-  b &= 0x7f;
+  b = P4DBWX(b & 0x7f);
     #if VSIZE >= 128      // vertical SIMD bitpacking
       #if USIZE == 64
   if(b+bx <= 32)          // use SIMD when bitsize <= 32 (scalar horizontal bitunpack64 is used when 32 < bitsize <=64 )
@@ -280,11 +287,11 @@ ALWAYS_INLINE unsigned char *T2(_P4DEC, USIZE)(unsigned char *__restrict in, uns
     in = T2(bitunpack, 32)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx);     // unpack the fixex size part
         #else
     uint_t ex[P4D_MAX+64];
-    in = T2(bitunpack, USIZE)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, bx);
+    in = T2(bitunpack, USIZE)(in+16, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)), ex, P4DBW(bx));
         #endif
       #else
     uint_t ex[P4D_MAX+64];
-    in = T2(bitunpack, USIZE)(in+32, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)) + popcnt64(ctou64(in+16)) + popcnt64(ctou64(in+24)), ex, bx);
+    in = T2(bitunpack, USIZE)(in+32, popcnt64(ctou64(in)) + popcnt64(ctou64(in+8)) + popcnt64(ctou64(in+16)) + popcnt64(ctou64(in+24)), ex, P4DBW(bx));
       #endif
     return T2(_BITUNPACKD, USIZE)(in, n, out P4DELTA(start), b, ex, pb);  // unpack and merge the exceptions
   }
@@ -295,7 +302,7 @@ ALWAYS_INLINE unsigned char *T2(_P4DEC, USIZE)(unsigned char *__restrict in, uns
     unsigned num=0,i,p4dn = (n+63)/64;
     for(i = 0; i < n/64; i++) { bb[i] = ctou64(in+i*8); num += popcnt64(bb[i]); }
     if(n & 0x3f) { bb[i] = ctou64(in+i*8) & ((1ull<<(n&0x3f))-1); num += popcnt64(bb[i]); }
-    in = T2(bitunpack, USIZE)(in+PAD8(n), num, ex, bx);
+    in = T2(bitunpack, USIZE)(in+PAD8(n), num, ex, P4DBW(bx));
     in = T2(BITUNPACK, USIZE)(in, n, out, b);
       #if 0 //defined(__AVX2__)
     { uint_t *op,*pex = ex;
@@ -309,7 +316,13 @@ ALWAYS_INLINE unsigned char *T2(_P4DEC, USIZE)(unsigned char *__restrict in, uns
     { uint_t *_op = out,*op,*pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op=_op;  bb[i]; bb[i] >>= 4,op+=4) { const unsigned m = bb[i]&0xf;
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
+          if(op + 4 <= out + n) {
+            _mm_storeu_si128((__m128i *)op, _mm_add_epi32(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi32(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_32[m]) ) )); pex += popcnt32(m);
+          } else { // last partial block: a 128 bit store would pass the end of out
+            unsigned k;
+            for(k = 0; k < 4; k++)
+              if(m & (1u<<k)) op[k] += (uint_t)(*pex++ << b);
+          }
         } _op+=64;
       }
     }
@@ -317,7 +330,13 @@ ALWAYS_INLINE unsigned char *T2(_P4DEC, USIZE)(unsigned char *__restrict in, uns
     { uint_t *_op = out, *op, *pex = ex;
       for(i = 0; i < p4dn; i++) {
         for(op = _op;  bb[i]; bb[i] >>= 8,op += 8) { const unsigned char m = bb[i];
-          _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
+          if(op + 8 <= out + n) {
+            _mm_storeu_si128((__m128i *)op, _mm_add_epi16(_mm_loadu_si128((__m128i*)op), _mm_shuffle_epi8(_mm_slli_epi16(_mm_loadu_si128((__m128i*)pex), b), _mm_load_si128((__m128i*)_shuffle_16[m]) ) )); pex += popcnt32(m);
+          } else { // last partial block: a 128 bit store would pass the end of out
+            unsigned k;
+            for(k = 0; k < 8; k++)
+              if(m & (1u<<k)) op[k] += (uint_t)(*pex++ << b);
+          }
         } _op += 64;
       }
     }
@@ -388,11 +407,13 @@ unsigned char *T2(P4DEC, USIZE)(unsigned char *__restrict in, unsigned n, uint_t
   else {  // Variable byte
 #if USIZE > 8
     uint_t ex[P4D_MAX+64],*pex=ex;
-    b  &= 0x3f;
+    b  = P4DBWX(b & 0x3f);
     bx = *in++;                                                                             /*if(b && *in++ == 0x80) { uint_t u = T2(ctou, USIZE)(in); if(b < USIZE) u = T2(BZHI, USIZE)(u,b); int i; for(i = 0; i < n; i++) out[i] = u; in+=(b+7)/8;  } else*/
     in = T2(BITUNPACK, USIZE)(in, n, out, b);
     in = T2(vbdec,     USIZE)(in, bx, ex);
-    #define ST(j) out[in[i+j]] |= ex[i+j] << b
+    /* The exception positions are read from the stream. An out of range
+       position must not write outside this call's output array. */
+    #define ST(j) do { unsigned p = in[i+(j)]; if(p < n) out[p] |= ex[i+(j)] << b; } while(0)
     //#define ST(j) out[*ip++] |= (*pex++) << b;
     //unsigned char *ip;for(ip = in; ip != in + (bx & ~3); )
     for(i  = 0;  i != (bx & ~7); i+=8)
@@ -448,22 +469,20 @@ size_t T2(P4NDEC, USIZE)(unsigned char *__restrict in, size_t n, uint_t *__restr
       #if USIZE > 8
     else {
       uint_t ex[P4D_MAX+64];
-      b  &= 0x3f;
+      b  = P4DBWX(b & 0x3f);
       bx = *ip++;                                                           //f(*ip++ == 0x80 && b) { uint_t u = T2(ctou, USIZE)(ip); ip+=(b+7)/8; if(b < USIZE) u = T2(BZHI, USIZE)(u,b);  int i; for(i=0; i < CSIZE; i++) op[i] = u; } else
       ip = T2(BITUNPACK, USIZE)(ip, CSIZE, op, b);
       ip = T2(vbdec,     USIZE)(ip, bx, ex);
+      /* The exception positions are read from the stream. An out of range
+         position must not write outside the current output group. */
+      #define P4ST(j) do { unsigned p = ip[i+(j)]; if(p < CSIZE) op[p] |= ex[i+(j)] << b; } while(0)
       for(i = 0; i != (bx & ~7); i += 8) {
-        op[ip[i  ]] |= ex[i  ] << b;
-        op[ip[i+1]] |= ex[i+1] << b;
-        op[ip[i+2]] |= ex[i+2] << b;
-        op[ip[i+3]] |= ex[i+3] << b;
-        op[ip[i+4]] |= ex[i+4] << b;
-        op[ip[i+5]] |= ex[i+5] << b;
-        op[ip[i+6]] |= ex[i+6] << b;
-        op[ip[i+7]] |= ex[i+7] << b;
+        P4ST(0); P4ST(1); P4ST(2); P4ST(3);
+        P4ST(4); P4ST(5); P4ST(6); P4ST(7);
       }
       for(;i != bx; i++)
-        op[ip[i]] |= ex[i] << b;
+        P4ST(0);
+      #undef P4ST
       ip += bx;
         #ifdef BITUNDD
       T2(BITUNDD, USIZE)(op, CSIZE, start);

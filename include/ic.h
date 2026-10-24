@@ -1360,6 +1360,10 @@ size_t p4ndec128v16(  unsigned char *__restrict in, size_t n, uint16_t *__restri
 size_t p4ndec128v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
 size_t p4ndec128v64(  unsigned char *__restrict in, size_t n, uint64_t *__restrict out);
 size_t p4ndec256v32(  unsigned char *__restrict in, size_t n, uint32_t *__restrict out);
+// Decode n values from a compressed buffer of inlen bytes.
+// Return value = number of bytes read from in, or 0 when the stream is
+// truncated and would need to read past in. out is written only on success.
+size_t p4ndec32len(   const unsigned char *__restrict in, size_t inlen, size_t n, uint32_t *__restrict out);
 
 // Delta minimum = 0
 size_t p4nddec8(      unsigned char *__restrict in, size_t n, uint8_t  *__restrict out);

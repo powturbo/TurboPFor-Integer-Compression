@@ -15,7 +15,7 @@ LIB_LIB = libic.lib
 LIB_DLL = ic.dll
 LIB_IMP = ic.lib
 
-OBJS = lib\bic.obj lib\bitpack.obj lib\bitunpack.obj lib\bitutil.obj lib\eliasfano.obj lib\fp.obj lib\iccodec.obj lib\transpose.obj lib\transpose_.obj lib\trlec.obj lib\trled.obj lib\v8.obj lib\v8pack.obj lib\vbit.obj lib\vint.obj lib\vp4c.obj lib\vp4d.obj lib\vsimple.obj
+OBJS = lib\bic.obj lib\bitpack.obj lib\bitunpack.obj lib\bitutil.obj lib\eliasfano.obj lib\fp.obj lib\iccodec.obj lib\transpose.obj lib\transpose_.obj lib\trlec.obj lib\trled.obj lib\v8.obj lib\v8pack.obj lib\vbit.obj lib\vint.obj lib\vp4c.obj lib\vp4d.obj lib\vp4dlen.obj lib\vsimple.obj
 OBJS_AVX2 = vs\bitpack_avx2.obj vs\bitunpack_avx2.obj vs\bitutil_avx2.obj vs\transpose_avx2.obj vs\vp4c_avx2.obj vs\vp4d_avx2.obj
 
 !if "$(NSIMD)" == "1"
